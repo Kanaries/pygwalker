@@ -5,6 +5,9 @@
     <a href="https://badge.fury.io/py/pygwalker">
         <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center">
     </a>
+    <a href="https://mybinder.org/v2/gh/Kanaries/pygwalker/main">
+      <img src="https://mybinder.org/badge_logo.svg" alt="binder" height="18" align="center">
+    </a>
     <a href="https://discord.gg/Z4ngFWXz2U">
       <img alt="Discord" src="https://img.shields.io/discord/987366424634884096" alt='Discord' align="center"/>
     </a>
@@ -17,7 +20,7 @@ Pygwalker can simplify your Jupyter Notebook data analysis and data visualizatio
 
 Pygwalker intergrates Jupyter Notebook with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
-Visit [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
+Visit  [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) or [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) to test it out!
 
 > Pygwalker will add more support such as R in the future.
 
