@@ -1,0 +1,3 @@
+[submodule "graphic-walker"]
+	path = graphic-walker
+	url = git@github.com:Kanaries/graphic-walker
