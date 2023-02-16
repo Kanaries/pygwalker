@@ -43,12 +43,11 @@ import pygwalker as pyg
 You can use pygwalker without changing your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
 
 ```python
-df = pd.DataFrame()
+df = pd.read_csv('./bike_sharing_dc.csv)
 gwalker = pyg.GWalker(df)
 gwalker.walk()
 ```
-
-![]()
+![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png)
 
 That's it. Now you have a Tableau-like user interface to analyze and visualize data by dragging and dropping variables.
 
@@ -74,7 +73,7 @@ Cool things you can do with Graphic Walker:
 For more detailed instructions, visit the [Graphic Walker GitHub page](https://github.com/Kanaries/graphic-walker).
 
 # MIT License
-Copyright (c) 2012-2022 Scott Chacon and others
+Copyright (c) 2023-2033 Kanaries Data, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
