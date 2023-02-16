@@ -3,13 +3,11 @@ name = "pygwalker"
 version = "0.0.1"
 description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
 authors = ["Asm.Def <woojson@zju.edu.cn>"]
-license = { file="LICENSE" }
+license = 'MIT LICENSE'
 readme = "README.md"
-requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
 ]
 
 
@@ -19,6 +17,10 @@ jinja2 = "^3.1.2"
 pandas = "^1.5.3"
 ipython = "^8.10.0"
 
+
+[tool.poetry.group.dev.dependencies]
+build = "^0.10.0"
+twine = "^4.0.2"
 
 [build-system]
 requires = ["poetry-core"]
