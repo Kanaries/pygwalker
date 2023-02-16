@@ -1,1 +1,3 @@
-graft templates/
+include LICENSE
+include README.md
+graft pygwalker/templates
