@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "pygwalker"
+version = "0.0.1"
+description = "Python binding of https://github.com/Kanaries/graphic-walker"
+authors = ["Asm.Def <woojson@zju.edu.cn>"]
+license = "Apache Licence, Version 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+jinja2 = "^3.1.2"
+pandas = "^1.5.3"
+ipython = "^8.10.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
