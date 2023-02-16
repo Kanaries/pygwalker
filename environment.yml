@@ -1,0 +1,11 @@
+name: pygwalker
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - ipython=8.10.0
+  - jinja2=3.1.2
+  - pandas=1.5.3
+  - python=3.8.16
+  - pip:
+    - pygwalker>=0.0.1
