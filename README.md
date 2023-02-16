@@ -1,9 +1,13 @@
-<p align="center"><a href="#"><img width=60% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png"></a></p>
+<!-- <p align="center"><a href="#"><img width=60% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png"></a></p> -->
+<p align="center"><a href="#"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/localhost_5173_ (1).png"></a></p>
 <h2 align="center">pygwalker: Combining Jupyter Notebook with a Tableau-like UI</h2>
 
 <p align="center">
     <a href="https://badge.fury.io/py/pygwalker">
         <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center">
+    </a>
+    <a href="https://mybinder.org/v2/gh/Kanaries/pygwalker/main">
+      <img src="https://mybinder.org/badge_logo.svg" alt="binder" height="18" align="center">
     </a>
     <a href="https://discord.gg/Z4ngFWXz2U">
       <img alt="Discord" src="https://img.shields.io/discord/987366424634884096" alt='Discord' align="center"/>
@@ -17,7 +21,7 @@ Pygwalker can simplify your Jupyter Notebook data analysis and data visualizatio
 
 Pygwalker intergrates Jupyter Notebook with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
-Visit [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
+Visit  [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) or [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) to test it out!
 
 > Pygwalker will add more support such as R in the future.
 
@@ -43,14 +47,15 @@ import pygwalker as pyg
 You can use pygwalker without changing your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
 
 ```python
-df = pd.DataFrame()
-gwalker = pyg.GWalker(df)
-gwalker.walk()
+df = pd.read_csv('./bike_sharing_dc.csv')
+gwalker = pyg.walk(df)
 ```
-
-![]()
+<!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png) -->
+![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/1-8ms.gif)
 
 That's it. Now you have a Tableau-like user interface to analyze and visualize data by dragging and dropping variables.
+
+![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/2-8ms.gif)
 
 [![Manually explore your data with a Tableau-like UI](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/drag-and-drop.gif)](https://docs.kanaries.net/graphic-walker/overview)
 
@@ -58,23 +63,26 @@ Cool things you can do with Graphic Walker:
 
 + You can change the mark type into others to make different charts, for example, a line chart:
 
-![graphic walker line chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-line-01.png)
+<!-- ![graphic walker line chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-line-01.png) -->
+![graphic walker line chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen-timeseries.png)
 
 
 + To compare different measures, you can create a concat view by adding more than one measure into rows/columns.
 
-![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-area-01.png)
+<!-- ![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-area-01.png) -->
+![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen2-timeseries-area.png)
 
 + To make a facet view of several subviews divided by the value in dimension, put dimensions into rows or columns to make a facets view. The rules are similar to Tableau.
 
-![graphic walker scatter chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-scatter-01.png)
+<!-- ![graphic walker scatter chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-scatter-01.png) -->
+![graphic walker scatter chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen-scatter-3.png)
 
 + You can save the data exploration result to a local file.
 
 For more detailed instructions, visit the [Graphic Walker GitHub page](https://github.com/Kanaries/graphic-walker).
 
 # MIT License
-Copyright (c) 2012-2022 Scott Chacon and others
+Copyright (c) 2023-2033 Kanaries Data, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

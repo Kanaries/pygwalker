@@ -1,10 +1,15 @@
 [tool.poetry]
 name = "pygwalker"
 version = "0.0.1"
-description = "Python binding of https://github.com/Kanaries/graphic-walker"
+description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
 authors = ["Asm.Def <woojson@zju.edu.cn>"]
-license = "Apache Licence, Version 2.0"
+license = 'MIT LICENSE'
 readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -12,6 +17,10 @@ jinja2 = "^3.1.2"
 pandas = "^1.5.3"
 ipython = "^8.10.0"
 
+
+[tool.poetry.group.dev.dependencies]
+build = "^0.10.0"
+twine = "^4.0.2"
 
 [build-system]
 requires = ["poetry-core"]
