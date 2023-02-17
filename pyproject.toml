@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pygwalker"
-version = "0.0.1"
+version = "0.1.0"
 description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
 authors = ["Asm.Def <woojson@zju.edu.cn>"]
 license = 'MIT LICENSE'
@@ -12,15 +12,15 @@ classifiers = [
 
 
 [tool.poetry.dependencies]
-python = "^3.8"
-jinja2 = "^3.1.2"
-pandas = "^1.5.3"
-ipython = "^8.10.0"
+python = "^3.5"
+jinja2 = "*"
+pandas = "*"
+ipython = "*"
 
 
 [tool.poetry.group.dev.dependencies]
-build = "^0.10.0"
-twine = "^4.0.2"
+build = "*"
+twine = "*"
 
 [build-system]
 requires = ["poetry-core"]
