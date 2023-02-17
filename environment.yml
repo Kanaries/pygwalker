@@ -6,7 +6,7 @@ dependencies:
   - ipython
   - jinja2
   - pandas
-  - python=3.*
+  - python>=3.5
   - pip
   - pip:
-    - pygwalker=0.*
+    - pygwalker>=0.1
