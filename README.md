@@ -21,7 +21,7 @@ Pygwalker can simplify your Jupyter Notebook data analysis and data visualizatio
 
 Pygwalker intergrates Jupyter Notebook with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
-Visit  [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) or [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) to test it out!
+Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
 > Pygwalker will add more support such as R in the future.
 
@@ -50,6 +50,9 @@ You can use pygwalker without changing your existing workflow. For example, you 
 df = pd.read_csv('./bike_sharing_dc.csv')
 gwalker = pyg.walk(df)
 ```
+
+You can even try it online, simply visiting [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing).
+
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png) -->
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/1-8ms.gif)
 
