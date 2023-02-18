@@ -1,6 +1,6 @@
 <!-- <p align="center"><a href="#"><img width=60% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png"></a></p> -->
-<p align="center"><a href="#"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/localhost_5173_ (1).png"></a></p>
-<h2 align="center">pygwalker: Combining Jupyter Notebook with a Tableau-like UI</h2>
+<p align="center"><a href="#"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/frontpage-rendered.png"></a></p>
+<h2 align="center">pygwalker: A Python Library for Exploratory Data Analysis with Visualization</h2>
 
 <p align="center">
     <a href="https://badge.fury.io/py/pygwalker">
@@ -10,20 +10,20 @@
       <img src="https://mybinder.org/badge_logo.svg" alt="binder" height="18" align="center">
     </a>
     <a href="https://discord.gg/Z4ngFWXz2U">
-      <img alt="Discord" src="https://img.shields.io/discord/987366424634884096" alt='Discord' align="center"/>
+      <img alt="discord invitation link" src="https://dcbadge.vercel.app/api/server/Z4ngFWXz2U?style=flat" align="center">
     </a>
     <a href='https://twitter.com/intent/follow?original_referer=https%3A%2F%2Fpublish.twitter.com%2F&ref_src=twsrc%5Etfw&screen_name=kanaries_data&tw_p=followbutton'>
         <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/kanaries_data?style=social" alt='Twitter' align="center"/>
     </a>
 </p>
 
-Pygwalker can simplify your Jupyter Notebook data analysis and data visualization workflow. By bringing a lightweight, easy-to-use, Tableau-like interface instead of analyzing data using Python.
+**PyGWalker** can simplify your Jupyter Notebook data analysis and data visualization workflow. By turning your pandas dataframe into a Tableau-style User Interface for visual exploration.
 
-Pygwalker intergrates Jupyter Notebook with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
+**PyGWalker** (pronounced like "Pig Walker", just for fun) is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It intergrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
-Visit  [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) or [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) to test it out!
+Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
-> Pygwalker will add more support such as R in the future.
+> PyGWalker will add more support such as R in the future.
 
 # Getting Started
 
@@ -47,9 +47,12 @@ import pygwalker as pyg
 You can use pygwalker without changing your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
 
 ```python
-df = pd.read_csv('./bike_sharing_dc.csv')
+df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
 gwalker = pyg.walk(df)
 ```
+
+You can even try it online, simply visiting [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing).
+
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png) -->
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/1-8ms.gif)
 
@@ -103,9 +106,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Resoruces
+# Resources
 
-+ Check out more resources about Graphic Walker on [Graphic Walker GitHub](https://github.com/Kanaries/Rath)
++ Check out more resources about Graphic Walker on [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)
 + We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis tool that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [RATH website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
 + If you encounter any issues and need support, join our [Slack](https://join.slack.com/t/kanaries/shared_invite/zt-1k60sgaxu-aGcuS7CwGeJUccE61iGopg) or [Discord](https://discord.gg/Z4ngFWXz2U) channels.
 + Share pygwalker on these social media platforms:
