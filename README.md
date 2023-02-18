@@ -47,7 +47,7 @@ import pygwalker as pyg
 You can use pygwalker without changing your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
 
 ```python
-df = pd.read_csv('./bike_sharing_dc.csv')
+df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
 gwalker = pyg.walk(df)
 ```
 
@@ -106,7 +106,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Resoruces
+# Resources
 
 + Check out more resources about Graphic Walker on [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)
 + We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis tool that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [RATH website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
