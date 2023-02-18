@@ -1,5 +1,5 @@
 <!-- <p align="center"><a href="#"><img width=60% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png"></a></p> -->
-<p align="center"><a href="#"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/localhost_5173_ (1).png"></a></p>
+<p align="center"><a href="#"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/frontpage-rendered.png"></a></p>
 <h2 align="center">pygwalker: Combining Jupyter Notebook with a Tableau-like UI</h2>
 
 <p align="center">
@@ -17,13 +17,13 @@
     </a>
 </p>
 
-Pygwalker can simplify your Jupyter Notebook data analysis and data visualization workflow. By bringing a lightweight, easy-to-use, Tableau-like interface instead of analyzing data using Python.
+**PyGWalker** (pronounced like "Pig Walker", just for fun) can simplify your Jupyter Notebook data analysis and data visualization workflow. By bringing a lightweight, easy-to-use, Tableau-like interface instead of analyzing data using Python.
 
-Pygwalker intergrates Jupyter Notebook with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
+**PyGWalker** is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It intergrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
-Visit  [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) or [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) to test it out!
+Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
-> Pygwalker will add more support such as R in the future.
+> PyGWalker will add more support such as R in the future.
 
 # Getting Started
 
@@ -47,9 +47,12 @@ import pygwalker as pyg
 You can use pygwalker without changing your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
 
 ```python
-df = pd.read_csv('./bike_sharing_dc.csv')
+df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
 gwalker = pyg.walk(df)
 ```
+
+You can even try it online, simply visiting [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing).
+
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png) -->
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/1-8ms.gif)
 
@@ -103,7 +106,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Resoruces
+# Resources
 
 + Check out more resources about Graphic Walker on [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)
 + We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis tool that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [RATH website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
