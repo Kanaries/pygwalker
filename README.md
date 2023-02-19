@@ -1,6 +1,6 @@
 <!-- <p align="center"><a href="#"><img width=60% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png"></a></p> -->
 <p align="center"><a href="#"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/frontpage-rendered.png"></a></p>
-<h2 align="center">pygwalker: Combining Jupyter Notebook with a Tableau-like UI</h2>
+<h2 align="center">pygwalker: A Python Library for Exploratory Data Analysis with Visualization</h2>
 
 <p align="center">
     <a href="https://badge.fury.io/py/pygwalker">
@@ -10,16 +10,16 @@
       <img src="https://mybinder.org/badge_logo.svg" alt="binder" height="18" align="center">
     </a>
     <a href="https://discord.gg/Z4ngFWXz2U">
-      <img alt="Discord" src="https://img.shields.io/discord/987366424634884096" alt='Discord' align="center"/>
+      <img alt="discord invitation link" src="https://dcbadge.vercel.app/api/server/Z4ngFWXz2U?style=flat" align="center">
     </a>
     <a href='https://twitter.com/intent/follow?original_referer=https%3A%2F%2Fpublish.twitter.com%2F&ref_src=twsrc%5Etfw&screen_name=kanaries_data&tw_p=followbutton'>
         <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/kanaries_data?style=social" alt='Twitter' align="center"/>
     </a>
 </p>
 
-**PyGWalker** (pronounced like "Pig Walker", just for fun) can simplify your Jupyter Notebook data analysis and data visualization workflow. By bringing a lightweight, easy-to-use, Tableau-like interface instead of analyzing data using Python.
+**PyGWalker** can simplify your Jupyter Notebook data analysis and data visualization workflow. By turning your pandas dataframe into a Tableau-style User Interface for visual exploration.
 
-**PyGWalker** is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It intergrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
+**PyGWalker** (pronounced like "Pig Walker", just for fun) is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It intergrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
 Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
