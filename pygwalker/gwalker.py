@@ -3,7 +3,7 @@ from .base import *
 global_gid = 0
 
 def to_records(df: pd.DataFrame):
-    
+    df = df.replace({float('nan'): None})
     return df.to_dict(orient='records')
 
 def raw_fields(df: pd.DataFrame):
@@ -62,7 +62,8 @@ class DataFrameEncoder(json.JSONEncoder):
 def render_gwalker_js(gid: int, props: tp.Dict):
     walker_template = jinja_env.get_template("walk.js")
     js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
-    return gwalker_script() + js
+    js = gwalker_script() + js
+    return js
     
 def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
     """walk through pandas.DataFrame df with Graphic Walker
