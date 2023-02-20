@@ -11,7 +11,7 @@ gwalker_js = None
 def gwalker_script():
     global gwalker_js
     if gwalker_js is None:
-        with open(os.path.join(HERE, 'templates', 'graphic-walker.iife.js'), 'r') as f:
+        with open(os.path.join(HERE, 'templates', 'graphic-walker.iife.js'), 'r', encoding='utf8') as f:
             gwalker_js = "const exports={};const process={env:{NODE_ENV:\"production\"} };" + f.read()
     return gwalker_js
         
