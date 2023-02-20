@@ -47,11 +47,6 @@ jinja_env = Environment(
     autoescape=select_autoescape()
 )
 
-def render_gwalker_html(gid: int):
-    template = jinja_env.get_template("index.html")
-    html = f"{template.render(gwalker={'id': gid})}"
-    return html
-
 class DataFrameEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, pd.Timestamp):
@@ -59,11 +54,24 @@ class DataFrameEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+def render_gwalker_html(gid: int):
+    template = jinja_env.get_template("index.html")
+    html = f"{template.render(gwalker={'id': gid})}"
+    return html
+
 def render_gwalker_js(gid: int, props: tp.Dict):
     walker_template = jinja_env.get_template("walk.js")
     js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
     js = gwalker_script() + js
     return js
+
+def get_props(df: pd.DataFrame, **kwargs):
+    props = {
+        'dataSource': to_records(df),
+        'rawFields': raw_fields(df),
+        'hideDataSourceConfig': kwargs.get('hideDataSourceConfig', True),
+    }
+    return props
     
 def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
     """walk through pandas.DataFrame df with Graphic Walker
@@ -71,16 +79,14 @@ def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
     Args:
         df (pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+        hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
     """
     global global_gid
     gid = kwargs.get('gid', None)
     if gid is None:
         gid = global_gid
         global_gid += 1
-    props = {
-        'dataSource': to_records(df),
-        'rawFields': raw_fields(df),
-    }
+    props = get_props(df, **kwargs)
     html = render_gwalker_html(gid)
     js = render_gwalker_js(gid, props)
     
@@ -99,10 +105,7 @@ class GWalker:
         self.df = df
     
     def walk(self, **kwargs):
-        props = {
-            'dataSource': self.dataSource,
-            'rawFields': self.rawFields,
-        }
+        props = get_props(self.df, **kwargs)
         html = render_gwalker_html(self.gid)
         js = render_gwalker_js(self.gid, props)
         
