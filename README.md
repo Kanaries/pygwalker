@@ -27,6 +27,42 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 
 # Getting Started
 
+## Tested Environments
+
+- [x] Jupyter Notebook
+- [x] Google Colab
+- [x] Kaggle Code
+- [x] Jupyter Lab (WIP: There's still some tiny CSS issues)
+- [ ] Visual Studio Code
+- [ ] ...feel free to raise an issue for more environments.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <a href="https://www.kaggle.com/asmdef/pygwalker-test">Run in Kaggle</a>
+    </th>
+    <th>
+      <a href="https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing">Run in Colab</a>
+    </th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>
+      <a href="https://www.kaggle.com/asmdef/pygwalker-test">
+        <img src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/kaggle.png" alt="Kaggle Code" />
+      </a>
+    </td>
+    <td>
+      <a href="https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing">
+        <img src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/colab.png" alt="Google Colab" />
+      </a>
+    </td>
+</tr>
+</tbody>
+</table>
+
 ## Setup pygwalker
 
 Before using pygwalker, make sure to install the packages through the command line using pip.
