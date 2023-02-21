@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "pygwalker"
-version = "0.1.2-alpha.0"
+version = "0.1.3-rc"
 description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
 authors = ["Asm.Def <woojson@zju.edu.cn>"]
-license = 'MIT LICENSE'
+license = 'Apache License 2.0'
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
 ]
 
 
