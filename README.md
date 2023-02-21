@@ -122,7 +122,7 @@ For more detailed instructions, visit the [Graphic Walker GitHub page](https://g
 
 # License
 
-[MIT License](https://github.com/Kanaries/pygwalker/blob/main/LICENSE)
+[Apache License 2.0](https://github.com/Kanaries/pygwalker/blob/main/LICENSE)
 
 # Resources
 
