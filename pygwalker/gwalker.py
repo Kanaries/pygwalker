@@ -44,7 +44,7 @@ def infer_type(s: pd.Series, i=None) -> tp.Dict:
 from jinja2 import Environment, PackageLoader, select_autoescape
 jinja_env = Environment(
     loader=PackageLoader("pygwalker"),
-    autoescape=select_autoescape()
+    autoescape=(()), # select_autoescape()
 )
 
 class DataFrameEncoder(json.JSONEncoder):
@@ -54,16 +54,22 @@ class DataFrameEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def render_gwalker_html(gid: int):
+def render_gwalker_html(gid: int, props: tp.Dict):
+    walker_template = jinja_env.get_template("walk.js")
+    js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
+    js = "var exports={};var process={env:{NODE_ENV:\"production\"} };" + gwalker_script() + js
+    
     template = jinja_env.get_template("index.html")
-    html = f"{template.render(gwalker={'id': gid})}"
+    html = f"{template.render(gwalker={'id': gid, 'script': js})}"
+    # print("html =", html)
     return html
 
 def render_gwalker_js(gid: int, props: tp.Dict):
-    walker_template = jinja_env.get_template("walk.js")
-    js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
-    js = gwalker_script() + js
-    return js
+    pass
+    # walker_template = jinja_env.get_template("walk.js")
+    # js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
+    # js = gwalker_script() + js
+    # return js
 
 def get_props(df: pd.DataFrame, **kwargs):
     props = {
@@ -87,11 +93,11 @@ def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
         gid = global_gid
         global_gid += 1
     props = get_props(df, **kwargs)
-    html = render_gwalker_html(gid)
-    js = render_gwalker_js(gid, props)
+    html = render_gwalker_html(gid, props)
+    # js = render_gwalker_js(gid, props)
     
     display(HTML(html))
-    display(Javascript(js))
+    # display(Javascript(js))
     # html = f"{html}<body><script>{js}</script></body>"
     # html = html.replace("\"", "\\\"")
     # print(html)
@@ -106,11 +112,11 @@ class GWalker:
     
     def walk(self, **kwargs):
         props = get_props(self.df, **kwargs)
-        html = render_gwalker_html(self.gid)
-        js = render_gwalker_js(self.gid, props)
+        html = render_gwalker_html(self.gid, props)
+        # js = render_gwalker_js(self.gid, props)
         
         display(HTML(html))
-        display(Javascript(js))
+        # display(Javascript(js))
         
     def update(self, df: pd.DataFrame=None, **kwargs):
         pass
