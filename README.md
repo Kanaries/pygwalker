@@ -34,7 +34,7 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 - [x] Kaggle Code
 - [x] Jupyter Lab (WIP: There're still some tiny CSS issues)
 - [x] Databricks Notebook (Since version `0.1.4a0`, needs more tests)
-- [ ] Visual Studio Code
+- [x] Jupyter Extension for Visual Studio Code (Since version `0.1.4a1`, needs more tests)
 - [ ] ...feel free to raise an issue for more environments.
 
 <table>
