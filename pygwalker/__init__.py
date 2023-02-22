@@ -13,4 +13,4 @@ __name__ = 'pygwalker'
 #             # <meta name="viewport" content="width=device-width, initial-scale=1.0">
 # loadJs()
 
-from .gwalker import walk, GWalker
+from .gwalker import to_html, walk, GWalker
