@@ -78,6 +78,23 @@ def get_props(df: pd.DataFrame, **kwargs):
         'hideDataSourceConfig': kwargs.get('hideDataSourceConfig', True),
     }
     return props
+
+def to_html(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
+    """Generate embeddable HTML code of Graphic Walker with data of `df`.
+
+    Args:
+        df (pd.DataFrame, optional): dataframe.
+        gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+        hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
+    """
+    global global_gid
+    gid = kwargs.get('gid', None)
+    if gid is None:
+        gid = global_gid
+        global_gid += 1
+    props = get_props(df, **kwargs)
+    html = render_gwalker_html(gid, props)
+    return html
     
 def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
     """walk through pandas.DataFrame df with Graphic Walker
@@ -92,16 +109,8 @@ def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
     if gid is None:
         gid = global_gid
         global_gid += 1
-    props = get_props(df, **kwargs)
-    html = render_gwalker_html(gid, props)
-    # js = render_gwalker_js(gid, props)
-    
+    html = to_html(df, gid, **kwargs)
     display(HTML(html))
-    # display(Javascript(js))
-    # html = f"{html}<body><script>{js}</script></body>"
-    # html = html.replace("\"", "\\\"")
-    # print(html)
-    # display(IFrame(src="", width="500px", height="500px", extras=[f"srcdoc=\"{html}\""]))
 
 class GWalker:
     def __init__(self, df: pd.DataFrame=None, **kwargs):
@@ -110,13 +119,13 @@ class GWalker:
         global_gid += 1
         self.df = df
     
+    def to_html(self, **kwargs):
+        html = to_html(self.df, self.gid, **kwargs)
+        return html
+    
     def walk(self, **kwargs):
-        props = get_props(self.df, **kwargs)
-        html = render_gwalker_html(self.gid, props)
-        # js = render_gwalker_js(self.gid, props)
-        
+        html = self.to_html(**kwargs)
         display(HTML(html))
-        # display(Javascript(js))
         
     def update(self, df: pd.DataFrame=None, **kwargs):
         pass
