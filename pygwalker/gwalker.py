@@ -79,13 +79,14 @@ def get_props(df: pd.DataFrame, **kwargs):
     }
     return props
     
-def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
+def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, return_html=False, **kwargs):
     """walk through pandas.DataFrame df with Graphic Walker
 
     Args:
         df (pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
+        return_html (bool, optional): Directly return a html string. Defaults to False.
     """
     global global_gid
     gid = kwargs.get('gid', None)
@@ -95,8 +96,10 @@ def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
     props = get_props(df, **kwargs)
     html = render_gwalker_html(gid, props)
     # js = render_gwalker_js(gid, props)
-    
-    display(HTML(html))
+    if return_html:
+        return html
+    else:
+        display(HTML(html))
     # display(Javascript(js))
     # html = f"{html}<body><script>{js}</script></body>"
     # html = html.replace("\"", "\\\"")
