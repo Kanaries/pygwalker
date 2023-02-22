@@ -27,14 +27,19 @@ def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
         df (pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
+        return_html (bool, optional): Directly return a html string. Defaults to False.
     """
     global global_gid
     gid = kwargs.get('gid', None)
+    return_html = kwargs.get('return_html', False)
     if gid is None:
         gid = global_gid
         global_gid += 1
     html = to_html(df, gid, **kwargs)
-    display(HTML(html))
+    if return_html:
+        return html
+    else:
+        display(HTML(html))
 
 class GWalker:
     def __init__(self, df: pd.DataFrame=None, **kwargs):
