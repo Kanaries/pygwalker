@@ -41,10 +41,12 @@ def raw_fields(df: pd.DataFrame):
     ]
 
 def get_props(df: pd.DataFrame, **kwargs):
+    df = df.reset_index()
     df = df.rename(fname_encode, axis='columns')
     props = {
         'dataSource': to_records(df),
         'rawFields': raw_fields(df),
         'hideDataSourceConfig': kwargs.get('hideDataSourceConfig', True),
+        'fieldkeyGuard': False,
     }
     return props
