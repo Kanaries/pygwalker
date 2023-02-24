@@ -23,9 +23,12 @@ def infer_prop(s: pd.Series, i=None) -> tp.Dict:
     analyticType = 'measure' if \
         kind in 'fcm' or (kind in 'iu' and len(s.value_counts()) > 16) \
             else 'dimension'
+    import json
+    fname = fname_decode(s.name)
+    fname = json.dumps(fname)[1:-1]
     return {
         'fid': s.name, # f'col-{i}-{s.name}' if i is not None else s.name,
-        'name': fname_decode(s.name),
+        'name': fname,
         'semanticType': semanticType,
         'analyticType': analyticType
     }
@@ -41,10 +44,12 @@ def raw_fields(df: pd.DataFrame):
     ]
 
 def get_props(df: pd.DataFrame, **kwargs):
+    df = df.reset_index()
     df = df.rename(fname_encode, axis='columns')
     props = {
         'dataSource': to_records(df),
         'rawFields': raw_fields(df),
         'hideDataSourceConfig': kwargs.get('hideDataSourceConfig', True),
+        'fieldkeyGuard': False,
     }
     return props
