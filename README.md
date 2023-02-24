@@ -75,7 +75,7 @@ pip install pygwalker
 ```
 > **Note**
 > 
-> For an early trial, you could install with  `pip install pygwalker --pre` for pre-releases or even `pip install git+https://github.com/Kanaries/pygwalker@main` to obtain latest features and bug-fixes.
+> For an early trial, you can install with `pip install pygwalker --upgrade` to keep your version up to date with the latest release or even `pip install git+https://github.com/Kanaries/pygwalker@main` to obtain latest features and bug-fixes.
 ## Use pygwalker in Jupyter Notebook
 
 Import pygwalker and pandas to your Jupyter Notebook to get started.
