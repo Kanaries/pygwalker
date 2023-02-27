@@ -59,13 +59,13 @@ class GWalker:
     def update(self, df: pd.DataFrame=None, **kwargs):
         pass
     
-    @property
-    def dataSource(self) -> tp.List[tp.Dict]:
-        from .utils.gwalker_props import to_records
-        return to_records(self.df)
+    # @property
+    # def dataSource(self) -> tp.List[tp.Dict]:
+    #     from .utils.gwalker_props import to_records
+    #     return to_records(self.df)
     
-    @property
-    def rawFields(self) -> tp.List:
-        from .utils.gwalker_props import raw_fields
-        return raw_fields(self.df)
+    # @property
+    # def rawFields(self) -> tp.List:
+    #     from .utils.gwalker_props import raw_fields
+    #     return raw_fields(self.df)
     

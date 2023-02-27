@@ -32,7 +32,7 @@ def infer_prop(s: pd.Series, i=None) -> tp.Dict:
     
 def to_records(df: pd.DataFrame):
     df = df.replace({float('nan'): None})
-    return df.to_dict(orient='records')
+    return df.to_dict(orient='tight')
 
 def raw_fields(df: pd.DataFrame):
     return [
