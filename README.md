@@ -9,6 +9,9 @@
     <a href="https://mybinder.org/v2/gh/Kanaries/pygwalker/main">
       <img src="https://mybinder.org/badge_logo.svg" alt="binder" height="18" align="center">
     </a>
+    <a href="https://pypi.org/project/pygwalker">
+      <img src="https://img.shields.io/pypi/dw/pygwalker" alt="PyPI downloads" height="18" align="center">
+    </a>
     <a href="https://discord.gg/Z4ngFWXz2U">
       <img alt="discord invitation link" src="https://dcbadge.vercel.app/api/server/Z4ngFWXz2U?style=flat" align="center">
     </a>
@@ -17,7 +20,7 @@
     </a>
 </p>
 
-[**PyGWalker**](https://github.com/Kanaries/pygwalker) can simplify your Jupyter Notebook data analysis and data visualization workflow. By turning your pandas dataframe into a Tableau-style User Interface for visual exploration.
+[**PyGWalker**](https://github.com/Kanaries/pygwalker) can simplify your Jupyter Notebook data analysis and data visualization workflow, by turning your pandas dataframe into a Tableau-style User Interface for visual exploration.
 
 **PyGWalker** (pronounced like "Pig Walker", just for fun) is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It integrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
@@ -85,7 +88,7 @@ import pandas as pd
 import pygwalker as pyg
 ```
 
-You can use pygwalker without changing your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
+You can use pygwalker without breaking your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
@@ -132,8 +135,8 @@ For more detailed instructions, visit the [Graphic Walker GitHub page](https://g
 # Resources
 
 + Check out more resources about Graphic Walker on [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)
-+ We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis tool that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [Kanaries website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
-+ If you encounter any issues and need support, join our [Slack](https://join.slack.com/t/kanaries/shared_invite/zt-1k60sgaxu-aGcuS7CwGeJUccE61iGopg) or [Discord](https://discord.gg/Z4ngFWXz2U) channels.
++ We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis software that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [Kanaries website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
++ If you encounter any issues and need support, join our [Slack](https://join.slack.com/t/kanaries-community/shared_invite/zt-1pcosgbua-E_GBPawQOI79C41dPDyyvw) or [Discord](https://discord.gg/Z4ngFWXz2U) channels.
 + Share pygwalker on these social media platforms:
 
 [![Reddit](https://img.shields.io/badge/share%20on-reddit-red?style=flat-square&logo=reddit)](https://reddit.com/submit?url=https://github.com/Kanaries/pygwalker&title=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-like%20UI)
