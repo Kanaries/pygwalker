@@ -51,5 +51,7 @@ def get_props(df: pd.DataFrame, **kwargs):
         'rawFields': raw_fields(df),
         'hideDataSourceConfig': kwargs.get('hideDataSourceConfig', True),
         'fieldkeyGuard': False,
+        'themeKey': 'g2',
+        **kwargs,
     }
     return props
