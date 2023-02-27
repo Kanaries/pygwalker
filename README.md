@@ -10,7 +10,7 @@
       <img src="https://mybinder.org/badge_logo.svg" alt="binder" height="18" align="center">
     </a>
     <a href="https://pypi.org/project/pygwalker">
-      <img src="https://img.shields.io/pypi/dw/pygwalker" alt="PyPI downloads" height="18" align="center">
+      <img src="https://img.shields.io/pypi/dm/pygwalker" alt="PyPI downloads" height="18" align="center">
     </a>
     <a href="https://discord.gg/Z4ngFWXz2U">
       <img alt="discord invitation link" src="https://dcbadge.vercel.app/api/server/Z4ngFWXz2U?style=flat" align="center">
