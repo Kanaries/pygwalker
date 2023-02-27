@@ -12,7 +12,6 @@ def to_html(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
     """
     global global_gid
-    gid = kwargs.get('gid', None)
     if gid is None:
         gid = global_gid
         global_gid += 1
@@ -30,7 +29,6 @@ def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
         return_html (bool, optional): Directly return a html string. Defaults to False.
     """
     global global_gid
-    gid = kwargs.get('gid', None)
     return_html = kwargs.get('return_html', False)
     if gid is None:
         gid = global_gid
