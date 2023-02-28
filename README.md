@@ -109,7 +109,10 @@ That's it. Now you have a Tableau-like user interface to analyze and visualize d
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/2-8ms.gif) -->
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-1.gif)
 
+
+<!-- To Be Updated
 [![Manually explore your data with a Tableau-like UI](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/drag-and-drop.gif)](https://docs.kanaries.net/graphic-walker/overview)
+-->
 
 Cool things you can do with Graphic Walker:
 
