@@ -1,7 +1,7 @@
 <!-- <p align="center"><a href="#"><img width=60% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png"></a></p> -->
 <!-- <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/frontpage-rendered.png"></a></p> -->
 
-<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221666598-e06ec92b-50e9-4094-8312-ba178c7d6129.png"></a></p>
+<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png"></a></p>
 
 <h2 align="center">PyGWalker: A Python Library for Exploratory Data Analysis with Visualization</h2>
 
@@ -101,11 +101,13 @@ gwalker = pyg.walk(df)
 You can even try it online, simply visiting [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb), [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) or [Kaggle Code](https://www.kaggle.com/code/asmdef/notebook1cc9d36936).
 
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png) -->
-![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/1-8ms.gif)
+<!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/1-8ms.gif) -->
+![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-0.gif)
 
 That's it. Now you have a Tableau-like user interface to analyze and visualize data by dragging and dropping variables.
 
-![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/2-8ms.gif)
+<!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/2-8ms.gif) -->
+![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-1.gif)
 
 [![Manually explore your data with a Tableau-like UI](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/drag-and-drop.gif)](https://docs.kanaries.net/graphic-walker/overview)
 
@@ -114,18 +116,20 @@ Cool things you can do with Graphic Walker:
 + You can change the mark type into others to make different charts, for example, a line chart:
 
 <!-- ![graphic walker line chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-line-01.png) -->
-![graphic walker line chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen-timeseries.png)
-
+<!-- ![graphic walker line chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen-timeseries.png) -->
+![graphic walker line chart](https://user-images.githubusercontent.com/8137814/221871179-1ee6f0be-81e0-46f3-9b5c-c2985022d7e2.png)
 
 + To compare different measures, you can create a concat view by adding more than one measure into rows/columns.
 
 <!-- ![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-area-01.png) -->
-![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen2-timeseries-area.png)
+<!-- ![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen2-timeseries-area.png) -->
+![graphic walker area chart](https://user-images.githubusercontent.com/8137814/221871355-834242cd-2f7c-4cd0-adb8-f6c4214dc782.png)
 
 + To make a facet view of several subviews divided by the value in dimension, put dimensions into rows or columns to make a facets view. The rules are similar to Tableau.
 
 <!-- ![graphic walker scatter chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-scatter-01.png) -->
-![graphic walker scatter chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen-scatter-3.png)
+<!-- ![graphic walker scatter chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen-scatter-3.png) -->
+![graphic walker scatter chart](https://user-images.githubusercontent.com/8137814/221871409-f969e280-22af-4584-9c87-8bd3d15e2f9a.png)
 
 + You can save the data exploration result to a local file.
 
