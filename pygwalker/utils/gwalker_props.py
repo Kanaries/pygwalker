@@ -25,7 +25,7 @@ def infer_prop(s: pd.Series, i=None) -> tp.Dict:
             else 'dimension'
     import json
     fname = fname_decode(s.name)
-    fname = json.dumps(fname)[1:-1]
+    fname = json.dumps(fname, ensure_ascii=False)[1:-1]
     return {
         'fid': s.name, # f'col-{i}-{s.name}' if i is not None else s.name,
         'name': fname,
