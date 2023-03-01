@@ -1,5 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+<script>
+    // document.documentElement.setAttribute("sandbox", true);
+    function updateHeight() {
+      let newHeight = document.documentElement.scrollHeight;
+      window.parent.postMessage({id: "{{ gwalker.id }}", newHeight: newHeight}, '*');
+      console.log(newHeight);
+    }
+    window.addEventListener('load', function() {
+      if(window.ResizeObserver) {
+        var ro = new ResizeObserver(updateHeight);
+        ro.observe(document.body);
+      } else {
+        setInterval(updateHeight, 1000);
+      }
+    });
+    window.addEventListener('resize', updateHeight); 
+</script>
+</head>
 <body>
     <!-- <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script> -->

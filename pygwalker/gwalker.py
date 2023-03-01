@@ -38,6 +38,8 @@ def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
         return html
     else:
         display(HTML(html))
+        # display(IFrame("/", width="100%", height="850px", extras=[f"srcdoc=\"{srcdoc}\"", f"sandbox=\"{sandbox}\""]))
+        # display(HTML(html))
 
 class GWalker:
     def __init__(self, df: pd.DataFrame=None, **kwargs):
