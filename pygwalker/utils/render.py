@@ -1,4 +1,5 @@
 from ..base import *
+import datetime
 
 def gwalker_script():
     global gwalker_js
@@ -15,7 +16,7 @@ jinja_env = Environment(
 
 class DataFrameEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, pd.Timestamp):
+        if isinstance(obj, (datetime.datetime,datetime.date,datetime.time)):
             return str(obj)
         return json.JSONEncoder.default(self, obj)
 
