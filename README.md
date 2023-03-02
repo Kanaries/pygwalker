@@ -15,6 +15,10 @@
     <a href="https://pypi.org/project/pygwalker">
       <img src="https://img.shields.io/pypi/dm/pygwalker" alt="PyPI downloads" height="18" align="center">
     </a>
+    <a href="https://anaconda.org/conda-forge/pygwalker"> <img src="https://anaconda.org/conda-forge/pygwalker/badges/version.svg" alt="conda-forge" height="18" align="center" /> </a>
+</p>
+
+<p align="center">
     <a href="https://discord.gg/Z4ngFWXz2U">
       <img alt="discord invitation link" src="https://dcbadge.vercel.app/api/server/Z4ngFWXz2U?style=flat" align="center">
     </a>
@@ -74,7 +78,9 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 
 ## Setup pygwalker
 
-Before using pygwalker, make sure to install the packages through the command line using pip.
+Before using pygwalker, make sure to install the packages through the command line using pip or conda.
+
+### pip
 
 ```bash
 pip install pygwalker
@@ -82,6 +88,18 @@ pip install pygwalker
 > **Note**
 > 
 > For an early trial, you can install with `pip install pygwalker --upgrade` to keep your version up to date with the latest release or even `pip install git+https://github.com/Kanaries/pygwalker@main` to obtain latest features and bug-fixes.
+
+### Conda-forge
+```bash
+conda install -c conda-forge pygwalker
+```
+or
+```bash
+mamba install -c conda-forge pygwalker
+```
+See [conda-forge feedstock](https://github.com/conda-forge/pygwalker-feedstock) for more help.
+
+
 ## Use pygwalker in Jupyter Notebook
 
 Import pygwalker and pandas to your Jupyter Notebook to get started.
