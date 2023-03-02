@@ -8,5 +8,6 @@ dependencies:
   - pandas
   - python>=3.5
   - pip
+  - polars
   - pip:
     - pygwalker>=0.1
