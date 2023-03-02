@@ -14,9 +14,14 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.5"
 jinja2 = "*"
-pandas = "*"
 ipython = "*"
+pandas = { version = "*", optional = true }
+polars = { version = "*", optional = true }
 
+[tool.poetry.extras]
+pandas = ["pandas"]
+polars = ["polars"]
+all = ["pandas", "polars"]
 
 [tool.poetry.group.dev.dependencies]
 build = "*"

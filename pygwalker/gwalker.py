@@ -3,11 +3,11 @@ from .base import *
 from .utils.gwalker_props import get_props
 from .utils.render import render_gwalker_html
 
-def to_html(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
+def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwargs):
     """Generate embeddable HTML code of Graphic Walker with data of `df`.
 
     Args:
-        df (pd.DataFrame, optional): dataframe.
+        df (pl.DataFrame | pd.DataFrame , optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
     """
@@ -19,11 +19,11 @@ def to_html(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
     html = render_gwalker_html(gid, props)
     return html
     
-def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
+def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwargs):
     """walk through pandas.DataFrame df with Graphic Walker
 
     Args:
-        df (pd.DataFrame, optional): dataframe.
+        df (pl.DataFrame | pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         return_html (bool, optional): Directly return a html string. Defaults to False.
@@ -40,7 +40,7 @@ def walk(df: pd.DataFrame, gid: tp.Union[int, str]=None, **kwargs):
         display(HTML(html))
 
 class GWalker:
-    def __init__(self, df: pd.DataFrame=None, **kwargs):
+    def __init__(self, df: "pl.DataFrame | pd.DataFrame"=None, **kwargs):
         global global_gid
         self.gid = global_gid
         global_gid += 1
@@ -54,7 +54,7 @@ class GWalker:
         html = self.to_html(**kwargs)
         display(HTML(html))
         
-    def update(self, df: pd.DataFrame=None, **kwargs):
+    def update(self, df: "pl.DataFrame | pd.DataFrame"=None, **kwargs):
         pass
     
     @property
