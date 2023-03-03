@@ -116,7 +116,7 @@ df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
 gwalker = pyg.walk(df)
 ```
 
-And you can use pygwalker with polars:
+And you can use pygwalker with polars (since `pygwalker>=0.1.4.7a0`):
 ```python
 import polars as pl
 df = pl.read_csv('./bike_sharing_dc.csv',try_parse_dates = True)
