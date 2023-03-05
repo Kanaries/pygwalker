@@ -5,7 +5,7 @@
   "license": "Apache License 2.0",
   "private": true,
   "scripts": {
-    "postinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
+    "preinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
     "build": "vite build --emptyOutDir",
     "dev": "vite build --mode=develop -w",
     "test:front_end": "vite --host",

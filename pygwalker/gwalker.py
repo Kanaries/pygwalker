@@ -34,6 +34,14 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwar
         gid = global_gid
         global_gid += 1
     html = to_html(df, gid, **kwargs)
+    import html as m_html
+    srcdoc = m_html.escape(html)
+    iframe = \
+f"""<div id="ifr-pyg-{gid}">
+<iframe src="/" width="100%" height="900px" srcdoc="{srcdoc}" frameborder="0" allowfullscreen></iframe>
+</div>
+"""
+    html = iframe
     if return_html:
         return html
     else:
