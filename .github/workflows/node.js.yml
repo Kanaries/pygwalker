@@ -29,9 +29,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: ./graphic-walker/yarn.lock
+          cache-dependency-path: ./app/yarn.lock
       - name: Try Compiling
         working-directory: ./
         run: |
-          chmod u+x ./compile.sh
-          ./compile.sh
+          chmod u+x ./scripts/compile.sh
+          ./scripts/compile.sh
