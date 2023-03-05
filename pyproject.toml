@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pygwalker"
-version = "0.1.4.7"
+version = "0.1.4.8-alpha.0"
 description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
 authors = ["Asm.Def <woojson@zju.edu.cn>"]
 license = 'Apache License 2.0'
@@ -9,7 +9,12 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
 ]
-
+include = [
+    "./README.md", "LICENSE",
+    "./pygwalker/templates/**",
+    "./pygwalker/templates/**/*",
+    { path = "tests", format = "sdist" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.5"
