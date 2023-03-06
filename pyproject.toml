@@ -17,7 +17,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 jinja2 = "*"
 ipython = "*"
 pandas = { version = "*", optional = true }
