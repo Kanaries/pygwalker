@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pygwalker"
-version = "0.1.5.0-alpha.0"
+version = "0.1.5.0-alpha.2"
 description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
 authors = ["Asm.Def <woojson@zju.edu.cn>"]
 license = 'Apache License 2.0'
@@ -14,6 +14,7 @@ include = [
     "./pygwalker/templates/**",
     "./pygwalker/templates/**/*",
     { path = "tests", format = "sdist" },
+    "./scripts"
 ]
 
 [tool.poetry.dependencies]
@@ -34,4 +35,5 @@ twine = "*"
 
 [build-system]
 requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+backend-path = ["./"]
+build-backend = "scripts.build:api"  # PEP 517

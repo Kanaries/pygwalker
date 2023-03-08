@@ -52,7 +52,7 @@ export default defineConfig((config: ConfigEnv) => {
         //   },
         // },
       },
-      minify: 'esbuild',
+      minify: 'terser', // 'esbuild',
       // sourcemap: true,
       sourcemap: false,
       outDir: '../pygwalker/templates/dist'
