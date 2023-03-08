@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pygwalker"
-version = "0.1.5.0-alpha.2"
+version = "0.1.5.0-alpha.3"
 description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
 authors = ["Asm.Def <woojson@zju.edu.cn>"]
 license = 'Apache License 2.0'

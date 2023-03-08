@@ -50,6 +50,11 @@ class PandasDataFramePropGetter:
     def get_props(cls,df: "pd.DataFrame", **kwargs):
         df = df.reset_index()
         df = df.rename(fname_encode, axis='columns')
+        if 'visSpec' in kwargs.keys():
+            visSpec = kwargs['visSpec']
+            if isinstance(visSpec, str):
+                visSpec = json.loads(visSpec)
+                kwargs['visSpec'] = visSpec
         props = {
             'dataSource': cls.to_records(df),
             'rawFields': cls.raw_fields(df),

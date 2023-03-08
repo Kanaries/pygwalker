@@ -10,6 +10,7 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **k
         df (pl.DataFrame | pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         **
+        visSpec (tp.Union[str, tp.Dict]): some string exported from GraphicWalker.
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         themeKey ('vega' | 'g2'): theme type.
         dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
@@ -29,6 +30,7 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwar
         df (pl.DataFrame | pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         **
+        visSpec (tp.Union[str, tp.Dict]): some string exported from GraphicWalker.
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         themeKey ('vega' | 'g2'): theme type.
         dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
