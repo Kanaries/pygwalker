@@ -1,0 +1,82 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Auto CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-js:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: ./app/yarn.lock
+      - name: Try Compiling
+        working-directory: ./
+        run: |
+          chmod u+x ./scripts/compile.sh
+          ./scripts/compile.sh
+      - name: Uploading dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: pygwalker-app
+          path: ./pygwalker/templates/dist/*
+  
+  build-py:
+    needs: build-js
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.7', '3.11']
+        os-version: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os-version }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download PyGWalkerApp
+        uses: actions/download-artifact@v3
+        id: build-py
+        with:
+          name: pygwalker-app
+          path: ./pygwalker/templates/dist
+      - name: Use Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Try Installing
+        working-directory: ./
+        run: |
+          pip install ./
+      - name: Try Running
+        working-directory: ./tests/
+        run: |
+          pip install ipykernel nbconvert pandas polars
+          python -m ipykernel install --name python --user
+          jupyter kernelspec list
+          jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=python --to html *.ipynb
+      - name: Uploading notebooks
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' }}
+        with:
+          name: notebook
+          path: ./tests/main.html

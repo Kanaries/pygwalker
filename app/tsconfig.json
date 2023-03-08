@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+      "target": "ESNext",
+      "lib": ["DOM", "DOM.Iterable", "ESNext"],
+      "allowJs": true,
+      "skipLibCheck": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "strict": true,
+      "forceConsistentCasingInFileNames": true,
+      "downlevelIteration": true,
+      "noImplicitAny": false,
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "resolveJsonModule": true,
+      "isolatedModules": true,
+      "noEmit": true,
+      "jsx": "react",
+      "declaration": true,
+      // "sourceMap": true,
+      "sourceMap": false,
+      // "outDir": "./dist",
+      "outDir": "../pygwalker/templates/dist",
+    },
+    "include": ["src"]
+  }
+  

@@ -4,7 +4,7 @@ import datetime
 def gwalker_script():
     global gwalker_js
     if gwalker_js is None:
-        with open(os.path.join(HERE, 'templates', 'graphic-walker.iife.js'), 'r', encoding='utf8') as f:
+        with open(os.path.join(HERE, 'templates', 'dist', 'pygwalker-app.iife.js'), 'r', encoding='utf8') as f:
             gwalker_js = f.read()
     return gwalker_js
 
@@ -23,7 +23,7 @@ class DataFrameEncoder(json.JSONEncoder):
 def render_gwalker_html(gid: int, props: tp.Dict):
     walker_template = jinja_env.get_template("walk.js")
     js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
-    js = "var exports={};var process={env:{NODE_ENV:\"production\"} };" + gwalker_script() + js
+    js = "var exports={};" + gwalker_script() + js
     
     template = jinja_env.get_template("index.html")
     html = f"{template.render(gwalker={'id': gid, 'script': js})}"

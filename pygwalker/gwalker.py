@@ -10,6 +10,7 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **k
         df (pl.DataFrame | pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         **
+        visSpec (tp.Union[str, tp.Dict]): some string exported from GraphicWalker.
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         themeKey ('vega' | 'g2'): theme type.
         dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
@@ -29,6 +30,7 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwar
         df (pl.DataFrame | pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         **
+        visSpec (tp.Union[str, tp.Dict]): some string exported from GraphicWalker.
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         themeKey ('vega' | 'g2'): theme type.
         dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
@@ -40,6 +42,14 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwar
         gid = global_gid
         global_gid += 1
     html = to_html(df, gid, **kwargs)
+    import html as m_html
+    srcdoc = m_html.escape(html)
+    iframe = \
+f"""<div id="ifr-pyg-{gid}">
+<iframe src="/" width="100%" height="900px" srcdoc="{srcdoc}" frameborder="0" allowfullscreen></iframe>
+</div>
+"""
+    html = iframe
     if return_html:
         return html
     else:
