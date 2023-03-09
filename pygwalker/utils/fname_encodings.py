@@ -4,7 +4,7 @@ def fname_encode(fname: str):
     """Encode fname in base64
 
     Args:
-        fname (str): Suppose to be str
+        - fname (str): Suppose to be str
 
     Returns:
         str
