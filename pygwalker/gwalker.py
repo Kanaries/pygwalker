@@ -22,19 +22,19 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **k
     props = get_props(df, **kwargs)
     html = render_gwalker_html(gid, props)
     return html
-    
-def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwargs):
-    """walk through pandas.DataFrame df with Graphic Walker
+
+def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *, env: tp.Literal['Jupyter', 'Streamlit']='Jupyter', **kwargs):
+    """Walk through pandas.DataFrame df with Graphic Walker
 
     Args:
         - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
-        - gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+        - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
     
     Kargs:
-        - env: (Jupyter | Streamlit, optional): The enviroment using pygwalker
+        - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
         - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         - themeKey ('vega' | 'g2'): theme type.
-        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - return_html (bool, optional): Directly return a html string. Defaults to False.
     """
     global global_gid
@@ -43,19 +43,19 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwar
         gid = global_gid
         global_gid += 1
     html = to_html(df, gid, **kwargs)
-    env = kwargs.get('env', 'Jupyter')
     if return_html:
         return html
     else:
         display_html(html, env)
+        return None
 
 
 def display_html(html: str, env: str):
     """Judge the presentation method to be used based on the context
 
     Args:
-        - html (html): stringed html.
-        - env: (Jupyter | Streamlit, optional): The enviroment using pygwalker
+        - html (str): html string to display.
+        - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker
     """
     if env == 'Jupyter':
         display(HTML(html))
@@ -83,13 +83,13 @@ class GWalker:
     def update(self, df: "pl.DataFrame | pd.DataFrame"=None, **kwargs):
         pass
     
-    @property
-    def dataSource(self) -> tp.List[tp.Dict]:
-        from .utils.gwalker_props import to_records
-        return to_records(self.df)
+    # @property
+    # def dataSource(self) -> tp.List[tp.Dict]:
+    #     from .utils.gwalker_props import to_records
+    #     return to_records(self.df)
     
-    @property
-    def rawFields(self) -> tp.List:
-        from .utils.gwalker_props import raw_fields
-        return raw_fields(self.df)
+    # @property
+    # def rawFields(self) -> tp.List:
+    #     from .utils.gwalker_props import raw_fields
+    #     return raw_fields(self.df)
     
