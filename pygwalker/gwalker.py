@@ -29,6 +29,7 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwar
         df (pl.DataFrame | pd.DataFrame, optional): dataframe.
         gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
         **
+        env: (Jupyter | Streamlit, optional): The enviroment using pygwalker
         hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         themeKey ('vega' | 'g2'): theme type.
         dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
@@ -40,10 +41,28 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwar
         gid = global_gid
         global_gid += 1
     html = to_html(df, gid, **kwargs)
+    env = kwargs.get('env', 'Jupyter')
     if return_html:
         return html
     else:
+        display_html(html, env)
+
+
+def display_html(html: str, env: str):
+    """Judge the presentation method to be used based on the context
+
+    Args:
+        html (html): stringed html.
+        env: (Jupyter | Streamlit, optional): The enviroment using pygwalker
+    """
+    if env == 'Jupyter':
         display(HTML(html))
+    elif env == 'Streamlit':
+        import streamlit.components.v1 as components
+        components.html(html, height=1000, scrolling=True)
+    else:
+        print("The environment is not supported yet, Please use the options given")
+
 
 class GWalker:
     def __init__(self, df: "pl.DataFrame | pd.DataFrame"=None, **kwargs):
@@ -57,8 +76,7 @@ class GWalker:
         return html
     
     def walk(self, **kwargs):
-        html = self.to_html(**kwargs)
-        display(HTML(html))
+        return walk(self.df, self.gid, **kwargs)
         
     def update(self, df: "pl.DataFrame | pd.DataFrame"=None, **kwargs):
         pass
