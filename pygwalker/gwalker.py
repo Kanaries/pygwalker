@@ -7,12 +7,13 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **k
     """Generate embeddable HTML code of Graphic Walker with data of `df`.
 
     Args:
-        df (pl.DataFrame | pd.DataFrame, optional): dataframe.
-        gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
-        **
-        hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
-        themeKey ('vega' | 'g2'): theme type.
-        dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+    
+    Kargs:
+        - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
+        - themeKey ('vega' | 'g2'): theme type.
+        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     global global_gid
     if gid is None:
@@ -26,14 +27,15 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwar
     """walk through pandas.DataFrame df with Graphic Walker
 
     Args:
-        df (pl.DataFrame | pd.DataFrame, optional): dataframe.
-        gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
-        **
-        env: (Jupyter | Streamlit, optional): The enviroment using pygwalker
-        hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
-        themeKey ('vega' | 'g2'): theme type.
-        dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
-        return_html (bool, optional): Directly return a html string. Defaults to False.
+        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+    
+    Kargs:
+        - env: (Jupyter | Streamlit, optional): The enviroment using pygwalker
+        - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
+        - themeKey ('vega' | 'g2'): theme type.
+        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - return_html (bool, optional): Directly return a html string. Defaults to False.
     """
     global global_gid
     return_html = kwargs.get('return_html', False)
@@ -52,8 +54,8 @@ def display_html(html: str, env: str):
     """Judge the presentation method to be used based on the context
 
     Args:
-        html (html): stringed html.
-        env: (Jupyter | Streamlit, optional): The enviroment using pygwalker
+        - html (html): stringed html.
+        - env: (Jupyter | Streamlit, optional): The enviroment using pygwalker
     """
     if env == 'Jupyter':
         display(HTML(html))
