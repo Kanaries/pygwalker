@@ -7,8 +7,8 @@ class PandasDataFramePropGetter:
         """get IMutField
 
         Args:
-            s (pd.Series): the column
-            i (int, optional): column id. Defaults to None.
+            - s (pd.Series): the column
+            - i (int, optional): column id. Defaults to None.
 
         Returns:
             tp.Dict: _description_
@@ -66,8 +66,8 @@ class PolarsDataFramePropGetter:
         """get IMutField
 
         Args:
-            s (pl.Series): the column
-            i (int, optional): column id. Defaults to None.
+            - s (pl.Series): the column
+            - i (int, optional): column id. Defaults to None.
 
         Returns:
             tp.Dict: _description_
