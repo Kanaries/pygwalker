@@ -14,3 +14,5 @@ __name__ = 'pygwalker'
 # loadJs()
 
 from .gwalker import to_html, walk, GWalker
+
+from .base import setup_pygwalker # test
