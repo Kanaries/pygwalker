@@ -44,10 +44,11 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 - [x] Kaggle Code
 - [x] Jupyter Lab (WIP: There're still some tiny CSS issues)
 - [x] Jupyter Lite
-- [x] Databricks Notebook (Since version `0.1.4`)
-- [x] Jupyter Extension for Visual Studio Code (Since version `0.1.4`)
-- [x] Hex Projects (Since version `0.1.4`)
-- [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4`)
+- [x] Databricks Notebook (Since version `0.1.4a0`)
+- [x] Jupyter Extension for Visual Studio Code (Since version `0.1.4a0`)
+- [x] Hex Projects (Since version `0.1.4a0`)
+- [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4a0`)
+- [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
 - [ ] ...feel free to raise an issue for more environments.
 
 <table>
