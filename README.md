@@ -150,7 +150,7 @@ Cool things you can do with Graphic Walker:
 
 
 + To compare different measures, you can create a concat view by adding more than one measure into rows/columns.
-![graphic walker area chart](https://user-images.githubusercontent.com/8137814/221894334-16e5f674-1b81-4cc1-ad8a-3240950b51b7.png)
+![graphic walker area chart](https://user-images.githubusercontent.com/8137814/224550839-7b8a2193-d3e9-4c11-a19e-ad8e5ec19539.png)
 
 <!-- ![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-area-01.png) -->
 <!-- ![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen2-timeseries-area.png) -->
