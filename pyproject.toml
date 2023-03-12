@@ -37,6 +37,13 @@ dev = [
 # metadata = { allow-direct-references = true }
 
 [tool.hatch.build]
+include = [
+    "./README.md", "LICENSE",
+    "./pygwalker/templates/**",
+    "./pygwalker/templates/**/*",
+    { path = "tests", format = "sdist" },
+    "./scripts"
+]
 exclude = [ "/graphic-walker", "/tests" ]
 artifacts = [ "pygwalker/templates/*" ]
 hooks = {}
