@@ -5,8 +5,8 @@ from .utils.render import render_gwalker_html
 
 def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
         hideDataSourceConfig: bool=True,
-        themeKey: tp.Literal['vega', 'g2']='vega',
-        dark: tp.Literal['media', 'light', 'dark']='media',
+        themeKey: Literal['vega', 'g2']='vega',
+        dark: Literal['media', 'light', 'dark']='media',
         **kwargs):
     """Generate embeddable HTML code of Graphic Walker with data of `df`.
 
@@ -29,10 +29,10 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
     return html
 
 def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
-        env: tp.Literal['Jupyter', 'Streamlit']='Jupyter',
+        env: Literal['Jupyter', 'Streamlit']='Jupyter',
         hideDataSourceConfig: bool=True,
-        themeKey: tp.Literal['vega', 'g2']='vega',
-        dark: tp.Literal['media', 'light', 'dark']='media',
+        themeKey: Literal['vega', 'g2']='vega',
+        dark: Literal['media', 'light', 'dark']='media',
         return_html: bool=False,
         **kwargs):
     """Walk through pandas.DataFrame df with Graphic Walker
@@ -69,7 +69,7 @@ f"""<div id="ifr-pyg-{gid}">
         return None
 
 
-def display_html(html: str, env: tp.Literal['Jupyter', 'Streamlit'] = 'Jupyter'):
+def display_html(html: str, env: Literal['Jupyter', 'Streamlit'] = 'Jupyter'):
     """Judge the presentation method to be used based on the context
 
     Args:
