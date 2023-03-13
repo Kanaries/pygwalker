@@ -51,7 +51,7 @@ artifacts = [ "pygwalker/templates/*" ]
 dependencies = ["hatch-jupyter-builder"]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = ["pygwalker/templates/dist/pygwalker-app.iife.js"]
-# skip-if-exists = ["pygwalker/templates/dist/pygwalker-app.iife.js"]
+skip-if-exists = ["pygwalker/templates/dist/pygwalker-app.iife.js"]
 # install-pre-commit-hook = true
 optional-editable-build = true
 
