@@ -11,8 +11,18 @@ import { IAppProps } from './interfaces';
 const App: React.FC<IAppProps> = (props) => {
   const ref = React.useRef<IGlobalStore | null>(null);
   return (<React.StrictMode>
-    <Options {...props} storeRef={ref} />
     <GraphicWalker {...props} storeRef={ref} />
+    <div style={{
+        position: 'absolute',
+        top: '5%',
+        marginTop: '50px',
+        right: '20%',
+        marginRight: '30px',
+        backgroundColor: 'rgba(148,163,184,.1)',
+        borderRadius: '9999px'
+      }} >
+      <Options {...props} storeRef={ref} />
+    </div>
   </React.StrictMode>);
 }
 

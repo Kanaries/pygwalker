@@ -20,7 +20,7 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
     }, []);
 
     return (<>
-    { outdated && <button>Get Latest Release</button>}
+    { outdated && <button onClick={() => window.open("https://pypi.org/project/pygwalker")}>{ appMeta['data']?.latest?.release?.version || '' }</button>}
     </>)
     // const ref = props.storeRef;
     // return (<>
