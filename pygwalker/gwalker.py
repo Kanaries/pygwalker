@@ -58,7 +58,7 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
     srcdoc = m_html.escape(html)
     iframe = \
 f"""<div id="ifr-pyg-{gid}">
-<iframe src="/" width="100%" height="900px" srcdoc="{srcdoc}" frameborder="0" allowfullscreen></iframe>
+<iframe src="/" width="100%" height="900px" srcdoc="{srcdoc}" frameborder="0" sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" allowfullscreen></iframe>
 </div>
 """
     html = iframe

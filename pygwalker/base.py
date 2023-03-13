@@ -7,6 +7,10 @@ except ImportError:
     
 import IPython
 from IPython.display import display, Javascript, HTML, IFrame
+from .__version__ import __version__
+
+import random, string
+__hash__ = ''.join(random.sample(string.ascii_letters + string.digits, 8))
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
