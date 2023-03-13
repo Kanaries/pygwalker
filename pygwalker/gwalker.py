@@ -3,7 +3,11 @@ from .base import *
 from .utils.gwalker_props import get_props
 from .utils.render import render_gwalker_html
 
-def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **kwargs):
+def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
+        hideDataSourceConfig: bool=True,
+        themeKey: tp.Literal['vega', 'g2']='vega',
+        dark: tp.Literal['media', 'light', 'dark']='media',
+        **kwargs):
     """Generate embeddable HTML code of Graphic Walker with data of `df`.
 
     Args:
@@ -19,11 +23,18 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, **k
     if gid is None:
         gid = global_gid
         global_gid += 1
-    props = get_props(df, **kwargs)
+    props = get_props(df, hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey,
+                      dark=dark, **kwargs)
     html = render_gwalker_html(gid, props)
     return html
 
-def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *, env: tp.Literal['Jupyter', 'Streamlit']='Jupyter', **kwargs):
+def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
+        env: tp.Literal['Jupyter', 'Streamlit']='Jupyter',
+        hideDataSourceConfig: bool=True,
+        themeKey: tp.Literal['vega', 'g2']='vega',
+        dark: tp.Literal['media', 'light', 'dark']='media',
+        return_html: bool=False,
+        **kwargs):
     """Walk through pandas.DataFrame df with Graphic Walker
 
     Args:
@@ -38,11 +49,11 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *, env
         - return_html (bool, optional): Directly return a html string. Defaults to False.
     """
     global global_gid
-    return_html = kwargs.get('return_html', False)
     if gid is None:
         gid = global_gid
         global_gid += 1
-    html = to_html(df, gid, **kwargs)
+    html = to_html(df, gid, env=env, hideDataSourceConfig=hideDataSourceConfig,
+                   themeKey=themeKey, dark=dark, **kwargs)
     import html as m_html
     srcdoc = m_html.escape(html)
     iframe = \
@@ -58,7 +69,7 @@ f"""<div id="ifr-pyg-{gid}">
         return None
 
 
-def display_html(html: str, env: str):
+def display_html(html: str, env: tp.Literal['Jupyter', 'Streamlit'] = 'Jupyter'):
     """Judge the presentation method to be used based on the context
 
     Args:
