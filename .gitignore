@@ -1,6 +1,6 @@
 __pycache__
 **/dist/*
-!/pygwalker/templates/dist/*.js
+!/pygwalker/templates/dist/*
 .DS_Store
 venv
 .ipynb_checkpoints

@@ -38,18 +38,44 @@ dev = [
 
 [tool.hatch.build]
 include = [
-    "./README.md", "LICENSE",
-    "./pygwalker/templates/**",
-    "./pygwalker/templates/**/*",
-    { path = "tests", format = "sdist" },
-    "./scripts"
+    "README.md", "LICENSE",
+    "pygwalker",
+    "pygwalker/templates/**",
+    "pygwalker/templates/**/*",
+    "scripts",
 ]
 exclude = [ "/graphic-walker", "/tests" ]
 artifacts = [ "pygwalker/templates/*" ]
-hooks = {}
+
+[tool.hatch.build.hooks.jupyter-builder]
+dependencies = ["hatch-jupyter-builder"]
+build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = ["pygwalker/templates/dist/pygwalker-app.iife.js"]
+# skip-if-exists = ["pygwalker/templates/dist/pygwalker-app.iife.js"]
+# install-pre-commit-hook = true
+optional-editable-build = true
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+path = "app"
+build_dir = "./build"
+build_cmd = "build"
+
+[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
+path = "app"
+build_dir = "./build"
+build_cmd = "dev"
+
 
 # [tool.hatch.build.targets.wheel]
-#
+[tool.hatch.build.targets.sdist]
+include = [
+    "README.md", "LICENSE",
+    "app",
+    "pygwalker",
+    "pygwalker/templates/**",
+    "pygwalker/templates/**/*",
+    "scripts",
+]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
