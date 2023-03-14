@@ -25,6 +25,9 @@ def render_gwalker_html(gid: int, props: tp.Dict):
     walker_template = jinja_env.get_template("walk.js")
     props['version'] = base.__version__
     props['hashcode'] = base.__hash__
+    if 'spec' in props:
+        props['visSpec'] = props.get('spec', None)
+        del props['spec']
     js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
     js = "var exports={};" + gwalker_script() + js
     

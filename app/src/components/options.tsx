@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { IGWProps } from '@kanaries/graphic-walker/dist/App'
-import { IAppProps } from '../interfaces';
-const url = (window as any).__GW_UPDATE_URL;
-
+import type { IGWProps } from '../../../graphic-walker/packages/graphic-walker/dist/App'
+import type { IAppProps } from '../interfaces';
 
 const copyToClipboard = async (text: string) => {
     return navigator.clipboard.writeText(text);
@@ -16,7 +14,7 @@ interface ISolutionProps {
 const updateSolutions: ISolutionProps[] = [
     {
         header: 'Using pip:',
-        cmd: 'pip install pygwalker',
+        cmd: 'pip install pygwalker --upgrade',
     },
     {
         header: 'Using anaconda:',
@@ -61,22 +59,42 @@ const Solution: React.FC<ISolutionProps> = (props) => {
     );
 };
 
+const HASH = (window as any)?.__GW_HASH || Math.random().toString(16).split('.').at(1);
 const Options: React.FC<IAppProps> = (props: IAppProps) => {
     const [outdated, setOutDated] = useState<Boolean>(true);
     const [appMeta, setAppMeta] = useState<any>({});
+    const [showUpdateHint, setShowUpdateHint] = useState(false);
+    const UPDATE_URL = "https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates"
+    const VERSION = (window as any)?.__GW_VERSION || 'current';
     useEffect(() => {
-        const req = `${url}?pkg=pygwalker-app&v=${(window as any).__GW_VERSION}&hashcode=${(window as any).__GW_HASH}&env=${process.env.NODE_ENV}`;
+        const req = `${UPDATE_URL}?pkg=pygwalker-app&v=${VERSION}&hashcode=${HASH}&env=${process.env.NODE_ENV}`;
         fetch(req, {
             "headers": {
                 "Content-Type": "application/json",
             }
         }).then(resp => resp.json()).then((res) => {
-            setAppMeta(res.data);
-            setOutDated(res?.data?.outdated || false);
-        })
+            setAppMeta({'data': res.data});
+            setOutDated(VERSION === 'current' || res?.data?.outdated || false);
+        });
     }, []);
 
-    const [showUpdateHint, setShowUpdateHint] = useState(false);
+    useEffect(() => {
+        setShowUpdateHint(false);
+    }, [outdated]);
+
+    useEffect(() => {
+        if (!showUpdateHint) {
+            return;
+        }
+        const handleDismiss = () => {
+            setShowUpdateHint(false);
+        };
+        document.addEventListener('click', handleDismiss);
+        return () => {
+            document.removeEventListener('click', handleDismiss);
+        };
+    }, [showUpdateHint]);
+
     useEffect(() => {
         setShowUpdateHint(false);
     }, [outdated]);
@@ -130,6 +148,7 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
             display: grid;
             grid-template-columns: repeat(2, auto);
             gap: 0.2em 0.8em;
+            font-family: monospace;
         }
         .update_link .solutions > * {
             display: flex;
@@ -167,6 +186,7 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
             position: absolute;
             right: 0.5em;
             z-index: 10;
+            font-family: 
         }
         .update_link .solutions div:hover *[role="button"] {
             opacity: 1;
@@ -181,10 +201,17 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
             text-align: start;
         }
         .update_link a {
-            font-family: inherit;
+            font-family: monospace;
             color: inherit;
             text-decoration: none;
             cursor: pointer;
+        }
+        .update_link a span {
+            filter: brightness(1.8);
+        }
+        .update_link p span {
+            font-family: monospace;
+            color: inherit;
         }
         @media (prefers-color-scheme: dark) {
             .update_link span, .update_link header, .update_link a {
@@ -202,7 +229,9 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
     >
         <p>
             <a href="https://pypi.org/project/pygwalker" target="_blank">
-                {`pygwalker @${appMeta?.data?.latest?.release?.version || '1.2.3.4' || 'the latest release'} \u2191`}
+                {"Update: "}
+                {`${VERSION}\u2191`}
+                <span>{` ${appMeta?.data?.latest?.release?.version || 'latest'}`}</span>
             </a>
             <span role="separator">|</span>
             <span
@@ -211,7 +240,7 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
                 tabIndex={0}
                 onClick={() => setShowUpdateHint(s => !s)}
             >
-                {`${showUpdateHint ? 'Hide' : 'Show'} Commands`}
+                {`${showUpdateHint ? 'Hide' : ' Cmd'} \u274f`}
             </span>
         </p>
         {showUpdateHint && (
