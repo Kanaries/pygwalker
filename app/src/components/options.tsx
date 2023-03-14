@@ -61,7 +61,7 @@ const Solution: React.FC<ISolutionProps> = (props) => {
 
 const HASH = (window as any)?.__GW_HASH || Math.random().toString(16).split('.').at(1);
 const Options: React.FC<IAppProps> = (props: IAppProps) => {
-    const [outdated, setOutDated] = useState<Boolean>(true);
+    const [outdated, setOutDated] = useState<Boolean>(false);
     const [appMeta, setAppMeta] = useState<any>({});
     const [showUpdateHint, setShowUpdateHint] = useState(false);
     const UPDATE_URL = "https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates"
@@ -74,7 +74,7 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
             }
         }).then(resp => resp.json()).then((res) => {
             setAppMeta({'data': res.data});
-            setOutDated(VERSION === 'current' || res?.data?.outdated || false);
+            setOutDated(res?.data?.outdated || false);
         });
     }, []);
 
