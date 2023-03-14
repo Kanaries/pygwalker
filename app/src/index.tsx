@@ -20,18 +20,22 @@ const App: React.FC<IAppProps> = (propsIn) => {
   useEffect(() => {
     if (props.visSpec && storeRef.current) {
       // TODO: DataSet and DataSource ID
-      const specList = JSON.parse(props.visSpec);
-      storeRef?.current?.vizStore?.importStoInfo({
-        dataSources: [{
-          id: 'dataSource-0',
-          data: props.dataSource,
-        }],
-        datasets: [{
-          id: 'dataset-0',
-          name: 'DataSet', rawFields: props.rawFields, dsId: 'dataSource-0',
-        }],
-        specList: specList,
-      } as IStoInfo);
+      try {
+        const specList = JSON.parse(props.visSpec);
+        storeRef?.current?.vizStore?.importStoInfo({
+          dataSources: [{
+            id: 'dataSource-0',
+            data: props.dataSource,
+          }],
+          datasets: [{
+            id: 'dataset-0',
+            name: 'DataSet', rawFields: props.rawFields, dsId: 'dataSource-0',
+          }],
+          specList: specList,
+        } as IStoInfo);
+      } catch (e) {
+        console.error('failed to load spec: ', e);
+      }
     }
   }, []);
   return (
