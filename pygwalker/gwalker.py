@@ -5,7 +5,7 @@ from .utils.render import render_gwalker_html
 
 def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
         hideDataSourceConfig: bool=True,
-        themeKey: Literal['vega', 'g2']='vega',
+        themeKey: Literal['vega', 'g2']='g2',
         dark: Literal['media', 'light', 'dark']='media',
         **kwargs):
     """Generate embeddable HTML code of Graphic Walker with data of `df`.
@@ -31,7 +31,7 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
 def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
         env: Literal['Jupyter', 'Streamlit']='Jupyter',
         hideDataSourceConfig: bool=True,
-        themeKey: Literal['vega', 'g2']='vega',
+        themeKey: Literal['vega', 'g2']='g2',
         dark: Literal['media', 'light', 'dark']='media',
         return_html: bool=False,
         **kwargs):
