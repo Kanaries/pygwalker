@@ -49,6 +49,7 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 - [x] Hex Projects (Since version `0.1.4a0`)
 - [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4a0`)
 - [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
+- [x] DataCamp Workspace (Since version `0.1.4a0`)
 - [ ] ...feel free to raise an issue for more environments.
 
 <table>
