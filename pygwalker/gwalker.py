@@ -57,8 +57,17 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
     import html as m_html
     srcdoc = m_html.escape(html)
     iframe = \
-f"""<div id="ifr-pyg-{gid}">
-<iframe src="/" width="100%" height="900px" srcdoc="{srcdoc}" frameborder="0" sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" allowfullscreen></iframe>
+f"""<div id="ifr-pyg-{gid}" style="height: auto">
+<head><script>
+function resizeIframe{gid}(obj){{
+    obj.style.height = 0; obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+}}
+window.addEventListener("message", (event) => {{
+    if (event.iframeToResize !== "gwalker-{gid}") return;
+    resizeIframe(document.querySelector("#gwalker-{gid}"));
+}});
+</script></head>
+<iframe src="/" width="100%" height="100px" id="gwalker-{gid}" onload="resizeIframe{gid}(this)" srcdoc="{srcdoc}" frameborder="0" allow="clipboard-read; clipboard-write" allowfullscreen></iframe>
 </div>
 """
     html = iframe
