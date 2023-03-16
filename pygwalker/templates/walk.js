@@ -2,7 +2,7 @@ var gw_id = "gwalker-{{ gwalker.id }}";
 var props = {{ gwalker.props }};
 console.log(PyGWalkerApp, props, gw_id);
 function updateHeight() {
-  window.parent.postMessage({iframeToResize: "gwalker-{{ gwalker.id }}", desiredHeight: document.documentElement.scrollHeight}, '*');
+  window.parent.postMessage({iframeToResize: "gwalker-{{ gwalker.id }}", desiredHeight: Math.max(document.documentElement.scrollHeight, document.documentElement.offsetHeight, document.documentElement.clientHieght)}, '*');
 }
 window.addEventListener('load', function() {
   if(window.ResizeObserver) {
