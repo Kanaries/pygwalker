@@ -48,6 +48,8 @@ class PandasDataFramePropGetter:
         
     @classmethod
     def get_props(cls,df: "pd.DataFrame", **kwargs):
+        if len(df)*2 > BYTE_LIMIT:
+            df = df.iloc[:BYTE_LIMIT//2]
         df = df.reset_index()
         df = df.rename(fname_encode, axis='columns')
         props = {
@@ -158,6 +160,8 @@ class PolarsDataFramePropGetter:
 
     @classmethod
     def get_props(cls,df: "pl.DataFrame", **kwargs):
+        if len(df)*2 > BYTE_LIMIT:
+            df = df.slice(0, BYTE_LIMIT//2)
         df = df.rename({i : fname_encode(i) for i in df.columns})
         props = {
             'dataSource': cls.to_records(df),

@@ -23,9 +23,13 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
     if gid is None:
         gid = global_gid
         global_gid += 1
-    props = get_props(df, hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey,
-                      dark=dark, **kwargs)
-    html = render_gwalker_html(gid, props)
+    try:
+        props = get_props(df, hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey,
+                        dark=dark, **kwargs)
+        html = render_gwalker_html(gid, props)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        return f"<div>{str(e)}</div>"
     return html
 
 def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,

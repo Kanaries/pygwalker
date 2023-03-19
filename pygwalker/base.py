@@ -1,5 +1,6 @@
 import os, sys, json
 import typing as tp
+BYTE_LIMIT = 1 << 24
 try:
     from typing import Literal
 except ImportError:
