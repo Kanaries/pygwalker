@@ -29,11 +29,12 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
     return html
 
 def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
-        env: Literal['Jupyter', 'Streamlit']='Jupyter',
+        env: Literal['Jupyter', 'Streamlit', 'Dash']='Jupyter',
         hideDataSourceConfig: bool=True,
         themeKey: Literal['vega', 'g2']='vega',
         dark: Literal['media', 'light', 'dark']='media',
         return_html: bool=False,
+        app: "dash.Dash" = None,
         **kwargs):
     """Walk through pandas.DataFrame df with Graphic Walker
 
@@ -42,11 +43,12 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
     
     Kargs:
-        - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
+        - env (Literal['Jupyter' | 'Streamlit' | 'Dash'], optional): The enviroment using pygwalker. Default as 'Jupyter'
         - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         - themeKey ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - return_html (bool, optional): Directly return a html string. Defaults to False.
+        - app (dash.Dash): The instance of Dash class created earliest.
     """
     global global_gid
     if gid is None:
@@ -65,22 +67,27 @@ f"""<div id="ifr-pyg-{gid}">
     if return_html:
         return html
     else:
-        display_html(html, env)
+        display_html(html, env, app=app)
         return None
 
 
-def display_html(html: str, env: Literal['Jupyter', 'Streamlit'] = 'Jupyter'):
+def display_html(html: str, env: Literal['Jupyter', 'Streamlit', 'Dash'] = 'Jupyter', app: "dash.Dash"=None):
     """Judge the presentation method to be used based on the context
 
     Args:
         - html (str): html string to display.
-        - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker
+        - env (Literal['Jupyter' | 'Streamlit' | 'Dash'], optional): The enviroment using pygwalker.
+        - app (dash.Dash): The instance of Dash class created earliest.
     """
     if env == 'Jupyter':
         display(HTML(html))
     elif env == 'Streamlit':
         import streamlit.components.v1 as components
         components.html(html, height=1000, scrolling=True)
+    elif env == 'Dash':
+        import dash_dangerously_set_inner_html
+        from dash import html as d_html
+        app.layout = d_html.Div([dash_dangerously_set_inner_html.DangerouslySetInnerHTML(html),])
     else:
         print("The environment is not supported yet, Please use the options given")
 
