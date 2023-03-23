@@ -1,4 +1,4 @@
 [submodule "graphic-walker"]
 	path = graphic-walker
-	url = https://github.com/Asm-Def/graphic-walker
-	branch = pygwalker
+	url = https://github.com/Kanaries/graphic-walker
+	branch = main
