@@ -1,3 +1,4 @@
+from .. import base
 from ..base import *
 import datetime
 
@@ -21,7 +22,24 @@ class DataFrameEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 def render_gwalker_html(gid: int, props: tp.Dict):
+    ds = props.get('dataSource', [])
+    # check too large data
+    if len(ds) > 1024:
+        smp0 = ds[::len(ds)//32]
+        smp1 = ds[::len(ds)//37]
+        avg_size = len(json.dumps(smp0, cls=DataFrameEncoder)) / len(smp0)
+        avg_size = max(avg_size, len(json.dumps(smp1, cls=DataFrameEncoder)) / len(smp1))
+        n = int(BYTE_LIMIT / avg_size)
+        if len(ds) >= 2 * n:
+            print(f"PyGWalker doesn't support dataframes that are too large. Using the first {n} rows.")
+            props['dataSource'] = ds[:n]
+    
     walker_template = jinja_env.get_template("walk.js")
+    props['version'] = base.__version__
+    props['hashcode'] = base.__hash__
+    if 'spec' in props:
+        props['visSpec'] = props.get('spec', None)
+        del props['spec']
     js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
     js = "var exports={};" + gwalker_script() + js
     

@@ -7,7 +7,7 @@
   "scripts": {
     "preinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
     "build": "vite build --emptyOutDir",
-    "dev": "vite build --mode=develop -w",
+    "dev": "vite build --mode=develop",
     "test:front_end": "vite --host",
     "test": "npm run test:front_end",
     "serve": "vite preview"

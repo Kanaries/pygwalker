@@ -1,4 +1,5 @@
 __name__ = 'pygwalker'
+from .__version__ import __version__
 
 # from .base import *
 
@@ -14,3 +15,5 @@ __name__ = 'pygwalker'
 # loadJs()
 
 from .gwalker import to_html, walk, GWalker
+from .utils.check_update import check_update
+check_update()

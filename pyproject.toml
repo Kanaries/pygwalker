@@ -1,6 +1,6 @@
 [project]
 name = "pygwalker"
-version = "0.1.6.0-alpha.0"
+dynamic = ["version"]
 requires-python = ">=3.6"
 description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
 authors = [ { name = "Asm.Def", email = "woojson@zju.edu.cn" } ]
@@ -15,6 +15,7 @@ dependencies = [
     "jinja2",
     "ipython",
     "typing_extensions; python_version <= '3.7'",
+    "requests",
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
@@ -36,6 +37,7 @@ dev = [
 
 [tool.hatch]
 # metadata = { allow-direct-references = true }
+version = { path = "pygwalker/__version__.py" }
 
 [tool.hatch.build]
 include = [
