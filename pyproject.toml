@@ -15,6 +15,7 @@ dependencies = [
     "jinja2",
     "ipython",
     "typing_extensions; python_version <= '3.7'",
+    "requests",
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
