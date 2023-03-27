@@ -140,4 +140,4 @@ poetry.lock
 pygwalker/templates/graphic-walker.umd.js
 pygwalker/templates/graphic-walker.iife.js
 
-/tests
+tests/*.csv
