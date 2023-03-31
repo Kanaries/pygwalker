@@ -66,8 +66,8 @@ jobs:
       - name: Download test data
         working-directory: ./
         run: |
-          chmod u+x ./scripts/compile.sh
-          ./scripts/compile.sh
+          chmod u+x ./scripts/test-init.sh
+          ./scripts/test-init.sh
       - name: Try Installing
         working-directory: ./
         run: |
