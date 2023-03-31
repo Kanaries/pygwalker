@@ -63,6 +63,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Download test data
+        working-directory: ./
+        run: |
+          chmod u+x ./scripts/compile.sh
+          ./scripts/compile.sh
       - name: Try Installing
         working-directory: ./
         run: |
