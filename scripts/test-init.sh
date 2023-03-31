@@ -7,7 +7,14 @@ url="https://kanaries-app.s3.ap-northeast-1.amazonaws.com/public-datasets/bike_s
 dir="./tests"
 
 # Create the directory if it doesn't exist
-mkdir -p $dir
+mkdir -p "$dir"
 
 # Download the file using curl
-curl $url -o "$dir/bike_sharing_dc.csv"
+if command -v curl >/dev/null; then
+    curl "$url" -o "$dir/bike_sharing_dc.csv"
+elif command -v wget >/dev/null; then
+    wget "$url" -O "$dir/bike_sharing_dc.csv"
+else
+    echo "Error: could not find curl or wget to download the file" >&2
+    exit 1
+fi
