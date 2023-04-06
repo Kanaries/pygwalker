@@ -1,5 +1,6 @@
 from .. import base
 from ..base import *
+from ..utils.config import get_config
 import datetime
 
 def gwalker_script():
@@ -40,6 +41,8 @@ def render_gwalker_html(gid: int, props: tp.Dict):
     if 'spec' in props:
         props['visSpec'] = props.get('spec', None)
         del props['spec']
+    props['userConfig'], _ = get_config()
+    
     js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
     js = "var exports={};" + gwalker_script() + js
     

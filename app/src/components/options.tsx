@@ -59,23 +59,26 @@ const Solution: React.FC<ISolutionProps> = (props) => {
     );
 };
 
-const HASH = (window as any)?.__GW_HASH || Math.random().toString(16).split('.').at(1);
+const RAND_HASH = Math.random().toString(16).split('.').at(1);
 const Options: React.FC<IAppProps> = (props: IAppProps) => {
     const [outdated, setOutDated] = useState<Boolean>(false);
     const [appMeta, setAppMeta] = useState<any>({});
     const [showUpdateHint, setShowUpdateHint] = useState(false);
     const UPDATE_URL = "https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates"
     const VERSION = (window as any)?.__GW_VERSION || 'current';
+    const HASH = (window as any)?.__GW_HASH || RAND_HASH;
     useEffect(() => {
-        const req = `${UPDATE_URL}?pkg=pygwalker-app&v=${VERSION}&hashcode=${HASH}&env=${process.env.NODE_ENV}`;
-        fetch(req, {
-            "headers": {
-                "Content-Type": "application/json",
-            }
-        }).then(resp => resp.json()).then((res) => {
-            setAppMeta({'data': res.data});
-            setOutDated(res?.data?.outdated || false);
-        });
+        if (props.userConfig?.privacy !== "offline") {
+            const req = `${UPDATE_URL}?pkg=pygwalker-app&v=${VERSION}&hashcode=${HASH}&env=${process.env.NODE_ENV}`;
+            fetch(req, {
+                "headers": {
+                    "Content-Type": "application/json",
+                }
+            }).then(resp => resp.json()).then((res) => {
+                setAppMeta({'data': res.data});
+                setOutDated(res?.data?.outdated || false);
+            });
+        }
     }, []);
 
     useEffect(() => {

@@ -1,5 +1,7 @@
 import os, sys, json
 import typing as tp
+import logging
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 BYTE_LIMIT = 1 << 24
 try:
     from typing import Literal

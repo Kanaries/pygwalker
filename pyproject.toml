@@ -33,7 +33,8 @@ dev = [
     "build",
     "twine",
 ]
-
+[project.scripts]
+pygwalker = "pygwalker.__main__:main"
 
 [tool.hatch]
 # metadata = { allow-direct-references = true }
@@ -69,7 +70,10 @@ build_dir = "./build"
 build_cmd = "dev"
 
 
-# [tool.hatch.build.targets.wheel]
+[tool.hatch.build.targets.wheel]
+# force-include = 
+shared-data = { "pygwalker/utils/defaults.json" = "etc/pygwalker/config.json" }
+
 [tool.hatch.build.targets.sdist]
 include = [
     "README.md", "LICENSE",

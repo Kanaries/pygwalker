@@ -417,12 +417,12 @@
     "@jridgewell/sourcemap-codec" "1.4.14"
 
 "@kanaries/graphic-walker@file:../graphic-walker/packages/graphic-walker":
-  version "0.2.14"
+  version "0.2.16"
   dependencies:
     "@headlessui/react" "^1.7.12"
     "@heroicons/react" "^2.0.8"
     "@kanaries/react-beautiful-dnd" "0.0.1"
-    "@kanaries/web-data-loader" "0.1.5"
+    "@kanaries/web-data-loader" "^0.1.7"
     autoprefixer "^10.3.5"
     i18next "^21.9.1"
     i18next-browser-languagedetector "^6.1.5"
@@ -456,10 +456,10 @@
     redux "^4.0.4"
     use-memo-one "^1.1.1"
 
-"@kanaries/web-data-loader@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.npmmirror.com/@kanaries/web-data-loader/-/web-data-loader-0.1.5.tgz#10d8d677492919b0838b9429d28cbf2b7d726100"
-  integrity sha512-WVXBjhAgwCOItulV7oz2DOkX294bmgc2GDunxwtgK9cn4dUKg16EV1djkdpJy4r4VGQNXj89gPYECuHdMq4dkw==
+"@kanaries/web-data-loader@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.npmmirror.com/@kanaries/web-data-loader/-/web-data-loader-0.1.7.tgz#ce322bc4028f00a433a655fe631a148c51c875bc"
+  integrity sha512-i+JadnZC0XZcOk72tvV1/ko2TKn9p8ogJ6TdGYJOn5sK6cToE3R9Kz1LJdbw50M7uNUQK+vEAHWi1MOguqlJKw==
   dependencies:
     "@types/papaparse" "^5.0.3"
     papaparse "^5.1.1"
