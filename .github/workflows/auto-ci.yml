@@ -84,4 +84,7 @@ jobs:
         if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' }}
         with:
           name: notebook
-          path: ./tests/main.html
+          path: |
+            ./tests/main.html
+            ./tests/offline.html
+            ./tests/stress-test.html
