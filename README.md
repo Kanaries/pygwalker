@@ -104,7 +104,7 @@ See [conda-forge feedstock](https://github.com/conda-forge/pygwalker-feedstock) 
 
 ## Configuration
 
-Since `pygwalker>=0.1.7`, we provide the ability to ability to modify user-wide configuration either with command-line interface
+Since `pygwalker>=0.1.7a0`, we provide the ability to ability to modify user-wide configuration either through the command line interface
 ```bash
 $ pygwalker config   
 usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
@@ -119,7 +119,7 @@ optional arguments:
   --reset-all           Reset all user configuration and use default values instead. e.g. "pygwalker config --reset-all"
   --list                List current used configuration.
 ```
-or with Python package
+or through Python API
 ```python
 >>> import pygwalker as pyg, pygwalker.utils.config as pyg_conf
 >>> help(pyg_conf.set_config)
