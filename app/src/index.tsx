@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { GraphicWalker } from '@kanaries/graphic-walker'
-import type { IGWProps } from '../../graphic-walker/packages/graphic-walker/dist/App'
-import type { IGlobalStore } from '../../graphic-walker/packages/graphic-walker/dist/store'
+//import type { IGWProps } from '../../graphic-walker/packages/graphic-walker/dist/App'
+//import type { IGlobalStore } from '../../graphic-walker/packages/graphic-walker/dist/store'
+import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
 // import type { IGWProps } from 'gwalker/App'
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
-import type { IStoInfo } from '../../graphic-walker/packages/graphic-walker/dist/utils/save';
+import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
 
 /** App does not consider props.storeRef */
 const App: React.FC<IAppProps> = (propsIn) => {
