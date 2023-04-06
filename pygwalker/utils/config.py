@@ -3,7 +3,7 @@
 The order
 """
 import os, sys, json
-CONFIG = {}
+CONFIG, DEFAULT_CONFIG = {}, {}
 HERE = os.path.dirname(os.path.abspath(__file__))
 def load_default_config():
     """Load default configuration file.
