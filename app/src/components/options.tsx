@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import type { IGWProps } from '../../../graphic-walker/packages/graphic-walker/dist/App'
+import type { IGWProps } from '@kanaries/graphic-walker/dist/App'
 import type { IAppProps } from '../interfaces';
 
 const copyToClipboard = async (text: string) => {
