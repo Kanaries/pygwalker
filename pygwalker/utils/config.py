@@ -37,7 +37,7 @@ def load_config(filename: str, encoding='utf-8'):
         logging.warn(f"Cannot load user-specified configuration file {filename}: {e}")
 
 class Item:
-    slots = ['name', 'type', 'default', 'description']
+    __slots__ = ['name', 'type', 'default', 'description']
     def __init__(self, name: str, type_, default=None, description='') -> None:
         self.name, self.type, self.default, self.description = name, type_, default, description
 items = [
