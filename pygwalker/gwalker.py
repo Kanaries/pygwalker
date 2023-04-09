@@ -1,9 +1,11 @@
 from .base import *
 
-from .utils.gwalker_props import get_props
+from .utils.gwalker_props import get_props, FieldSpec, DataFrame
 from .utils.render import render_gwalker_html
+from .utils.config import get_config
 
-def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
+def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
+        fieldSpecs: tp.Dict[str, FieldSpec]={},
         hideDataSourceConfig: bool=True,
         themeKey: Literal['vega', 'g2']='g2',
         dark: Literal['media', 'light', 'dark']='media',
@@ -15,17 +17,25 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
         - gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
     
     Kargs:
+        - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+
         - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         - themeKey ('vega' | 'g2'): theme type.
         - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     global global_gid
+    if get_config('privacy')[0] != 'offline':
+        try:
+            from .utils.check_update import check_update
+            check_update()
+        except:
+            pass
     if gid is None:
         gid = global_gid
         global_gid += 1
     try:
         props = get_props(df, hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey,
-                        dark=dark, **kwargs)
+                        dark=dark, fieldSpecs=fieldSpecs, **kwargs)
         html = render_gwalker_html(gid, props)
     except Exception as e:
         print(e, file=sys.stderr)
@@ -34,6 +44,7 @@ def to_html(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
 
 def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
         env: Literal['Jupyter', 'Streamlit']='Jupyter',
+        fieldSpecs: tp.Dict[str, FieldSpec]={},
         hideDataSourceConfig: bool=True,
         themeKey: Literal['vega', 'g2']='g2',
         dark: Literal['media', 'light', 'dark']='media',
@@ -47,6 +58,7 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
     
     Kargs:
         - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
+        - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         - themeKey ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
@@ -56,8 +68,8 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
     if gid is None:
         gid = global_gid
         global_gid += 1
-    html = to_html(df, gid, env=env, hideDataSourceConfig=hideDataSourceConfig,
-                   themeKey=themeKey, dark=dark, **kwargs)
+    html = to_html(df, gid, env=env, fieldSpecs=fieldSpecs, 
+        hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey, dark=dark, **kwargs)
     import html as m_html
     srcdoc = m_html.escape(html)
     iframe = \
