@@ -8,6 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 def load_default_config():
     """Load default configuration file.
     """
+    global CONFIG, DEFAULT_CONFIG
     with open(os.path.join(HERE, "defaults.json"), 'r', encoding='utf-8') as f:
         DEFAULT_CONFIG = json.load(f)
     CONFIG.update(DEFAULT_CONFIG)
