@@ -3,6 +3,7 @@ from .. import base
 __update_url__ = 'https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates'
 
 async def check_update_async():
+    import logging
     payload = {'pkg': 'pygwalker', 'v': base.__version__, 'hashcode': base.__hash__}
     try:
         resp = {}
@@ -22,13 +23,16 @@ async def check_update_async():
             import logging
             release = resp['data']['latest']['release']
             # logging.info(f"[pygwalker]: A new release {release} available.")
+        return resp
     except:
-        pass
+        import traceback
+        logging.warn(traceback.format_exc())
 
 def check_update():
     import asyncio
     try:
         main_loop = asyncio.get_running_loop()
+        main_loop.create_task(check_update_async())
     except:
         main_loop = asyncio.new_event_loop()
-    main_loop.run_until_complete(check_update_async())
+        main_loop.run_until_complete(check_update_async())
