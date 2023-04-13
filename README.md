@@ -37,21 +37,6 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 
 # Getting Started
 
-## Tested Environments
-
-- [x] Jupyter Notebook
-- [x] Google Colab
-- [x] Kaggle Code
-- [x] Jupyter Lab (WIP: There're still some tiny CSS issues)
-- [x] Jupyter Lite
-- [x] Databricks Notebook (Since version `0.1.4a0`)
-- [x] Jupyter Extension for Visual Studio Code (Since version `0.1.4a0`)
-- [x] Hex Projects (Since version `0.1.4a0`)
-- [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4a0`)
-- [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
-- [x] DataCamp Workspace (Since version `0.1.4a0`)
-- [ ] ...feel free to raise an issue for more environments.
-
 <table>
 <thead>
   <tr>
@@ -102,62 +87,6 @@ mamba install -c conda-forge pygwalker
 ```
 See [conda-forge feedstock](https://github.com/conda-forge/pygwalker-feedstock) for more help.
 
-## Configuration
-
-Since `pygwalker>=0.1.7a0`, we provide the ability to ability to modify user-wide configuration either through the command line interface
-```bash
-$ pygwalker config   
-usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
-
-Modify configuration file.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --set [key=value ...]
-                        Set configuration. e.g. "pygwalker config --set privacy=get-only"
-  --reset [key ...]     Reset user configuration and use default values instead. e.g. "pygwalker config --reset privacy"
-  --reset-all           Reset all user configuration and use default values instead. e.g. "pygwalker config --reset-all"
-  --list                List current used configuration.
-```
-or through Python API
-```python
->>> import pygwalker as pyg, pygwalker.utils.config as pyg_conf
->>> help(pyg_conf.set_config)
-
-Help on function set_config in module pygwalker.utils.config:
-
-set_config(config: dict, save=False)
-    Set configuration.
-    
-    Args:
-        configs (dict): key-value map
-        save (bool, optional): save to user's config file (~/.config/pygwalker/config.json). Defaults to False.
-(END)
-```
-
-### Privacy Policy
-```bash
-$ pygwalker config --set
-usage: pygwalker config [--set [key=value ...]] | [--reset [key ...]].
-
-Available configurations:
-- privacy        ['offline', 'get-only', 'meta', 'any'] (default: meta).
-    "offline"   : no data will be transfered other than the front-end and back-end of the notebook.
-    "get-only"  : the data will not be uploaded but only fetched from external servers.
-    "meta"      : only the desensitized data will be processed by external servers. There might be some server-side processing tasks performed on the metadata in future versions.
-    "any"       : the data can be processed by external services.
-```
-
-For example,
-```bash
-pygwalker config --set privacy=meta
-```
-in command line and
-```python
-import pygwalker as pyg, pygwalker.utils.config as pyg_conf
-pyg_conf.set_config( { 'privacy': 'meta' }, save=True)
-```
-have the same effect.
 
 ## Use pygwalker in Jupyter Notebook
 
@@ -225,6 +154,78 @@ Cool things you can do with Graphic Walker:
 + You can save the data exploration result to a local file
 
 For more detailed instructions, visit the [Graphic Walker GitHub page](https://github.com/Kanaries/graphic-walker).
+
+## Tested Environments
+
+- [x] Jupyter Notebook
+- [x] Google Colab
+- [x] Kaggle Code
+- [x] Jupyter Lab (WIP: There're still some tiny CSS issues)
+- [x] Jupyter Lite
+- [x] Databricks Notebook (Since version `0.1.4a0`)
+- [x] Jupyter Extension for Visual Studio Code (Since version `0.1.4a0`)
+- [x] Hex Projects (Since version `0.1.4a0`)
+- [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4a0`)
+- [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
+- [x] DataCamp Workspace (Since version `0.1.4a0`)
+- [ ] ...feel free to raise an issue for more environments.
+
+## Configuration
+
+Since `pygwalker>=0.1.7a0`, we provide the ability to ability to modify user-wide configuration either through the command line interface
+```bash
+$ pygwalker config   
+usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
+
+Modify configuration file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --set [key=value ...]
+                        Set configuration. e.g. "pygwalker config --set privacy=get-only"
+  --reset [key ...]     Reset user configuration and use default values instead. e.g. "pygwalker config --reset privacy"
+  --reset-all           Reset all user configuration and use default values instead. e.g. "pygwalker config --reset-all"
+  --list                List current used configuration.
+```
+or through Python API
+```python
+>>> import pygwalker as pyg, pygwalker.utils.config as pyg_conf
+>>> help(pyg_conf.set_config)
+
+Help on function set_config in module pygwalker.utils.config:
+
+set_config(config: dict, save=False)
+    Set configuration.
+    
+    Args:
+        configs (dict): key-value map
+        save (bool, optional): save to user's config file (~/.config/pygwalker/config.json). Defaults to False.
+(END)
+```
+
+### Privacy Policy
+```bash
+$ pygwalker config --set
+usage: pygwalker config [--set [key=value ...]] | [--reset [key ...]].
+
+Available configurations:
+- privacy        ['offline', 'get-only', 'meta', 'any'] (default: meta).
+    "offline"   : no data will be transfered other than the front-end and back-end of the notebook.
+    "get-only"  : the data will not be uploaded but only fetched from external servers.
+    "meta"      : only the desensitized data will be processed by external servers. There might be some server-side processing tasks performed on the metadata in future versions.
+    "any"       : the data can be processed by external services.
+```
+
+For example,
+```bash
+pygwalker config --set privacy=meta
+```
+in command line and
+```python
+import pygwalker as pyg, pygwalker.utils.config as pyg_conf
+pyg_conf.set_config( { 'privacy': 'meta' }, save=True)
+```
+have the same effect.
 
 # License
 
