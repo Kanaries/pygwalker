@@ -18,8 +18,10 @@ jinja_env = Environment(
 
 class DataFrameEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, (datetime.datetime,datetime.date,datetime.time)):
+        try:
             return str(obj)
+        except TypeError:
+            pass
         return json.JSONEncoder.default(self, obj)
 
 def render_gwalker_html(gid: int, props: tp.Dict):
