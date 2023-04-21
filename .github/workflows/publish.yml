@@ -1,13 +1,6 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
-name: Auto CI
+name: Publish PyPI
 
 on:
-  push:
-    branches: [ "main", "dev" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -17,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [16.x, 18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -36,6 +29,7 @@ jobs:
           chmod u+x ./scripts/compile.sh
           ./scripts/compile.sh
       - name: Uploading dist
+        if: ${{ matrix.node-version == '16.x' }}
         uses: actions/upload-artifact@v3
         with:
           name: pygwalker-app
@@ -47,8 +41,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.7', '3.11']
-        os-version: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.11']
+        os-version: [ubuntu-latest]
 
     runs-on: ${{ matrix.os-version }}
     steps:
@@ -63,28 +57,25 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Download test data
+      - name: Try building
         working-directory: ./
         run: |
-          chmod u+x ./scripts/test-init.py
-          python ./scripts/test-init.py
-      - name: Try Installing
-        working-directory: ./
-        run: |
-          pip install ./
-      - name: Try Running
-        working-directory: ./tests/
-        run: |
-          pip install ipykernel nbconvert pandas polars
-          python -m ipykernel install --name python --user
-          jupyter kernelspec list
-          jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=python --to html *.ipynb
-      - name: Uploading notebooks
-        uses: actions/upload-artifact@v3
-        if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' }}
+          pip install build twine
+          python -m build .
+      - name: Uploading PyPI
+        if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags')) }}
+        uses: pypa/gh-action-pypi-publish@v1.8.5
         with:
-          name: notebook
-          path: |
-            ./tests/main.html
-            ./tests/offline.html
-            ./tests/stress-test.html
+          # PyPI user
+          # Password for your PyPI user or an access token
+          password: ${{ secrets.PYPI_TOKEN }}
+          # The target directory for distribution
+          packages-dir: dist
+          # Check metadata before uploading
+          verify-metadata: true
+          # Do not fail if a Python package distribution exists in the target package index
+          skip-existing: false
+          # Show verbose output.
+          verbose: true
+          # Show hash values of files to be uploaded
+          print-hash: true
