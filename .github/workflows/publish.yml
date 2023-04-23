@@ -62,6 +62,12 @@ jobs:
         run: |
           pip install build twine
           python -m build .
+      - name: Uploading packages
+        if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: pygwalker
+          path: ./dist/*
       - name: Uploading PyPI
         if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags')) }}
         uses: pypa/gh-action-pypi-publish@v1.8.5
@@ -74,7 +80,7 @@ jobs:
           # Check metadata before uploading
           verify-metadata: true
           # Do not fail if a Python package distribution exists in the target package index
-          skip-existing: false
+          skip-existing: true
           # Show verbose output.
           verbose: true
           # Show hash values of files to be uploaded
