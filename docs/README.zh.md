@@ -267,4 +267,5 @@ pyg_conf.set_config( { 'privacy': 'meta' }, save=True)
 
 | kanaries微信交流群 | kanaries公众号 |
 | --- | --- |
-| ![](https://kanaries-docs.oss-cn-hangzhou.aliyuncs.com/img/wechat-group.jpg) | ![](https://kanaries-docs.oss-cn-hangzhou.aliyuncs.com/img/qrcode_for_gh_49e6f7d65120_860.jpg) |
+| ![wechat-group](https://user-images.githubusercontent.com/22167673/233818474-3340e05a-5fd7-4dce-9a15-60cc175d26de.jpg)
+ | ![](https://kanaries-docs.oss-cn-hangzhou.aliyuncs.com/img/qrcode_for_gh_49e6f7d65120_860.jpg) |
