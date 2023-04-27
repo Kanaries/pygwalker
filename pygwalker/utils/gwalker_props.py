@@ -1,4 +1,6 @@
 import importlib
+
+from pygwalker.base import tp
 from ..base import *
 from .fname_encodings import fname_decode, fname_encode
 
@@ -52,6 +54,11 @@ class DataFramePropGetter(tp.Generic[DataFrame]):
         """Convert DataFrame to a list of records"""
         raise NotImplementedError
         pass
+        
+    @classmethod
+    def to_matrix(cls, df: DataFrame, **kwargs) -> tp.List[tp.Dict[str, tp.Any]]:
+        raise NotImplementedError
+    
     @classmethod
     def escape_fname(cls, df: DataFrame, **kwargs) -> DataFrame:
         """Encode fname to prefent special characters in field name to cause errors"""
@@ -110,6 +117,11 @@ class DataFramePropGetter(tp.Generic[DataFrame]):
             **kwargs,
         }
         return props
+    
+    @classmethod
+    def decode_fname(cls, s: Series, **kwargs) -> str:
+        """Get safe field name from series."""
+        raise NotImplementedError
 
 class PandasDataFramePropGetter(DataFramePropGetter[DataFrame]): pass
 class PolarsDataFramePropGetter(DataFramePropGetter[DataFrame]): pass
@@ -152,6 +164,12 @@ def buildPandasPropGetter():
         def to_records(cls, df: pd.DataFrame):
             df = df.replace({float('nan'): None})
             return df.to_dict(orient='records')
+        
+        @classmethod
+        def to_matrix(cls, df: pd.DataFrame, **kwargs) -> tp.List[tp.List[tp.Any]]:
+            df = df.replace({float('nan'): None})
+            return df.to_dict(orient='tight')
+        
         @classmethod
         def escape_fname(cls, df: pd.DataFrame, **kwargs):
             df = df.reset_index()
@@ -196,6 +214,12 @@ def buildPolarsPropGetter():
         def to_records(cls, df: pl.DataFrame, **kwargs) -> tp.List[tp.Dict[str, tp.Any]]:
             df = df.fill_nan(None)
             return df.to_dicts()
+        
+        @classmethod
+        def to_matrix(cls, df: pl.DataFrame, **kwargs) -> tp.List[tp.Dict[str, tp.Any]]:
+            df = df.fill_nan(None)
+            dicts = df.to_dicts()
+            return {'columns': list(dicts[0].keys()), 'data': [list(d.values()) for d in dicts]}
         
         @classmethod
         def escape_fname(cls, df: pl.DataFrame, **kwargs) -> pl.DataFrame:
