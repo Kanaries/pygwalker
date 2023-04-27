@@ -34,7 +34,7 @@ dev = [
     "twine",
 ]
 [project.scripts]
-pygwalker = "pygwalker.__main__:main"
+pygwalker = "pygwalker_utils.__main__:main"
 
 [tool.hatch]
 # metadata = { allow-direct-references = true }
@@ -42,11 +42,10 @@ version = { path = "pygwalker/__version__.py" }
 
 [tool.hatch.build]
 include = [
-    "README.md", "LICENSE",
     "pygwalker",
+    "pygwalker_utils",
     "pygwalker/templates/**",
     "pygwalker/templates/**/*",
-    "scripts",
 ]
 exclude = [ "/graphic-walker", "/tests" ]
 artifacts = [ "pygwalker/templates/*" ]
@@ -72,13 +71,14 @@ build_cmd = "dev"
 
 [tool.hatch.build.targets.wheel]
 # force-include = 
-shared-data = { "pygwalker/utils/defaults.json" = "etc/pygwalker/config.json" }
+shared-data = { "pygwalker_utils/defaults.json" = "etc/pygwalker/config.json" }
 
 [tool.hatch.build.targets.sdist]
 include = [
     "README.md", "LICENSE",
     "app",
     "pygwalker",
+    "pygwalker_utils",
     "pygwalker/templates/**",
     "pygwalker/templates/**/*",
     "scripts",
