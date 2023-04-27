@@ -213,10 +213,10 @@ optional arguments:
 或使用 Python API
 
 ```python
->>> import pygwalker as pyg, pygwalker.utils.config as pyg_conf
+>>> import pygwalker as pyg, pygwalker_utils.config as pyg_conf
 >>> help(pyg_conf.set_config)
 
-Help on function set_config in module pygwalker.utils.config:
+Help on function set_config in module pygwalker_utils.config:
 
 set_config(config: dict, save=False)
     Set configuration.
