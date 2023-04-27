@@ -1,3 +1,5 @@
+import logging
+from pygwalker_utils.config import get_config, set_config, load_config, print_help
 from .__version__ import __version__
 
 # from .base import *
@@ -14,9 +16,7 @@ from .__version__ import __version__
 # loadJs()
 
 from .gwalker import to_html, walk, FieldSpec, GWalker
-    
-import logging
-from .utils.config import get_config, set_config, load_config, print_help
+
 if get_config('privacy')[0] != 'offline':
     from .utils.check_update import check_update
 else: # offline mode

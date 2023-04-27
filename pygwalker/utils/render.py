@@ -1,6 +1,6 @@
+from pygwalker_utils.config import get_config
 from .. import base
 from ..base import *
-from ..utils.config import get_config
 import datetime
 
 def gwalker_script():

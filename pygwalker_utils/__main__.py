@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-from .utils import config
+from . import config
 
 parser = argparse.ArgumentParser(description='PyGWalker: Combining Jupyter Notebook with a Tableau-like UI')
 subparsers = parser.add_subparsers(dest='command')

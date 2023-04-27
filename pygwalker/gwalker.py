@@ -1,8 +1,7 @@
+from pygwalker_utils.config import get_config
 from .base import *
-
 from .utils.gwalker_props import get_props, FieldSpec, DataFrame
 from .utils.render import render_gwalker_html
-from .utils.config import get_config
 
 def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
         fieldSpecs: tp.Dict[str, FieldSpec]={},
