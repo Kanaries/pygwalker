@@ -190,10 +190,10 @@ optional arguments:
 ```
 or through Python API
 ```python
->>> import pygwalker as pyg, pygwalker.utils.config as pyg_conf
+>>> import pygwalker as pyg, pygwalker_utils.config as pyg_conf
 >>> help(pyg_conf.set_config)
 
-Help on function set_config in module pygwalker.utils.config:
+Help on function set_config in module pygwalker_utils.config:
 
 set_config(config: dict, save=False)
     Set configuration.
@@ -223,7 +223,7 @@ pygwalker config --set privacy=meta
 ```
 in command line and
 ```python
-import pygwalker as pyg, pygwalker.utils.config as pyg_conf
+import pygwalker as pyg, pygwalker.utils_config as pyg_conf
 pyg_conf.set_config( { 'privacy': 'meta' }, save=True)
 ```
 have the same effect.
