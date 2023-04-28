@@ -186,6 +186,7 @@ def buildPandasPropGetter():
     return PandasDataFramePropGetter
 
 def buildPolarsPropGetter():
+    import polars as pl
     class PolarsDataFramePropGetter(DataFramePropGetter[pl.DataFrame]):
         Series = pl.Series
         @classmethod
@@ -206,7 +207,7 @@ def buildPolarsPropGetter():
         @classmethod
         def infer_analytic(cls, s: pl.Series):
             kind = s.dtype
-            return 'measure' if kind in pl.FLOAT_DTYPES + pl.DURATION_DTYPES or \
+            return 'measure' if kind in pl.FLOAT_DTYPES | pl.DURATION_DTYPES or \
                     (kind in pl.INTEGER_DTYPES and len(s.value_counts()) > 16) else \
                 'dimension'
         

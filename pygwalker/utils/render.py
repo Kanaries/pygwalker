@@ -27,7 +27,7 @@ class DataFrameEncoder(json.JSONEncoder):
 def render_gwalker_html(gid: int, props: tp.Dict):
     ds = props.get('dataSource', [])
     
-    props['len'] = len(ds)  # TODO: let the app know if the data is truncated.
+    props['len'] = len(ds)
     # check too large data
     if len(ds) > 1024:
         smp0 = ds[::len(ds)//32]
@@ -37,7 +37,6 @@ def render_gwalker_html(gid: int, props: tp.Dict):
         n = int(BYTE_LIMIT / avg_size)
         if len(ds) >= 2 * n:
             # print(f"PyGWalker doesn't support dataframes that are too large. Using the first {n} rows.")
-            # TODO: return the caution and show it if no postData event happend.
             props['dataSource'] = ds[:n]
     
     walker_template = jinja_env.get_template("walk.js")

@@ -41,7 +41,8 @@ def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
         LAST_PROPS = props
 
     except Exception as e:
-        print(e, file=sys.stderr)
+        import logging, traceback
+        logging.error(traceback.format_exc())
         return f"<div>{str(e)}</div>"
     return html
 
