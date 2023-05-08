@@ -19,6 +19,7 @@ export async function loadDataSource(props: IDataSourceProps): Promise<IRow[]> {
         let timer = setTimeout(timeout, 100_000);
         const onmessage = (ev) => {
             try {
+                if (process.env.NODE_ENV === "develop") console.log("onmessage", ev.data);
                 if (ev.data.tunnelId === tunnelId && ev.data.dataSourceId === dataSourceId) {
                     clearTimeout(timer);
                     timer = setTimeout(timeout, 100_000);
@@ -33,9 +34,8 @@ export async function loadDataSource(props: IDataSourceProps): Promise<IRow[]> {
                         data.push(...(ev.data.data ?? []));
                     }
                     else if (ev.data.action === 'finishData') {
-                        // console.log("finish data!", data);
-                        window.removeEventListener('message', onmessage);
                         resolve(data);
+                        window.removeEventListener('message', onmessage);
                     }
                 }
             } catch(err) {
