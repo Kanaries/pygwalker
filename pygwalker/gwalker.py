@@ -2,6 +2,7 @@ from pygwalker_utils.config import get_config
 from .base import *
 from .utils.gwalker_props import get_props, FieldSpec, DataFrame
 from .utils.render import render_gwalker_html
+from .utils.spec import get_spec_json
 
 LAST_PROPS = {}
 
@@ -46,14 +47,14 @@ def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
         return f"<div>{str(e)}</div>"
     return html
 
-def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
-        env: Literal['Jupyter', 'Streamlit']='Jupyter',
-        fieldSpecs: tp.Dict[str, FieldSpec]={},
-        hideDataSourceConfig: bool=True,
-        themeKey: Literal['vega', 'g2']='g2',
-        dark: Literal['media', 'light', 'dark']='media',
-        return_html: bool=False,
-        **kwargs):
+def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str] = None, *,
+         env: Literal['Jupyter', 'Streamlit'] = 'Jupyter',
+         fieldSpecs: tp.Dict[str, FieldSpec] = {},
+         hideDataSourceConfig: bool = True,
+         themeKey: Literal['vega', 'g2'] = 'g2',
+         dark: Literal['media', 'light', 'dark'] = 'media',
+         return_html: bool = False,
+         **kwargs):
     """Walk through pandas.DataFrame df with Graphic Walker
 
     Args:
@@ -67,14 +68,18 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str]=None, *,
         - themeKey ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - return_html (bool, optional): Directly return a html string. Defaults to False.
+        - spec (str): chart config data. config id, json, remote file url
     """
     global global_gid, LAST_PROPS
     if gid is None:
         gid = global_gid
         global_gid += 1
     df = df.sample(frac=1)
-    html = to_html(df, gid, env=env, fieldSpecs=fieldSpecs, 
-        hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey, dark=dark, **kwargs)
+    kwargs["spec"] = get_spec_json(kwargs.get("spec", ""))
+    html = to_html(
+        df, gid, env=env, fieldSpecs=fieldSpecs, 
+        hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey, dark=dark, **kwargs
+    )
     import html as m_html
     srcdoc = m_html.escape(html)
     iframe = \
@@ -242,4 +247,3 @@ class GWalker:
     # def rawFields(self) -> tp.List:
     #     from .utils.gwalker_props import raw_fields
     #     return raw_fields(self.df)
-    
