@@ -8,15 +8,24 @@
     "preinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
     "build": "vite build",
     "dev": "vite build --mode=develop",
+    "dev:server": "vite --host",
     "test:front_end": "vite --host",
     "test": "npm run test:front_end",
     "serve": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.14",
+    "@heroicons/react": "^2.0.8",
     "@kanaries/graphic-walker": "file:../graphic-walker/packages/graphic-walker",
+    "@kanaries/auth-wrapper": "file:./lib/auth-wrapper-v0.1.0.tgz",
+    "autoprefixer": "^10.3.5",
+    "mobx": "^6.9.0",
+    "mobx-react-lite": "^3.4.3",
+    "postcss": "^8.3.7",
     "react": "^17.x",
     "react-dom": "^17.x",
-    "styled-components": "^5.3.6"
+    "styled-components": "^5.3.6",
+    "tailwindcss": "^3.2.4"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.0.x",

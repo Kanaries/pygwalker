@@ -6,6 +6,7 @@ import { GraphicWalker } from '@kanaries/graphic-walker'
 import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
 // import type { IGWProps } from 'gwalker/App'
 
+import style from "./index.css";
 import Options from './components/options';
 import { IAppProps } from './interfaces';
 import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
@@ -110,6 +111,7 @@ const App: React.FC<IAppProps> = (propsIn) => {
 
   return (
     <React.StrictMode>
+      <style>{style}</style>
       <GraphicWalker {...props} />
       <Options {...props} />
     </React.StrictMode>
