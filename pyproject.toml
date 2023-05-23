@@ -14,6 +14,7 @@ classifiers = [
 dependencies = [
     "jinja2",
     "ipython",
+    "astor",
     "typing_extensions; python_version <= '3.7'",
     "aiohttp>=3.0.0; platform_machine != 'wasm32'",
 ]
