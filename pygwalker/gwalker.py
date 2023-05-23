@@ -1,8 +1,11 @@
+import inspect
+
 from pygwalker_utils.config import get_config
 from .base import *
 from .utils.gwalker_props import get_props, FieldSpec, DataFrame
 from .utils.render import render_gwalker_html
 from .utils.spec import get_spec_json
+from .utils.format_invoke_walk_code import get_formated_spec_params_code
 
 LAST_PROPS = {}
 
@@ -75,6 +78,9 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str] = None, *,
         gid = global_gid
         global_gid += 1
     df = df.sample(frac=1)
+    kwargs["sourceInvokeCode"] = get_formated_spec_params_code(
+        inspect.stack()[1].code_context[0]
+    )
     kwargs["spec"] = get_spec_json(kwargs.get("spec", ""))
     html = to_html(
         df, gid, env=env, fieldSpecs=fieldSpecs, 
