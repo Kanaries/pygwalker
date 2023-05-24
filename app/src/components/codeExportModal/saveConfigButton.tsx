@@ -3,6 +3,7 @@ import React, { Fragment, useState, useEffect } from "react";
 import { download } from "../../utils/save";
 import { Menu, Transition } from "@headlessui/react";
 import { getToken } from "@kanaries/auth-wrapper";
+import { checkUploadPrivacy } from "../../utils/userConfig";
 
 
 interface IDsaveConfigButtonProps {
@@ -110,12 +111,23 @@ const saveConfigButton: React.FC<IDsaveConfigButtonProps> = (props) => {
                             </button>
                         </Menu.Item>
                         <Menu.Item>
-                            <button
-                                className="group flex w-full items-center rounded-md px-2 py-2 text-sm"
-                                onClick={saveAsServer}
-                            >
-                                Config Id
-                            </button>
+                            <div className="group relative w-max">
+                                <button
+                                    className="group flex w-full items-center rounded-md px-2 py-2 text-sm disabled:opacity-50"
+                                    onClick={saveAsServer}
+                                    disabled={!checkUploadPrivacy()}
+                                >
+                                    Config Id
+                                </button>
+                                {
+                                    !checkUploadPrivacy() &&
+                                    <span
+                                        className="absolute w-60 top-10 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100"
+                                    >
+                                        you need set your privacy to meta or any to use this feature
+                                    </span>
+                                }
+                            </div>
                         </Menu.Item>
                     </div>
                 </Menu.Items>

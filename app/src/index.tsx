@@ -14,7 +14,7 @@ import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
 import { AuthWrapper } from "@kanaries/auth-wrapper"
 import { loadDataSource } from './dataSource';
 import { IDataSetInfo, IMutField, IRow } from '@kanaries/graphic-walker/dist/interfaces';
-import { setConfig } from './utils/userConfig';
+import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
 import {
   CodeBracketSquareIcon,
@@ -117,36 +117,30 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     }
   }, [updateDataSource]);
 
-  props["toolbar"] = {
-    exclude: ["export_code"],
-    extra: [
-      {
-        key: 'export_code',
-        label: 'export_code',
-        icon: CodeBracketSquareIcon,
-        onClick: () => {
-            setExportOpen(true);
-        }
-      },
-      {
-        key: 'login',
-        label: 'login',
-        icon: props => (
-          <UserIcon {...props} ref={e => {
-            setMounted(true);
-            wrapRef.current = e?.parentElement as HTMLElement;
-          }} />
-        ),
-        onClick: () => {}
-      }
-    ]
+  const exportTool = { key: "export_code", label: "export_code", icon: CodeBracketSquareIcon, onClick: () => { setExportOpen(true); } }
+  const loginTool = {
+    key: 'login',
+    label: 'login',
+    icon: props => (
+      <UserIcon {...props} ref={e => {
+        setMounted(true);
+        wrapRef.current = e?.parentElement as HTMLElement;
+      }} />
+    ),
+    onClick: () => {}
   }
+
+  const toolbarConfig = {
+    exclude: ["export_code"],
+    extra: checkUploadPrivacy() ? [exportTool, loginTool] : [exportTool]
+  }
+  props["toolbar"] = toolbarConfig
   
   return (
     <React.StrictMode>
       <style>{style}</style>
       {
-        mounted && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
+        mounted && checkUploadPrivacy() && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
       }
       <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"]} />
       <GraphicWalker {...props} />
