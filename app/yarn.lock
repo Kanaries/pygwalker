@@ -418,9 +418,9 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries/auth-wrapper@file:./lib/auth-wrapper-v0.1.0.tgz":
-  version "0.1.0"
-  resolved "file:./lib/auth-wrapper-v0.1.0.tgz#db7fc03b4e6cfcdb5464fadbba21c7495f710a0a"
+"@kanaries/auth-wrapper@file:./lib/auth-wrapper-v0.1.3.tgz":
+  version "0.1.3"
+  resolved "file:./lib/auth-wrapper-v0.1.3.tgz#dd9a1c3536044853b88eadb17d5b8988684b1a51"
   dependencies:
     "@heroicons/react" "^2.0.8"
     autoprefixer "^10.3.5"
@@ -433,8 +433,10 @@
     tailwindcss "^3.2.4"
     uuid "^8.3.2"
 
-"@kanaries/graphic-walker@file:../graphic-walker/packages/graphic-walker":
-  version "0.3.5"
+"@kanaries/graphic-walker@^0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.3.6.tgz#f80779a01a72f86690f13cab5807eaa868eb62ea"
+  integrity sha512-kBgKA5NKQbQKhg2KFDUqjnzMVW9ePP1c5tWn9nkvTj4ffWHfe1ci3UrIqErX7bN7n7IEfqYoJk30b1HCQZXruw==
   dependencies:
     "@headlessui/react" "^1.7.12"
     "@heroicons/react" "^2.0.8"
