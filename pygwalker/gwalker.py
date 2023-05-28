@@ -82,6 +82,7 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str] = None, *,
         inspect.stack()[1].code_context[0]
     )
     kwargs["spec"] = get_spec_json(kwargs.get("spec", ""))
+    kwargs["id"] = gid
     html = to_html(
         df, gid, env=env, fieldSpecs=fieldSpecs, 
         hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey, dark=dark, **kwargs
