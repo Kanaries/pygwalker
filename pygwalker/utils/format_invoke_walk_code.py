@@ -40,7 +40,7 @@ def _repalce_spec_params_code(func: 'ast.Call') -> str:
 
 
 def get_formated_spec_params_code(code: str) -> str:
-    call_func = _find_walk_func_node(code)
+    call_func = _find_walk_func_node(code.strip())
     if call_func is None:
         return ''
     return _repalce_spec_params_code(call_func)
