@@ -106,7 +106,13 @@ class DataFramePropGetter(tp.Generic[DataFrame]):
     
     @classmethod
     def get_props(cls, df: DataFrame, **kwargs):
-        df = cls.limited_sample(df)
+        """Remove data volume restrictions for non-JUPyter environments.
+
+        Kargs:
+            - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker from program entry. Default as 'Jupyter'
+        """
+        if kwargs.get('env') == 'Jupyter':
+            df = cls.limited_sample(df)
         df = cls.escape_fname(df, **kwargs)
         props = {
             'dataSource': cls.to_records(df),
