@@ -127,12 +127,14 @@ class PandasDataFramePropGetter(DataFramePropGetter[DataFrame]): pass
 class PolarsDataFramePropGetter(DataFramePropGetter[DataFrame]): pass
 
 __classname2method = {}
-__supported_modules = ['pandas', 'polars']
+__supported_modules = ['pandas', 'polars', 'modin']
 
 import sys
 
-def buildPandasPropGetter():
-    import pandas as pd
+def buildPandasPropGetter(pd = None):
+    # This would allow usage of any pandas compatible API
+    if pd is None:
+        import pandas as pd
     class PandasDataFramePropGetter(DataFramePropGetter[pd.DataFrame]):
         @classmethod
         def limited_sample(cls, df: DataFrame) -> DataFrame:
@@ -184,6 +186,10 @@ def buildPandasPropGetter():
             return fname
         
     return PandasDataFramePropGetter
+
+def buildModinPropGetter():
+    from modin import pandas as pd
+    return buildPandasPropGetter(pd)
 
 def buildPolarsPropGetter():
     import polars as pl
@@ -245,6 +251,12 @@ def getPropGetter(df: DataFrame) -> DataFramePropGetter:
         if isinstance(df, pd.DataFrame):
             __classname2method[pd.DataFrame] = buildPandasPropGetter()
             return __classname2method[pd.DataFrame]
+    
+    if 'modin' in sys.modules:
+        from modin import pandas as mpd
+        if isinstance(df, mpd.DataFrame):
+            __classname2method[mpd.DataFrame] = buildModinPropGetter()
+            return __classname2method[mpd.DataFrame]
         
     if 'polars' in sys.modules:   
         import polars as pl
