@@ -113,7 +113,7 @@ window.addEventListener("message", (event) => {{
     import time
     import json
     from .utils.render import DataFrameEncoder
-    from .utils.gwalker_props import getPropGetter
+    from .utils.gwalker_props import get_prop_getter
     
     from .base import __hash__, rand_str
     def rand_slot_id():
@@ -161,7 +161,7 @@ window.addEventListener("message", (event) => {{
             # static output is truncated.
             time.sleep(0.1)
             chunk = 1 << 14
-            prop_getter = getPropGetter(df)
+            prop_getter = get_prop_getter(df)
             df = prop_getter.escape_fname(df, env=env, fieldSpecs=fieldSpecs, **kwargs)
             records = prop_getter.to_records(df)
             # matrix = prop_getter.to_matrix(df)
