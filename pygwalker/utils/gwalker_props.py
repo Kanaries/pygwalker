@@ -31,8 +31,8 @@ if TYPE_CHECKING:
     except ModuleNotFoundError:
         pass
     try:
-        from modin import pandas as pd
-        dataframe_types.append(pd.DataFrame)
+        from modin import pandas as mpd
+        dataframe_types.append(mpd.DataFrame)
     except ModuleNotFoundError:
         pass
     try:
@@ -278,9 +278,9 @@ def get_prop_getter(df: DataFrame) -> DataFramePropGetter:
             __classname2method[pl.DataFrame] = _build_polars_prop_getter(pl)
             return __classname2method[pl.DataFrame]
 
-    if 'modin' in sys.modules:
-        from modin import pandas as pd
-        if isinstance(df, pd.DataFrame):
+    if 'modin.pandas' in sys.modules:
+        from modin import pandas as mpd
+        if isinstance(df, mpd.DataFrame):
             __classname2method[pd.DataFrame] = _build_pandas_prop_getter(pd)
             return __classname2method[pd.DataFrame]
 
