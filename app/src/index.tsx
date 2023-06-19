@@ -142,7 +142,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
       {
         mounted && checkUploadPrivacy() && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
       }
-      <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"]} />
+      <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
       <GraphicWalker {...props} />
       <Options {...props} />
     </React.StrictMode>
