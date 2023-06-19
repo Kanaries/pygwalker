@@ -72,6 +72,10 @@ jobs:
         working-directory: ./
         run: |
           pip install ./
+      - name: Try Install Modin In Linux Os
+        if: ${{ matrix.os-version == 'ubuntu-latest' }}
+        run: |
+          pip install modin "modin[ray]"
       - name: Try Running
         working-directory: ./tests/
         run: |
