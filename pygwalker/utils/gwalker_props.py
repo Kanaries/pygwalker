@@ -5,7 +5,7 @@ import sys
 import json
 
 from .fname_encodings import fname_decode, fname_encode
-from pygwalker.base import BYTE_LIMIT
+from pygwalker._constants import BYTE_LIMIT
 
 
 class FieldSpec(NamedTuple):
