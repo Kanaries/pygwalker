@@ -1,7 +1,10 @@
-from typing import Optional
+from typing import Optional, List
 import ast
 
+from astor.source_repr import split_lines
 import astor
+
+_MAX_LINE = 150
 
 
 def _find_walk_func_node(code: str) -> Optional['ast.Call']:
@@ -25,6 +28,10 @@ def _find_walk_func_node(code: str) -> Optional['ast.Call']:
                 node_list.append(children_node)
 
 
+def _private_astor_pretty_source(source: List[str]) -> str:
+    return "".join(split_lines(source, maxline=_MAX_LINE))
+
+
 def _repalce_spec_params_code(func: 'ast.Call') -> str:
     replace_value = ast.Constant(value='____pyg_walker_spec_params____')
     spec_index = -1
@@ -36,7 +43,7 @@ def _repalce_spec_params_code(func: 'ast.Call') -> str:
     else:
         func.keywords.insert(0, ast.keyword(arg='spec', value=replace_value))
 
-    return astor.to_source(func)
+    return astor.to_source(func, pretty_source=_private_astor_pretty_source)
 
 
 def get_formated_spec_params_code(code: str) -> str:
