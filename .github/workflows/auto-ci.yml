@@ -62,7 +62,7 @@ jobs:
       - name: Use Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version == '3.7' && matrix.os-version == 'macos-latest' && '3.7.16' || matrix.python-version }}
       - name: Download test data
         working-directory: ./
         run: |
