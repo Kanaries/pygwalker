@@ -1,7 +1,13 @@
+from typing import Union, Dict
 import inspect
 
+from IPython.display import display, HTML
+from typing_extensions import Literal
+
 from pygwalker_utils.config import get_config
-from .base import *
+from pygwalker import __hash__
+from pygwalker.utils.randoms import rand_str
+from pygwalker.utils.global_var import GlobalVarManager
 from .utils.gwalker_props import get_props, FieldSpec, DataFrame
 from .utils.render import render_gwalker_html
 from .utils.spec import get_spec_json
@@ -9,8 +15,9 @@ from .utils.format_invoke_walk_code import get_formated_spec_params_code
 
 LAST_PROPS = {}
 
-def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
-        fieldSpecs: tp.Dict[str, FieldSpec]={},
+
+def to_html(df: DataFrame, gid: Union[int, str]=None, *,
+        fieldSpecs: Dict[str, FieldSpec]={},
         hideDataSourceConfig: bool=True,
         themeKey: Literal['vega', 'g2']='g2',
         dark: Literal['media', 'light', 'dark']='media',
@@ -19,7 +26,7 @@ def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
 
     Args:
         - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
-        - gid (tp.Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+        - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
     
     Kargs:
         - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
@@ -28,7 +35,7 @@ def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
         - themeKey ('vega' | 'g2'): theme type.
         - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
-    global global_gid, LAST_PROPS
+    global LAST_PROPS
     if get_config('privacy')[0] != 'offline':
         try:
             from .utils.check_update import check_update
@@ -36,8 +43,7 @@ def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
         except:
             pass
     if gid is None:
-        gid = global_gid
-        global_gid += 1
+        gid = GlobalVarManager.get_global_gid()
     try:
         props = get_props(df, hideDataSourceConfig=hideDataSourceConfig, themeKey=themeKey,
                         dark=dark, fieldSpecs=fieldSpecs, **kwargs)
@@ -50,9 +56,9 @@ def to_html(df: DataFrame, gid: tp.Union[int, str]=None, *,
         return f"<div>{str(e)}</div>"
     return html
 
-def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str] = None, *,
+def walk(df: "pl.DataFrame | pd.DataFrame", gid: Union[int, str] = None, *,
          env: Literal['Jupyter', 'Streamlit'] = 'Jupyter',
-         fieldSpecs: tp.Dict[str, FieldSpec] = {},
+         fieldSpecs: Dict[str, FieldSpec] = {},
          hideDataSourceConfig: bool = True,
          themeKey: Literal['vega', 'g2'] = 'g2',
          dark: Literal['media', 'light', 'dark'] = 'media',
@@ -73,10 +79,9 @@ def walk(df: "pl.DataFrame | pd.DataFrame", gid: tp.Union[int, str] = None, *,
         - return_html (bool, optional): Directly return a html string. Defaults to False.
         - spec (str): chart config data. config id, json, remote file url
     """
-    global global_gid, LAST_PROPS
+    global LAST_PROPS
     if gid is None:
-        gid = global_gid
-        global_gid += 1
+        gid = GlobalVarManager.get_global_gid()
     df = df.sample(frac=1)
     kwargs["sourceInvokeCode"] = get_formated_spec_params_code(
         inspect.stack()[1].code_context[0]
@@ -114,8 +119,7 @@ window.addEventListener("message", (event) => {{
     import json
     from .utils.render import DataFrameEncoder
     from .utils.gwalker_props import get_prop_getter
-    
-    from .base import __hash__, rand_str
+
     def rand_slot_id():
         return __hash__ + '-' + rand_str(6)
     slot_cnt, cur_slot = 8, 0
@@ -230,9 +234,7 @@ def display_html(html: str, env: Literal['Jupyter', 'Streamlit', 'Widgets'] = 'J
 
 class GWalker:
     def __init__(self, df: "pl.DataFrame | pd.DataFrame"=None, **kwargs):
-        global global_gid
-        self.gid = global_gid
-        global_gid += 1
+        self.gid = GlobalVarManager.get_global_gid()
         self.df = df
     
     def to_html(self, **kwargs):
@@ -246,11 +248,11 @@ class GWalker:
         pass
     
     # @property
-    # def dataSource(self) -> tp.List[tp.Dict]:
+    # def dataSource(self) -> List[Dict]:
     #     from .utils.gwalker_props import to_records
     #     return to_records(self.df)
     
     # @property
-    # def rawFields(self) -> tp.List:
+    # def rawFields(self) -> List:
     #     from .utils.gwalker_props import raw_fields
     #     return raw_fields(self.df)

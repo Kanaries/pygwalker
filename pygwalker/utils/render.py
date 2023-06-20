@@ -1,32 +1,39 @@
+import os
+import json
+from typing import Dict
+
+from jinja2 import Environment, PackageLoader
+
+from pygwalker._constants import BYTE_LIMIT, ROOT_DIR
+from pygwalker.utils.randoms import rand_str
+from pygwalker import __version__, __hash__
 from pygwalker_utils.config import get_config
-from .. import base
-from ..base import *
-import datetime
 
-def gwalker_script():
-    global gwalker_js
-    if gwalker_js is None:
-        with open(os.path.join(HERE, 'templates', 'dist', 'pygwalker-app.iife.js'), 'r', encoding='utf8') as f:
-            gwalker_js = f.read()
-    return gwalker_js
 
-from jinja2 import Environment, PackageLoader, select_autoescape
 jinja_env = Environment(
     loader=PackageLoader("pygwalker"),
-    autoescape=(()), # select_autoescape()
+    autoescape=(()),  # select_autoescape()
 )
 
+
+def gwalker_script() -> str:
+    with open(os.path.join(ROOT_DIR, 'templates', 'dist', 'pygwalker-app.iife.js'), 'r', encoding='utf8') as f:
+        gwalker_js = f.read()
+    return gwalker_js
+
+
 class DataFrameEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, o):
         try:
-            return str(obj)
+            return str(o)
         except TypeError:
             pass
-        return json.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, o)
 
-def render_gwalker_html(gid: int, props: tp.Dict):
+
+def render_gwalker_html(gid: int, props: Dict):
     ds = props.get('dataSource', [])
-    
+
     props['len'] = len(ds)
     # check too large data
     if len(ds) > 1024:
@@ -38,32 +45,24 @@ def render_gwalker_html(gid: int, props: tp.Dict):
         if len(ds) >= 2 * n:
             # print(f"PyGWalker doesn't support dataframes that are too large. Using the first {n} rows.")
             props['dataSource'] = ds[:n]
-    
+
     walker_template = jinja_env.get_template("walk.js")
-    props['version'] = base.__version__
-    props['hashcode'] = base.__hash__
+    props['version'] = __version__
+    props['hashcode'] = __hash__
     if 'spec' in props:
         props['visSpec'] = props.get('spec', None)
         del props['spec']
     props['userConfig'], _ = get_config()
-    
+
     # del props['dataSource']
     props['dataSourceProps'] = {
         'tunnelId': 'tunnel!',
         'dataSourceId': f'dataSource!{rand_str(4)}',
     }
-    
+
     js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
     js = "var exports={}, module={};" + gwalker_script() + js
-    
+
     template = jinja_env.get_template("index.html")
     html = f"{template.render(gwalker={'id': gid, 'script': js})}"
-    # print("html =", html)
     return html
-
-def render_gwalker_js(gid: int, props: tp.Dict):
-    pass
-    # walker_template = jinja_env.get_template("walk.js")
-    # js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)} )
-    # js = gwalker_script() + js
-    # return js

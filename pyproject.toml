@@ -39,7 +39,7 @@ pygwalker = "pygwalker_utils.__main__:main"
 
 [tool.hatch]
 # metadata = { allow-direct-references = true }
-version = { path = "pygwalker/__version__.py" }
+version = { path = "pygwalker/__init__.py" }
 
 [tool.hatch.build]
 include = [

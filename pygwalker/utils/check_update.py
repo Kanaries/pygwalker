@@ -1,10 +1,10 @@
 import sys
-from .. import base
+from pygwalker import __version__, __hash__
 __update_url__ = 'https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates'
 
 async def check_update_async():
     import logging
-    payload = {'pkg': 'pygwalker', 'v': base.__version__, 'hashcode': base.__hash__}
+    payload = {'pkg': 'pygwalker', 'v': __version__, 'hashcode': __hash__}
     try:
         resp = {}
         if "pyodide" in sys.modules:
