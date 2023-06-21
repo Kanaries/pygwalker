@@ -12,7 +12,7 @@ __hash__ = rand_str()
 from .gwalker import to_html, walk, FieldSpec, GWalker
 
 if get_config('privacy')[0] != 'offline':
-    from .utils.check_update import check_update
+    from pygwalker.services.check_update import check_update
 else: # offline mode
     logging.info("Running in offline mode. There might be newer releases available. Please check at https://github.com/Kanaries/pygwalker or https://pypi.org/project/pygwalker.")
 

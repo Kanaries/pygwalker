@@ -4,7 +4,7 @@ import json
 from modin import pandas as mpd
 
 from .base import DataFramePropParser, DataFrame
-from pygwalker.utils.fname_encodings import fname_decode, fname_encode
+from pygwalker.services.fname_encodings import fname_decode, fname_encode
 from pygwalker._constants import BYTE_LIMIT
 
 

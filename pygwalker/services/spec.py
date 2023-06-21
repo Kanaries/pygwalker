@@ -3,7 +3,7 @@ import json
 import os
 
 from pygwalker_utils.config import get_config
-from .errors import InvalidConfigIdError, PrivacyError
+from ..utils.errors import InvalidConfigIdError, PrivacyError
 
 
 def _is_json(s: str) -> bool:

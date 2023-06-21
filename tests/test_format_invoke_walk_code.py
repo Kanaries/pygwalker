@@ -1,4 +1,4 @@
-from pygwalker.utils.format_invoke_walk_code import get_formated_spec_params_code
+from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code
 
 
 def test_get_formated_spec_params_code():

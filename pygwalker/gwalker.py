@@ -7,12 +7,12 @@ from typing_extensions import Literal
 from pygwalker_utils.config import get_config
 from pygwalker import __hash__
 from pygwalker.utils.randoms import rand_str
-from pygwalker.utils.global_var import GlobalVarManager
 from pygwalker.props_parsers.base import DataFrame, FieldSpec
+from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.props_parsers import get_props, get_prop_getter
-from .utils.render import render_gwalker_html
-from .utils.spec import get_spec_json
-from .utils.format_invoke_walk_code import get_formated_spec_params_code
+from pygwalker.services.render import render_gwalker_html
+from pygwalker.services.spec import get_spec_json
+from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code
 
 LAST_PROPS = {}
 
@@ -39,7 +39,7 @@ def to_html(df: DataFrame, gid: Union[int, str]=None, *,
     global LAST_PROPS
     if get_config('privacy')[0] != 'offline':
         try:
-            from .utils.check_update import check_update
+            from pygwalker.services.check_update import check_update
             check_update()
         except:
             pass
@@ -118,7 +118,7 @@ window.addEventListener("message", (event) => {{
     
     import time
     import json
-    from .utils.render import DataFrameEncoder
+    from pygwalker.services.render import DataFrameEncoder
 
     def rand_slot_id():
         return __hash__ + '-' + rand_str(6)
