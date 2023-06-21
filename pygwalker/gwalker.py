@@ -8,7 +8,8 @@ from pygwalker_utils.config import get_config
 from pygwalker import __hash__
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.global_var import GlobalVarManager
-from .utils.gwalker_props import get_props, FieldSpec, DataFrame
+from pygwalker.props_parsers.base import DataFrame, FieldSpec
+from pygwalker.services.props_parsers import get_props, get_prop_getter
 from .utils.render import render_gwalker_html
 from .utils.spec import get_spec_json
 from .utils.format_invoke_walk_code import get_formated_spec_params_code
@@ -118,7 +119,6 @@ window.addEventListener("message", (event) => {{
     import time
     import json
     from .utils.render import DataFrameEncoder
-    from .utils.gwalker_props import get_prop_getter
 
     def rand_slot_id():
         return __hash__ + '-' + rand_str(6)
