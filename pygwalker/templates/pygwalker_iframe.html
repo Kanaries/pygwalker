@@ -1,0 +1,29 @@
+<div id="ifr-pyg-{{ gid }}" style="height: auto">
+    <head>
+        <script>
+            function resizeIframe{{ gid }}(obj, h){
+                const doc = obj.contentDocument || obj.contentWindow.document;
+                if (!h) {
+                    let e = doc.documentElement;
+                    h = Math.max(e.scrollHeight, e.offsetHeight, e.clientHeight);
+                }
+                obj.style.height = 0; obj.style.height = (h + 10) + 'px';
+            }
+            window.addEventListener("message", (event) => {
+                if (event.iframeToResize !== "gwalker-{{ gid }}") return;
+                resizeIframe(document.querySelector("#gwalker-{{ gid }}"), event.desiredHeight);
+            });
+        </script>
+    </head>
+    <iframe
+        src="/"
+        width="100%"
+        height="100px"
+        id="gwalker-{{ gid }}"
+        onload="resizeIframe{{ gid }}(this)"
+        srcdoc="{{ srcdoc }}"
+        frameborder="0"
+        allow="clipboard-read; clipboard-write"
+        allowfullscreen>
+    </iframe>
+</div>

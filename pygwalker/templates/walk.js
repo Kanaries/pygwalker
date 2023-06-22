@@ -1,4 +1,4 @@
-var gw_id = "gwalker-{{ gwalker.id }}";
+var gw_id = "gwalker-div-{{ gwalker.id }}";
 var props = {{ gwalker.props }};
 console.log(PyGWalkerApp, props, gw_id);
 function updateHeight() {
