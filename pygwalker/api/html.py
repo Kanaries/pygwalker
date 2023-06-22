@@ -4,10 +4,11 @@ import traceback
 
 from typing_extensions import Literal
 
-from pygwalker.props_parsers.base import FieldSpec
+from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
 from pygwalker.services.global_var import GlobalVarManager
-from pygwalker.services.props_parsers import get_props
+from pygwalker.services.data_parsers import get_parser
+from pygwalker.services.props import get_default_props
 from pygwalker.services.render import render_gwalker_html
 
 
@@ -40,13 +41,16 @@ def to_html(
     if fieldSpecs is None:
         fieldSpecs = {}
 
+    data_parser = get_parser(df)
+    df = data_parser.escape_fname(df)
+
     try:
-        props = get_props(
-            df,
+        props = get_default_props(
+            data_parser.to_records(df),
+            data_parser.raw_fields(df, fieldSpecs=fieldSpecs),
             hideDataSourceConfig=hideDataSourceConfig,
             themeKey=themeKey,
             dark=dark,
-            fieldSpecs=fieldSpecs,
             **kwargs
         )
         html = render_gwalker_html(gid, props)

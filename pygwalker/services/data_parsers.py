@@ -1,14 +1,13 @@
 import sys
-from typing import Dict, Any
 
-from pygwalker.props_parsers.base import DataFramePropParser
+from pygwalker.data_parsers.base import DataFramePropParser
 from pygwalker._typing import DataFrame
 
 __classname2method = {}
 
 
 # pylint: disable=import-outside-toplevel
-def get_prop_getter(df: DataFrame) -> DataFramePropParser:
+def _get_prop_getter(df: DataFrame) -> DataFramePropParser:
     """
     Get DataFramePropParser for df
     TODO: Maybe you can find a better way to handle the following code
@@ -20,27 +19,27 @@ def get_prop_getter(df: DataFrame) -> DataFramePropParser:
     if 'pandas' in sys.modules:
         import pandas as pd
         if isinstance(df, pd.DataFrame):
-            from pygwalker.props_parsers.pandas_parser import PandasDataFramePropParser
+            from pygwalker.data_parsers.pandas_parser import PandasDataFramePropParser
             __classname2method[pd.DataFrame] = PandasDataFramePropParser
             return __classname2method[pd.DataFrame]
 
     if 'polars' in sys.modules:
         import polars as pl
         if isinstance(df, pl.DataFrame):
-            from pygwalker.props_parsers.polars_parser import PolarsDataFramePropParser
+            from pygwalker.data_parsers.polars_parser import PolarsDataFramePropParser
             __classname2method[pl.DataFrame] = PolarsDataFramePropParser
             return __classname2method[pl.DataFrame]
 
     if 'modin.pandas' in sys.modules:
         from modin import pandas as mpd
         if isinstance(df, mpd.DataFrame):
-            from pygwalker.props_parsers.modin_parser import ModinPandasDataFramePropParser
+            from pygwalker.data_parsers.modin_parser import ModinPandasDataFramePropParser
             __classname2method[mpd.DataFrame] = ModinPandasDataFramePropParser
             return __classname2method[mpd.DataFrame]
 
     return DataFramePropParser
 
 
-def get_props(df: DataFrame, **kwargs) -> Dict[str, Any]:
-    props = get_prop_getter(df).get_props(df, **kwargs)
-    return props
+def get_parser(df: DataFrame) -> DataFramePropParser:
+    parser = _get_prop_getter(df)
+    return parser
