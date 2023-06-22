@@ -9,7 +9,8 @@ from typing_extensions import Literal
 from pygwalker import __hash__
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.display import display_html
-from pygwalker.props_parsers.base import DataFrame, FieldSpec
+from pygwalker.props_parsers.base import FieldSpec
+from pygwalker._typing import DataFrame
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.props_parsers import get_props, get_prop_getter
 from pygwalker.services.render import render_gwalker_html, DataFrameEncoder

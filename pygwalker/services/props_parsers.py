@@ -1,7 +1,8 @@
 import sys
 from typing import Dict, Any
 
-from pygwalker.props_parsers.base import DataFrame, DataFramePropParser
+from pygwalker.props_parsers.base import DataFramePropParser
+from pygwalker._typing import DataFrame
 
 __classname2method = {}
 

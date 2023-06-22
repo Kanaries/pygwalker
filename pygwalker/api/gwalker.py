@@ -1,6 +1,6 @@
 from pygwalker.services.global_var import GlobalVarManager
 
-from pygwalker.props_parsers.base import DataFrame
+from pygwalker._typing import DataFrame
 from .html import to_html
 from .walker import walk
 

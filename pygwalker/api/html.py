@@ -4,7 +4,8 @@ import traceback
 
 from typing_extensions import Literal
 
-from pygwalker.props_parsers.base import DataFrame, FieldSpec
+from pygwalker.props_parsers.base import FieldSpec
+from pygwalker._typing import DataFrame
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.props_parsers import get_props
 from pygwalker.services.render import render_gwalker_html
