@@ -2,6 +2,7 @@ from typing import Union, Dict, Optional, Any
 import inspect
 import html as m_html
 import time
+import logging
 
 from typing_extensions import Literal
 
@@ -18,7 +19,7 @@ from pygwalker.services.render import (
 )
 from pygwalker.services.props import get_default_props
 from pygwalker.services.spec import get_spec_json
-from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code
+from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code, InvokeCodeParser
 
 
 def walk(
@@ -54,10 +55,15 @@ def walk(
         fieldSpecs = {}
     if gid is None:
         gid = GlobalVarManager.get_global_gid()
+    kwargs["sourceInvokeCode"] = "pyg.walk(df, spec='____pyg_walker_spec_params____')"
 
-    kwargs["sourceInvokeCode"] = get_formated_spec_params_code(
-        inspect.stack()[1].code_context[0]
-    )
+    try:
+        kwargs["sourceInvokeCode"] = get_formated_spec_params_code(
+            str(InvokeCodeParser(inspect.stack()[1].frame))
+        )
+    except Exception:
+        logging.warning("parse invoke code failed, This may affect feature of export code.")
+
     kwargs["spec"] = get_spec_json(kwargs.get("spec", ""))
     kwargs["id"] = gid
 
