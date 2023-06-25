@@ -18,7 +18,7 @@ const syntaxHighlight = (json: any) => {
         .replace(/\s/g, "&nbsp;");
     return json.replace(
         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-        function (match) {
+        function (match: string) {
             var cls = "text-sky-500"; // number
             if (/^"/.test(match)) {
                 if (/:$/.test(match)) {

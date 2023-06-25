@@ -34,9 +34,14 @@
     "@rollup/plugin-typescript": "^11.0.x",
     "@types/react": "^17.x",
     "@types/react-dom": "^17.x",
+    "@types/styled-components": "^5.1.26",
     "@vitejs/plugin-react": "^3.1.x",
     "typescript": "^4.9.5",
     "vite": "^4.1.4"
   },
-  "peerDependencies": {}
+  "peerDependencies": {},
+  "prettier": {
+    "tabWidth": 4,
+    "printWidth": 160
+  }
 }

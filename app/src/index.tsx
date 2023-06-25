@@ -2,24 +2,26 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker } from '@kanaries/graphic-walker'
-//import type { IGWProps } from '../../graphic-walker/packages/graphic-walker/dist/App'
-//import type { IGlobalStore } from '../../graphic-walker/packages/graphic-walker/dist/store'
 import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
-// import type { IGWProps } from 'gwalker/App'
-
-import style from "./index.css";
-import Options from './components/options';
-import { IAppProps } from './interfaces';
 import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
-import { AuthWrapper } from "@kanaries/auth-wrapper"
-import { loadDataSource } from './dataSource';
 import { IDataSetInfo, IMutField, IRow } from '@kanaries/graphic-walker/dist/interfaces';
-import { setConfig, checkUploadPrivacy } from './utils/userConfig';
-import CodeExportModal from './components/codeExportModal';
+import { AuthWrapper } from "@kanaries/auth-wrapper"
 import {
   CodeBracketSquareIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
+
+import Options from './components/options';
+import { IAppProps } from './interfaces';
+
+import { loadDataSource } from './dataSource';
+
+import { setConfig, checkUploadPrivacy } from './utils/userConfig';
+import CodeExportModal from './components/codeExportModal';
+
+import { ToolbarItemProps } from '@kanaries/graphic-walker/dist/components/toolbar';
+// @ts-ignore
+import style from './index.css?inline'
 
 /** App does not consider props.storeRef */
 const App: React.FC<IAppProps> = observer((propsIn) => {
@@ -33,25 +35,9 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
   const [mounted, setMounted] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
-  // let tunnel: Tunnel;
   useEffect(() => {
     if (userConfig) setConfig(userConfig);
   }, [userConfig]);
-
-  // useEffect(() => {
-  //   const tunnelId = dataSourceProps?.tunnelId;
-  //   if (tunnelId) {
-  //     console.log("tunnelId = ", tunnelId);
-  //     tunnel = new Tunnel(tunnelId, window);
-  //     tunnel.onMessage((msg) => {
-  //       // TODO:
-  //     })
-
-  //     return () => {
-  //       tunnel.close();
-  //     }
-  //   }
-  // })
 
   const setData = useCallback(async (p: {
     data?: IRow[];
@@ -87,13 +73,6 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
   }, [dataSource, rawFields, visSpec]);
 
   const updateDataSource = useCallback(async () => {
-    // console.log('dataListener', ev);
-    // if (ev.data.action !== 'dataReady') {
-    //   return;
-    // }
-    // console.log("Data Ready!");
-    // window.removeEventListener('message', dataListener);
-    // console.log("props = ", props);
 
     // TODO: don't always update visSpec when appending data
     await loadDataSource(dataSourceProps).then(ds => {
@@ -109,20 +88,23 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
       // TODO: DataSet and DataSource ID
       try {
         updateDataSource();
-        // console.log("message", dataListener);
-        // window.addEventListener('message', dataListener);
       } catch (e) {
         console.error('failed to load spec: ', e);
       }
     }
   }, [updateDataSource]);
 
-  const exportTool = { key: "export_code", label: "export_code", icon: CodeBracketSquareIcon, onClick: () => { setExportOpen(true); } }
+  const exportTool: ToolbarItemProps = {
+    key: "export_code",
+    label: "export_code",
+    icon: (iconProps?: any) => <CodeBracketSquareIcon {...iconProps} />,
+    onClick: () => { setExportOpen(true); }
+  }
   const loginTool = {
     key: 'login',
     label: 'login',
-    icon: props => (
-      <UserIcon {...props} ref={e => {
+    icon: (iconProps?: any) => (
+      <UserIcon {...iconProps} ref={e => {
         setMounted(true);
         wrapRef.current = e?.parentElement as HTMLElement;
       }} />
@@ -134,7 +116,6 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     exclude: ["export_code"],
     extra: checkUploadPrivacy() ? [exportTool, loginTool] : [exportTool]
   }
-  props["toolbar"] = toolbarConfig
   
   return (
     <React.StrictMode>
@@ -143,17 +124,15 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         mounted && checkUploadPrivacy() && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
       }
       <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-      <GraphicWalker {...props} />
-      <Options {...props} />
+      <GraphicWalker {...props} toolbar={toolbarConfig} />
+      <Options {...props} toolbar={toolbarConfig} />
     </React.StrictMode>
   );
 })
 
 function GWalker(props: IAppProps, id: string) {
-    // GWalkerMap[id] = c;
     ReactDOM.render(<App {...props}></App>, document.getElementById(id)
   );
 }
 
-// export {IGWProps}
 export default { GWalker }
