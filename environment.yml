@@ -7,7 +7,6 @@ dependencies:
   - jinja2
   - pandas
   - python>=3.5
-  - aiohttp>=3.0
   - pip
   - polars
   - pip:
