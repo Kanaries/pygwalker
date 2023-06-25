@@ -1,4 +1,4 @@
-from typing import NamedTuple, Generic, Dict, List, Any, Optional
+from typing import NamedTuple, Generic, Dict, List, Any
 from typing_extensions import Literal
 import abc
 
@@ -21,43 +21,68 @@ class FieldSpec(NamedTuple):
 default_field_spec = FieldSpec()
 
 
-class DataFramePropParser(Generic[DataFrame], abc.ABC):
+class BaseDataParser(abc.ABC):
+    """Base class for data parser"""
+
+    @abc.abstractmethod
+    def __init__(self, data: Any) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def raw_fields(self, field_specs: Dict[str, FieldSpec]) -> List[Dict[str, str]]:
+        """get raw fields"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def to_records(self) -> List[Dict[str, Any]]:
+        """get records"""
+        raise NotImplementedError
+
+
+class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
+    def __init__(self, df: DataFrame):
+        self.df = self._init_dataframe(df)
 
-    @classmethod
-    def _infer_semantic(cls, s: Series):
+    def raw_fields(self, field_specs: Dict[str, FieldSpec]) -> List[Dict[str, str]]:
+        return [
+            self._infer_prop(col, i, field_specs)
+            for i, col in enumerate(self.df.columns)
+        ]
+
+    def to_records(self) -> List[Dict[str, Any]]:
+        """Convert DataFrame to a list of records"""
         raise NotImplementedError
 
-    @classmethod
-    def _infer_analytic(cls, s: Series):
+    def _init_dataframe(self, df: DataFrame) -> DataFrame:
         raise NotImplementedError
 
-    @classmethod
-    def _to_matrix(cls, df: DataFrame) -> List[Dict[str, Any]]:
+    def _infer_semantic(self, s: Series):
         raise NotImplementedError
 
-    @classmethod
-    def _series(cls, df: DataFrame, i: int, col: str) -> Series:
-        return df[col]
+    def _infer_analytic(self, s: Series):
+        raise NotImplementedError
 
-    @classmethod
+    def _to_matrix(self) -> List[Dict[str, Any]]:
+        raise NotImplementedError
+
+    def _series(self, i: int, col: str) -> Series:
+        return self.df[col]
+
     def _infer_prop(
-        cls, df: DataFrame, col: str, i=None, field_specs: Optional[Dict[str, FieldSpec]] = None
+        self, col: str, i=None, field_specs: Dict[str, FieldSpec] = None
     ) -> Dict[str, str]:
         """get IMutField
 
         Returns:
             (IMutField, Dict)
         """
-        if field_specs is None:
-            field_specs = {}
-
-        s: cls.Series = cls._series(df, i, col)
-        orig_fname = cls._decode_fname(s)
+        s = self._series(i, col)
+        orig_fname = self._decode_fname(s)
         field_spec = field_specs.get(orig_fname, default_field_spec)
-        semantic_type = cls._infer_semantic(s) if field_spec.semanticType == '?' else field_spec.semanticType
+        semantic_type = self._infer_semantic(s) if field_spec.semanticType == '?' else field_spec.semanticType
         # 'quantitative' | 'nominal' | 'ordinal' | 'temporal';
-        analytic_type = cls._infer_analytic(s) if field_spec.analyticType == '?' else field_spec.analyticType
+        analytic_type = self._infer_analytic(s) if field_spec.analyticType == '?' else field_spec.analyticType
         # 'measure' | 'dimension';
         fname = orig_fname if field_spec.display_as is None else field_spec.display_as
         return {
@@ -66,28 +91,3 @@ class DataFramePropParser(Generic[DataFrame], abc.ABC):
             'semanticType': semantic_type,
             'analyticType': analytic_type,
         }
-
-    @classmethod
-    def format_data(cls, df: DataFrame) -> DataFrame:
-        """Format data"""
-        df = df.sample(frac=1)
-        df = cls.escape_fname(df)
-        return df
-
-    @classmethod
-    def escape_fname(cls, df: DataFrame) -> DataFrame:
-        """Encode fname to prefent special characters in field name to cause errors"""
-        raise NotImplementedError
-
-    @classmethod
-    def raw_fields(cls, df: DataFrame, **kwargs):
-        field_specs = kwargs.get('fieldSpecs', {})
-        return [
-            cls._infer_prop(df, col, i, field_specs)
-            for i, col in enumerate(df.columns)
-        ]
-
-    @classmethod
-    def to_records(cls, df: DataFrame, **kwargs) -> List[Dict[str, Any]]:
-        """Convert DataFrame to a list of records"""
-        raise NotImplementedError

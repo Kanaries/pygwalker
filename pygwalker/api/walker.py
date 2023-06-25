@@ -1,4 +1,4 @@
-from typing import Union, Dict, Optional
+from typing import Union, Dict, Optional, Any
 import inspect
 import html as m_html
 import time
@@ -6,7 +6,7 @@ import time
 from typing_extensions import Literal
 
 from pygwalker.utils.display import display_html
-from pygwalker.data_parsers.base import FieldSpec
+from pygwalker.data_parsers.base import FieldSpec, BaseDataParser
 from pygwalker._typing import DataFrame
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.data_parsers import get_parser
@@ -22,9 +22,10 @@ from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_
 
 
 def walk(
-    df: DataFrame,
+    df: Union[DataFrame, Any],
     gid: Union[int, str] = None,
     *,
+    custom_data_parser: Optional[BaseDataParser] = None,
     env: Literal['Jupyter', 'Streamlit'] = 'Jupyter',
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
     hideDataSourceConfig: bool = True,
@@ -60,13 +61,16 @@ def walk(
     kwargs["spec"] = get_spec_json(kwargs.get("spec", ""))
     kwargs["id"] = gid
 
-    data_parser = get_parser(df)
-    df = data_parser.format_data(df)
-    origin_data_source = data_parser.to_records(df)
+    if custom_data_parser is None:
+        data_parser = get_parser(df)
+    else:
+        data_parser = custom_data_parser(df)
+
+    origin_data_source = data_parser.to_records()
 
     props = get_default_props(
         origin_data_source,
-        data_parser.raw_fields(df, fieldSpecs=fieldSpecs),
+        data_parser.raw_fields(field_specs=fieldSpecs),
         hideDataSourceConfig=hideDataSourceConfig,
         themeKey=themeKey,
         dark=dark,

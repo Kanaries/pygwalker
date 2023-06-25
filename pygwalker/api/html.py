@@ -22,7 +22,9 @@ def to_html(
     dark: Literal['media', 'light', 'dark'] = 'media',
     **kwargs
 ):
-    """Generate embeddable HTML code of Graphic Walker with data of `df`.
+    """
+    (deprecated) please use `pygwalker.walk(df, return_html=True)` instead.
+    Generate embeddable HTML code of Graphic Walker with data of `df`.
 
     Args:
         - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
@@ -42,12 +44,11 @@ def to_html(
         fieldSpecs = {}
 
     data_parser = get_parser(df)
-    df = data_parser.escape_fname(df)
 
     try:
         props = get_default_props(
-            data_parser.to_records(df),
-            data_parser.raw_fields(df, fieldSpecs=fieldSpecs),
+            data_parser.to_records(),
+            data_parser.raw_fields(field_specs=fieldSpecs),
             hideDataSourceConfig=hideDataSourceConfig,
             themeKey=themeKey,
             dark=dark,
