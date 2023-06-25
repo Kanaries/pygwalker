@@ -1,10 +1,49 @@
-from typing import Optional, List
+from typing import Optional, List, Any
+from types import FrameType
+from lib2to3 import fixer_base, refactor
+import inspect
 import ast
 
 from astor.source_repr import split_lines
 import astor
 
 _MAX_LINE = 150
+
+
+class StatementScraper(fixer_base.BaseFix):
+    """StatementScraper"""
+    PATTERN = 'simple_stmt'
+
+    def __init__(self, lineno):
+        super().__init__(None, None)
+        self.lineno = lineno
+        self.statement = ''
+
+    def transform(self, node: Any, results: Any) -> Any:
+        if not self.statement and self.lineno - node.get_lineno() < str(node).count('\n'):
+            prev_sibling = str(node.prev_sibling)
+            if prev_sibling.isspace():
+                self.statement += prev_sibling.lstrip('\n')
+            self.statement += str(node)
+        return node
+
+
+class InvokeCodeParser(refactor.RefactoringTool):
+    """
+    Parse the code and get the invoke code.
+    TODO: temporary solution, need to be improved.
+    """
+    def __init__(self, frame: FrameType):
+        self.source = inspect.getsource(frame)
+        self.scraper = StatementScraper(frame.f_lineno)
+        super().__init__(None)
+
+    def get_fixers(self):
+        return [self.scraper], []
+
+    def __str__(self):
+        self.refactor_string(self.source, '')
+        return self.scraper.statement
 
 
 def _find_walk_func_node(code: str) -> Optional['ast.Call']:
