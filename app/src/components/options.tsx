@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import type { IGWProps } from '@kanaries/graphic-walker/dist/App'
-import type { IAppProps } from '../interfaces';
+import React, { useEffect, useState } from "react";
+import type { IAppProps } from "../interfaces";
 
 const copyToClipboard = async (text: string) => {
     return navigator.clipboard.writeText(text);
@@ -13,12 +12,12 @@ interface ISolutionProps {
 
 const updateSolutions: ISolutionProps[] = [
     {
-        header: 'Using pip:',
-        cmd: 'pip install pygwalker --upgrade',
+        header: "Using pip:",
+        cmd: "pip install pygwalker --upgrade",
     },
     {
-        header: 'Using anaconda:',
-        cmd: 'conda install -c conda-forge pygwalker',
+        header: "Using anaconda:",
+        cmd: "conda install -c conda-forge pygwalker",
     },
 ];
 
@@ -27,13 +26,9 @@ const Solution: React.FC<ISolutionProps> = (props) => {
 
     return (
         <>
-            <header>
-                {props.header}
-            </header>
+            <header>{props.header}</header>
             <div>
-                <code>
-                    {props.cmd}
-                </code>
+                <code>{props.cmd}</code>
                 <div
                     role="button"
                     aria-label="Copy command"
@@ -51,33 +46,35 @@ const Solution: React.FC<ISolutionProps> = (props) => {
                         });
                     }}
                 >
-                    <small>{busy ? 'Copied' : 'Copy'}</small>
-                    <span>{busy ? '\u2705' : '\u274f'}</span>
+                    <small>{busy ? "Copied" : "Copy"}</small>
+                    <span>{busy ? "\u2705" : "\u274f"}</span>
                 </div>
             </div>
         </>
     );
 };
 
-const RAND_HASH = Math.random().toString(16).split('.').at(1);
+const RAND_HASH = Math.random().toString(16).split(".").at(1);
 const Options: React.FC<IAppProps> = (props: IAppProps) => {
     const [outdated, setOutDated] = useState<Boolean>(false);
     const [appMeta, setAppMeta] = useState<any>({});
     const [showUpdateHint, setShowUpdateHint] = useState(false);
-    const UPDATE_URL = "https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates"
-    const VERSION = (window as any)?.__GW_VERSION || 'current';
+    const UPDATE_URL = "https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates";
+    const VERSION = (window as any)?.__GW_VERSION || "current";
     const HASH = (window as any)?.__GW_HASH || RAND_HASH;
     useEffect(() => {
         if (props.userConfig?.privacy !== "offline") {
             const req = `${UPDATE_URL}?pkg=pygwalker-app&v=${VERSION}&hashcode=${HASH}&env=${process.env.NODE_ENV}`;
             fetch(req, {
-                "headers": {
+                headers: {
                     "Content-Type": "application/json",
-                }
-            }).then(resp => resp.json()).then((res) => {
-                setAppMeta({'data': res.data});
-                setOutDated(res?.data?.outdated || false);
-            });
+                },
+            })
+                .then((resp) => resp.json())
+                .then((res) => {
+                    setAppMeta({ data: res.data });
+                    setOutDated(res?.data?.outdated || false);
+                });
         }
     }, []);
 
@@ -92,9 +89,9 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
         const handleDismiss = () => {
             setShowUpdateHint(false);
         };
-        document.addEventListener('click', handleDismiss);
+        document.addEventListener("click", handleDismiss);
         return () => {
-            document.removeEventListener('click', handleDismiss);
+            document.removeEventListener("click", handleDismiss);
         };
     }, [showUpdateHint]);
 
@@ -109,14 +106,15 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
         const handleDismiss = () => {
             setShowUpdateHint(false);
         };
-        document.addEventListener('click', handleDismiss);
+        document.addEventListener("click", handleDismiss);
         return () => {
-            document.removeEventListener('click', handleDismiss);
+            document.removeEventListener("click", handleDismiss);
         };
     }, [showUpdateHint]);
 
-    return (<>
-    <style>{`
+    return (
+        <>
+            <style>{`
         .update_link {
             position: fixed;
             right: 2rem;
@@ -222,51 +220,29 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
             }
         }
     `}</style>
-    {outdated &&
-    <div
-        className="update_link"
-        aria-live="assertive"
-        role="alert"
-        tabIndex={0}
-        onClick={e => e.stopPropagation()}
-    >
-        <p>
-            <a href="https://pypi.org/project/pygwalker" target="_blank">
-                {"Update: "}
-                {`${VERSION}\u2191`}
-                <span>{` ${appMeta?.data?.latest?.release?.version || 'latest'}`}</span>
-            </a>
-            <span role="separator">|</span>
-            <span
-                aria-haspopup
-                role="button"
-                tabIndex={0}
-                onClick={() => setShowUpdateHint(s => !s)}
-            >
-                {`${showUpdateHint ? 'Hide' : ' Cmd'} \u274f`}
-            </span>
-        </p>
-        {showUpdateHint && (
-            <div className="solutions">
-                {updateSolutions.map((sol, i) => <Solution key={i} {...sol} />)}
-            </div>
-        )}
-    </div> }
-    </>)
-    // const ref = props.storeRef;
-    // return (<>
-    //     <button onClick={() => {
-    //     if (ref?.current) {
-    //       console.log(ref.current.vizStore.exportAsRaw())
-    //     }
-    //   }}>Click Me</button>
-
-
-    //   <textarea id="code"></textarea>
-    //   <button onClick={() => {
-    //     const txt = document.querySelector("#code")?.textContent || "";
-    //     ref?.current?.vizStore.importRaw(txt);
-    //   }}>Load</button>
-    // </>)
-}
+            {outdated && (
+                <div className="update_link" aria-live="assertive" role="alert" tabIndex={0} onClick={(e) => e.stopPropagation()}>
+                    <p>
+                        <a href="https://pypi.org/project/pygwalker" target="_blank">
+                            {"Update: "}
+                            {`${VERSION}\u2191`}
+                            <span>{` ${appMeta?.data?.latest?.release?.version || "latest"}`}</span>
+                        </a>
+                        <span role="separator">|</span>
+                        <span aria-haspopup role="button" tabIndex={0} onClick={() => setShowUpdateHint((s) => !s)}>
+                            {`${showUpdateHint ? "Hide" : " Cmd"} \u274f`}
+                        </span>
+                    </p>
+                    {showUpdateHint && (
+                        <div className="solutions">
+                            {updateSolutions.map((sol, i) => (
+                                <Solution key={i} {...sol} />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+        </>
+    );
+};
 export default Options;
