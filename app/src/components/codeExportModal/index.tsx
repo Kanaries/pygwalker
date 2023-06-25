@@ -95,7 +95,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         setTips={setTips}
                     />
                     <DefaultButton
-                        text="Cancal"
+                        text="Cancel"
                         className="mr-2 px-6"
                         onClick={() => {
                             props.setOpen(false);
