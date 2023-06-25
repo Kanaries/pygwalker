@@ -5,36 +5,13 @@ import DefaultButton from "../button/default";
 import PrimaryButton from "../button/primary";
 import SavePygConfigButton from './saveConfigButton';
 
-const syntaxHighlight = (json: any) => {
-    if (typeof json != "string") {
-        json = JSON.stringify(json, undefined, 4);
-    }
-    json = json
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\n/g, "<br>")
-        .replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;")
-        .replace(/\s/g, "&nbsp;");
-    return json.replace(
-        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-        function (match: string) {
-            var cls = "text-sky-500"; // number
-            if (/^"/.test(match)) {
-                if (/:$/.test(match)) {
-                    cls = "text-purple-500"; // key
-                } else {
-                    cls = "text-emerald-500"; // string
-                }
-            } else if (/true|false/.test(match)) {
-                cls = "text-blue-500";
-            } else if (/null/.test(match)) {
-                cls = "text-sky-500";
-            }
-            return '<span class="' + cls + '">' + match + "</span>";
-        }
-    );
-};
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
+import py from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
+import atomOneLight from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light';
+
+SyntaxHighlighter.registerLanguage('json', json);
+SyntaxHighlighter.registerLanguage('python', py);
 
 interface ICodeExport {
     globalStore: any;
@@ -47,11 +24,6 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     const [code, setCode] = useState<any>("");
     const [pygCode, setPygCode] = useState<string>("");
     const [tips, setTips] = useState<string>("");
-
-    const copyOutput = useMemo(() => {
-        let output = JSON.stringify(code);
-        return output;
-    }, [code]);
 
     useEffect(() => {
         if (props.open) {
@@ -69,8 +41,11 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
         >
             <div>
                 <h1 className="mb-4">Code Export</h1>
-                <div className="text-sm px-6 max-h-64 overflow-auto">
-                    <code dangerouslySetInnerHTML={{ __html: syntaxHighlight(code) }} />
+                <div className="text-sm max-h-64 overflow-auto">
+                    <h2 className="text-sm mb-2">graphic walker spec</h2>
+                    <SyntaxHighlighter showLineNumbers language="json" style={atomOneLight}>
+                        {JSON.stringify(code, null, 2)}
+                    </SyntaxHighlighter>
                 </div>
                 <div className="mt-4 flex justify-start">
                     <PrimaryButton
@@ -102,8 +77,10 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         }}
                     />
                 </div>
-                <div className="text-sm px-6 max-h-56 mt-4">
-                    <textarea style={{fontFamily: "monospace"}} readOnly={true} rows={3} cols={90} wrap="off" defaultValue={pygCode} />
+                <div className="text-sm max-h-56 mt-4">
+                    <SyntaxHighlighter showLineNumbers language="python" style={atomOneLight}>
+                        {pygCode}
+                    </SyntaxHighlighter>
                     <p style={{textAlign: 'right'}}>{tips}</p>
                 </div>
             </div>
