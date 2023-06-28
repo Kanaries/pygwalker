@@ -173,7 +173,7 @@ For more detailed instructions, visit the [Graphic Walker GitHub page](https://g
 
 ## Configuration
 
-Since `pygwalker>=0.1.7a0`, we provide the ability to ability to modify user-wide configuration either through the command line interface
+Since `pygwalker>=0.1.7a0`, we provide the ability to modify user-wide configuration either through the command line interface
 ```bash
 $ pygwalker config   
 usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
