@@ -10,7 +10,6 @@ from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.display import display_html
 from pygwalker import __version__, __hash__
 from pygwalker_utils.config import get_config
-from .global_var import GlobalVarManager
 
 jinja_env = Environment(
     loader=PackageLoader("pygwalker"),
@@ -40,7 +39,6 @@ def _rand_slot_id():
 def _send_js(js_code: str, slot_id: str):
     display_html(
         f"""<script>(()=>{{let f=()=>{{{js_code}}};setTimeout(f,0);}})()</script>""",
-        GlobalVarManager.get_env(),
         slot_id=slot_id
     )
 
@@ -74,8 +72,8 @@ class BatchUploadDatasTool:
         self._progress_id = __hash__ + rand_str(6)
 
     def init(self) -> None:
-        display_html("", GlobalVarManager.get_env(), slot_id=self._caution_id)
-        display_html("", GlobalVarManager.get_env(), slot_id=self._progress_id)
+        display_html("", slot_id=self._caution_id)
+        display_html("", slot_id=self._progress_id)
 
     def run(
         self,
@@ -88,7 +86,6 @@ class BatchUploadDatasTool:
         slot_count: int = 2
     ) -> None:
         progress_hint = "Dynamically loading into the frontend..."
-        env = GlobalVarManager.get_env()
         chunk = 1 << 12
         cur_slot = 0
         display_slots = [_rand_slot_id() for _ in range(slot_count)]
@@ -98,8 +95,8 @@ class BatchUploadDatasTool:
             f'Only {sample_data_count} sample items are printed to the file.</div>'
         )
 
-        display_html(tips_title, env, slot_id=self._caution_id)
-        display_html(f"{progress_hint} {sample_data_count}/{len(records)}", env, slot_id=self._progress_id)
+        display_html(tips_title, slot_id=self._caution_id)
+        display_html(f"{progress_hint} {sample_data_count}/{len(records)}", slot_id=self._progress_id)
 
         for i in range(sample_data_count, len(records), chunk):
             data = records[i: min(i+chunk, len(records))]
@@ -112,7 +109,7 @@ class BatchUploadDatasTool:
             _send_upload_data_msg(gid, msg, display_slots[cur_slot])
             cur_slot += 1
             cur_slot %= slot_count
-            display_html(f"{progress_hint} {min(i+chunk, len(records))}/{len(records)}", env, slot_id=self._progress_id)
+            display_html(f"{progress_hint} {min(i+chunk, len(records))}/{len(records)}", slot_id=self._progress_id)
 
         finish_msg = {
             'action': 'finishData',
@@ -121,11 +118,11 @@ class BatchUploadDatasTool:
         }
         time.sleep(1)
         _send_upload_data_msg(gid, finish_msg, display_slots[cur_slot])
-        display_html("", env, slot_id=self._progress_id)
-        display_html("", env, slot_id=self._caution_id)
+        display_html("", slot_id=self._progress_id)
+        display_html("", slot_id=self._caution_id)
 
         for slot_id in display_slots:
-            display_html("", env, slot_id=slot_id)
+            display_html("", slot_id=slot_id)
 
 
 def render_gwalker_iframe(gid: int, srcdoc: str) -> str:
