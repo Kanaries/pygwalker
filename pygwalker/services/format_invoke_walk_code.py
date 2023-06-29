@@ -1,6 +1,7 @@
 from typing import Optional, List, Any
 from types import FrameType
 from lib2to3 import fixer_base, refactor
+import logging
 import inspect
 import ast
 
@@ -90,3 +91,15 @@ def get_formated_spec_params_code(code: str) -> str:
     if call_func is None:
         return ''
     return _repalce_spec_params_code(call_func)
+
+
+def get_formated_spec_params_code_from_frame(frame: FrameType) -> str:
+    try:
+        source_invoke_code = get_formated_spec_params_code(
+            str(InvokeCodeParser(frame))
+        )
+    except Exception:
+        source_invoke_code = "pyg.walk(df, spec='____pyg_walker_spec_params____')"
+        logging.warning("parse invoke code failed, This may affect feature of export code.")
+
+    return source_invoke_code

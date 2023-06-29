@@ -1,31 +1,14 @@
 from typing import Union, Dict, Optional, Any
 import inspect
-import html as m_html
-import time
-import logging
 
 from typing_extensions import Literal
 
-from pygwalker.utils.display import display_html, display_on_streamlit
+from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec, BaseDataParser
 from pygwalker._typing import DataFrame
-from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.services.render import (
-    render_gwalker_html,
-    render_gwalker_iframe,
-    get_max_limited_datas,
-    BatchUploadDatasTool
-)
-from pygwalker.services.props import get_default_props
 from pygwalker.services.spec import get_spec_json
-from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code, InvokeCodeParser
-
-
-def _get_render_iframe(gid: str, props: Dict[str, Any]) -> str:
-    html = render_gwalker_html(gid, props)
-    srcdoc = m_html.escape(html)
-    return render_gwalker_iframe(gid, srcdoc)
+from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 
 
 def walk(
@@ -56,60 +39,35 @@ def walk(
         - return_html (bool, optional): Directly return a html string. Defaults to False.
         - spec (str): chart config data. config id, json, remote file url
     """
-    GlobalVarManager.set_env(env)
     if fieldSpecs is None:
         fieldSpecs = {}
-    if gid is None:
-        gid = GlobalVarManager.get_global_gid()
-    kwargs["sourceInvokeCode"] = "pyg.walk(df, spec='____pyg_walker_spec_params____')"
 
-    try:
-        kwargs["sourceInvokeCode"] = get_formated_spec_params_code(
-            str(InvokeCodeParser(inspect.stack()[1].frame))
-        )
-    except Exception:
-        logging.warning("parse invoke code failed, This may affect feature of export code.")
-
-    kwargs["spec"] = get_spec_json(kwargs.get("spec", ""))
-    kwargs["id"] = gid
+    source_invoke_code = get_formated_spec_params_code_from_frame(
+        inspect.stack()[1].frame
+    )
+    spec = get_spec_json(kwargs.get("spec", ""))
 
     if custom_data_parser is None:
         data_parser = get_parser(df)
     else:
         data_parser = custom_data_parser(df)
 
-    origin_data_source = data_parser.to_records()
-
-    props = get_default_props(
-        origin_data_source,
+    walker = PygWalker(
+        gid,
+        data_parser.to_records(),
         data_parser.raw_fields(field_specs=fieldSpecs),
-        hideDataSourceConfig=hideDataSourceConfig,
-        themeKey=themeKey,
-        dark=dark,
+        spec,
+        source_invoke_code,
+        hideDataSourceConfig,
+        themeKey,
+        dark,
         **kwargs
     )
 
     if return_html:
-        return _get_render_iframe(gid, props)
+        return walker.to_html()
 
     if env == "Streamlit":
-        display_on_streamlit(_get_render_iframe(gid, props))
-        return
-
-    props["dataSource"] = get_max_limited_datas(origin_data_source)
-    iframe_html = _get_render_iframe(gid, props)
-
-    if len(origin_data_source) > len(props["dataSource"]):
-        upload_tool = BatchUploadDatasTool()
-        upload_tool.init()
-        display_html(iframe_html)
-        time.sleep(1)
-        upload_tool.run(
-            records=origin_data_source,
-            sample_data_count=len(props["dataSource"]),
-            data_source_id=props["dataSourceProps"]["dataSourceId"],
-            gid=gid,
-            tunnel_id=props["dataSourceProps"]["tunnelId"],
-        )
-    else:
-        display_html(iframe_html)
+        walker.display_on_streamlit()
+    elif env == "Jupyter":
+        walker.display_on_jupyter()
