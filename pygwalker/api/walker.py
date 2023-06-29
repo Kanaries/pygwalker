@@ -6,7 +6,7 @@ import logging
 
 from typing_extensions import Literal
 
-from pygwalker.utils.display import display_html
+from pygwalker.utils.display import display_html, display_on_streamlit
 from pygwalker.data_parsers.base import FieldSpec, BaseDataParser
 from pygwalker._typing import DataFrame
 from pygwalker.services.global_var import GlobalVarManager
@@ -20,6 +20,12 @@ from pygwalker.services.render import (
 from pygwalker.services.props import get_default_props
 from pygwalker.services.spec import get_spec_json
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code, InvokeCodeParser
+
+
+def _get_render_iframe(gid: str, props: Dict[str, Any]) -> str:
+    html = render_gwalker_html(gid, props)
+    srcdoc = m_html.escape(html)
+    return render_gwalker_iframe(gid, srcdoc)
 
 
 def walk(
@@ -84,18 +90,19 @@ def walk(
     )
 
     if return_html:
-        html = render_gwalker_html(gid, props)
-        srcdoc = m_html.escape(html)
-        return render_gwalker_iframe(gid, srcdoc)
+        return _get_render_iframe(gid, props)
+
+    if env == "Streamlit":
+        display_on_streamlit(_get_render_iframe(gid, props))
+        return
 
     props["dataSource"] = get_max_limited_datas(origin_data_source)
-    html = render_gwalker_html(gid, props)
-    srcdoc = m_html.escape(html)
+    iframe_html = _get_render_iframe(gid, props)
 
     if len(origin_data_source) > len(props["dataSource"]):
         upload_tool = BatchUploadDatasTool()
         upload_tool.init()
-        display_html(render_gwalker_iframe(gid, srcdoc), env)
+        display_html(iframe_html)
         time.sleep(1)
         upload_tool.run(
             records=origin_data_source,
@@ -105,4 +112,4 @@ def walk(
             tunnel_id=props["dataSourceProps"]["tunnelId"],
         )
     else:
-        display_html(render_gwalker_iframe(gid, srcdoc), env)
+        display_html(iframe_html)

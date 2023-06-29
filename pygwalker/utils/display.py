@@ -1,13 +1,17 @@
-from typing_extensions import Literal
+from typing import Union
 
 from IPython.display import display, HTML
 
 DISPLAY_HANDLER = {}
 
 
+def display_on_streamlit(html: str):
+    import streamlit.components.v1 as components
+    components.html(html, height=1000, scrolling=True)
+
+
 def display_html(
-    html: str,
-    env: Literal['Jupyter', 'Streamlit', 'Widgets'] = 'Jupyter',
+    html: Union[str, HTML],
     *,
     slot_id: str = None
 ):
@@ -19,22 +23,17 @@ def display_html(
         *
         - slot_id(str): display with given id.
     """
-    if env == 'Jupyter':
-        if slot_id is None:
-            display(HTML(html))
-        else:
-            handler = DISPLAY_HANDLER.get(slot_id)
-            if handler is None:
-                handler = display(HTML(html), display_id=slot_id)
-                DISPLAY_HANDLER[slot_id] = handler
-            else:
-                handler.update(HTML(html))
-
-    elif env == 'Streamlit':
-        import streamlit.components.v1 as components
-        components.html(html, height=1000, scrolling=True)
-    elif env == 'Widgets':
-        import ipywidgets as wgt
-
+    if isinstance(html, str):
+        widget = HTML(html)
     else:
-        print("The environment is not supported yet, Please use the options given")
+        widget = html
+
+    if slot_id is None:
+        display(widget)
+    else:
+        handler = DISPLAY_HANDLER.get(slot_id)
+        if handler is None:
+            handler = display(widget, display_id=slot_id)
+            DISPLAY_HANDLER[slot_id] = handler
+        else:
+            handler.update(widget)
