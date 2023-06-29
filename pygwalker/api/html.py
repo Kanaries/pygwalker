@@ -4,12 +4,11 @@ import traceback
 
 from typing_extensions import Literal
 
+from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.services.props import get_default_props
-from pygwalker.services.render import render_gwalker_html
 
 
 def to_html(
@@ -45,16 +44,20 @@ def to_html(
 
     data_parser = get_parser(df)
 
+    walker = PygWalker(
+        gid,
+        data_parser.to_records(),
+        data_parser.raw_fields(field_specs=fieldSpecs),
+        "",
+        "",
+        hideDataSourceConfig,
+        themeKey,
+        dark,
+        **kwargs
+    )
+
     try:
-        props = get_default_props(
-            data_parser.to_records(),
-            data_parser.raw_fields(field_specs=fieldSpecs),
-            hideDataSourceConfig=hideDataSourceConfig,
-            themeKey=themeKey,
-            dark=dark,
-            **kwargs
-        )
-        html = render_gwalker_html(gid, props)
+        html = walker.to_html()
     except Exception as e:
         logging.error(traceback.format_exc())
         return f"<div>{str(e)}</div>"
