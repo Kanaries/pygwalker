@@ -14,10 +14,13 @@ import {
 import Options from './components/options';
 import { IAppProps } from './interfaces';
 
-import { loadDataSource } from './dataSource';
+import { loadDataSource, postDataService, finishDataService } from './dataSource';
 
+import initCommunication from "./utils/communication";
+import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
+import LoadDataModal from './components/loadDataModal';
 
 import { ToolbarItemProps } from '@kanaries/graphic-walker/dist/components/toolbar';
 // @ts-ignore
@@ -125,12 +128,26 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
       }
       <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
       <GraphicWalker {...props} toolbar={toolbarConfig} />
+      <LoadDataModal />
       <Options {...props} toolbar={toolbarConfig} />
     </React.StrictMode>
   );
 })
 
+const initOnJupyter = (props: IAppProps) => {
+    const comm = initCommunication(props.id);
+    comm.registerEndpoint("postData", postDataService);
+    comm.registerEndpoint("finishData", finishDataService);
+    communicationStore.setComm(comm);
+    if (props.needLoadDatas) {
+        comm.sendMsgAsync("request_data", {}, null);
+    }
+}
+
 function GWalker(props: IAppProps, id: string) {
+    if (props.env === "jupyter") {
+        initOnJupyter(props);
+    }
     ReactDOM.render(<App {...props}></App>, document.getElementById(id)
   );
 }

@@ -5,6 +5,7 @@ import json
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.display import display_html
 from pygwalker.utils.encode import DataFrameEncoder
+from pygwalker.communications.base import BaseCommunication
 from pygwalker import __hash__
 
 
@@ -30,7 +31,7 @@ def _rand_slot_id():
 
 
 class BatchUploadDatasToolOnJupyter:
-    """Upload data in batches."""
+    """(deprecated) Upload data in batches."""
     def __init__(self) -> None:
         self._caution_id = __hash__ + rand_str(6)
         self._progress_id = __hash__ + rand_str(6)
@@ -87,3 +88,34 @@ class BatchUploadDatasToolOnJupyter:
 
         for slot_id in display_slots:
             display_html("", slot_id=slot_id)
+
+
+class BatchUploadDatasToolOnWidgets:
+    """Upload data in batches(use ipywidgets)"""
+    def __init__(self, comm: BaseCommunication) -> None:
+        self.comm = comm
+
+    def run(
+        self,
+        *,
+        data_source_id: str,
+        records: List[Dict[str, Any]],
+        sample_data_count: int
+    ) -> None:
+        chunk = 1 << 12
+
+        for i in range(sample_data_count, len(records), chunk):
+            data = records[i: min(i+chunk, len(records))]
+            msg = {
+                'dataSourceId': data_source_id,
+                "total": len(records),
+                "curIndex": i,
+                'data': data,
+            }
+            self.comm.send_msg_async("postData", msg)
+
+        finish_msg = {
+            'dataSourceId': data_source_id,
+        }
+        time.sleep(1)
+        self.comm.send_msg_async("finishData", finish_msg)
