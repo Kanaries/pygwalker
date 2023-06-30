@@ -70,4 +70,4 @@ def walk(
     if env == "Streamlit":
         walker.display_on_streamlit()
     elif env == "Jupyter":
-        walker.display_on_jupyter()
+        walker.display_on_jupyter_use_widgets()

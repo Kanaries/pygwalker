@@ -35,6 +35,7 @@ const Container = styled.div`
 `;
 interface ModalProps {
     onClose?: () => void;
+    hideClose?: boolean;
     show?: boolean;
     title?: string;
 }
@@ -59,16 +60,20 @@ const Modal: React.FC<ModalProps> = (props) => {
         >
             <Container role="dialog" className="bg-white dark:bg-zinc-900 shadow-lg rounded-md border border-gray-100 dark:border-gray-800" onMouseDown={(e) => e.stopPropagation()}>
             <div className="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
-                  <button
-                    type="button"
-                    className="rounded-md bg-white dark:bg-zinc-900 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    onClick={() => {
-                        onClose?.();
-                    }}
-                  >
-                    <span className="sr-only">Close</span>
-                    <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
+                  {
+                    !props.hideClose && (
+                        <button
+                            type="button"
+                            className="rounded-md bg-white dark:bg-zinc-900 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            onClick={() => {
+                                onClose?.();
+                            }}
+                        >
+                            <span className="sr-only">Close</span>
+                            <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                    )
+                  }
                 </div>
                 <div className="px-6 pt-4 text-base font-semibold leading-6 text-gray-900 dark:text-gray-50">{title}</div>
                 <div className="container">{props.children}</div>

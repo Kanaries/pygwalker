@@ -1,8 +1,8 @@
 from typing import List, Dict, Any, Optional, Union
 import html as m_html
-import time
 
 from typing_extensions import Literal
+import ipywidgets
 
 from pygwalker_utils.config import get_config
 from pygwalker.utils.display import display_html, display_on_streamlit
@@ -14,8 +14,9 @@ from pygwalker.services.render import (
     get_max_limited_datas
 )
 from pygwalker.services.upload_data import (
-    BatchUploadDatasToolOnJupyter
+    BatchUploadDatasToolOnWidgets
 )
+from pygwalker.communications.hacker_comm import HackerCommunication
 from pygwalker import __version__, __hash__
 
 
@@ -66,25 +67,46 @@ class PygWalker:
         props = self._get_props(data_source)
         iframe_html = self._get_render_iframe(props)
 
-        if len(self.origin_data_source) > len(props["dataSource"]):
-            upload_tool = BatchUploadDatasToolOnJupyter()
-            upload_tool.init()
-            display_html(iframe_html)
-            time.sleep(1)
+        display_html(iframe_html)
+
+    def display_on_jupyter_use_widgets(self):
+        """
+        use ipywidgets, Display on jupyter notebook/lab.
+        When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
+        """
+        comm = HackerCommunication(self.gid)
+        data_source = get_max_limited_datas(self.origin_data_source)
+        props = self._get_props(
+            "jupyter",
+            data_source,
+            len(self.origin_data_source) > len(data_source)
+        )
+        iframe_html = self._get_render_iframe(props)
+
+        html_widgets = ipywidgets.Box(
+            [ipywidgets.HTML(iframe_html), comm.get_widgets()],
+            layout=ipywidgets.Layout(display='block')
+        )
+
+        upload_tool = BatchUploadDatasToolOnWidgets(comm)
+        display_html(html_widgets)
+
+        def reuqest_data_callback(_):
             upload_tool.run(
                 records=self.origin_data_source,
                 sample_data_count=len(props["dataSource"]),
-                data_source_id=props["dataSourceProps"]["dataSourceId"],
-                gid=self.gid,
-                tunnel_id=props["dataSourceProps"]["tunnelId"],
+                data_source_id=props["dataSourceProps"]["dataSourceId"]
             )
-        else:
-            display_html(iframe_html)
+            return {}
 
-    def display_on_jupyter_use_widgets(self):
-        pass
+        comm.register("request_data", reuqest_data_callback)
 
-    def _get_props(self, data_source: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _get_props(
+        self,
+        env: str = "",
+        data_source: Optional[Dict[str, Any]] = None,
+        need_load_datas: bool = False
+    ) -> Dict[str, Any]:
         if data_source is None:
             data_source = self.origin_data_source
         return {
@@ -104,6 +126,8 @@ class PygWalker:
                 'tunnelId': 'tunnel!',
                 'dataSourceId': self.data_source_id,
             },
+            "env": env,
+            "needLoadDatas": need_load_datas,
             **self.other_props,
         }
 

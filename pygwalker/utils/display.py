@@ -1,6 +1,7 @@
 from typing import Union
 
 from IPython.display import display, HTML
+import ipywidgets
 
 DISPLAY_HANDLER = {}
 
@@ -11,7 +12,7 @@ def display_on_streamlit(html: str):
 
 
 def display_html(
-    html: Union[str, HTML],
+    html: Union[str, HTML, ipywidgets.Widget],
     *,
     slot_id: str = None
 ):
