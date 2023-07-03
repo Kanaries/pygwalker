@@ -74,7 +74,9 @@ class HackerCommunication(BaseCommunication):
         rid = msg_json["rid"]
 
         if action == "finish_request":
-            wait_lock = self._get_request_lock(rid)
+            wait_lock = self._get_request_lock(rid, new=False)
+            if wait_lock is None:
+                return
             self._buffer_map[rid] = data
             wait_lock.release()
             self._lock_map.pop(rid, None)
@@ -93,8 +95,11 @@ class HackerCommunication(BaseCommunication):
         text.observe(self._on_mesage, "value")
         return text
 
-    def _get_request_lock(self, rid: str) -> Lock:
+    def _get_request_lock(self, rid: str, new: bool = True) -> Optional[Lock]:
         with self._global_lock:
             if rid not in self._lock_map:
-                self._lock_map[rid] = Lock()
+                if new:
+                    self._lock_map[rid] = Lock()
+                else:
+                    return None
             return self._lock_map[rid]
