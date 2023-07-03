@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional, Union
 import html as m_html
+import os
 
 from typing_extensions import Literal
 import ipywidgets
@@ -16,7 +17,8 @@ from pygwalker.services.render import (
 from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnWidgets
 )
-from pygwalker.communications.hacker_comm import HackerCommunication
+from pygwalker.services.spec import get_spec_json
+from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker import __version__, __hash__
 
 
@@ -30,8 +32,8 @@ class PygWalker:
         spec: str,
         source_invoke_code: str,
         hidedata_source_config: bool,
-        theme_key: Literal['vega', 'g2'] = 'g2',
-        dark: Literal['media', 'light', 'dark'] = 'media',
+        theme_key: Literal['vega', 'g2'],
+        dark: Literal['media', 'light', 'dark'],
         **kwargs
     ):
         if gid is None:
@@ -47,6 +49,7 @@ class PygWalker:
         self.dark = dark
         self.data_source_id = rand_str()
         self.other_props = kwargs
+        self.vis_spec, self.spec_type = get_spec_json(spec)
 
     def to_html(self) -> str:
         props = self._get_props()
@@ -88,18 +91,32 @@ class PygWalker:
             layout=ipywidgets.Layout(display='block')
         )
 
-        upload_tool = BatchUploadDatasToolOnWidgets(comm)
+        self._init_callback(comm)
+
         display_html(html_widgets)
+
+    def _init_callback(self, comm: BaseCommunication):
+        upload_tool = BatchUploadDatasToolOnWidgets(comm)
 
         def reuqest_data_callback(_):
             upload_tool.run(
                 records=self.origin_data_source,
-                sample_data_count=len(props["dataSource"]),
-                data_source_id=props["dataSourceProps"]["dataSourceId"]
+                sample_data_count=0,
+                data_source_id=self.data_source_id
             )
             return {}
 
+        def get_latest_vis_spec(_):
+            vis_spec, _ = get_spec_json(self.spec)
+            return {"visSpec": vis_spec}
+
+        def update_spec(data: Dict[str, Any]):
+            with open(self.spec, "w", encoding="utf-8") as f:
+                f.write(data["content"])
+
         comm.register("request_data", reuqest_data_callback)
+        comm.register("get_latest_vis_spec", get_latest_vis_spec)
+        comm.register("update_vis_spec", update_spec)
 
     def _get_props(
         self,
@@ -116,7 +133,7 @@ class PygWalker:
             "version": __version__,
             "hashcode": __hash__,
             "userConfig": get_config()[0],
-            "visSpec": self.spec,
+            "visSpec": self.vis_spec,
             "rawFields": self.field_specs,
             "hideDataSourceConfig": self.hidedata_source_config,
             "fieldkeyGuard": False,
@@ -127,6 +144,7 @@ class PygWalker:
                 'dataSourceId': self.data_source_id,
             },
             "env": env,
+            "specType": self.spec_type,
             "needLoadDatas": need_load_datas,
             **self.other_props,
         }
