@@ -9,6 +9,7 @@ export interface IAppProps extends IGWProps {
     userConfig?: IUserConfig;
     env?: string;
     needLoadDatas?: boolean;
+    specType?: string;
 }
 
 export interface IDataSourceProps {

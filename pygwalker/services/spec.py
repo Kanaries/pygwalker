@@ -1,4 +1,5 @@
 from urllib import request
+from typing import Tuple
 import json
 import os
 
@@ -35,21 +36,38 @@ def _get_sepc_from_local(path: str) -> str:
         return f.read()
 
 
-def get_spec_json(spec: str) -> str:
+def _is_config_id(config_id: str) -> bool:
+    if len(config_id) != 32:
+        return False
+    try:
+        int(config_id, 16)
+    except ValueError:
+        return False
+
+    return True
+
+
+def get_spec_json(spec: str) -> Tuple[str, str]:
     if not spec or _is_json(spec):
-        return spec
+        return spec, "json_string"
+
+    if spec.startswith(("http:", "https:")):
+        if get_config("privacy")[0] == "offline":
+            raise PrivacyError("Due to privacy policy, you can't use this spec offline")
+        return _get_spec_from_url(spec), "json_http"
+
+    if _is_config_id(spec):
+        if get_config("privacy")[0] == "offline":
+            raise PrivacyError("Due to privacy policy, you can't use this spec offline")
+        return _get_spec_from_server(spec), "json_server"
+
+    if len(os.path.basename(spec)) > 200:
+        raise ValueError("Spec file name too long")
 
     file_exist = os.path.exists(spec)
     if file_exist:
-        return _get_sepc_from_local(spec)
-
-    if get_config("privacy")[0] == "offline":
-        raise PrivacyError("Due to privacy policy, you can't use this spec offline")
-
-    if spec.startswith(("http:", "https:")):
-        return _get_spec_from_url(spec)
-
-    if len(spec) == 32:
-        return _get_spec_from_server(spec)
-
-    raise FileNotFoundError(f"Spec config file not found: {spec}")
+        return _get_sepc_from_local(spec), "json_file"
+    else:
+        with open(spec, "w", encoding="utf-8") as f:
+            f.write("")
+        return "", "json_file"

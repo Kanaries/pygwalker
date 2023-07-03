@@ -8,11 +8,14 @@ import { IDataSetInfo, IMutField, IRow } from '@kanaries/graphic-walker/dist/int
 import { AuthWrapper } from "@kanaries/auth-wrapper"
 import {
   CodeBracketSquareIcon,
-  UserIcon
+  UserIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
 import Options from './components/options';
+import LoadingIcon from './components/loadingIcon';
 import { IAppProps } from './interfaces';
+import NotificationWrapper, { useNotification } from "./notify";
 
 import { loadDataSource, postDataService, finishDataService } from './dataSource';
 
@@ -37,6 +40,8 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
   const wrapRef = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { notify } = useNotification();
 
   useEffect(() => {
     if (userConfig) setConfig(userConfig);
@@ -79,7 +84,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
 
     // TODO: don't always update visSpec when appending data
     await loadDataSource(dataSourceProps).then(ds => {
-      const data = [...(dataSource || []), ...ds];
+      const data = ds;
       setData({ data, rawFields, visSpec });
     }).catch(e => {
       console.error('Load DataSource Error', e);
@@ -114,42 +119,87 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     ),
     onClick: () => {}
   }
+  const saveTool = {
+    key: "save",
+    label: "save",
+    icon: (iconProps?: any) => {
+        return saving ? <LoadingIcon width={36} height={36} /> : <DocumentTextIcon {...iconProps} />
+    },
+    onClick: () => {
+        if (props.specType !== "json_file") {
+            notify({
+                type: "warning",
+                title: "Tips",
+                message: "spec params is not 'json_file', save is not supported.",
+            }, 4_000)
+            return
+        }
+        setSaving(true);
+        communicationStore.comm?.sendMsg("update_vis_spec", {
+            "content": JSON.stringify(storeRef.current?.vizStore?.exportViewSpec()),
+        }).then(() => {
+            setTimeout(() => {
+                notify({
+                    type: "success",
+                    title: "Tips",
+                    message: "save success.",
+                }, 4_000);
+                setSaving(false);
+            }, 500);
+        })
+    }
+  }
+
+  const tools = [exportTool, saveTool];
+  if (checkUploadPrivacy()) {
+    tools.push(loginTool);
+  }
 
   const toolbarConfig = {
     exclude: ["export_code"],
-    extra: checkUploadPrivacy() ? [exportTool, loginTool] : [exportTool]
+    extra: tools
   }
   
   return (
     <React.StrictMode>
-      <style>{style}</style>
-      {
-        mounted && checkUploadPrivacy() && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
-      }
-      <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-      <GraphicWalker {...props} toolbar={toolbarConfig} />
-      <LoadDataModal />
-      <Options {...props} toolbar={toolbarConfig} />
+        <style>{style}</style>
+        {
+            mounted && checkUploadPrivacy() && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
+        }
+        <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
+        <GraphicWalker {...props} toolbar={toolbarConfig} />
+        <LoadDataModal />
+        <Options {...props} toolbar={toolbarConfig} />
     </React.StrictMode>
   );
 })
 
-const initOnJupyter = (props: IAppProps) => {
+const initOnJupyter = async(props: IAppProps) => {
     const comm = initCommunication(props.id);
     comm.registerEndpoint("postData", postDataService);
     comm.registerEndpoint("finishData", finishDataService);
     communicationStore.setComm(comm);
+    const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
+    props.visSpec = visSpecResp["data"]["visSpec"];
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
     }
 }
 
+const defaultInit = async(props: IAppProps) => {}
+
+
 function GWalker(props: IAppProps, id: string) {
-    if (props.env === "jupyter") {
-        initOnJupyter(props);
-    }
-    ReactDOM.render(<App {...props}></App>, document.getElementById(id)
-  );
+    const preRender = props.env === "jupyter" ? initOnJupyter : defaultInit;
+
+    preRender(props).then(() => {
+        ReactDOM.render(
+            <NotificationWrapper>
+                <App {...props}></App>
+            </NotificationWrapper>,
+            document.getElementById(id)
+        );
+    })
 }
 
 export default { GWalker }

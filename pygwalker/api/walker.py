@@ -7,7 +7,6 @@ from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec, BaseDataParser
 from pygwalker._typing import DataFrame
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.services.spec import get_spec_json
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 
 
@@ -22,6 +21,7 @@ def walk(
     themeKey: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     return_html: bool = False,
+    spec: str = "",
     **kwargs
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
@@ -45,7 +45,6 @@ def walk(
     source_invoke_code = get_formated_spec_params_code_from_frame(
         inspect.stack()[1].frame
     )
-    spec = get_spec_json(kwargs.get("spec", ""))
 
     if custom_data_parser is None:
         data_parser = get_parser(df)
