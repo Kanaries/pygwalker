@@ -76,6 +76,7 @@ jobs:
         if: ${{ matrix.os-version == 'ubuntu-latest' }}
         run: |
           pip install modin "modin[ray]"
+          pip install pydantic==1.10.9
       - name: Try Running
         working-directory: ./tests/
         run: |
