@@ -86,6 +86,11 @@ def _repalce_spec_params_code(func: 'ast.Call') -> str:
     return astor.to_source(func, pretty_source=_private_astor_pretty_source)
 
 
+def _get_default_code() -> str:
+    logging.warning("parse invoke code failed, This may affect feature of export code.")
+    return "pyg.walk(df, spec='____pyg_walker_spec_params____')"
+
+
 def get_formated_spec_params_code(code: str) -> str:
     call_func = _find_walk_func_node(code.strip())
     if call_func is None:
@@ -99,7 +104,9 @@ def get_formated_spec_params_code_from_frame(frame: FrameType) -> str:
             str(InvokeCodeParser(frame))
         )
     except Exception:
-        source_invoke_code = "pyg.walk(df, spec='____pyg_walker_spec_params____')"
-        logging.warning("parse invoke code failed, This may affect feature of export code.")
+        return _get_default_code()
+
+    if source_invoke_code == '':
+        return _get_default_code()
 
     return source_invoke_code
