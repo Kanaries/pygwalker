@@ -4,30 +4,34 @@ import { observer } from "mobx-react-lite";
 import DefaultButton from "../button/default";
 import PrimaryButton from "../button/primary";
 import SavePygConfigButton from './saveConfigButton';
+import { encodeSpec } from "../../utils/graphicWalkerParser"
 
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
 import py from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
 import atomOneLight from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light';
 
+import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
+import type { IVisSpec } from '@kanaries/graphic-walker/dist/interfaces'
+
 SyntaxHighlighter.registerLanguage('json', json);
 SyntaxHighlighter.registerLanguage('python', py);
 
 interface ICodeExport {
-    globalStore: any;
+    globalStore: React.MutableRefObject<IGlobalStore | null>;
     sourceCode: string;
     open: boolean;
     setOpen: (open: boolean) => void;
 }
 
 const CodeExport: React.FC<ICodeExport> = observer((props) => {
-    const [code, setCode] = useState<any>("");
+    const [code, setCode] = useState<IVisSpec[]>([]);
     const [pygCode, setPygCode] = useState<string>("");
     const [tips, setTips] = useState<string>("");
 
     useEffect(() => {
         if (props.open) {
-            const res = props.globalStore?.current?.vizStore?.exportViewSpec();
+            const res = props.globalStore.current?.vizStore.exportViewSpec()!;
             setCode(res);
         }
     }, [props.open]);
@@ -44,7 +48,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                 <div className="text-sm max-h-64 overflow-auto">
                     <h2 className="text-sm mb-2">graphic walker spec</h2>
                     <SyntaxHighlighter showLineNumbers language="json" style={atomOneLight}>
-                        {JSON.stringify(code, null, 2)}
+                        { JSON.stringify(JSON.parse(encodeSpec(code)), null, 2) }
                     </SyntaxHighlighter>
                 </div>
                 <div className="mt-4 flex justify-start">

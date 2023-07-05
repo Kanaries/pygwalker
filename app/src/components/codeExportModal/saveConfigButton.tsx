@@ -4,11 +4,14 @@ import { download } from "../../utils/save";
 import { Menu, Transition } from "@headlessui/react";
 import { getToken } from "@kanaries/auth-wrapper";
 import { checkUploadPrivacy } from "../../utils/userConfig";
+import { encodeSpec } from "../../utils/graphicWalkerParser"
+
+import type { IVisSpec } from '@kanaries/graphic-walker/dist/interfaces'
 
 
 interface IDsaveConfigButtonProps {
     sourceCode: string;
-    configJson: any;
+    configJson: IVisSpec[];
     setPygCode: (code: string) => void;
     setTips: (tips: string) => void;
 }
@@ -19,14 +22,14 @@ const saveConfigButton: React.FC<IDsaveConfigButtonProps> = (props) => {
 
     const saveAsCode = () => {
         const preCode = sourceCode.replace("'____pyg_walker_spec_params____'", "vis_spec")
-        const code = `vis_spec = """${JSON.stringify(props.configJson)}"""\n${preCode}`;
+        const code = `vis_spec = """${encodeSpec(props.configJson)}"""\n${preCode}`;
         props.setPygCode(code);
     }
 
     const saveAsFile = () => {
         setSaving(true);
         const code = sourceCode.replace("____pyg_walker_spec_params____", "local file path")
-        download(JSON.stringify(props.configJson), "config.json", "text/plain");
+        download(encodeSpec(props.configJson), "config.json", "text/plain");
         props.setPygCode(code);
         setSaving(false);
     }
@@ -49,7 +52,7 @@ const saveConfigButton: React.FC<IDsaveConfigButtonProps> = (props) => {
                     body: JSON.stringify({
                         token: token,
                         params: {
-                            "config_json": JSON.stringify(props.configJson),
+                            "config_json": encodeSpec(props.configJson),
                         }
                     })
                 }
