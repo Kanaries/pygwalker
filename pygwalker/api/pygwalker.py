@@ -1,6 +1,5 @@
 from typing import List, Dict, Any, Optional, Union
 import html as m_html
-import os
 
 from typing_extensions import Literal
 import ipywidgets
@@ -19,6 +18,7 @@ from pygwalker.services.upload_data import (
 )
 from pygwalker.services.spec import get_spec_json
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
+from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__, __hash__
 
 
@@ -66,7 +66,7 @@ class PygWalker:
         After that, it will be changed to python for data calculation,
         and only a small amount of data will be output to the front end to complete the analysis of big data.
         """
-        data_source = get_max_limited_datas(self.origin_data_source)
+        data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_BYTE_LIMIT)
         props = self._get_props(data_source)
         iframe_html = self._get_render_iframe(props)
 
@@ -78,7 +78,7 @@ class PygWalker:
         When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
         """
         comm = HackerCommunication(self.gid)
-        data_source = get_max_limited_datas(self.origin_data_source)
+        data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
         props = self._get_props(
             "jupyter",
             data_source,

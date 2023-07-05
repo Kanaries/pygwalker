@@ -10,7 +10,16 @@ const getSignalName = (rid: string) => {
     return `hacker-comm-pyg-done-signal-${rid}`;
 }
 
+const getCurrentJupyterEnv = () => {
+    const host = window.parent.location.host;
+    if (host === 'datalore.jetbrains.com') {
+        return 'datalore';
+    }
+    return "jupyter";
+}
+
 const initCommunication = (gid: string) => {
+    const jupyterEnv = getCurrentJupyterEnv();
     const document = window.parent.document;
     const htmlText = document.getElementsByClassName(`hacker-comm-pyg-html-store-${gid}`)[0].childNodes[1] as HTMLInputElement;
     const kernelText = document.getElementsByClassName(`hacker-comm-pyg-kernel-store-${gid}`)[0].childNodes[1] as HTMLInputElement;;
@@ -51,7 +60,7 @@ const initCommunication = (gid: string) => {
     const sendMsgAsync = (action: string, data: any, rid: string | null) => {
         rid = rid ?? uuidv4();
         const event = new Event("input", { bubbles: true })
-        kernelText.value = JSON.stringify({ rid: rid, action, data });
+        kernelText.value = JSON.stringify({ gid: gid, rid: rid, action, data });
         kernelText.dispatchEvent(event);
     }
 
@@ -59,18 +68,35 @@ const initCommunication = (gid: string) => {
         endpoints.set(action, callback);
     }
 
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === "attributes") {
-                onMessage(htmlText.value)
+    if (jupyterEnv === "datalore") {
+        const kernel = window.parent.Jupyter.notebook.kernel;
+        if (kernel.__pre_can_handle_message === undefined) {
+            kernel.__pre_can_handle_message = kernel._can_handle_message;
+        }
+        kernel._can_handle_message = (msg: any) => {
+            if (msg.msg_type === "comm_msg" && msg.content.data.method === "update") {
+                const pygMsgStr = msg.content.data.state.value;
+                try {
+                    if (JSON.parse(pygMsgStr).gid === gid) {
+                        onMessage(pygMsgStr);
+                    }
+                } catch (_) {}
             }
+            return kernel.__pre_can_handle_message(msg);
+        }
+    } else {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === "attributes") {
+                    onMessage(htmlText.value)
+                }
+            })
         })
-    })
-
-    observer.observe(htmlText, {
-        attributes: true,
-        attributeFilter: ["placeholder"],
-    })
+        observer.observe(htmlText, {
+            attributes: true,
+            attributeFilter: ["placeholder"],
+        })
+    }
 
     return {
         sendMsg,
