@@ -50,6 +50,7 @@ class HackerCommunication(BaseCommunication):
         if rid is None:
             rid = uuid.uuid1().hex
         msg = {
+            "gid": self.gid,
             "rid": rid,
             "action": action,
             "data": data

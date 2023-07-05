@@ -4,7 +4,7 @@ from typing import Dict, List, Any
 
 from jinja2 import Environment, PackageLoader
 
-from pygwalker._constants import BYTE_LIMIT, ROOT_DIR
+from pygwalker._constants import ROOT_DIR
 from pygwalker.utils.encode import DataFrameEncoder
 
 jinja_env = Environment(
@@ -19,13 +19,13 @@ def gwalker_script() -> str:
     return gwalker_js
 
 
-def get_max_limited_datas(datas: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def get_max_limited_datas(datas: List[Dict[str, Any]], byte_limit: int) -> List[Dict[str, Any]]:
     if len(datas) > 1024:
         smp0 = datas[::len(datas)//32]
         smp1 = datas[::len(datas)//37]
         avg_size = len(json.dumps(smp0, cls=DataFrameEncoder)) / len(smp0)
         avg_size = max(avg_size, len(json.dumps(smp1, cls=DataFrameEncoder)) / len(smp1))
-        n = int(BYTE_LIMIT / avg_size)
+        n = int(byte_limit / avg_size)
         if len(datas) >= 2 * n:
             return datas[:n]
     return datas
