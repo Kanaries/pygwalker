@@ -150,7 +150,10 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     }
   }
 
-  const tools = [exportTool, saveTool];
+  const tools = [exportTool];
+  if (props.env === "jupyter_widgets") {
+    tools.push(saveTool);
+  }
   if (checkUploadPrivacy()) {
     tools.push(loginTool);
   }
@@ -190,7 +193,7 @@ const defaultInit = async(props: IAppProps) => {}
 
 
 function GWalker(props: IAppProps, id: string) {
-    const preRender = props.env === "jupyter" ? initOnJupyter : defaultInit;
+    const preRender = props.env === "jupyter_widgets" ? initOnJupyter : defaultInit;
 
     preRender(props).then(() => {
         ReactDOM.render(

@@ -6,6 +6,8 @@ interface MessagePayload extends IDataSourceProps {
     action: "requestData" | "postData" | "finishData";
     dataSourceId: string;
     partId: number;
+    curIndex: number;
+    total: number;
     data?: IRow[];
 }
 
@@ -31,6 +33,11 @@ export async function loadDataSource(props: IDataSourceProps): Promise<IRow[]> {
                     clearTimeout(timer);
                     timer = setTimeout(timeout, 100_000);
                     if (ev.data.action === "postData") {
+                        commonStore.setLoadDataModalOpen(true);
+                        commonStore.setLoadDataModalInfo({
+                            total: ev.data.total,
+                            curIndex: ev.data.curIndex
+                        });
                         data.push(...(ev.data.data ?? []));
                     } else if (ev.data.action === "finishData") {
                         window.removeEventListener("message", onmessage);
@@ -47,15 +54,12 @@ export async function loadDataSource(props: IDataSourceProps): Promise<IRow[]> {
 }
 
 export function postDataService(msg: ICommPostDataMessage) {
-    commonStore.setLoadDataModalOpen(true);
-    commonStore.setLoadDataModalInfo({
-        total: msg.total,
-        curIndex: msg.curIndex
-    });
     window.postMessage(
         {
             action: "postData",
             dataSourceId: msg.dataSourceId,
+            total: msg.total,
+            curIndex: msg.curIndex,
             data: msg.data,
         } as MessagePayload,
         "*"

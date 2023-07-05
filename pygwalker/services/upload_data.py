@@ -1,6 +1,7 @@
 from typing import Dict, Any, List
 import time
 import json
+import html as m_html
 
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.display import display_html
@@ -11,7 +12,7 @@ from pygwalker import __hash__
 
 def _send_js(js_code: str, slot_id: str):
     display_html(
-        f"""<script>(()=>{{let f=()=>{{{js_code}}};setTimeout(f,0);}})()</script>""",
+        f"""<style onload="(()=>{{let f=()=>{{{m_html.escape(js_code)}}};setTimeout(f,0);}})();" />""",
         slot_id=slot_id
     )
 
@@ -31,15 +32,7 @@ def _rand_slot_id():
 
 
 class BatchUploadDatasToolOnJupyter:
-    """(deprecated) Upload data in batches."""
-    def __init__(self) -> None:
-        self._caution_id = __hash__ + rand_str(6)
-        self._progress_id = __hash__ + rand_str(6)
-
-    def init(self) -> None:
-        display_html("", slot_id=self._caution_id)
-        display_html("", slot_id=self._progress_id)
-
+    """Upload data in batches."""
     def run(
         self,
         *,
@@ -50,19 +43,11 @@ class BatchUploadDatasToolOnJupyter:
         sample_data_count: int,
         slot_count: int = 2
     ) -> None:
-        progress_hint = "Dynamically loading into the frontend..."
         chunk = 1 << 12
         cur_slot = 0
         display_slots = [_rand_slot_id() for _ in range(slot_count)]
 
-        tips_title = (
-            f'<div id="{self._caution_id}">Dataframe is too large for ipynb files. '
-            f'Only {sample_data_count} sample items are printed to the file.</div>'
-        )
-
-        display_html(tips_title, slot_id=self._caution_id)
-        display_html(f"{progress_hint} {sample_data_count}/{len(records)}", slot_id=self._progress_id)
-
+        time.sleep(1)
         for i in range(sample_data_count, len(records), chunk):
             data = records[i: min(i+chunk, len(records))]
             msg = {
@@ -70,11 +55,12 @@ class BatchUploadDatasToolOnJupyter:
                 'tunnelId': tunnel_id,
                 'dataSourceId': data_source_id,
                 'data': data,
+                "total": len(records),
+                "curIndex": i,
             }
             _send_upload_data_msg(gid, msg, display_slots[cur_slot])
             cur_slot += 1
             cur_slot %= slot_count
-            display_html(f"{progress_hint} {min(i+chunk, len(records))}/{len(records)}", slot_id=self._progress_id)
 
         finish_msg = {
             'action': 'finishData',
@@ -83,8 +69,6 @@ class BatchUploadDatasToolOnJupyter:
         }
         time.sleep(1)
         _send_upload_data_msg(gid, finish_msg, display_slots[cur_slot])
-        display_html("", slot_id=self._progress_id)
-        display_html("", slot_id=self._caution_id)
 
         for slot_id in display_slots:
             display_html("", slot_id=slot_id)
