@@ -15,7 +15,7 @@ def walk(
     gid: Union[int, str] = None,
     *,
     custom_data_parser: Optional[BaseDataParser] = None,
-    env: Literal['Jupyter', 'Streamlit'] = 'Jupyter',
+    env: Literal['Jupyter', 'Streamlit', 'JupyterWidget'] = 'JupyterWidget',
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
     hideDataSourceConfig: bool = True,
     themeKey: Literal['vega', 'g2'] = 'g2',
@@ -66,7 +66,11 @@ def walk(
     if return_html:
         return walker.to_html()
 
-    if env == "Streamlit":
-        walker.display_on_streamlit()
-    elif env == "Jupyter":
-        walker.display_on_jupyter_use_widgets()
+    env_display_map = {
+        "Streamlit": walker.display_on_streamlit,
+        "JupyterWidget": walker.display_on_jupyter_use_widgets,
+        "Jupyter": walker.display_on_jupyter
+    }
+
+    display_func = env_display_map.get(env, lambda: None)
+    display_func()

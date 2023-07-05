@@ -14,7 +14,8 @@ from pygwalker.services.render import (
     get_max_limited_datas
 )
 from pygwalker.services.upload_data import (
-    BatchUploadDatasToolOnWidgets
+    BatchUploadDatasToolOnWidgets,
+    BatchUploadDatasToolOnJupyter
 )
 from pygwalker.services.spec import get_spec_json
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
@@ -50,6 +51,7 @@ class PygWalker:
         self.data_source_id = rand_str()
         self.other_props = kwargs
         self.vis_spec, self.spec_type = get_spec_json(spec)
+        self.tunnel_id = "tunnel!"
 
     def to_html(self) -> str:
         props = self._get_props()
@@ -61,16 +63,30 @@ class PygWalker:
     def display_on_jupyter(self):
         """
         Display on jupyter notebook/lab.
-        Since `display_on_jupyter_use_widgets` is used instead, this function is only used when sharing.
-        If share has large data loading, only sample data can be displayed.
+        If share has large data loading, only sample data can be displayed when reload.
         After that, it will be changed to python for data calculation,
         and only a small amount of data will be output to the front end to complete the analysis of big data.
         """
         data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_BYTE_LIMIT)
-        props = self._get_props(data_source)
+        props = self._get_props(
+            "jupyter",
+            data_source,
+            len(self.origin_data_source) > len(data_source)
+        )
         iframe_html = self._get_render_iframe(props)
 
-        display_html(iframe_html)
+        if len(self.origin_data_source) > len(data_source):
+            upload_tool = BatchUploadDatasToolOnJupyter()
+            display_html(iframe_html)
+            upload_tool.run(
+                records=self.origin_data_source,
+                sample_data_count=0,
+                data_source_id=self.data_source_id,
+                gid=self.gid,
+                tunnel_id=self.tunnel_id,
+            )
+        else:
+            display_html(iframe_html)
 
     def display_on_jupyter_use_widgets(self):
         """
@@ -80,7 +96,7 @@ class PygWalker:
         comm = HackerCommunication(self.gid)
         data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
         props = self._get_props(
-            "jupyter",
+            "jupyter_widgets",
             data_source,
             len(self.origin_data_source) > len(data_source)
         )
@@ -140,7 +156,7 @@ class PygWalker:
             "themeKey": self.theme_key,
             "sourceInvokeCode": self.source_invoke_code,
             "dataSourceProps": {
-                'tunnelId': 'tunnel!',
+                'tunnelId': self.tunnel_id,
                 'dataSourceId': self.data_source_id,
             },
             "env": env,
