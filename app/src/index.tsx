@@ -20,6 +20,7 @@ import NotificationWrapper, { useNotification } from "./notify";
 import { loadDataSource, postDataService, finishDataService } from './dataSource';
 
 import initCommunication from "./utils/communication";
+import { encodeSpec, decodeSpec } from "./utils/graphicWalkerParser"
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
@@ -54,7 +55,8 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
   }) => {
     const { data, rawFields, visSpec } = p;
       if (visSpec) {
-        const specList = JSON.parse(visSpec);
+        const specList = decodeSpec(visSpec);
+        console.log(specList)
         storeRef?.current?.vizStore?.importStoInfo({
           dataSources: [{
             id: 'dataSource-0',
@@ -136,7 +138,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         }
         setSaving(true);
         communicationStore.comm?.sendMsg("update_vis_spec", {
-            "content": JSON.stringify(storeRef.current?.vizStore?.exportViewSpec()),
+            "content": encodeSpec(storeRef.current?.vizStore.exportViewSpec()!),
         }).then(() => {
             setTimeout(() => {
                 notify({
