@@ -264,10 +264,11 @@ pyg_conf.set_config( { 'privacy': 'meta' }, save=True)
 + 关于Graphic Walker，参考 [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)
 + 我们也在开发新一代增强分析型BI：[RATH](https://kanaries.net)。RATH是新一代智能化数据分析工具。借助AI，因果推断，智能可视化引擎协助你进行数据分析，体验前所未有的自动化。更多请访问：[RATH GitHub](https://github.com/Kanaries/Rath)
 + QQ交流群：129132269
-+ 微信交流群
++ 飞书文档: [Kanaries 开源社区](https://ewgw6z7tk0.feishu.cn/docx/Jnw5d0w60oU2xlxVKupcdeaGn0f?from=from_copylink)
++ 微信交流群(群二维码在飞书文档内查看)
 
-| kanaries微信交流群 | kanaries公众号 |
+| kanaries飞书文档 | kanaries公众号 |
 | --- | --- |
-| ![wechat-group](https://github.com/Kanaries/pygwalker/assets/22167673/e0a1c7e9-4c70-484d-902e-7b78a3a0e377) | ![](https://kanaries-docs.oss-cn-hangzhou.aliyuncs.com/img/qrcode_for_gh_49e6f7d65120_860.jpg) |
+| ![feishu](https://github.com/Kanaries/pygwalker/assets/28337703/a8759212-5bd1-4dc5-b638-f09eab45654c) | ![](https://kanaries-docs.oss-cn-hangzhou.aliyuncs.com/img/qrcode_for_gh_49e6f7d65120_860.jpg) |
 
 
