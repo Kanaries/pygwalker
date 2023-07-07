@@ -1,0 +1,55 @@
+<html>
+<script>
+{{ tailwind_js }}
+</script>
+
+<style>
+.pygwalker-preview {
+    width: 100%;
+    max-height: 500px;
+}
+
+</style>
+
+<body>
+    <div id="{{ div_id }}" class="pygwalker-preview">
+        <div class="toolbar">
+            <button type="button" class="hide-button px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">hide</button>
+        </div>
+        <h1>Preview</h1>
+        <!-- <p>Under certain Jupyter environments, after launching pygwalker, the preview may not automatically hide. You can manually click the button to hide it.</p> -->
+        <div class="main-box">
+            {% for row in image_list %}
+            <div class="flex">
+                {% for image in row %}
+                <img style="max-width: none;" height="{{ image['height'] }}" width="{{ image['width'] }}" src="{{ image['data'] }}" />
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+<script>
+    const divId = "{{ div_id }}";
+    const rootElement = document.getElementById(divId);
+    const buttonElement = rootElement.getElementsByClassName("hide-button")[0];
+    const mainBoxElement = rootElement.getElementsByClassName("main-box")[0];
+    const iframeElement = window.parent.document.getElementById(divId);
+    var show = true;
+
+    buttonElement.addEventListener("click", () => {
+        show = !show;
+        if (show) {
+            mainBoxElement.style.display = "block";
+            buttonElement.innerHTML = "hide";
+            iframeElement.height = "400px";
+        } else {
+            mainBoxElement.style.display = "none";
+            buttonElement.innerHTML = "show";
+            rootElement.style.height = "0px";
+            iframeElement.height = "40px";
+        }
+    })
+</script>
+</html>

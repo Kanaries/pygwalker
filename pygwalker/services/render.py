@@ -1,5 +1,6 @@
 import os
 import json
+import html as m_html
 from typing import Dict, List, Any
 
 from jinja2 import Environment, PackageLoader
@@ -45,3 +46,25 @@ def render_gwalker_html(gid: int, props: Dict) -> str:
     template = jinja_env.get_template("index.html")
     html = f"{template.render(gwalker={'id': gid, 'script': js})}"
     return html
+
+
+def render_preview_html(images: List[str], row_count: int, col_count: int, div_id: str) -> str:
+    image_list = [[None] * col_count for _ in range(row_count)]
+    for image in images:
+        image_list[image["rowIndex"]][image["colIndex"]] = image
+
+    with open(os.path.join(ROOT_DIR, 'templates', 'tailwind.js'), 'r', encoding='utf-8') as f:
+        tailwind_js = f.read()
+
+    html = jinja_env.get_template("preview.html").render(
+        tailwind_js=tailwind_js,
+        image_list=image_list,
+        div_id=div_id,
+    )
+
+    iframe = jinja_env.get_template("preview_iframe.html").render(
+        iframe_id=div_id,
+        srcdoc=m_html.escape(html)
+    )
+
+    return iframe
