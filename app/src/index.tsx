@@ -6,10 +6,6 @@ import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
 import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
 import { IDataSetInfo, IMutField, IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
 import { AuthWrapper } from "@kanaries/auth-wrapper"
-import {
-  CodeBracketSquareIcon,
-  UserIcon,
-} from '@heroicons/react/24/outline';
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
@@ -24,8 +20,9 @@ import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
 import LoadDataModal from './components/loadDataModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
+import { getExportTool } from './tools/exportTool';
+import { getLoginTool } from './tools/loginTool';
 
-import { ToolbarItemProps } from '@kanaries/graphic-walker/dist/components/toolbar';
 // @ts-ignore
 import style from './index.css?inline'
 
@@ -102,27 +99,13 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     }
   }, [updateDataSource]);
 
-  const exportTool: ToolbarItemProps = {
-    key: "export_code",
-    label: "export_code",
-    icon: (iconProps?: any) => <CodeBracketSquareIcon {...iconProps} />,
-    onClick: () => { setExportOpen(true); }
-  }
-  const loginTool = {
-    key: 'login',
-    label: 'login',
-    icon: (iconProps?: any) => (
-      <UserIcon {...iconProps} ref={e => {
-        setMounted(true);
-        wrapRef.current = e?.parentElement as HTMLElement;
-      }} />
-    ),
-    onClick: () => {}
-  }
+  const exportTool = getExportTool(setExportOpen);
+  const saveTool = getSaveTool(props, gwRef, storeRef);
+  const loginTool = getLoginTool(setMounted, wrapRef);
 
   const tools = [exportTool];
   if (props.env === "jupyter_widgets") {
-    tools.push(getSaveTool(props, gwRef, storeRef));
+    tools.push(saveTool);
   }
   if (checkUploadPrivacy()) {
     tools.push(loginTool);
