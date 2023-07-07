@@ -13,6 +13,7 @@ from pygwalker.services.render import (
     render_gwalker_iframe,
     get_max_limited_datas
 )
+from pygwalker.services.preview_image import PreviewImageTool
 from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnWidgets,
     BatchUploadDatasToolOnJupyter
@@ -94,6 +95,7 @@ class PygWalker:
         When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
         """
         comm = HackerCommunication(self.gid)
+        preview_tool = PreviewImageTool(self.gid)
         data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
         props = self._get_props(
             "jupyter_widgets",
@@ -107,11 +109,12 @@ class PygWalker:
             layout=ipywidgets.Layout(display='block')
         )
 
-        self._init_callback(comm)
+        self._init_callback(comm, preview_tool)
 
         display_html(html_widgets)
+        preview_tool.init_display()
 
-    def _init_callback(self, comm: BaseCommunication):
+    def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool):
         upload_tool = BatchUploadDatasToolOnWidgets(comm)
 
         def reuqest_data_callback(_):
@@ -130,9 +133,13 @@ class PygWalker:
             with open(self.spec, "w", encoding="utf-8") as f:
                 f.write(data["content"])
 
+        def render_preview_image_endpoint(data: Dict[str, Any]):
+            preview_tool.render(data)
+
         comm.register("request_data", reuqest_data_callback)
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
         comm.register("update_vis_spec", update_spec)
+        comm.register("render_preview_image", render_preview_image_endpoint)
 
     def _get_props(
         self,

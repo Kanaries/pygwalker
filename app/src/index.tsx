@@ -4,27 +4,26 @@ import { observer } from "mobx-react-lite";
 import { GraphicWalker } from '@kanaries/graphic-walker'
 import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
 import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
-import { IDataSetInfo, IMutField, IRow } from '@kanaries/graphic-walker/dist/interfaces';
+import { IDataSetInfo, IMutField, IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
 import { AuthWrapper } from "@kanaries/auth-wrapper"
 import {
   CodeBracketSquareIcon,
   UserIcon,
-  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
 import Options from './components/options';
-import LoadingIcon from './components/loadingIcon';
 import { IAppProps } from './interfaces';
-import NotificationWrapper, { useNotification } from "./notify";
+import NotificationWrapper from "./notify";
 
 import { loadDataSource, postDataService, finishDataService } from './dataSource';
 
 import initCommunication from "./utils/communication";
-import { encodeSpec, decodeSpec } from "./utils/graphicWalkerParser"
+import { decodeSpec } from "./utils/graphicWalkerParser"
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
 import LoadDataModal from './components/loadDataModal';
+import { getSaveTool, hidePreview } from './tools/saveTool';
 
 import { ToolbarItemProps } from '@kanaries/graphic-walker/dist/components/toolbar';
 // @ts-ignore
@@ -33,6 +32,7 @@ import style from './index.css?inline'
 /** App does not consider props.storeRef */
 const App: React.FC<IAppProps> = observer((propsIn) => {
   const storeRef = React.useRef<IGlobalStore|null>(null);
+  const gwRef = React.useRef<IGWHandler|null>(null);
   const {dataSource, ...props} = propsIn;
   const { visSpec, dataSourceProps, rawFields, userConfig } = props;
   if (!props.storeRef?.current) {
@@ -41,8 +41,6 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
   const wrapRef = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const { notify } = useNotification();
 
   useEffect(() => {
     if (userConfig) setConfig(userConfig);
@@ -121,40 +119,10 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     ),
     onClick: () => {}
   }
-  const saveTool = {
-    key: "save",
-    label: "save",
-    icon: (iconProps?: any) => {
-        return saving ? <LoadingIcon width={36} height={36} /> : <DocumentTextIcon {...iconProps} />
-    },
-    onClick: () => {
-        if (props.specType !== "json_file") {
-            notify({
-                type: "warning",
-                title: "Tips",
-                message: "spec params is not 'json_file', save is not supported.",
-            }, 4_000)
-            return
-        }
-        setSaving(true);
-        communicationStore.comm?.sendMsg("update_vis_spec", {
-            "content": encodeSpec(storeRef.current?.vizStore.exportViewSpec()!),
-        }).then(() => {
-            setTimeout(() => {
-                notify({
-                    type: "success",
-                    title: "Tips",
-                    message: "save success.",
-                }, 4_000);
-                setSaving(false);
-            }, 500);
-        })
-    }
-  }
 
   const tools = [exportTool];
   if (props.env === "jupyter_widgets") {
-    tools.push(saveTool);
+    tools.push(getSaveTool(props, gwRef, storeRef));
   }
   if (checkUploadPrivacy()) {
     tools.push(loginTool);
@@ -172,7 +140,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
             mounted && checkUploadPrivacy() && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
         }
         <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-        <GraphicWalker {...props} toolbar={toolbarConfig} />
+        <GraphicWalker {...props} toolbar={toolbarConfig} ref={gwRef} />
         <LoadDataModal />
         <Options {...props} toolbar={toolbarConfig} />
     </React.StrictMode>
@@ -189,6 +157,7 @@ const initOnJupyter = async(props: IAppProps) => {
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
     }
+    hidePreview(props.id);
 }
 
 const defaultInit = async(props: IAppProps) => {}
