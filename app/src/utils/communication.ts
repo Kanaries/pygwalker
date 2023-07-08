@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 interface ICommunication {
-    sendMsg: (action: string, data: any) => Promise<any>;
+    sendMsg: (action: string, data: any, timeout?: number) => Promise<any>;
     registerEndpoint: (action: string, callback: (data: any) => any) => void;
     sendMsgAsync: (action: string, data: any, rid: string | null) => void;
 }
@@ -42,13 +42,13 @@ const initCommunication = (gid: string) => {
         }
     }
 
-    const sendMsg = async(action: string, data: any) => {
+    const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
         const rid = uuidv4();
         const promise = new Promise<any>((resolve, reject) => {
             sendMsgAsync(action, data, rid);
             setTimeout(() => {
                 reject(new Error("get result timeout"))
-            }, 10000);
+            }, timeout);
             document.addEventListener(getSignalName(rid), (_) => {
                 resolve(bufferMap.get(rid));
             });
