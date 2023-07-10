@@ -13,6 +13,7 @@ import NotificationWrapper from "./notify";
 
 import { loadDataSource, postDataService, finishDataService } from './dataSource';
 
+import commonStore from "./store/common";
 import initCommunication from "./utils/communication";
 import { decodeSpec } from "./utils/graphicWalkerParser"
 import communicationStore from "./store/communication"
@@ -77,6 +78,10 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     setData({ data: dataSource, rawFields, visSpec });
   }, [dataSource, rawFields, visSpec]);
 
+  useEffect(() => {
+    commonStore.setShowCloudTool(props.showCloudTool);
+  }, [props.showCloudTool])
+
   const updateDataSource = useCallback(async () => {
 
     // TODO: don't always update visSpec when appending data
@@ -107,7 +112,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
   if (props.env === "jupyter_widgets") {
     tools.push(saveTool);
   }
-  if (checkUploadPrivacy()) {
+  if (checkUploadPrivacy() && commonStore.showCloudTool) {
     tools.push(loginTool);
   }
 
@@ -120,7 +125,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     <React.StrictMode>
         <style>{style}</style>
         {
-            mounted && checkUploadPrivacy() && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
+            mounted && checkUploadPrivacy() && commonStore.showCloudTool && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
         }
         <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
         <GraphicWalker {...props} toolbar={toolbarConfig} ref={gwRef} />

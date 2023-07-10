@@ -53,6 +53,7 @@ def to_html(
         hideDataSourceConfig,
         themeKey,
         dark,
+        False,
         **kwargs
     )
 

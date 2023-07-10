@@ -36,6 +36,7 @@ class PygWalker:
         hidedata_source_config: bool,
         theme_key: Literal['vega', 'g2'],
         dark: Literal['media', 'light', 'dark'],
+        show_cloud_tool: bool,
         **kwargs
     ):
         if gid is None:
@@ -53,6 +54,7 @@ class PygWalker:
         self.other_props = kwargs
         self.vis_spec, self.spec_type = get_spec_json(spec)
         self.tunnel_id = "tunnel!"
+        self.show_cloud_tool = show_cloud_tool
 
     def to_html(self) -> str:
         props = self._get_props()
@@ -169,6 +171,7 @@ class PygWalker:
             "env": env,
             "specType": self.spec_type,
             "needLoadDatas": need_load_datas,
+            "showCloudTool": self.show_cloud_tool,
             **self.other_props,
         }
 
