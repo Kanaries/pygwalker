@@ -10,6 +10,7 @@ export interface IAppProps extends IGWProps {
     env?: string;
     needLoadDatas?: boolean;
     specType?: string;
+    showCloudTool: boolean;
 }
 
 export interface IDataSourceProps {

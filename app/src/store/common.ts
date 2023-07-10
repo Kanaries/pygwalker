@@ -11,6 +11,7 @@ class CommonStore {
         total: 0,
         curIndex: 0
     };
+    showCloudTool: boolean = false;
 
     setLoadDataModalOpen(value: boolean) {
         this.loadDataModalOpen = value;
@@ -20,12 +21,18 @@ class CommonStore {
         this.loadDataModalInfo = info;
     }
 
+    setShowCloudTool(value: boolean) {
+        this.showCloudTool = value;
+    }
+
     constructor() {
         makeObservable(this, {
             loadDataModalOpen: observable,
             loadDataModalInfo: observable,
+            showCloudTool: observable,
             setLoadDataModalOpen: action,
-            setLoadDataModalInfo: action
+            setLoadDataModalInfo: action,
+            setShowCloudTool: action
         });
     }
 }

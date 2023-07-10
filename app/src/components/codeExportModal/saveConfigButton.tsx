@@ -5,6 +5,7 @@ import { Menu, Transition } from "@headlessui/react";
 import { getToken } from "@kanaries/auth-wrapper";
 import { checkUploadPrivacy } from "../../utils/userConfig";
 import { encodeSpec } from "../../utils/graphicWalkerParser"
+import commonStore from "../../store/common";
 
 import type { IVisSpec } from '@kanaries/graphic-walker/dist/interfaces'
 
@@ -118,16 +119,16 @@ const saveConfigButton: React.FC<IDsaveConfigButtonProps> = (props) => {
                                 <button
                                     className="group flex w-full items-center rounded-md px-2 py-2 text-sm disabled:opacity-50"
                                     onClick={saveAsServer}
-                                    disabled={!checkUploadPrivacy()}
+                                    disabled={!checkUploadPrivacy() || !commonStore.showCloudTool}
                                 >
                                     Config Id
                                 </button>
                                 {
-                                    !checkUploadPrivacy() &&
+                                    (!checkUploadPrivacy() || !commonStore.showCloudTool) &&
                                     <span
                                         className="absolute w-60 top-10 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100"
                                     >
-                                        you need set your privacy to meta or any to use this feature
+                                        you need set your privacy to meta or any to use this feature and set `show_cloud_tool=True`.
                                     </span>
                                 }
                             </div>

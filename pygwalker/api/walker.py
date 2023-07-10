@@ -22,6 +22,7 @@ def walk(
     dark: Literal['media', 'light', 'dark'] = 'media',
     return_html: bool = False,
     spec: str = "",
+    show_cloud_tool: bool = False,
     **kwargs
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
@@ -60,6 +61,7 @@ def walk(
         hideDataSourceConfig,
         themeKey,
         dark,
+        show_cloud_tool,
         **kwargs
     )
 
