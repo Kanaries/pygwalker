@@ -16,9 +16,7 @@ dependencies = [
     "ipython",
     "astor",
     "typing_extensions",
-    "jupyter-client<=7.4.9,>6.0.0",
-    "jupyter-server<=2.5.0",
-    "ipywidgets<8.0.0,>7.0.0",
+    "ipywidgets"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
@@ -29,6 +27,16 @@ repository = "https://github.com/Kanaries/pygwalker"
 pandas = ["pandas"]
 polars = ["polars"]
 streamlit = ["streamlit"]
+notebook = [
+    "jupyter-client<=7.4.9,>6.0.0",
+    "jupyter-server<=2.5.0",
+    "ipywidgets<8.0.0,>7.0.0"
+]
+labv4 = [
+    "jupyter-client>7.4.9",
+    "jupyter-server>2.5.0",
+    "ipywidgets>=8.0.0"
+]
 all = [
     "pygwalker[pandas,polars,streamlit]",
 ]
