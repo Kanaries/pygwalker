@@ -1,10 +1,7 @@
-from typing import Dict, Any, List
-import html as m_html
-import os
+from typing import Dict, Any, Optional
 
 from jinja2 import Environment, PackageLoader
 
-from pygwalker._constants import ROOT_DIR
 from pygwalker.utils.display import display_html
 
 
@@ -14,27 +11,33 @@ jinja_env = Environment(
 )
 
 
-def _render_preview_html(*, images: List[str], row_count: int, col_count: int, div_id: str, title: str) -> str:
-    image_list = [[None] * col_count for _ in range(row_count)]
-    for image in images:
+def render_preview_html(
+    datas: Dict[str, Any],
+    div_id: str,
+    *,
+    custom_title: Optional[str] = None,
+    desc: str = "",
+) -> str:
+    """
+    datas: {
+        "charts": {"rowIndex": int, ""colIndex": int, "data": str, "height": int, "width": int},
+        "nRows": int,
+        "nCols": int,
+        "title": str
+    }
+    """
+    image_list = [[None] * datas["nCols"] for _ in range(datas["nRows"])]
+    for image in datas["charts"]:
         image_list[image["rowIndex"]][image["colIndex"]] = image
 
-    with open(os.path.join(ROOT_DIR, 'templates', 'tailwind.js'), 'r', encoding='utf-8') as f:
-        tailwind_js = f.read()
-
     html = jinja_env.get_template("preview.html").render(
-        tailwind_js=tailwind_js,
         image_list=image_list,
         div_id=div_id,
-        title=title
+        title=custom_title if custom_title is not None else datas["title"],
+        desc=desc,
     )
 
-    iframe = jinja_env.get_template("preview_iframe.html").render(
-        iframe_id=div_id,
-        srcdoc=m_html.escape(html)
-    )
-
-    return iframe
+    return html
 
 
 class PreviewImageTool:
@@ -47,11 +50,8 @@ class PreviewImageTool:
         display_html("", slot_id=self.image_slot_id)
 
     def render(self, datas: Dict[str, Any]):
-        html = _render_preview_html(
-            images=datas["charts"],
-            row_count=datas["nRows"],
-            col_count=datas["nCols"],
-            title=datas["title"],
+        html = render_preview_html(
+            datas=datas,
             div_id=self.image_slot_id
         )
         display_html(html, slot_id=self.image_slot_id)

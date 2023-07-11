@@ -23,6 +23,7 @@ def walk(
     return_html: bool = False,
     spec: str = "",
     show_cloud_tool: bool = False,
+    use_preview: bool = False,
     **kwargs
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
@@ -39,6 +40,8 @@ def walk(
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - return_html (bool, optional): Directly return a html string. Defaults to False.
         - spec (str): chart config data. config id, json, remote file url
+        - show_cloud_tool(bool): Whether to use kanaries cloud function, Default to False.
+        - use_preview(bool): Whether to use preview function, Default to False.
     """
     if fieldSpecs is None:
         fieldSpecs = {}
@@ -62,6 +65,7 @@ def walk(
         themeKey,
         dark,
         show_cloud_tool,
+        use_preview,
         **kwargs
     )
 
@@ -76,3 +80,5 @@ def walk(
 
     display_func = env_display_map.get(env, lambda: None)
     display_func()
+
+    return walker
