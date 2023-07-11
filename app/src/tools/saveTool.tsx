@@ -61,7 +61,7 @@ export function getSaveTool(
             return;
         }
         const chartData = await gwRef.current?.exportChart!("data-url");
-        await communicationStore.comm?.sendMsg("render_preview_image", chartData);
+        await communicationStore.comm?.sendMsg("save_chart", chartData);
         hidePreview(props.id);
         await communicationStore.comm?.sendMsg("update_vis_spec", {
             "content": encodeSpec(storeRef.current?.vizStore.exportViewSpec()!),

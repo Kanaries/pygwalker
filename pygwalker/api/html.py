@@ -54,6 +54,7 @@ def to_html(
         themeKey,
         dark,
         False,
+        False,
         **kwargs
     )
 

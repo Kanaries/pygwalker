@@ -13,7 +13,7 @@ from pygwalker.services.render import (
     render_gwalker_iframe,
     get_max_limited_datas
 )
-from pygwalker.services.preview_image import PreviewImageTool
+from pygwalker.services.preview_image import PreviewImageTool, render_preview_html
 from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnWidgets,
     BatchUploadDatasToolOnJupyter
@@ -37,6 +37,7 @@ class PygWalker:
         theme_key: Literal['vega', 'g2'],
         dark: Literal['media', 'light', 'dark'],
         show_cloud_tool: bool,
+        use_preview: bool,
         **kwargs
     ):
         if gid is None:
@@ -55,6 +56,8 @@ class PygWalker:
         self.vis_spec, self.spec_type = get_spec_json(spec)
         self.tunnel_id = "tunnel!"
         self.show_cloud_tool = show_cloud_tool
+        self.use_preview = use_preview
+        self._chart_map = {}
 
     def to_html(self) -> str:
         props = self._get_props()
@@ -116,6 +119,27 @@ class PygWalker:
         display_html(html_widgets)
         preview_tool.init_display()
 
+    @property
+    def chart_list(self) -> List[str]:
+        return list(self._chart_map.keys())
+
+    def export_chart(self, chart_name: str) -> Dict[str, Any]:
+        if chart_name not in self._chart_map:
+            raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
+        return self._chart_map[chart_name]
+
+    def display_chart(self, chart_name: str, *, title: Optional[str] = None, desc: str = ""):
+        if chart_name not in self._chart_map:
+            raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
+        chart_data = self._chart_map[chart_name]
+        html = render_preview_html(
+            chart_data,
+            f"{self.gid}-{chart_name}",
+            custom_title=title,
+            desc=desc
+        )
+        display_html(html)
+
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool):
         upload_tool = BatchUploadDatasToolOnWidgets(comm)
 
@@ -135,13 +159,15 @@ class PygWalker:
             with open(self.spec, "w", encoding="utf-8") as f:
                 f.write(data["content"])
 
-        def render_preview_image_endpoint(data: Dict[str, Any]):
-            preview_tool.render(data)
+        def save_chart_endpoint(data: Dict[str, Any]):
+            self._chart_map[data["title"]] = data
+            if self.use_preview:
+                preview_tool.render(data)
 
         comm.register("request_data", reuqest_data_callback)
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
         comm.register("update_vis_spec", update_spec)
-        comm.register("render_preview_image", render_preview_image_endpoint)
+        comm.register("save_chart", save_chart_endpoint)
 
     def _get_props(
         self,
