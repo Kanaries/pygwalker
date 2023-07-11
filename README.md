@@ -34,7 +34,7 @@
      
 Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test), [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
-> PyGWalker will add more support such as R in the future.
+> If you prefer using R, you can check out [GWalkR](https://github.com/Kanaries/GWalkR) now!
 
 # Getting Started
 

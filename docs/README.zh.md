@@ -30,7 +30,7 @@
 
 > 为什么叫PyGWalker？PyGWalker，全称为"Python binding of Graphic Walker"，将Jupyter Notebook(或类Jupyter Notebook)和[Graphic Walker](https://github.com/Kanaries/graphic-walker)集成。Graphic Walker是一个轻量级的Tableau/Power BI开源替代品，可以帮助数据分析师使用简单的拖拉拽操作，进行数据可视化和探索。
 
-> PyGWalker 将来提供R语言支持
+> 如果你喜欢使用R语言，你可以在R中使用[GWalkR](https://github.com/Kanaries/GWalkR)。
 
 ## 一键尝试PyGWalker
 
