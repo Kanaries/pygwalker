@@ -11,7 +11,8 @@ class BaseCommunication:
         "data": {}
     }
     """
-    _endpoint_map = {}
+    def __init__(self) -> None:
+        self._endpoint_map = {}
 
     def send_msg_async(self, action: str, data: Dict[str, Any]):
         raise NotImplementedError
@@ -29,6 +30,5 @@ class BaseCommunication:
         except Exception as e:
             return {"success": False, "message": str(e)}
 
-    @classmethod
-    def register(cls, endpoint: str, func: Callable[[Dict[str, Any]], Any]):
-        cls._endpoint_map[endpoint] = func
+    def register(self, endpoint: str, func: Callable[[Dict[str, Any]], Any]):
+        self._endpoint_map[endpoint] = func
