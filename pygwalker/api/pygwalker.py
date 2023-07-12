@@ -8,6 +8,7 @@ from pygwalker_utils.config import get_config
 from pygwalker.utils.display import display_html, display_on_streamlit
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.global_var import GlobalVarManager
+from pygwalker.services.tip_tools import TipOnStartTool
 from pygwalker.services.render import (
     render_gwalker_html,
     render_gwalker_iframe,
@@ -99,6 +100,9 @@ class PygWalker:
         use ipywidgets, Display on jupyter notebook/lab.
         When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
         """
+        tips_tool = TipOnStartTool(self.gid, "widgets")
+        tips_tool.show()
+
         comm = HackerCommunication(self.gid)
         preview_tool = PreviewImageTool(self.gid)
         data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
