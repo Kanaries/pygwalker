@@ -232,6 +232,7 @@ class PygWalker:
             "hideDataSourceConfig": self.hidedata_source_config,
             "fieldkeyGuard": False,
             "themeKey": self.theme_key,
+            "dark": self.dark,
             "sourceInvokeCode": self.source_invoke_code,
             "dataSourceProps": {
                 'tunnelId': self.tunnel_id,
