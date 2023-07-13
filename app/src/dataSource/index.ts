@@ -33,15 +33,15 @@ export async function loadDataSource(props: IDataSourceProps): Promise<IRow[]> {
                     clearTimeout(timer);
                     timer = setTimeout(timeout, 100_000);
                     if (ev.data.action === "postData") {
-                        commonStore.setLoadDataModalOpen(true);
-                        commonStore.setLoadDataModalInfo({
+                        commonStore.setInitModalOpen(true);
+                        commonStore.setInitModalInfo({
                             total: ev.data.total,
-                            curIndex: ev.data.curIndex
+                            curIndex: ev.data.curIndex,
+                            title: "Loading Data",
                         });
                         data.push(...(ev.data.data ?? []));
                     } else if (ev.data.action === "finishData") {
                         window.removeEventListener("message", onmessage);
-                        commonStore.setLoadDataModalOpen(false);
                         resolve(data);
                     }
                 }

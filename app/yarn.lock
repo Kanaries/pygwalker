@@ -440,14 +440,13 @@
     tailwindcss "^3.2.4"
     uuid "^8.3.2"
 
-"@kanaries/graphic-walker@0.3.10":
-  version "0.3.10"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.3.10.tgz#55e071389ef7673b6d9ede377a0ce02e960e62b0"
-  integrity sha512-xLGVDHZAihgh23wSwZeF3dcLQ5TfU+y02WvUL/CF8mf8OSsDJoVtqNmpHsXHEsXk/G1ZFs10DLsrimKGxfw+CA==
+"@kanaries/graphic-walker@0.3.12":
+  version "0.3.12"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.3.12.tgz#3cb25e68bb7ac64ae6e0e8ffd9531b44f808765b"
+  integrity sha512-qGUltWlb/efiHkLQSXsv0FPZklyD7ilVNwjt6xja7DNXqRwEH6o52ms2cNp5nyvMfgf+ZxBWrNpysRVkucqKAQ==
   dependencies:
     "@headlessui/react" "^1.7.12"
     "@heroicons/react" "^2.0.8"
-    "@kanaries/graphic-walker" "0.3.9"
     "@kanaries/react-beautiful-dnd" "0.0.2"
     "@kanaries/web-data-loader" "^0.1.7"
     autoprefixer "^10.3.5"
@@ -468,48 +467,6 @@
     vega "^5.22.1"
     vega-embed "^6.21.0"
     vega-lite "^5.6.0"
-
-"@kanaries/graphic-walker@0.3.9":
-  version "0.3.9"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.3.9.tgz#cd2d090503fae366769a95b86a92676a44ed1ad2"
-  integrity sha512-ox7WE7bUX5M71L7DIRFWi8hrABthN0KET/f3ODOt8iMfJ7cHd8j+7hkzMkeyB2zCj1CV2vw7f4xnNhf8dTCt0g==
-  dependencies:
-    "@headlessui/react" "^1.7.12"
-    "@heroicons/react" "^2.0.8"
-    "@kanaries/graphic-walker" "0.3.9"
-    "@kanaries/react-beautiful-dnd" "0.0.1"
-    "@kanaries/web-data-loader" "^0.1.7"
-    autoprefixer "^10.3.5"
-    i18next "^21.9.1"
-    i18next-browser-languagedetector "^6.1.5"
-    immer "^9.0.15"
-    mobx "^6.3.3"
-    mobx-react-lite "^3.2.1"
-    nanoid "^4.0.2"
-    postcss "^8.3.7"
-    postinstall-postinstall "^2.1.0"
-    re-resizable "^6.9.8"
-    react-i18next "^11.18.6"
-    react-shadow "^20.0.0"
-    rxjs "^7.3.0"
-    tailwindcss "^3.2.4"
-    uuid "^8.3.2"
-    vega "^5.22.1"
-    vega-embed "^6.21.0"
-    vega-lite "^5.6.0"
-
-"@kanaries/react-beautiful-dnd@0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@kanaries/react-beautiful-dnd/-/react-beautiful-dnd-0.0.1.tgz#18369ecd87649ff3d939ef0559e0e38f848de0b3"
-  integrity sha512-4gUYrpNXOU+mLZ/Dsl/rGkmEEdxZ70pq2d2vMLIbeuGo+qCJSHL2UC5sTXfS6bAZcjcjBsim1ZpCwVc/EO2PYg==
-  dependencies:
-    "@babel/runtime" "^7.9.2"
-    css-box-model "^1.2.0"
-    memoize-one "^5.1.1"
-    raf-schd "^4.0.2"
-    react-redux "^7.2.0"
-    redux "^4.0.4"
-    use-memo-one "^1.1.1"
 
 "@kanaries/react-beautiful-dnd@0.0.2":
   version "0.0.2"
