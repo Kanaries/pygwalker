@@ -10,7 +10,9 @@
             {% for row in image_list %}
             <div style="display: flex;">
                 {% for image in row %}
-                <img style="max-width: none;" height="{{ image['height'] }}" width="{{ image['width'] }}" src="{{ image['data'] }}" />
+                <div style="width: {{ image['width'] }}px; height: {{ image['height'] }}px">
+                    <img style="max-width: none;" height="{{ image['canvasHeight'] }}" width="{{ image['canvasWidth'] }}" src="{{ image['data'] }}" />
+                </div>
                 {% endfor %}
             </div>
             {% endfor %}
