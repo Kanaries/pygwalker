@@ -20,7 +20,7 @@ def render_preview_html(
 ) -> str:
     """
     datas: {
-        "charts": {"rowIndex": int, ""colIndex": int, "data": str, "height": int, "width": int},
+        "charts": {"rowIndex": int, ""colIndex": int, "data": str, "height": int, "width": int, "canvasHeight": int, "canvasWidth": int},
         "nRows": int,
         "nCols": int,
         "title": str
