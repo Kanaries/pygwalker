@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker } from '@kanaries/graphic-walker'
@@ -19,13 +19,34 @@ import { decodeSpec } from "./utils/graphicWalkerParser"
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
-import LoadDataModal from './components/loadDataModal';
+import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getLoginTool } from './tools/loginTool';
 
 // @ts-ignore
 import style from './index.css?inline'
+
+
+const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number) => {
+    if (total !== 0) {
+        commonStore.initModalOpen = true;
+        commonStore.setInitModalInfo({
+            title: "Recover Charts",
+            curIndex: 0,
+            total: total,
+        });
+        for await (const chart of gwRef.current?.exportChartList("data-url")!) {
+            await communicationStore.comm?.sendMsg("save_chart", chart.data);
+            commonStore.setInitModalInfo({
+                title: "Recover Charts",
+                curIndex: chart.index + 1,
+                total: chart.total,
+            });
+        }
+    }
+    commonStore.initModalOpen = false;
+}
 
 /** App does not consider props.storeRef */
 const App: React.FC<IAppProps> = observer((propsIn) => {
@@ -39,6 +60,9 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
   const wrapRef = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const specList = useMemo(() => {
+    return props.visSpec ? decodeSpec(props.visSpec) : [];
+  }, []);
 
   useEffect(() => {
     if (userConfig) setConfig(userConfig);
@@ -49,10 +73,8 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     rawFields?: IMutField[];
     visSpec?: string
   }) => {
-    const { data, rawFields, visSpec } = p;
-      if (visSpec) {
-        const specList = decodeSpec(visSpec);
-        console.log(specList)
+    const { data, rawFields } = p;
+      if (specList.length !== 0) {
         storeRef?.current?.vizStore?.importStoInfo({
           dataSources: [{
             id: 'dataSource-0',
@@ -72,6 +94,9 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         } as IDataSetInfo);
         storeRef?.current?.commonStore?.commitTempDS();
       }
+      if (!props.needLoadDatas) {
+        initChart(gwRef, specList.length);
+      }
   }, [storeRef])
 
   useEffect(() => {
@@ -88,6 +113,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     await loadDataSource(dataSourceProps).then(ds => {
       const data = ds;
       setData({ data, rawFields, visSpec });
+      initChart(gwRef, specList.length);
     }).catch(e => {
       console.error('Load DataSource Error', e);
     });
@@ -129,7 +155,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         }
         <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
         <GraphicWalker {...props} toolbar={toolbarConfig} ref={gwRef} />
-        <LoadDataModal />
+        <InitModal />
         <Options {...props} toolbar={toolbarConfig} />
     </React.StrictMode>
   );

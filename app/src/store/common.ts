@@ -1,24 +1,26 @@
 import { makeObservable, observable, action } from 'mobx';
 
-interface ILoadDataModalInfo {
+interface IInitModalInfo {
     total: number;
     curIndex: number;
+    title: string;
 }
 
 class CommonStore {
-    loadDataModalOpen: boolean = false;
-    loadDataModalInfo: ILoadDataModalInfo = {
+    initModalOpen: boolean = false;
+    initModalInfo: IInitModalInfo = {
         total: 0,
-        curIndex: 0
+        curIndex: 0,
+        title: "",
     };
     showCloudTool: boolean = false;
 
-    setLoadDataModalOpen(value: boolean) {
-        this.loadDataModalOpen = value;
+    setInitModalOpen(value: boolean) {
+        this.initModalOpen = value;
     }
 
-    setLoadDataModalInfo(info: ILoadDataModalInfo) {
-        this.loadDataModalInfo = info;
+    setInitModalInfo(info: IInitModalInfo) {
+        this.initModalInfo = info;
     }
 
     setShowCloudTool(value: boolean) {
@@ -27,11 +29,11 @@ class CommonStore {
 
     constructor() {
         makeObservable(this, {
-            loadDataModalOpen: observable,
-            loadDataModalInfo: observable,
+            initModalOpen: observable,
+            initModalInfo: observable,
             showCloudTool: observable,
-            setLoadDataModalOpen: action,
-            setLoadDataModalInfo: action,
+            setInitModalOpen: action,
+            setInitModalInfo: action,
             setShowCloudTool: action
         });
     }
