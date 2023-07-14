@@ -96,7 +96,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         } as IDataSetInfo);
         storeRef?.current?.commonStore?.commitTempDS();
       }
-      if (!props.needLoadDatas) {
+      if (!props.needLoadDatas && props.env === "jupyter_widgets") {
         setTimeout(() => { initChart(gwRef, specList.length) }, 0);
       }
   }, [storeRef])
@@ -115,7 +115,11 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     await loadDataSource(dataSourceProps).then(ds => {
       const data = ds;
       setData({ data, rawFields, visSpec });
-      initChart(gwRef, specList.length);
+      if (props.env === "jupyter_widgets") {
+        initChart(gwRef, specList.length);
+      } else {
+        commonStore.setInitModalOpen(false);
+      }
     }).catch(e => {
       console.error('Load DataSource Error', e);
     });
