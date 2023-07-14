@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional, Union
 import html as m_html
+import urllib
 
 from typing_extensions import Literal
 import ipywidgets
@@ -127,15 +128,39 @@ class PygWalker:
     def chart_list(self) -> List[str]:
         return list(self._chart_map.keys())
 
-    def export_chart(self, chart_name: str) -> Dict[str, Any]:
-        if chart_name not in self._chart_map:
-            raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
-        return self._chart_map[chart_name]
+    def save_chart_to_file(self, chart_name: str, path: str, save_type: Literal["html", "png"] = "png"):
+        if save_type == "html":
+            content = self.export_chart_html(chart_name)
+            write_mode = "w"
+            encoding = "utf-8"
+        elif save_type == "png":
+            content = self.export_chart_png(chart_name)
+            write_mode = "wb"
+            encoding = None
+        else:
+            raise ValueError(f"save_type must be html or png, but got {save_type}")
+
+        with open(path, write_mode, encoding=encoding) as f:
+            f.write(content)
+
+    def export_chart_html(self, chart_name: str) -> str:
+        chart_data = self._get_chart_by_name(chart_name)
+
+        return render_preview_html(
+            chart_data,
+            f"{self.gid}-{chart_name}",
+            custom_title="",
+            desc=""
+        )
+
+    def export_chart_png(self, chart_name: str) -> bytes:
+        chart_data = self._get_chart_by_name(chart_name)
+
+        with urllib.request.urlopen(chart_data["singleChart"]) as png_string:
+            return png_string.read()
 
     def display_chart(self, chart_name: str, *, title: Optional[str] = None, desc: str = ""):
-        if chart_name not in self._chart_map:
-            raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
-        chart_data = self._chart_map[chart_name]
+        chart_data = self._get_chart_by_name(chart_name)
         html = render_preview_html(
             chart_data,
             f"{self.gid}-{chart_name}",
@@ -143,6 +168,20 @@ class PygWalker:
             desc=desc
         )
         display_html(html)
+
+    def _get_chart_by_name(self, chart_name: str) -> Dict[str, Any]:
+        """
+        datas: {
+            "charts": {"rowIndex": int, ""colIndex": int, "data": str, "height": int, "width": int, "canvasHeight": int, "canvasWidth": int},
+            "singleChart": str,
+            "nRows": int,
+            "nCols": int,
+            "title": str
+        }
+        """
+        if chart_name not in self._chart_map:
+            raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
+        return self._chart_map[chart_name]
 
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool):
         upload_tool = BatchUploadDatasToolOnWidgets(comm)
