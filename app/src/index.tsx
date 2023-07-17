@@ -29,7 +29,7 @@ import { domToPng } from "./utils/screenshot"
 import style from './index.css?inline'
 
 
-const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number) => {
+const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, gid: string) => {
     if (total !== 0) {
         commonStore.initModalOpen = true;
         commonStore.setInitModalInfo({
@@ -45,6 +45,7 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
                 curIndex: chart.index + 1,
                 total: chart.total,
             });
+            hidePreview(gid);
         }
     }
     commonStore.initModalOpen = false;
@@ -97,7 +98,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         storeRef?.current?.commonStore?.commitTempDS();
       }
       if (!props.needLoadDatas && props.env === "jupyter_widgets") {
-        setTimeout(() => { initChart(gwRef, specList.length) }, 0);
+        setTimeout(() => { initChart(gwRef, specList.length, props.id) }, 0);
       }
   }, [storeRef])
 
@@ -116,7 +117,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
       const data = ds;
       setData({ data, rawFields, visSpec });
       if (props.env === "jupyter_widgets") {
-        initChart(gwRef, specList.length);
+        initChart(gwRef, specList.length, props.id);
       } else {
         commonStore.setInitModalOpen(false);
       }
