@@ -215,7 +215,7 @@ class PygWalker:
             chart_data = ChartData.parse_obj(data)
             self._chart_map[data["title"]] = chart_data
             if self.use_preview:
-                preview_tool.render(data)
+                preview_tool.render(self._chart_map)
 
         comm.register("request_data", reuqest_data_callback)
         comm.register("get_latest_vis_spec", get_latest_vis_spec)

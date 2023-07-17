@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from jinja2 import Environment, PackageLoader
 from pydantic import BaseModel, Field
@@ -51,6 +51,25 @@ def render_preview_html(
     return html
 
 
+def render_preview_html_for_multi_charts(charts_map: Dict[str, ChartData], gid: str, preview_id: str) -> str:
+    items = []
+    for chart_data in charts_map.values():
+        div_id = f"{gid}-{chart_data.title}".replace(" ", "")
+        chart_html = render_preview_html(chart_data, div_id, custom_title="")
+        items.append({
+            "tab_id": "tab-" + div_id,
+            "chart_title": chart_data.title,
+            "chart_html": chart_html
+        })
+
+    html = jinja_env.get_template("preview_list.html").render(
+        preview_id=preview_id,
+        items=items
+    )
+
+    return html
+
+
 class PreviewImageTool:
     """Preview image tool for pygwalker"""
     def __init__(self, gid: str):
@@ -60,9 +79,6 @@ class PreviewImageTool:
     def init_display(self):
         display_html("", slot_id=self.image_slot_id)
 
-    def render(self, chart_data: ChartData):
-        html = render_preview_html(
-            chart_data=chart_data,
-            div_id=self.image_slot_id
-        )
+    def render(self, charts_map: Dict[str, ChartData]):
+        html = render_preview_html_for_multi_charts(charts_map, self.gid, self.image_slot_id)
         display_html(html, slot_id=self.image_slot_id)

@@ -1,0 +1,54 @@
+<html>
+<style>
+.tabs{
+    position:relative;
+    height:660px;
+}
+.tab-pane{
+    display:inline-block;
+}
+.tabs input[type='radio']{
+    position:absolute;
+    clip:rect(0,0,0,0)
+}
+.tab-item{
+    display:block;
+    height:34px;
+    line-height:34px;
+    cursor:pointer;
+    padding:0 10px
+}
+
+.tabs input[type='radio']:checked+.tab-item{
+    background:#2563eb;
+    color:#fff
+}
+
+.tab-content{
+    display: none;
+    position:absolute;
+    left:0;
+    top:56px;
+    bottom:0;
+    right:0;
+}
+
+.tabs input[type='radio']:checked+.tab-item+.tab-content{
+    display: block;
+}
+</style>
+
+<body>
+    <div id="{{ preview_id }}">
+        <div class="tabs">
+            {% for item in items %}
+            <div class="tab-pane">
+                <input type="radio" name="tab" id="{{ item['tab_id'] }}" checked />
+                <label class="tab-item" for="{{ item['tab_id'] }}">{{ item['chart_title'] }}</label>
+                <div class="tab-content">{{ item['chart_html'] | safe }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
