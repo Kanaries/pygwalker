@@ -15,7 +15,7 @@ from pygwalker.services.render import (
     render_gwalker_iframe,
     get_max_limited_datas
 )
-from pygwalker.services.preview_image import PreviewImageTool, render_preview_html
+from pygwalker.services.preview_image import PreviewImageTool, render_preview_html, ChartData
 from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnWidgets,
     BatchUploadDatasToolOnJupyter
@@ -59,7 +59,10 @@ class PygWalker:
         self.tunnel_id = "tunnel!"
         self.show_cloud_tool = show_cloud_tool
         self.use_preview = use_preview
-        self._chart_map = {}
+        self._chart_map = self._init_chart_map()
+
+    def _init_chart_map(self) -> Dict[str, ChartData]:
+        return {}
 
     def to_html(self) -> str:
         props = self._get_props()
@@ -168,7 +171,7 @@ class PygWalker:
         """
         chart_data = self._get_chart_by_name(chart_name)
 
-        with urllib.request.urlopen(chart_data["singleChart"]) as png_string:
+        with urllib.request.urlopen(chart_data.single_chart) as png_string:
             return png_string.read()
 
     def display_chart(self, chart_name: str, *, title: Optional[str] = None, desc: str = ""):
@@ -184,16 +187,7 @@ class PygWalker:
         )
         display_html(html)
 
-    def _get_chart_by_name(self, chart_name: str) -> Dict[str, Any]:
-        """
-        datas: {
-            "charts": {"rowIndex": int, ""colIndex": int, "data": str, "height": int, "width": int, "canvasHeight": int, "canvasWidth": int},
-            "singleChart": str,
-            "nRows": int,
-            "nCols": int,
-            "title": str
-        }
-        """
+    def _get_chart_by_name(self, chart_name: str) -> ChartData:
         if chart_name not in self._chart_map:
             raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
         return self._chart_map[chart_name]
@@ -218,7 +212,8 @@ class PygWalker:
                 f.write(data["content"])
 
         def save_chart_endpoint(data: Dict[str, Any]):
-            self._chart_map[data["title"]] = data
+            chart_data = ChartData.parse_obj(data)
+            self._chart_map[data["title"]] = chart_data
             if self.use_preview:
                 preview_tool.render(data)
 

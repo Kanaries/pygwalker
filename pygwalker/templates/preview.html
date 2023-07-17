@@ -1,22 +1,18 @@
-<html>
-<body>
-    <div id="{{ div_id }}" style="width: 100%; max-height: 600px;">
-        {% if title != '' %}
-        <h1 style="margin-top: 1rem; color: #333; font-size: 1.1rem; margin-bottom: 0.5rem; padding-inline-start: 1rem;">{{ title }}</h1>
-        {% endif %}
-        <p style="color: #666; font-weight: 300; padding-inline-start: 1rem;">{{ desc }}</p>
-        <!-- <p>Under certain Jupyter environments, after launching pygwalker, the preview may not automatically hide. You can manually click the button to hide it.</p> -->
-        <div class="main-box">
-            {% for row in image_list %}
-            <div style="display: flex;">
-                {% for image in row %}
-                <div style="width: {{ image['width'] }}px; height: {{ image['height'] }}px">
-                    <img style="max-width: none;" height="{{ image['canvasHeight'] }}" width="{{ image['canvasWidth'] }}" src="{{ image['data'] }}" />
-                </div>
-                {% endfor %}
+<div id="{{ div_id }}" style="width: 100%; max-height: 600px;">
+    {% if title != '' %}
+    <h1 style="margin-top: 1rem; color: #333; font-size: 1.1rem; margin-bottom: 0.5rem; padding-inline-start: 1rem;">{{ title }}</h1>
+    {% endif %}
+    <p style="color: #666; font-weight: 300; padding-inline-start: 1rem;">{{ desc }}</p>
+    <!-- <p>Under certain Jupyter environments, after launching pygwalker, the preview may not automatically hide. You can manually click the button to hide it.</p> -->
+    <div class="main-box">
+        {% for row in image_list %}
+        <div style="display: flex;">
+            {% for image in row %}
+            <div style="width: {{ image.width }}px; height: {{ image.height }}px">
+                <img style="max-width: none;" height="{{ image.canvas_height }}" width="{{ image.canvas_width }}" src="{{ image.data }}" />
             </div>
             {% endfor %}
         </div>
+        {% endfor %}
     </div>
-</body>
-</html>
+</div>
