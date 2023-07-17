@@ -126,9 +126,15 @@ class PygWalker:
 
     @property
     def chart_list(self) -> List[str]:
+        """
+        Get the list of saved charts.
+        """
         return list(self._chart_map.keys())
 
     def save_chart_to_file(self, chart_name: str, path: str, save_type: Literal["html", "png"] = "png"):
+        """
+        Save the chart to a file.
+        """
         if save_type == "html":
             content = self.export_chart_html(chart_name)
             write_mode = "w"
@@ -144,6 +150,9 @@ class PygWalker:
             f.write(content)
 
     def export_chart_html(self, chart_name: str) -> str:
+        """
+        Export the chart as a html string.
+        """
         chart_data = self._get_chart_by_name(chart_name)
 
         return render_preview_html(
@@ -154,12 +163,18 @@ class PygWalker:
         )
 
     def export_chart_png(self, chart_name: str) -> bytes:
+        """
+        Export the chart as a png bytes.
+        """
         chart_data = self._get_chart_by_name(chart_name)
 
         with urllib.request.urlopen(chart_data["singleChart"]) as png_string:
             return png_string.read()
 
     def display_chart(self, chart_name: str, *, title: Optional[str] = None, desc: str = ""):
+        """
+        Display the chart in the notebook.
+        """
         chart_data = self._get_chart_by_name(chart_name)
         html = render_preview_html(
             chart_data,
