@@ -16,7 +16,8 @@ dependencies = [
     "ipython",
     "astor",
     "typing_extensions",
-    "ipywidgets"
+    "ipywidgets",
+    "pydantic"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
