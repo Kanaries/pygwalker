@@ -55,6 +55,7 @@ def to_html(
         dark,
         False,
         False,
+        False,
         **kwargs
     )
 

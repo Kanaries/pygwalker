@@ -1,5 +1,5 @@
 from urllib import request
-from typing import Tuple
+from typing import Tuple, Dict, Any
 import json
 import os
 
@@ -47,7 +47,7 @@ def _is_config_id(config_id: str) -> bool:
     return True
 
 
-def get_spec_json(spec: str) -> Tuple[str, str]:
+def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
     if not spec or _is_json(spec):
         return spec, "json_string"
 
@@ -71,3 +71,20 @@ def get_spec_json(spec: str) -> Tuple[str, str]:
         with open(spec, "w", encoding="utf-8") as f:
             f.write("")
         return "", "json_file"
+
+
+def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
+    spec, spec_type = _get_spec_json_from_diff_source(spec)
+
+    if not spec:
+        return {"chart_map": {}, "config": ""}, spec_type
+
+    try:
+        spec_obj = json.loads(spec)
+    except json.decoder.JSONDecodeError as e:
+        raise ValueError("spec is not a valid json") from e
+
+    if isinstance(spec_obj, list):
+        return {"chart_map": {}, "config": spec}, spec_type
+
+    return spec_obj, spec_type

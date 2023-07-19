@@ -24,6 +24,7 @@ def walk(
     spec: str = "",
     show_cloud_tool: bool = False,
     use_preview: bool = False,
+    store_chart_data: bool = False,
     **kwargs
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
@@ -42,6 +43,7 @@ def walk(
         - spec (str): chart config data. config id, json, remote file url
         - show_cloud_tool(bool): Whether to use kanaries cloud function, Default to False.
         - use_preview(bool): Whether to use preview function, Default to False.
+        - store_chart_data(bool): Whether to save chart to disk, only work when spec is json file, Default to False.
     """
     if fieldSpecs is None:
         fieldSpecs = {}
@@ -66,6 +68,7 @@ def walk(
         dark,
         show_cloud_tool,
         use_preview,
+        store_chart_data,
         **kwargs
     )
 

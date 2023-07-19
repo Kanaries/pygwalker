@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional, Union
 import html as m_html
 import urllib
+import json
 
 from typing_extensions import Literal
 import ipywidgets
@@ -40,6 +41,7 @@ class PygWalker:
         dark: Literal['media', 'light', 'dark'],
         show_cloud_tool: bool,
         use_preview: bool,
+        store_chart_data: bool,
         **kwargs
     ):
         if gid is None:
@@ -55,14 +57,29 @@ class PygWalker:
         self.dark = dark
         self.data_source_id = rand_str()
         self.other_props = kwargs
-        self.vis_spec, self.spec_type = get_spec_json(spec)
         self.tunnel_id = "tunnel!"
         self.show_cloud_tool = show_cloud_tool
         self.use_preview = use_preview
-        self._chart_map = self._init_chart_map()
+        self.store_chart_data = store_chart_data
+        self._init_spec(spec)
 
-    def _init_chart_map(self) -> Dict[str, ChartData]:
-        return {}
+    def _init_spec(self, spec: Dict[str, Any]):
+        spec_obj, spec_type = get_spec_json(spec)
+        self.vis_spec = spec_obj["config"]
+        self.spec_type = spec_type
+        self._chart_map = self._parse_chart_map_dict(spec_obj["chart_map"])
+
+    def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
+        return {
+            key: value.dict(by_alias=True)
+            for key, value in chart_map.items()
+        }
+
+    def _parse_chart_map_dict(self, chart_map_dict: Dict[str, Any]) -> Dict[str, ChartData]:
+        return {
+            key: ChartData.parse_obj(value)
+            for key, value in chart_map_dict.items()
+        }
 
     def to_html(self) -> str:
         props = self._get_props()
@@ -126,6 +143,7 @@ class PygWalker:
 
         display_html(html_widgets)
         preview_tool.init_display()
+        preview_tool.render(self._chart_map)
 
     @property
     def chart_list(self) -> List[str]:
@@ -204,12 +222,8 @@ class PygWalker:
             return {}
 
         def get_latest_vis_spec(_):
-            vis_spec, _ = get_spec_json(self.spec)
-            return {"visSpec": vis_spec}
-
-        def update_spec(data: Dict[str, Any]):
-            with open(self.spec, "w", encoding="utf-8") as f:
-                f.write(data["content"])
+            spec_obj, _ = get_spec_json(self.spec)
+            return {"visSpec": spec_obj["config"]}
 
         def save_chart_endpoint(data: Dict[str, Any]):
             chart_data = ChartData.parse_obj(data)
@@ -217,9 +231,18 @@ class PygWalker:
             if self.use_preview:
                 preview_tool.render(self._chart_map)
 
+        def update_spec(data: Dict[str, Any]):
+            spec_obj = {"config": data["visSpec"], "chart_map": {}}
+            save_chart_endpoint(data["chartData"])
+            if self.store_chart_data:
+                spec_obj["chart_map"] = self._get_chart_map_dict(self._chart_map)
+
+            with open(self.spec, "w", encoding="utf-8") as f:
+                f.write(json.dumps(spec_obj))
+
         comm.register("request_data", reuqest_data_callback)
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
-        comm.register("update_vis_spec", update_spec)
+        comm.register("update_spec", update_spec)
         comm.register("save_chart", save_chart_endpoint)
 
     def _get_props(
@@ -252,6 +275,7 @@ class PygWalker:
             "specType": self.spec_type,
             "needLoadDatas": need_load_datas,
             "showCloudTool": self.show_cloud_tool,
+            "needInitChart": not (self.store_chart_data and self._chart_map),
             **self.other_props,
         }
 
