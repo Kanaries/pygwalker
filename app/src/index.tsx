@@ -29,8 +29,8 @@ import { domToPng } from "./utils/screenshot"
 import style from './index.css?inline'
 
 
-const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, gid: string) => {
-    if (total !== 0) {
+const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
+    if (props.needInitChart && props.env === "jupyter_widgets" && total !== 0) {
         commonStore.initModalOpen = true;
         commonStore.setInitModalInfo({
             title: "Recover Charts",
@@ -45,10 +45,10 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
                 curIndex: chart.index + 1,
                 total: chart.total,
             });
-            hidePreview(gid);
+            hidePreview(props.id);
         }
     }
-    commonStore.initModalOpen = false;
+    commonStore.setInitModalOpen(false);
 }
 
 /** App does not consider props.storeRef */
@@ -97,8 +97,8 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         } as IDataSetInfo);
         storeRef?.current?.commonStore?.commitTempDS();
       }
-      if (!props.needLoadDatas && props.env === "jupyter_widgets") {
-        setTimeout(() => { initChart(gwRef, specList.length, props.id) }, 0);
+      if (!props.needLoadDatas) {
+        setTimeout(() => { initChart(gwRef, specList.length, props) }, 0);
       }
   }, [storeRef])
 
@@ -116,11 +116,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     await loadDataSource(dataSourceProps).then(ds => {
       const data = ds;
       setData({ data, rawFields, visSpec });
-      if (props.env === "jupyter_widgets") {
-        initChart(gwRef, specList.length, props.id);
-      } else {
-        commonStore.setInitModalOpen(false);
-      }
+      initChart(gwRef, specList.length, props);
     }).catch(e => {
       console.error('Load DataSource Error', e);
     });

@@ -63,11 +63,11 @@ export function getSaveTool(
         }
         const chartData = await gwRef.current?.exportChart!("data-url");
         const singleChart = await domToPng(chartData.container()!);
-        await communicationStore.comm?.sendMsg("save_chart", {...chartData, singleChart});
-        hidePreview(props.id);
-        await communicationStore.comm?.sendMsg("update_vis_spec", {
-            "content": encodeSpec(storeRef.current?.vizStore.exportViewSpec()!),
+        await communicationStore.comm?.sendMsg("update_spec", {
+            "visSpec": encodeSpec(storeRef.current?.vizStore.exportViewSpec()!),
+            "chartData": {...chartData, singleChart}
         });
+        hidePreview(props.id);
         saveSuccess();
         saveJupyterNotebook();
     }
