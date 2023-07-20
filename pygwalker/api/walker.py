@@ -8,6 +8,7 @@ from pygwalker.data_parsers.base import FieldSpec, BaseDataParser
 from pygwalker._typing import DataFrame
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
+from pygwalker.utils.execute_env_check import check_convert
 
 
 def walk(
@@ -75,10 +76,14 @@ def walk(
     if return_html:
         return walker.to_html()
 
+    if check_convert():
+        env = "JupyterConvert"
+
     env_display_map = {
         "Streamlit": walker.display_on_streamlit,
         "JupyterWidget": walker.display_on_jupyter_use_widgets,
-        "Jupyter": walker.display_on_jupyter
+        "Jupyter": walker.display_on_jupyter,
+        "JupyterConvert": walker.display_on_convert_html,
     }
 
     display_func = env_display_map.get(env, lambda: None)
