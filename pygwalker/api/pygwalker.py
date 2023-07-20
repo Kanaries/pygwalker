@@ -88,6 +88,14 @@ class PygWalker:
     def display_on_streamlit(self):
         display_on_streamlit(self.to_html())
 
+    def display_on_convert_html(self):
+        """
+        Display on jupyter-nbconvert html.
+        """
+        props = self._get_props("jupyter")
+        iframe_html = self._get_render_iframe(props)
+        display_html(iframe_html)
+
     def display_on_jupyter(self):
         """
         Display on jupyter notebook/lab.
