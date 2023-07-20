@@ -7,6 +7,7 @@ import time
 from ipywidgets import Text, Layout, Box
 
 from .base import BaseCommunication
+from pygwalker.utils.encode import DataFrameEncoder
 
 
 class HackerCommunication(BaseCommunication):
@@ -57,7 +58,7 @@ class HackerCommunication(BaseCommunication):
             "data": data
         }
         with self._send_msg_lock:
-            self._html_widget.value = json.dumps(msg)
+            self._html_widget.value = json.dumps(msg, cls=DataFrameEncoder)
             self._html_widget.placeholder = str(self.__increase)
             self.__increase += 1
             time.sleep(0.1)
