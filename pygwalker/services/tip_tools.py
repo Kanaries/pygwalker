@@ -5,7 +5,7 @@ from pygwalker.utils.display import display_html
 
 WIDGETS_TIPS = """
 <div style="">
-If you are using pygwalker on Jupyter and it can't display properly, please execute code to fix it: `pip install "pygwalker[notebook]" --pre`.(close after 15 seconds)
+If you are using pygwalker on Jupyter Notebook(version<7) and it can't display properly, please execute code to fix it: `pip install "pygwalker[notebook]" --pre`.(close after 15 seconds)
 <div>
 """
 
