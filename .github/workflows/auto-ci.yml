@@ -73,7 +73,7 @@ jobs:
         run: |
           pip install ./
       - name: Try Install Modin In Linux Os
-        if: ${{ matrix.os-version == 'ubuntu-latest' }}
+        if: ${{ matrix.os-version == 'ubuntu-latest' && matrix.python-version == '3.11' }}
         run: |
           pip install modin "modin[ray]"
           pip install pydantic==1.10.9
