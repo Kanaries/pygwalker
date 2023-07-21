@@ -10,6 +10,8 @@ import astor
 
 _MAX_LINE = 150
 
+logger = logging.getLogger(__name__)
+
 
 class StatementScraper(fixer_base.BaseFix):
     """StatementScraper"""
@@ -87,7 +89,7 @@ def _repalce_spec_params_code(func: 'ast.Call') -> str:
 
 
 def _get_default_code() -> str:
-    logging.warning("parse invoke code failed, This may affect feature of export code.")
+    logger.warning("parse invoke code failed, This may affect feature of export code.")
     return "pyg.walk(df, spec='____pyg_walker_spec_params____')"
 
 

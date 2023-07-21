@@ -11,6 +11,8 @@ from pygwalker import __version__, __hash__
 
 _UPDATE_URL = 'https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates'
 
+logger = logging.getLogger(__name__)
+
 
 def _sync_get_async_result(co: Coroutine[Any, Any, Any]) -> Any:
     loop = asyncio.new_event_loop()
@@ -48,7 +50,7 @@ def _check_update() -> Dict[str, Any]:
             result = _sync_get_async_result(result)
         return result
     except:
-        logging.warning(traceback.format_exc())
+        logger.warning(traceback.format_exc())
 
 
 def check_update() -> None:

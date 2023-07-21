@@ -10,6 +10,8 @@ from pygwalker._typing import DataFrame
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.data_parsers import get_parser
 
+logger = logging.getLogger(__name__)
+
 
 def to_html(
     df: DataFrame,
@@ -62,6 +64,6 @@ def to_html(
     try:
         html = walker.to_html()
     except Exception as e:
-        logging.error(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return f"<div>{str(e)}</div>"
     return html
