@@ -85,6 +85,11 @@ class PygWalker:
         props = self._get_props()
         return self._get_render_iframe(props)
 
+    def to_html_without_iframe(self) -> str:
+        props = self._get_props()
+        html = render_gwalker_html(self.gid, props)
+        return html
+
     def display_on_streamlit(self):
         display_on_streamlit(self.to_html())
 
