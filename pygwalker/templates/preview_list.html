@@ -43,7 +43,11 @@
         <div class="tabs">
             {% for item in items %}
             <div class="tab-pane">
-                <input type="radio" name="tab" id="{{ item['tab_id'] }}" checked />
+                {% if loop.index == 1 %}
+                <input type="radio" name="{{ tab_name }}" id="{{ item['tab_id'] }}" checked />
+                {% else %}
+                <input type="radio" name="{{ tab_name }}" id="{{ item['tab_id'] }}" />
+                {% endif %}
                 <label class="tab-item" for="{{ item['tab_id'] }}">{{ item['chart_title'] }}</label>
                 <div class="tab-content">{{ item['chart_html'] | safe }}</div>
             </div>

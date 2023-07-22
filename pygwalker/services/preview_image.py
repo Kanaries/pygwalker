@@ -52,6 +52,7 @@ def render_preview_html(
 
 
 def render_preview_html_for_multi_charts(charts_map: Dict[str, ChartData], gid: str, preview_id: str) -> str:
+    tab_name = "tab-pyg-" + str(gid)
     items = []
     for chart_data in charts_map.values():
         div_id = f"{gid}-{chart_data.title}".replace(" ", "")
@@ -63,6 +64,7 @@ def render_preview_html_for_multi_charts(charts_map: Dict[str, ChartData], gid: 
         })
 
     html = jinja_env.get_template("preview_list.html").render(
+        tab_name=tab_name,
         preview_id=preview_id,
         items=items
     )
