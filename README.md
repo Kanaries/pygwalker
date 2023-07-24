@@ -2,6 +2,7 @@
 <!-- <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/frontpage-rendered.png"></a></p> -->
 [English](README.md) | [中文](./docs/README.zh.md)
 
+> PyGWalker 0.2 is released! Check out the [changelog](https://docs.kanaries.net/en/pygwalker/changelog/pygwalker-0-2) for more details.
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png"></a></p>
 
 <h2 align="center">PyGWalker: A Python Library for Exploratory Data Analysis with Visualization</h2>
@@ -102,14 +103,21 @@ You can use pygwalker without breaking your existing workflow. For example, you 
 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
-gwalker = pyg.walk(df)
+walker = pyg.walk(df)
 ```
 
-And you can use pygwalker with polars (since `pygwalker>=0.1.4.7a0`):
+When you use pygwalker(>=0.2.0), we recommend using pygwalker by this way, more about pygwalker0.2.0: [here](https://docs.kanaries.net/en/pygwalker/changelog/pygwalker-0-2).
+
+```python
+df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
+walker = pyg.walk(df, spec="config.json", use_preview=True)
+```
+
+You can use pygwalker with polars (since `pygwalker>=0.1.4.7a0`):
 ```python
 import polars as pl
 df = pl.read_csv('./bike_sharing_dc.csv',try_parse_dates = True)
-gwalker = pyg.walk(df)
+walker = pyg.walk(df)
 ```
 You can even try it online, simply visiting [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb), [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) or [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test).
 
