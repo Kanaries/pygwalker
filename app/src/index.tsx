@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker } from '@kanaries/graphic-walker'
@@ -51,104 +51,76 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
     commonStore.setInitModalOpen(false);
 }
 
-/** App does not consider props.storeRef */
 const App: React.FC<IAppProps> = observer((propsIn) => {
-  const storeRef = React.useRef<IGlobalStore|null>(null);
-  const gwRef = React.useRef<IGWHandler|null>(null);
-  const {dataSource, ...props} = propsIn;
-  const { visSpec, dataSourceProps, rawFields, userConfig } = props;
-  if (!props.storeRef?.current) {
-    props.storeRef = storeRef;
-  }
-  const wrapRef = useRef<HTMLElement | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const specList = useMemo(() => {
-    return props.visSpec ? decodeSpec(props.visSpec) : [];
-  }, []);
+    const storeRef = React.useRef<IGlobalStore|null>(null);
+    const gwRef = React.useRef<IGWHandler|null>(null);
+    const {dataSource, ...props} = propsIn;
+    const { dataSourceProps, rawFields, userConfig } = props;
+    const wrapRef = useRef<HTMLElement | null>(null);
+    const [mounted, setMounted] = useState(false);
+    const [exportOpen, setExportOpen] = useState(false);
+    const specList = props.visSpec ? decodeSpec(props.visSpec) : [];
 
-  useEffect(() => {
-    if (userConfig) setConfig(userConfig);
-  }, [userConfig]);
-
-  const setData = useCallback(async (p: {
-    data?: IRow[];
-    rawFields?: IMutField[];
-    visSpec?: string
-  }) => {
-    const { data, rawFields } = p;
-      if (specList.length !== 0) {
-        storeRef?.current?.vizStore?.importStoInfo({
-          dataSources: [{
-            id: 'dataSource-0',
-            data: data,
-          }],
-          datasets: [{
-            id: 'dataset-0',
-            name: 'DataSet', rawFields: rawFields, dsId: 'dataSource-0',
-          }],
-          specList,
-        } as IStoInfo);
-      } else {
-        storeRef?.current?.commonStore?.updateTempSTDDS({
-          name: 'Dataset',
-          rawFields: rawFields,
-          dataSource: data,
-        } as IDataSetInfo);
-        storeRef?.current?.commonStore?.commitTempDS();
-      }
-      if (!props.needLoadDatas) {
-        setTimeout(() => { initChart(gwRef, specList.length, props) }, 0);
-      }
-  }, [storeRef])
-
-  useEffect(() => {
-    setData({ data: dataSource, rawFields, visSpec });
-  }, [dataSource, rawFields, visSpec]);
-
-  useEffect(() => {
-    commonStore.setShowCloudTool(props.showCloudTool);
-  }, [props.showCloudTool])
-
-  const updateDataSource = useCallback(async () => {
-
-    // TODO: don't always update visSpec when appending data
-    await loadDataSource(dataSourceProps).then(ds => {
-      const data = ds;
-      setData({ data, rawFields, visSpec });
-      initChart(gwRef, specList.length, props);
-    }).catch(e => {
-      console.error('Load DataSource Error', e);
-    });
-  }, [dataSource, dataSourceProps, rawFields, visSpec, setData]);
-
-  useEffect(() => {
-    if (storeRef.current) {
-      // TODO: DataSet and DataSource ID
-      try {
-        updateDataSource();
-      } catch (e) {
-        console.error('failed to load spec: ', e);
-      }
+    const setData = (data?: IRow[], rawFields?: IMutField[]) => {
+        if (specList.length !== 0) {
+            setTimeout(() => {
+                storeRef?.current?.vizStore?.importStoInfo({
+                    dataSources: [{
+                        id: 'dataSource-0',
+                        data: data,
+                    }],
+                    datasets: [{
+                        id: 'dataset-0',
+                        name: 'DataSet', rawFields: rawFields, dsId: 'dataSource-0',
+                    }],
+                    specList,
+                } as IStoInfo);
+            }, 0);
+        } else {
+            storeRef?.current?.commonStore?.updateTempSTDDS({
+                name: 'Dataset',
+                rawFields: rawFields,
+                dataSource: data,
+            } as IDataSetInfo);
+            storeRef?.current?.commonStore?.commitTempDS();
+        }
+        if (!props.needLoadDatas) {
+            setTimeout(() => { initChart(gwRef, specList.length, props) }, 0);
+        }
     }
-  }, [updateDataSource]);
 
-  const exportTool = getExportTool(setExportOpen);
-  const saveTool = getSaveTool(props, gwRef, storeRef);
-  const loginTool = getLoginTool(setMounted, wrapRef);
+    const updateDataSource = () => {
+        loadDataSource(dataSourceProps).then((data) => {
+            setData(data, rawFields);
+            initChart(gwRef, specList.length, props);
+        }).catch(e => {
+            console.error('Load DataSource Error', e);
+        });
+    }
 
-  const tools = [exportTool];
-  if (props.env === "jupyter_widgets") {
-    tools.push(saveTool);
-  }
-  if (checkUploadPrivacy() && commonStore.showCloudTool) {
-    tools.push(loginTool);
-  }
+    useEffect(() => {
+        setData(dataSource, rawFields);
+        commonStore.setShowCloudTool(props.showCloudTool);
+        updateDataSource();
+        if (userConfig) setConfig(userConfig);
+    }, []);
 
-  const toolbarConfig = {
-    exclude: ["export_code"],
-    extra: tools
-  }
+    const exportTool = getExportTool(setExportOpen);
+    const saveTool = getSaveTool(props, gwRef, storeRef);
+    const loginTool = getLoginTool(setMounted, wrapRef);
+
+    const tools = [exportTool];
+    if (props.env === "jupyter_widgets") {
+        tools.push(saveTool);
+    }
+    if (checkUploadPrivacy() && commonStore.showCloudTool) {
+        tools.push(loginTool);
+    }
+
+    const toolbarConfig = {
+        exclude: ["export_code"],
+        extra: tools
+    }
   
   return (
     <React.StrictMode>
@@ -157,7 +129,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
             mounted && checkUploadPrivacy() && commonStore.showCloudTool && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
         }
         <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-        <GraphicWalker {...props} toolbar={toolbarConfig} ref={gwRef} />
+        <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} />
         <InitModal />
         <Options {...props} toolbar={toolbarConfig} />
     </React.StrictMode>
