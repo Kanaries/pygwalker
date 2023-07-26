@@ -14,7 +14,6 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return df.to_dicts()
 
     def _init_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
-        df = df.sample(frac=1)
         df = df.rename({i: fname_encode(i) for i in df.columns})
         return df
 
@@ -31,11 +30,6 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return 'measure' if kind in pl.FLOAT_DTYPES | pl.DURATION_DTYPES or \
                 (kind in pl.INTEGER_DTYPES and len(s.value_counts()) > 16) else \
             'dimension'
-
-    def _to_matrix(self) -> List[Dict[str, Any]]:
-        df = self.fill_nan(None)
-        dicts = df.to_dicts()
-        return {'columns': list(dicts[0].keys()), 'data': [list(d.values()) for d in dicts]}
 
     def _decode_fname(self, s: pl.Series):
         fname = fname_decode(s.name)
