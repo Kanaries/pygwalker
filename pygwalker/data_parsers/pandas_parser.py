@@ -1,4 +1,3 @@
-from typing import List, Any
 import json
 
 import pandas as pd
@@ -14,9 +13,8 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         return df.to_dict(orient='records')
 
     def _init_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.sample(frac=1)
-        df = df.reset_index()
-        df.columns = [f"{col}_{i}" for i, col in enumerate(df.columns)]
+        df = df.reset_index(drop=True)
+        df.columns = [f"{col}_{i+1}" for i, col in enumerate(df.columns)]
         df = df.rename(fname_encode, axis='columns')
         return df
 
@@ -33,13 +31,6 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         return 'measure' if \
             kind in 'fcm' or (kind in 'iu' and len(s.value_counts()) > 16) \
                 else 'dimension'
-
-    def _series(self, i: int, col: str):
-        return self.df.iloc[:, i]
-
-    def _to_matrix(self) -> List[List[Any]]:
-        df = self.df.replace({float('nan'): None})
-        return df.to_dict(orient='tight')
 
     def _decode_fname(self, s: pd.Series):
         fname = fname_decode(s.name)
