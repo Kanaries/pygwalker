@@ -1,10 +1,12 @@
 from urllib import request
 from typing import Tuple, Dict, Any
+import base64
 import json
 import os
 
 from pygwalker_utils.config import get_config
 from pygwalker.errors import InvalidConfigIdError, PrivacyError
+from .fname_encodings import fname_encode
 
 
 def _is_json(s: str) -> bool:
@@ -73,6 +75,25 @@ def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
         return "", "json_file"
 
 
+def _base64_to_fname(s: str) -> str:
+    origin_str = base64.b64decode(s.encode()).decode()
+    return fname_encode(origin_str)
+
+
+def _config_adapter(config: str) -> str:
+    config_obj = json.loads(config)
+    for chart_item in config_obj:
+        for fields in chart_item["encodings"].values():
+            for field in fields:
+                if field.get("computed", False):
+                    for param in field["expression"]["params"]:
+                        if param["type"] == "field":
+                            param["value"] = _base64_to_fname(param["value"])
+                else:
+                    field["fid"] = _base64_to_fname(field["fid"])
+    return json.dumps(config_obj)
+
+
 def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
     spec, spec_type = _get_spec_json_from_diff_source(spec)
 
@@ -85,6 +106,9 @@ def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
         raise ValueError("spec is not a valid json") from e
 
     if isinstance(spec_obj, list):
-        return {"chart_map": {}, "config": spec}, spec_type
+        spec_obj = {"chart_map": {}, "config": spec}
+
+    if spec_obj.get("version", None) is None:
+        spec_obj["config"] = _config_adapter(spec_obj["config"])
 
     return spec_obj, spec_type
