@@ -8,7 +8,6 @@ from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
 from pygwalker.services.global_var import GlobalVarManager
-from pygwalker.services.data_parsers import get_parser
 
 logger = logging.getLogger(__name__)
 
@@ -44,12 +43,10 @@ def to_html(
     if fieldSpecs is None:
         fieldSpecs = {}
 
-    data_parser = get_parser(df)
-
     walker = PygWalker(
         gid,
-        data_parser.to_records(),
-        data_parser.raw_fields(field_specs=fieldSpecs),
+        df,
+        fieldSpecs,
         "",
         "",
         hideDataSourceConfig,

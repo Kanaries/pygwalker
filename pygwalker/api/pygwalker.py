@@ -7,6 +7,7 @@ from typing_extensions import Literal
 import ipywidgets
 
 from pygwalker_utils.config import get_config
+from pygwalker._typing import DataFrame
 from pygwalker.utils.display import display_html, display_on_streamlit
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.global_var import GlobalVarManager
@@ -22,6 +23,7 @@ from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnJupyter
 )
 from pygwalker.services.spec import get_spec_json
+from pygwalker.services.data_parsers import get_parser
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__, __hash__
@@ -32,7 +34,7 @@ class PygWalker:
     def __init__(
         self,
         gid: Optional[Union[int, str]],
-        origin_data_source: List[Dict[str, Any]],
+        df: DataFrame,
         field_specs: Dict[str, Any],
         spec: str,
         source_invoke_code: str,
@@ -48,8 +50,8 @@ class PygWalker:
             self.gid = GlobalVarManager.get_global_gid()
         else:
             self.gid = gid
-        self.origin_data_source = origin_data_source
-        self.field_specs = field_specs
+        self.df = df
+        self._init_data_source(df, field_specs)
         self.spec = spec
         self.source_invoke_code = source_invoke_code
         self.hidedata_source_config = hidedata_source_config
@@ -62,6 +64,11 @@ class PygWalker:
         self.use_preview = use_preview
         self.store_chart_data = store_chart_data
         self._init_spec(spec)
+
+    def _init_data_source(self, df: DataFrame, field_specs: Dict[str, Any]) -> None:
+        data_parser = get_parser(df)
+        self.origin_data_source = data_parser.to_records()
+        self.field_specs = data_parser.raw_fields(field_specs=field_specs)
 
     def _init_spec(self, spec: Dict[str, Any]):
         spec_obj, spec_type = get_spec_json(spec)

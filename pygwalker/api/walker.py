@@ -4,9 +4,8 @@ import inspect
 from typing_extensions import Literal
 
 from .pygwalker import PygWalker
-from pygwalker.data_parsers.base import FieldSpec, BaseDataParser
+from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
-from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.utils.execute_env_check import check_convert
 
@@ -15,7 +14,6 @@ def walk(
     df: Union[DataFrame, Any],
     gid: Union[int, str] = None,
     *,
-    custom_data_parser: Optional[BaseDataParser] = None,
     env: Literal['Jupyter', 'Streamlit', 'JupyterWidget'] = 'JupyterWidget',
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
     hideDataSourceConfig: bool = True,
@@ -53,15 +51,10 @@ def walk(
         inspect.stack()[1].frame
     )
 
-    if custom_data_parser is None:
-        data_parser = get_parser(df)
-    else:
-        data_parser = custom_data_parser(df)
-
     walker = PygWalker(
         gid,
-        data_parser.to_records(),
-        data_parser.raw_fields(field_specs=fieldSpecs),
+        df,
+        fieldSpecs,
         spec,
         source_invoke_code,
         hideDataSourceConfig,
