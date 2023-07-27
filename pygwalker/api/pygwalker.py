@@ -75,6 +75,7 @@ class PygWalker:
         self.vis_spec = spec_obj["config"]
         self.spec_type = spec_type
         self._chart_map = self._parse_chart_map_dict(spec_obj["chart_map"])
+        self.spec_version = spec_obj.get("version", None)
 
     def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
         return {
@@ -252,7 +253,7 @@ class PygWalker:
                 preview_tool.render(self._chart_map)
 
         def update_spec(data: Dict[str, Any]):
-            spec_obj = {"config": data["visSpec"], "chart_map": {}}
+            spec_obj = {"config": data["visSpec"], "chart_map": {}, "version": __version__}
             save_chart_endpoint(data["chartData"])
             if self.store_chart_data:
                 spec_obj["chart_map"] = self._get_chart_map_dict(self._chart_map)

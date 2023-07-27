@@ -1,5 +1,5 @@
 
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useMemo } from "react";
 import { download } from "../../utils/save";
 import { Menu, Transition } from "@headlessui/react";
 import { getToken } from "@kanaries/auth-wrapper";
@@ -20,17 +20,24 @@ interface IDsaveConfigButtonProps {
 const saveConfigButton: React.FC<IDsaveConfigButtonProps> = (props) => {
     const sourceCode = props.sourceCode;
     const [saving, setSaving] = useState<boolean>(false);
+    const pygConfig = useMemo(() => {
+        return JSON.stringify({
+            "config": encodeSpec(props.configJson),
+            "chart_map": {},
+            "version": commonStore.version,
+        })
+    }, [props.configJson])
 
     const saveAsCode = () => {
         const preCode = sourceCode.replace("'____pyg_walker_spec_params____'", "vis_spec")
-        const code = `vis_spec = """${encodeSpec(props.configJson)}"""\n${preCode}`;
+        const code = `vis_spec = r"""${pygConfig}"""\n${preCode}`;
         props.setPygCode(code);
     }
 
     const saveAsFile = () => {
         setSaving(true);
         const code = sourceCode.replace("____pyg_walker_spec_params____", "local file path")
-        download(encodeSpec(props.configJson), "config.json", "text/plain");
+        download(pygConfig, "config.json", "text/plain");
         props.setPygCode(code);
         setSaving(false);
     }
@@ -53,7 +60,7 @@ const saveConfigButton: React.FC<IDsaveConfigButtonProps> = (props) => {
                     body: JSON.stringify({
                         token: token,
                         params: {
-                            "config_json": encodeSpec(props.configJson),
+                            "config_json": pygConfig,
                         }
                     })
                 }
