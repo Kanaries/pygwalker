@@ -14,6 +14,7 @@ class CommonStore {
         title: "",
     };
     showCloudTool: boolean = false;
+    version: string = "";
 
     setInitModalOpen(value: boolean) {
         this.initModalOpen = value;
@@ -27,14 +28,20 @@ class CommonStore {
         this.showCloudTool = value;
     }
 
+    setVersion(value: string) {
+        this.version = value;
+    }
+
     constructor() {
         makeObservable(this, {
             initModalOpen: observable,
             initModalInfo: observable,
             showCloudTool: observable,
+            version: observable,
             setInitModalOpen: action,
             setInitModalInfo: action,
-            setShowCloudTool: action
+            setShowCloudTool: action,
+            setVersion: action
         });
     }
 }
