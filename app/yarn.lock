@@ -440,15 +440,16 @@
     tailwindcss "^3.2.4"
     uuid "^8.3.2"
 
-"@kanaries/graphic-walker@0.3.12":
-  version "0.3.12"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.3.12.tgz#3cb25e68bb7ac64ae6e0e8ffd9531b44f808765b"
-  integrity sha512-qGUltWlb/efiHkLQSXsv0FPZklyD7ilVNwjt6xja7DNXqRwEH6o52ms2cNp5nyvMfgf+ZxBWrNpysRVkucqKAQ==
+"@kanaries/graphic-walker@0.3.13":
+  version "0.3.13"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.3.13.tgz#a45bbe6d6bbb6ae71ad5818d5b9d1f02084a9ad9"
+  integrity sha512-rpEm1wNRKjgaoZQaLUq35aUX9cge9UmqjaWqQ98ovck+q4Dx/0Cvc20qyeuW+pnSzOz5aYIPGy0gUKQK7lWSYQ==
   dependencies:
     "@headlessui/react" "^1.7.12"
     "@heroicons/react" "^2.0.8"
     "@kanaries/react-beautiful-dnd" "0.0.2"
     "@kanaries/web-data-loader" "^0.1.7"
+    "@tailwindcss/forms" "^0.5.4"
     autoprefixer "^10.3.5"
     i18next "^21.9.1"
     i18next-browser-languagedetector "^6.1.5"
@@ -555,6 +556,13 @@
     "@types/estree" "^1.0.0"
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
+
+"@tailwindcss/forms@^0.5.4":
+  version "0.5.4"
+  resolved "https://registry.yarnpkg.com/@tailwindcss/forms/-/forms-0.5.4.tgz#5316a782fd95369eb5b6fd01d46323b3dce656a2"
+  integrity sha512-YAm12D3R7/9Mh4jFbYSMnsd6jG++8KxogWgqs7hbdo/86aWjjlIEvL7+QYdVELmAI0InXTpZqFIg5e7aDVWI2Q==
+  dependencies:
+    mini-svg-data-uri "^1.2.3"
 
 "@types/clone@~2.1.1":
   version "2.1.1"
@@ -1622,6 +1630,11 @@ micromatch@^4.0.4, micromatch@^4.0.5:
   dependencies:
     braces "^3.0.2"
     picomatch "^2.3.1"
+
+mini-svg-data-uri@^1.2.3:
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/mini-svg-data-uri/-/mini-svg-data-uri-1.4.4.tgz#8ab0aabcdf8c29ad5693ca595af19dd2ead09939"
+  integrity sha512-r9deDe9p5FJUPZAk3A59wGH7Ii9YrjjWw0jmw/liSbHl2CHiyXj6FcDXDu2K3TjVAXqiJdaw3xxwlZZr9E6nHg==
 
 minimatch@^3.0.4:
   version "3.1.2"
