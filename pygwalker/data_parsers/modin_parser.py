@@ -14,7 +14,6 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
 
     def _init_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         df = df.reset_index(drop=True)
-        df.columns = [f"{col}_{i+1}" for i, col in enumerate(df.columns)]
         df = df.rename(fname_encode, axis='columns')
         return df
 

@@ -76,7 +76,7 @@ def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
 
 
 def _base64_to_fname(s: str) -> str:
-    origin_str = base64.b64decode(s.encode()).decode()
+    origin_str = base64.b64decode(s.encode()).decode().rsplit("_", 1)[0]
     return fname_encode(origin_str)
 
 

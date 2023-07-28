@@ -14,7 +14,6 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
 
     def _init_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.reset_index(drop=True)
-        df.columns = [f"{col}_{i+1}" for i, col in enumerate(df.columns)]
         df = df.rename(fname_encode, axis='columns')
         return df
 
