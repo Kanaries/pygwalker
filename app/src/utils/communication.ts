@@ -69,7 +69,7 @@ const initCommunication = (gid: string) => {
     }
 
     if (jupyterEnv === "datalore") {
-        const kernel = window.parent.Jupyter.notebook.kernel;
+        const kernel = (window.parent as any).Jupyter.notebook.kernel;
         if (kernel.__pre_can_handle_message === undefined) {
             kernel.__pre_can_handle_message = kernel._can_handle_message;
         }

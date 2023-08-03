@@ -11,8 +11,9 @@ import Options from './components/options';
 import { IAppProps } from './interfaces';
 import NotificationWrapper from "./notify";
 
-import { loadDataSource, postDataService, finishDataService } from './dataSource';
+import { loadDataSource, postDataService, finishDataService, getDatasFromKernel } from './dataSource';
 
+import { useNotification } from "./notify";
 import commonStore from "./store/common";
 import initCommunication from "./utils/communication";
 import communicationStore from "./store/communication"
@@ -59,6 +60,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     const [mounted, setMounted] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
     const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
+    const { notify } = useNotification();
 
     const setData = (data?: IRow[], rawFields?: IMutField[]) => {
         if (specList.length !== 0) {
@@ -102,6 +104,14 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         commonStore.setShowCloudTool(props.showCloudTool);
         updateDataSource();
         if (userConfig) setConfig(userConfig);
+        // temporary notifcation
+        if (props.useKernelCalc) {
+            notify({
+                type: "info",
+                title: "Tips",
+                message: "in `useKernelCalc` mode, If your dataset too big, not suitable for some non-aggregated charts, such as scatter.",
+            }, 6_000);   
+        }
     }, []);
 
     const exportTool = getExportTool(setExportOpen);
@@ -128,7 +138,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
             mounted && checkUploadPrivacy() && commonStore.showCloudTool && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
         }
         <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-        <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} />
+        <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={props.useKernelCalc ? getDatasFromKernel : undefined} />
         <InitModal />
         <Options {...props} toolbar={toolbarConfig} />
     </React.StrictMode>

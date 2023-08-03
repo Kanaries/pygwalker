@@ -30,7 +30,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
 
     useEffect(() => {
         if (props.open) {
-            const res = props.globalStore.current?.vizStore.exportViewSpec()!;
+            const res = props.globalStore.current?.vizStore.exportViewSpec()! as IVisSpec[];
             setCode(res);
         }
     }, [props.open]);

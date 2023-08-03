@@ -440,10 +440,10 @@
     tailwindcss "^3.2.4"
     uuid "^8.3.2"
 
-"@kanaries/graphic-walker@0.3.15":
-  version "0.3.15"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.3.15.tgz#546f7ef52eafff4bce3263a11ed1af5f8b4f3e99"
-  integrity sha512-2PhWTB/23vgiNdraYDtBDG/DYXdQ+nuUfhNN9QP+zfnSDGRUxXAHS9z7ntdcRZjNQYY41T4HqYmK/Bn+KRctuA==
+"@kanaries/graphic-walker@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.1.tgz#fbc0e54243cae1ce4ae66a443313597f2056bfb4"
+  integrity sha512-9hIORY0KUchgXVTltJ23PYBw+zgVgZQWfIx7cA5dfarRz9VCvgK385Yaki0f+ad6Q0jAmdDa3ONVE3XIehUHCA==
   dependencies:
     "@headlessui/react" "^1.7.12"
     "@heroicons/react" "^2.0.8"

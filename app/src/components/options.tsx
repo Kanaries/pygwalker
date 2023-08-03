@@ -54,14 +54,17 @@ const Solution: React.FC<ISolutionProps> = (props) => {
     );
 };
 
-const RAND_HASH = Math.random().toString(16).split(".").at(1);
+const RAND_HASH = Math.random().toString(16).split(".").at(1) + new Date().getTime().toString(16).padStart(16, "0");
 const Options: React.FC<IAppProps> = (props: IAppProps) => {
     const [outdated, setOutDated] = useState<Boolean>(false);
     const [appMeta, setAppMeta] = useState<any>({});
     const [showUpdateHint, setShowUpdateHint] = useState(false);
+    if (window.localStorage.getItem("HASH") === null) {
+        window.localStorage.setItem("HASH", RAND_HASH);
+    }
     const UPDATE_URL = "https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates";
     const VERSION = (window as any)?.__GW_VERSION || "current";
-    const HASH = (window as any)?.__GW_HASH || RAND_HASH;
+    const HASH = window.localStorage.getItem("HASH");
     useEffect(() => {
         if (props.userConfig?.privacy !== "offline") {
             const req = `${UPDATE_URL}?pkg=pygwalker-app&v=${VERSION}&hashcode=${HASH}&env=${process.env.NODE_ENV}`;

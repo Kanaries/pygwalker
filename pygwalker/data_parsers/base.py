@@ -38,11 +38,18 @@ class BaseDataParser(abc.ABC):
         """get records"""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def get_inited_dataframe(self) -> DataFrame:
+        """get records"""
+        raise NotImplementedError
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
     def __init__(self, df: DataFrame):
         self.df = self._init_dataframe(df)
+
+    def get_inited_dataframe(self) -> DataFrame:
+        return self.df
 
     def raw_fields(self, field_specs: Dict[str, FieldSpec]) -> List[Dict[str, str]]:
         return [
