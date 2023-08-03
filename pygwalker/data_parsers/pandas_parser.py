@@ -33,6 +33,6 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
                 else 'dimension'
 
     def _decode_fname(self, s: pd.Series):
-        fname = fname_decode(s.name)
+        fname = fname_decode(s.name).rsplit('_', 1)[0]
         fname = json.dumps(fname, ensure_ascii=False)[1:-1]
         return fname
