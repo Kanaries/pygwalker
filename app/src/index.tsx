@@ -11,7 +11,7 @@ import Options from './components/options';
 import { IAppProps } from './interfaces';
 import NotificationWrapper from "./notify";
 
-import { loadDataSource, postDataService, finishDataService } from './dataSource';
+import { loadDataSource, postDataService, finishDataService, computationOptions } from './dataSource';
 
 import commonStore from "./store/common";
 import initCommunication from "./utils/communication";
@@ -129,7 +129,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
             mounted && checkUploadPrivacy() && commonStore.showCloudTool && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
         }
         <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-        <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} />
+        <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={props.useKernelCalc ? computationOptions : undefined} />
         <InitModal />
         <Options {...props} toolbar={toolbarConfig} />
     </React.StrictMode>

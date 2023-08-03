@@ -24,6 +24,7 @@ def walk(
     show_cloud_tool: bool = False,
     use_preview: bool = False,
     store_chart_data: bool = False,
+    use_kernel_calc: bool = False,
     **kwargs
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
@@ -63,6 +64,7 @@ def walk(
         show_cloud_tool,
         use_preview,
         store_chart_data,
+        use_kernel_calc,
         **kwargs
     )
 
