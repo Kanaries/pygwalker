@@ -44,14 +44,15 @@ class PygWalker:
         show_cloud_tool: bool,
         use_preview: bool,
         store_chart_data: bool,
+        use_kernel_calc: bool,
         **kwargs
     ):
         if gid is None:
             self.gid = GlobalVarManager.get_global_gid()
         else:
             self.gid = gid
-        self.df = df
-        self._init_data_source(df, field_specs)
+        self.df = get_parser(df).get_inited_dataframe()
+        self._init_data_source(df, field_specs, use_kernel_calc)
         self.spec = spec
         self.source_invoke_code = source_invoke_code
         self.hidedata_source_config = hidedata_source_config
@@ -64,8 +65,16 @@ class PygWalker:
         self.use_preview = use_preview
         self.store_chart_data = store_chart_data
         self._init_spec(spec)
+        self.use_kernel_calc = use_kernel_calc
 
-    def _init_data_source(self, df: DataFrame, field_specs: Dict[str, Any]) -> None:
+    def _init_data_source(
+        self,
+        df: DataFrame,
+        field_specs: Dict[str, Any],
+        use_kernel_calc: bool
+    ) -> None:
+        if use_kernel_calc:
+            df = df[:500]
         data_parser = get_parser(df)
         self.origin_data_source = data_parser.to_records()
         self.field_specs = data_parser.raw_fields(field_specs=field_specs)
@@ -266,6 +275,17 @@ class PygWalker:
         comm.register("update_spec", update_spec)
         comm.register("save_chart", save_chart_endpoint)
 
+        if self.use_kernel_calc:
+            # pylint: disable=import-outside-toplevel
+            from pygwalker.services.calculation import get_datas_from_dataframe
+            # pylint: enable=import-outside-toplevel
+
+            def _get_datas(data: Dict[str, Any]):
+                return {
+                    "datas": get_datas_from_dataframe(self.df, data["sql"])
+                }
+            comm.register("get_datas", _get_datas)
+
     def _get_props(
         self,
         env: str = "",
@@ -294,9 +314,10 @@ class PygWalker:
             },
             "env": env,
             "specType": self.spec_type,
-            "needLoadDatas": need_load_datas,
+            "needLoadDatas": not self.use_kernel_calc and need_load_datas,
             "showCloudTool": self.show_cloud_tool,
             "needInitChart": not (self.store_chart_data and self._chart_map),
+            "useKernelCalc": self.use_kernel_calc,
             **self.other_props,
         }
 

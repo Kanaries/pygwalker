@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 from typing import Dict, List, Any
 
 from jinja2 import Environment, PackageLoader
@@ -38,10 +39,38 @@ def render_gwalker_iframe(gid: int, srcdoc: str) -> str:
     )
 
 
+def render_calc_wasm_js(use_kernel_calc: bool) -> str:
+    if not use_kernel_calc:
+        return """
+            const initCalcWasm = async () => {};
+        """.strip("\n")
+
+    wasm_js_template = jinja_env.get_template("init_calc_wasm.js")
+    wasm_exec_file_path = os.path.join(ROOT_DIR, 'templates', 'wasm_exec.js')
+    wasm_file_path = os.path.join(ROOT_DIR, 'templates', 'dsl_to_sql.wasm')
+
+    with open(wasm_exec_file_path, 'r', encoding='utf8') as f:
+        exec_wasm_js = f.read()
+    with open(wasm_file_path, 'rb') as f:
+        wasm_content = f.read()
+
+    js_content = wasm_js_template.render(
+        wasm_exec_js=exec_wasm_js,
+        file_base64=(base64.b64encode(wasm_content)).decode(),
+    )
+
+    return js_content
+
+
 def render_gwalker_html(gid: int, props: Dict) -> str:
     walker_template = jinja_env.get_template("walk.js")
-    js = walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)})
-    js = "var exports={}, module={};" + gwalker_script() + js
+    js_list = [
+        "var exports={}, module={};",
+        render_calc_wasm_js(props.get('useKernelCalc', False)),
+        gwalker_script(),
+        walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)})
+    ]
+    js = "\n".join(js_list)
     template = jinja_env.get_template("index.html")
     html = f"{template.render(gwalker={'id': gid, 'script': js})}"
     return html
