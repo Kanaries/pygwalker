@@ -4,7 +4,6 @@ import { download } from "../../utils/save";
 import { Menu, Transition } from "@headlessui/react";
 import { getToken } from "@kanaries/auth-wrapper";
 import { checkUploadPrivacy } from "../../utils/userConfig";
-import { encodeSpec } from "../../utils/graphicWalkerParser"
 import commonStore from "../../store/common";
 
 import type { IVisSpec } from '@kanaries/graphic-walker/dist/interfaces'
@@ -22,7 +21,7 @@ const saveConfigButton: React.FC<IDsaveConfigButtonProps> = (props) => {
     const [saving, setSaving] = useState<boolean>(false);
     const pygConfig = useMemo(() => {
         return JSON.stringify({
-            "config": encodeSpec(props.configJson),
+            "config": JSON.stringify(props.configJson),
             "chart_map": {},
             "version": commonStore.version,
         })

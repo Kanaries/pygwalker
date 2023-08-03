@@ -9,7 +9,7 @@ export function getExportTool(
     setExportOpen: React.Dispatch<React.SetStateAction<boolean>>
 ) : ToolbarButtonItem {
     return {
-        key: "export_code",
+        key: "export_pygwalker_code",
         label: "export_code",
         icon: (iconProps?: any) => <CodeBracketSquareIcon {...iconProps} />,
         onClick: () => { setExportOpen(true); }

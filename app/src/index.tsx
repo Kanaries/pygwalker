@@ -15,7 +15,6 @@ import { loadDataSource, postDataService, finishDataService } from './dataSource
 
 import commonStore from "./store/common";
 import initCommunication from "./utils/communication";
-import { decodeSpec } from "./utils/graphicWalkerParser"
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
@@ -59,7 +58,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     const wrapRef = useRef<HTMLElement | null>(null);
     const [mounted, setMounted] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
-    const specList = props.visSpec ? decodeSpec(props.visSpec) : [];
+    const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
 
     const setData = (data?: IRow[], rawFields?: IMutField[]) => {
         if (specList.length !== 0) {
