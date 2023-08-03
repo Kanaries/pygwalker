@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNotification } from "../notify";
 import communicationStore from "../store/communication"
-import { encodeSpec } from "../utils/graphicWalkerParser"
 import { domToPng } from "../utils/screenshot"
 
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
@@ -64,7 +63,7 @@ export function getSaveTool(
         const chartData = await gwRef.current?.exportChart!("data-url");
         const singleChart = await domToPng(chartData.container()!);
         await communicationStore.comm?.sendMsg("update_spec", {
-            "visSpec": encodeSpec(storeRef.current?.vizStore.exportViewSpec()!),
+            "visSpec": JSON.stringify(storeRef.current?.vizStore.exportViewSpec()!),
             "chartData": {...chartData, singleChart}
         });
         hidePreview(props.id);

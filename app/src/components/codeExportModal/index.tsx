@@ -4,7 +4,6 @@ import { observer } from "mobx-react-lite";
 import DefaultButton from "../button/default";
 import PrimaryButton from "../button/primary";
 import SavePygConfigButton from './saveConfigButton';
-import { encodeSpec } from "../../utils/graphicWalkerParser"
 
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
@@ -48,7 +47,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                 <div className="text-sm max-h-64 overflow-auto">
                     <h2 className="text-sm mb-2">graphic walker spec</h2>
                     <SyntaxHighlighter showLineNumbers language="json" style={atomOneLight}>
-                        { JSON.stringify(JSON.parse(encodeSpec(code)), null, 2) }
+                        { JSON.stringify(code, null, 2) }
                     </SyntaxHighlighter>
                 </div>
                 <div className="mt-4 flex justify-start">
