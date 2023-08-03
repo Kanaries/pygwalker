@@ -26,5 +26,5 @@ def test_fname_encode():
 
 def test_fname_decode():
     assert fname_decode("GW_RKZXIX") == "city"
-    assert fname_decode("GW_CHGZ1K89ZCF86P") == "student"
-    assert fname_decode("GW_7NJX6443QYB") == "class"
+    assert fname_decode("GW_CHGZ1K89ZCF86P") == "student_1"
+    assert fname_decode("GW_7NJX6443QYB") == "class_3"

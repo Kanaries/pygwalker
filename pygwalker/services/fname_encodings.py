@@ -41,4 +41,4 @@ def fname_encode(fname: str) -> str:
 
 def fname_decode(encode_fname: str) -> str:
     """Decode fname in base32"""
-    return base36decode(encode_fname[3:]).rsplit('_', 1)[0]
+    return base36decode(encode_fname[3:])
