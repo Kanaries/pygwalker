@@ -114,6 +114,9 @@ When you use pygwalker(>=0.2.0), we recommend using pygwalker by this way, more 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
 walker = pyg.walk(df, spec="config.json", use_preview=True)
+
+# when pygwalker >= 0.3.0, you can use duckdb as computing engine, it can support larger datas and faster response.
+walker = pyg.walk(df, spec="config.json", use_preview=True, use_kernel_calc=True)
 ```
 
 You can use pygwalker with polars (since `pygwalker>=0.1.4.7a0`):
