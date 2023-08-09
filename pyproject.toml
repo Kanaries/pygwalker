@@ -3,7 +3,7 @@ name = "pygwalker"
 dynamic = ["version"]
 requires-python = ">=3.6"
 description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
-authors = [ { name = "Asm.Def", email = "woojson@zju.edu.cn" } ]
+authors = [ { name = "kanaries", email = "support@kanaries.net" } ]
 license-files = { paths = ["LICENSE"] }
 readme = "README.md"
 keywords = [ 'visualization', 'pandas', 'data-analysis', 'tableau', 'data-exploration', 'dataframe', 'tableau-alternative', 'jupyter' ]
