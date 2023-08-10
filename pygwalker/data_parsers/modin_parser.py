@@ -1,16 +1,33 @@
 import json
+from typing import Any, Dict, List, Optional
 
 from modin import pandas as mpd
+import duckdb
 
 from .base import BaseDataFrameDataParser
 from pygwalker.services.fname_encodings import fname_decode, fname_encode
 
 
 class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
-    """prop parser for pandas.DataFrame"""
-    def to_records(self):
-        df = self.df.replace({float('nan'): None})
+    """prop parser for modin.pandas.DataFrame"""
+    def __init__(self, df: mpd.DataFrame, use_kernel_calc: bool):
+        super().__init__(df, use_kernel_calc)
+        if use_kernel_calc:
+            # Temporarily use to_pandas to execute sql
+            self._pandas_df = self.df._to_pandas()
+
+    def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        df = self.df[:limit] if limit is not None else self.df
+        df = df.replace({float('nan'): None})
         return df.to_dict(orient='records')
+
+    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
+        duckdb.register("pygwalker_mid_table", self._pandas_df)
+        result = duckdb.query(sql)
+        return [
+            dict(zip(result.columns, row))
+            for row in result.fetchall()
+        ]
 
     def _init_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         df = df.reset_index(drop=True)

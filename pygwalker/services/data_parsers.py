@@ -39,6 +39,6 @@ def _get_data_parser(df: DataFrame) -> BaseDataParser:
     raise TypeError(f"Unsupported data type: {type(df)}")
 
 
-def get_parser(df: DataFrame) -> BaseDataParser:
-    parser = _get_data_parser(df)(df)
+def get_parser(df: DataFrame, use_kernel_calc: bool = False) -> BaseDataParser:
+    parser = _get_data_parser(df)(df, use_kernel_calc)
     return parser

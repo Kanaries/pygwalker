@@ -1,8 +1,8 @@
-from typing import NamedTuple, Generic, Dict, List, Any
+from typing import NamedTuple, Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
 import abc
 
-from pygwalker._typing import DataFrame, Series
+from pygwalker._typing import DataFrame
 
 
 class FieldSpec(NamedTuple):
@@ -25,7 +25,7 @@ class BaseDataParser(abc.ABC):
     """Base class for data parser"""
 
     @abc.abstractmethod
-    def __init__(self, data: Any) -> None:
+    def __init__(self, data: Any, use_kernel_calc: bool) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -34,44 +34,28 @@ class BaseDataParser(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def to_records(self) -> List[Dict[str, Any]]:
+    def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """get records"""
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_inited_dataframe(self) -> DataFrame:
+    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
         """get records"""
         raise NotImplementedError
 
+
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
-    def __init__(self, df: DataFrame):
+    def __init__(self, df: DataFrame, use_kernel_calc: bool):
         self.df = self._init_dataframe(df)
-
-    def get_inited_dataframe(self) -> DataFrame:
-        return self.df
+        self.example_df = self.df[:1000]
+        self.use_kernel_calc = use_kernel_calc
 
     def raw_fields(self, field_specs: Dict[str, FieldSpec]) -> List[Dict[str, str]]:
         return [
             self._infer_prop(col, field_specs)
-            for _, col in enumerate(self.df.columns)
+            for _, col in enumerate(self.example_df.columns)
         ]
-
-    def to_records(self) -> List[Dict[str, Any]]:
-        """Convert DataFrame to a list of records"""
-        raise NotImplementedError
-
-    def _init_dataframe(self, df: DataFrame) -> DataFrame:
-        raise NotImplementedError
-
-    def _infer_semantic(self, s: Series) -> Literal['quantitative', 'nominal', 'ordinal', 'temporal']:
-        raise NotImplementedError
-
-    def _infer_analytic(self, s: Series) -> Literal['measure', 'dimension']:
-        raise NotImplementedError
-
-    def _series(self, col: str) -> Series:
-        return self.df[col]
 
     def _infer_prop(
         self, col: str, field_specs: Dict[str, FieldSpec] = None
@@ -81,7 +65,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         Returns:
             (IMutField, Dict)
         """
-        s = self._series(col)
+        s = self.example_df[col]
         orig_fname = self._decode_fname(s)
         field_spec = field_specs.get(orig_fname, default_field_spec)
         semantic_type = self._infer_semantic(s) if field_spec.semanticType == '?' else field_spec.semanticType
