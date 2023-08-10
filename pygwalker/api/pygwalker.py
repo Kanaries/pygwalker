@@ -51,8 +51,9 @@ class PygWalker:
             self.gid = GlobalVarManager.get_global_gid()
         else:
             self.gid = gid
-        self.df = get_parser(df).get_inited_dataframe()
-        self._init_data_source(df, field_specs, use_kernel_calc)
+        self.df_parser = get_parser(df, use_kernel_calc)
+        self.origin_data_source = self.df_parser.to_records(500 if use_kernel_calc else None)
+        self.field_specs = self.df_parser.raw_fields(field_specs=field_specs)
         self.spec = spec
         self.source_invoke_code = source_invoke_code
         self.hidedata_source_config = hidedata_source_config
@@ -66,18 +67,6 @@ class PygWalker:
         self.store_chart_data = store_chart_data
         self._init_spec(spec)
         self.use_kernel_calc = use_kernel_calc
-
-    def _init_data_source(
-        self,
-        df: DataFrame,
-        field_specs: Dict[str, Any],
-        use_kernel_calc: bool
-    ) -> None:
-        if use_kernel_calc:
-            df = df[:500]
-        data_parser = get_parser(df)
-        self.origin_data_source = data_parser.to_records()
-        self.field_specs = data_parser.raw_fields(field_specs=field_specs)
 
     def _init_spec(self, spec: Dict[str, Any]):
         spec_obj, spec_type = get_spec_json(spec)
@@ -276,13 +265,10 @@ class PygWalker:
         comm.register("save_chart", save_chart_endpoint)
 
         if self.use_kernel_calc:
-            # pylint: disable=import-outside-toplevel
-            from pygwalker.services.calculation import get_datas_from_dataframe
-            # pylint: enable=import-outside-toplevel
-
             def _get_datas(data: Dict[str, Any]):
+                sql = data["sql"].encode('utf-8').decode('unicode_escape')
                 return {
-                    "datas": get_datas_from_dataframe(self.df, data["sql"])
+                    "datas": self.df_parser.get_datas_by_sql(sql)
                 }
             comm.register("get_datas", _get_datas)
 

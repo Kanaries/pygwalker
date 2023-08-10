@@ -85,7 +85,7 @@ export function finishDataService(msg: any) {
 
 export async function getDatasFromKernel(payload: IDataQueryPayload) {
     const sql = window.dslToSql(
-        JSON.stringify({type: "table", source: "__mid_df"}),
+        JSON.stringify({type: "table", source: "pygwalker_mid_table"}),
         JSON.stringify(payload)
     );
     const result = await communicationStore.comm?.sendMsg("get_datas", {"sql": sql});

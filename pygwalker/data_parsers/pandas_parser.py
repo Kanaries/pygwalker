@@ -1,6 +1,8 @@
+from typing import Any, Dict, List, Optional
 import json
 
 import pandas as pd
+import duckdb
 
 from .base import BaseDataFrameDataParser
 from pygwalker.services.fname_encodings import fname_decode, fname_encode
@@ -8,9 +10,19 @@ from pygwalker.services.fname_encodings import fname_decode, fname_encode
 
 class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
     """prop parser for pandas.DataFrame"""
-    def to_records(self):
-        df = self.df.replace({float('nan'): None})
+
+    def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        df = self.df[:limit] if limit is not None else self.df
+        df = df.replace({float('nan'): None})
         return df.to_dict(orient='records')
+
+    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
+        duckdb.register("pygwalker_mid_table", self.df)
+        result = duckdb.query(sql)
+        return [
+            dict(zip(result.columns, row))
+            for row in result.fetchall()
+        ]
 
     def _init_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.reset_index(drop=True)

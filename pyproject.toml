@@ -19,7 +19,8 @@ dependencies = [
     "ipywidgets",
     "pydantic",
     "psutil",
-    "duckdb"
+    "duckdb",
+    "pyarrow"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"

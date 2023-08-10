@@ -1,7 +1,8 @@
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 import json
 
 import polars as pl
+import duckdb
 
 from .base import BaseDataFrameDataParser
 from pygwalker.services.fname_encodings import fname_decode, fname_encode
@@ -9,9 +10,19 @@ from pygwalker.services.fname_encodings import fname_decode, fname_encode
 
 class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
     """prop parser for polars.DataFrame"""
-    def to_records(self) -> List[Dict[str, Any]]:
-        df = self.df.fill_nan(None)
+
+    def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        df = self.df[:limit] if limit is not None else self.df
+        df = df.fill_nan(None)
         return df.to_dicts()
+
+    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
+        duckdb.register("pygwalker_mid_table", self.df)
+        result = duckdb.query(sql)
+        return [
+            dict(zip(result.columns, row))
+            for row in result.fetchall()
+        ]
 
     def _init_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
         df = df.rename({i: fname_encode(i) for i in df.columns})
