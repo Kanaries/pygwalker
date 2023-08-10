@@ -84,6 +84,11 @@ jobs:
           python -m ipykernel install --name python --user
           jupyter kernelspec list
           jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=python --to html *.ipynb
+      - name: Try Pytest
+        working-directory: ./
+        run: |
+          pip install pytest
+          pytest tests
       - name: Uploading notebooks
         uses: actions/upload-artifact@v3
         if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' }}
