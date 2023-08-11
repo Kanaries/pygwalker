@@ -36,6 +36,13 @@ def _get_data_parser(df: DataFrame) -> BaseDataParser:
             __classname2method[mpd.DataFrame] = ModinPandasDataFrameDataParser
             return __classname2method[mpd.DataFrame]
 
+    if 'pyspark' in sys.modules:
+        from pyspark.sql import DataFrame as SparkDataFrame
+        if isinstance(df, SparkDataFrame):
+            from pygwalker.data_parsers.spark_parser import SparkDataFrameDataParser
+            __classname2method[SparkDataFrame] = SparkDataFrameDataParser
+            return __classname2method[SparkDataFrame]
+
     raise TypeError(f"Unsupported data type: {type(df)}")
 
 

@@ -18,6 +18,11 @@ if TYPE_CHECKING:
         dataframe_types.append(pl.DataFrame)
     except ModuleNotFoundError:
         pass
+    try:
+        from pyspark.sql import DataFrame as SparkDataFrame
+        dataframe_types.append(SparkDataFrame)
+    except ModuleNotFoundError:
+        pass
 
 
 DataFrame = TypeVar("DataFrame", *dataframe_types)
