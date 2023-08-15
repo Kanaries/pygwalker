@@ -1,5 +1,6 @@
 from typing import List, Any, Dict, Optional
 import json
+import io
 
 import polars as pl
 import duckdb
@@ -23,6 +24,11 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
             dict(zip(result.columns, row))
             for row in result.fetchall()
         ]
+
+    def to_csv(self) -> io.BytesIO:
+        content = io.BytesIO()
+        self.origin_df.write_csv(content)
+        return content
 
     def _init_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
         df = df.rename({i: fname_encode(i) for i in df.columns})

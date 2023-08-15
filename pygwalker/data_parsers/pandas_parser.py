@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 import json
+import io
 
 import pandas as pd
 import duckdb
@@ -23,6 +24,11 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
             dict(zip(result.columns, row))
             for row in result.fetchall()
         ]
+
+    def to_csv(self) -> io.BytesIO:
+        content = io.BytesIO()
+        self.origin_df.to_csv(content, index=False)
+        return content
 
     def _init_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.reset_index(drop=True)
