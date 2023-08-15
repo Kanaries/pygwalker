@@ -21,7 +21,8 @@ dependencies = [
     "psutil",
     "duckdb",
     "pyarrow",
-    "sqlglot"
+    "sqlglot",
+    "requests"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"

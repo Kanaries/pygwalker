@@ -1,6 +1,7 @@
 from typing import NamedTuple, Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
 import abc
+import io
 
 from pygwalker._typing import DataFrame
 
@@ -43,10 +44,16 @@ class BaseDataParser(abc.ABC):
         """get records"""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def to_csv(self) -> io.BytesIO:
+        """get records"""
+        raise NotImplementedError
+
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
     def __init__(self, df: DataFrame, use_kernel_calc: bool):
+        self.origin_df = df
         self.df = self._init_dataframe(df)
         self.example_df = self.df[:1000]
         self.use_kernel_calc = use_kernel_calc

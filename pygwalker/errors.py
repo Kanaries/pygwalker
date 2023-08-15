@@ -16,3 +16,8 @@ class InvalidConfigIdError(BaseError):
 class PrivacyError(BaseError):
     """Raised when the privacy setting is invalid."""
     pass
+
+
+class CloudFunctionError(BaseError):
+    """Raised when the cloud function is invalid."""
+    pass

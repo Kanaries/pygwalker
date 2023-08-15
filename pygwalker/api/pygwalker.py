@@ -24,6 +24,7 @@ from pygwalker.services.upload_data import (
 )
 from pygwalker.services.spec import get_spec_json
 from pygwalker.services.data_parsers import get_parser
+from pygwalker.services.cloud_service import create_shared_chart
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__, __hash__
@@ -224,6 +225,25 @@ class PygWalker:
         )
         display_html(html)
 
+    def upload_charts_to_could(self) -> str:
+        """upload charts config and datas to kanaries cloud"""
+        fid_list = [field["fid"] for field in self.field_specs]
+        meta = {
+            "dataSources": [{
+                "id": "dataSource-0",
+                "data": []
+            }],
+            "datasets": [{
+                "id": 'dataset-0',
+                "name": 'DataSet',
+                "rawFields": self.field_specs,
+                "dsId": 'dataSource-0',
+            }],
+            "specList": json.loads(self.vis_spec)
+        }
+        dataset_content = self.df_parser.to_csv()
+        return create_shared_chart(dataset_content, fid_list, json.dumps(meta))
+
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
         if chart_name not in self._chart_map:
             raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
@@ -252,6 +272,7 @@ class PygWalker:
 
         def update_spec(data: Dict[str, Any]):
             spec_obj = {"config": data["visSpec"], "chart_map": {}, "version": __version__}
+            self.vis_spec = data["visSpec"]
             save_chart_endpoint(data["chartData"])
             if self.store_chart_data:
                 spec_obj["chart_map"] = self._get_chart_map_dict(self._chart_map)

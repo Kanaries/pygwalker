@@ -1,4 +1,5 @@
 import json
+import io
 from typing import Any, Dict, List, Optional
 
 from modin import pandas as mpd
@@ -28,6 +29,11 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
             dict(zip(result.columns, row))
             for row in result.fetchall()
         ]
+
+    def to_csv(self) -> io.BytesIO:
+        content = io.BytesIO()
+        self.origin_df.to_csv(content, index=False)
+        return content
 
     def _init_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         df = df.reset_index(drop=True)

@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 import logging
+import io
 
 from pyspark.sql import DataFrame
 import sqlglot
@@ -22,6 +23,7 @@ class SparkDataFrameDataParser(BaseDataParser):
                 "Pyspark cache function: `df.cache()`"
             )
         self.spark = df.sparkSession
+        self.origin_df = df
         self.df = self._init_dataframe(df)
         self.example_pandas_df = df.limit(1000).toPandas()
         self.use_kernel_calc = use_kernel_calc
@@ -39,6 +41,11 @@ class SparkDataFrameDataParser(BaseDataParser):
         sql = sqlglot.transpile(sql, read="duckdb", write="spark")[0]
         result_df = self.spark.sql(sql)
         return [row.asDict() for row in result_df.collect()]
+
+    def to_csv(self) -> io.BytesIO:
+        content = io.BytesIO()
+        self.origin_df.toPandas().to_csv(content, index=False)
+        return content
 
     def _init_dataframe(self, df: DataFrame) -> DataFrame:
         new_columns = [fname_encode(f"{col}_{i+1}") for i, col in enumerate(df.columns)]
