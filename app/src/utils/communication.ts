@@ -1,7 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 
+interface IResponse {
+    data?: any;
+    message?: string;
+    success: boolean;
+}
+
 interface ICommunication {
-    sendMsg: (action: string, data: any, timeout?: number) => Promise<any>;
+    sendMsg: (action: string, data: any, timeout?: number) => Promise<IResponse>;
     registerEndpoint: (action: string, callback: (data: any) => any) => void;
     sendMsgAsync: (action: string, data: any, rid: string | null) => void;
 }

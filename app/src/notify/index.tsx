@@ -5,7 +5,7 @@ import { XMarkIcon } from "@heroicons/react/20/solid";
 
 export interface INotification {
     title: string;
-    message: string;
+    message: string | ReactElement;
     type: "success" | "error" | "info" | "warning";
 }
 
