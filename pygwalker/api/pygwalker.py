@@ -26,6 +26,7 @@ from pygwalker.services.spec import get_spec_json
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import create_shared_chart
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
+from pygwalker.errors import CloudFunctionError
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__, __hash__
 
@@ -242,7 +243,11 @@ class PygWalker:
             "specList": json.loads(self.vis_spec)
         }
         dataset_content = self.df_parser.to_csv()
-        return create_shared_chart(dataset_content, fid_list, json.dumps(meta))
+        return create_shared_chart(
+            dataset_content=dataset_content,
+            fid_list=fid_list,
+            meta=json.dumps(meta)
+        )
 
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
         if chart_name not in self._chart_map:
@@ -280,10 +285,18 @@ class PygWalker:
             with open(self.spec, "w", encoding="utf-8") as f:
                 f.write(json.dumps(spec_obj))
 
+        def upload_charts(data: Dict[str, Any]):
+            if not GlobalVarManager.kanaries_api_key:
+                raise CloudFunctionError("no_kanaries_api_key")
+            self.vis_spec = data["visSpec"]
+            share_url = self.upload_charts_to_could()
+            return {"shareUrl": share_url}
+
         comm.register("request_data", reuqest_data_callback)
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
         comm.register("update_spec", update_spec)
         comm.register("save_chart", save_chart_endpoint)
+        comm.register("upload_charts", upload_charts)
 
         if self.use_kernel_calc:
             def _get_datas(data: Dict[str, Any]):

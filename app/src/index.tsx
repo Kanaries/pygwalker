@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker } from '@kanaries/graphic-walker'
 import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
 import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
 import { IDataSetInfo, IMutField, IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
-import { AuthWrapper } from "@kanaries/auth-wrapper"
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
@@ -22,7 +21,7 @@ import CodeExportModal from './components/codeExportModal';
 import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
-import { getLoginTool } from './tools/loginTool';
+import { getUploadTool } from './tools/uploadTool';
 import { domToPng } from "./utils/screenshot"
 
 // @ts-ignore
@@ -56,8 +55,6 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     const gwRef = React.useRef<IGWHandler|null>(null);
     const {dataSource, ...props} = propsIn;
     const { dataSourceProps, rawFields, userConfig } = props;
-    const wrapRef = useRef<HTMLElement | null>(null);
-    const [mounted, setMounted] = useState(false);
     const [exportOpen, setExportOpen] = useState(false);
     const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
     const { notify } = useNotification();
@@ -116,14 +113,14 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
 
     const exportTool = getExportTool(setExportOpen);
     const saveTool = getSaveTool(props, gwRef, storeRef);
-    const loginTool = getLoginTool(setMounted, wrapRef);
+    const uploadTool = getUploadTool(props, storeRef);
 
     const tools = [exportTool];
     if (props.env === "jupyter_widgets") {
         tools.push(saveTool);
     }
     if (checkUploadPrivacy() && commonStore.showCloudTool) {
-        tools.push(loginTool);
+        tools.push(uploadTool);
     }
 
     const toolbarConfig = {
@@ -134,9 +131,6 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
   return (
     <React.StrictMode>
         <style>{style}</style>
-        {
-            mounted && checkUploadPrivacy() && commonStore.showCloudTool && <AuthWrapper id={props["id"]} wrapRef={wrapRef} />
-        }
         <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
         <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={props.useKernelCalc ? getDatasFromKernel : undefined} />
         <InitModal />

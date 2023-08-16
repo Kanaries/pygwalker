@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 from datetime import datetime
 import io
+import json
 
 import requests
 
@@ -56,12 +57,12 @@ def _upload_dataset_callback(dataset_id: str, fid_list: List[str]) -> Dict[str, 
     return resp.json()
 
 
-def _create_chart(dataset_id: str, name: str, meta: str) -> Dict[str, Any]:
+def _create_chart(*, dataset_id: str, name: str, meta: str, workflow: List[Dict[str, Any]]) -> Dict[str, Any]:
     url = f"{GlobalVarManager.kanaries_api_host}/chart"
     params = {
         "datasetId": dataset_id,
         "meta": meta,
-        "query": "{}",
+        "query": json.dumps({"datasetId": dataset_id, "workflow": workflow}),
         "config": "{}",
         "name": name,
         "desc": "",
@@ -77,6 +78,7 @@ def _upload_file_to_s3(url: str, content: io.BytesIO):
 
 
 def create_shared_chart(
+    *,
     dataset_content: io.BytesIO,
     fid_list: List[str],
     meta: str,
@@ -93,5 +95,10 @@ def create_shared_chart(
     upload_url = dataset_info["uploadUrl"]
     _upload_file_to_s3(upload_url, dataset_content)
     _upload_dataset_callback(dataset_id, fid_list)
-    chart_info = _create_chart(dataset_id, name, meta)
+    chart_info = _create_chart(
+        dataset_id=dataset_id,
+        name=name,
+        meta=meta,
+        workflow={}
+    )
     return chart_info["shareUrl"]
