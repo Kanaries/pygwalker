@@ -440,20 +440,24 @@
     tailwindcss "^3.2.4"
     uuid "^8.3.2"
 
-"@kanaries/graphic-walker@0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.1.tgz#fbc0e54243cae1ce4ae66a443313597f2056bfb4"
-  integrity sha512-9hIORY0KUchgXVTltJ23PYBw+zgVgZQWfIx7cA5dfarRz9VCvgK385Yaki0f+ad6Q0jAmdDa3ONVE3XIehUHCA==
+"@kanaries/graphic-walker@0.4.3":
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.3.tgz#e30e8a5ef85781433acadeada828726acf68fb27"
+  integrity sha512-r+c2bipTqlzPGckrYYNDbYmYi8DxBRJrjA4J1uNsckeb0d047ZT9cmQwqawtJPdxDpuxWnkFK7+oFYX6LcSRew==
   dependencies:
     "@headlessui/react" "^1.7.12"
     "@heroicons/react" "^2.0.8"
-    "@kanaries/react-beautiful-dnd" "0.0.2"
+    "@kanaries/react-beautiful-dnd" "^0.0.3"
     "@kanaries/web-data-loader" "^0.1.7"
     "@tailwindcss/forms" "^0.5.4"
     autoprefixer "^10.3.5"
+    d3-format "^3.1.0"
+    d3-scale "^4.0.2"
+    d3-time-format "^4.1.0"
     i18next "^21.9.1"
     i18next-browser-languagedetector "^6.1.5"
     immer "^9.0.15"
+    leaflet "^1.9.4"
     mobx "^6.3.3"
     mobx-react-lite "^3.2.1"
     nanoid "^4.0.2"
@@ -461,18 +465,20 @@
     postinstall-postinstall "^2.1.0"
     re-resizable "^6.9.8"
     react-i18next "^11.18.6"
+    react-leaflet "^4.2.1"
     react-shadow "^20.0.0"
     rxjs "^7.3.0"
     tailwindcss "^3.2.4"
+    topojson-client "^3.1.0"
     uuid "^8.3.2"
     vega "^5.22.1"
     vega-embed "^6.21.0"
     vega-lite "^5.6.0"
 
-"@kanaries/react-beautiful-dnd@0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@kanaries/react-beautiful-dnd/-/react-beautiful-dnd-0.0.2.tgz#2d8b5284b185189ae3927612e80bbd423eed477f"
-  integrity sha512-lCOJSSgWyx+GiHzymSxaFAJKMjglkRiUWhi02cDLp6pEFocNOBANr3jQyNjFLNwgl53+jpuBBs6szzYTR/cJyg==
+"@kanaries/react-beautiful-dnd@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@kanaries/react-beautiful-dnd/-/react-beautiful-dnd-0.0.3.tgz#fce3972ed34a55223866b259b0adbabe003c7ba4"
+  integrity sha512-QKwQmmRDuYstNVvWJrdzCOs2FQAJSZFLdTe6iFZbqIlnGmZCGbRuajFJ2t+IFTV/vOelFKS9FOCJLVvRgB3Mmg==
   dependencies:
     "@babel/runtime" "^7.9.2"
     css-box-model "^1.2.0"
@@ -510,6 +516,11 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@react-leaflet/core@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@react-leaflet/core/-/core-2.1.0.tgz#383acd31259d7c9ae8fb1b02d5e18fe613c2a13d"
+  integrity sha512-Qk7Pfu8BSarKGqILj4x7bCSZ1pjuAPZ+qmRwH5S7mDS91VSbVVsJSrW4qA+GPrro8t69gFYVMWb1Zc4yFmPiVg==
 
 "@rollup/plugin-commonjs@^24.0.x":
   version "24.1.0"
@@ -1557,6 +1568,11 @@ json5@^2.2.2:
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
   integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
 
+leaflet@^1.9.4:
+  version "1.9.4"
+  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.9.4.tgz#23fae724e282fa25745aff82ca4d394748db7d8d"
+  integrity sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==
+
 lilconfig@^2.0.5, lilconfig@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/lilconfig/-/lilconfig-2.1.0.tgz#78e23ac89ebb7e1bfbf25b18043de756548e7f52"
@@ -1924,6 +1940,13 @@ react-is@^17.0.2:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
+
+react-leaflet@^4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/react-leaflet/-/react-leaflet-4.2.1.tgz#c300e9eccaf15cb40757552e181200aa10b94780"
+  integrity sha512-p9chkvhcKrWn/H/1FFeVSqLdReGwn2qmiobOQGO3BifX+/vV/39qhY8dGqbdcPh1e6jxh/QHriLXr7a4eLFK4Q==
+  dependencies:
+    "@react-leaflet/core" "^2.1.0"
 
 react-redux@^7.2.0:
   version "7.2.9"

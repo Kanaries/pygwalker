@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNotification } from "../notify";
 import communicationStore from "../store/communication"
-import { domToPng } from "../utils/screenshot"
+import { formatExportedChartDatas } from "../utils/save"
 
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import LoadingIcon from '../components/loadingIcon';
@@ -60,11 +60,10 @@ export function getSaveTool(
             saveSuccess();
             return;
         }
-        const chartData = await gwRef.current?.exportChart!("data-url");
-        const singleChart = await domToPng(chartData.container()!);
+        let chartData = await gwRef.current?.exportChart!("data-url");
         await communicationStore.comm?.sendMsg("update_spec", {
             "visSpec": JSON.stringify(storeRef.current?.vizStore.exportViewSpec()!),
-            "chartData": {...chartData, singleChart}
+            "chartData": await formatExportedChartDatas(chartData),
         });
         hidePreview(props.id);
         saveSuccess();

@@ -22,7 +22,7 @@ import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getUploadTool } from './tools/uploadTool';
-import { domToPng } from "./utils/screenshot"
+import { formatExportedChartDatas } from "./utils/save"
 
 // @ts-ignore
 import style from './index.css?inline'
@@ -37,8 +37,7 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
             total: total,
         });
         for await (const chart of gwRef.current?.exportChartList("data-url")!) {
-            const singleChart = await domToPng(chart.data.container()!);
-            await communicationStore.comm?.sendMsg("save_chart", {...chart.data, singleChart});
+            await communicationStore.comm?.sendMsg("save_chart", await formatExportedChartDatas(chart.data));
             commonStore.setInitModalInfo({
                 title: "Recover Charts",
                 curIndex: chart.index + 1,

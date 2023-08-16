@@ -17,7 +17,7 @@
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.8",
     "@kanaries/auth-wrapper": "file:./lib/auth-wrapper-v0.1.4.tgz",
-    "@kanaries/graphic-walker": "0.4.1",
+    "@kanaries/graphic-walker": "0.4.3",
     "autoprefixer": "^10.3.5",
     "html-to-image": "^1.11.11",
     "mobx": "^6.9.0",
