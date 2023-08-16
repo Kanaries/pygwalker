@@ -1,3 +1,6 @@
+import * as htmlToImage from 'html-to-image';
+import type { IChartExportResult } from '@kanaries/graphic-walker/dist/interfaces';
+
 export function download(data: string, filename: string, type: string) {
     var file = new Blob([data], { type: type });
     // @ts-ignore
@@ -17,5 +20,43 @@ export function download(data: string, filename: string, type: string) {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         }, 0);
+    }
+}
+
+export async function formatExportedChartDatas(chartData: IChartExportResult) {
+    const chartDom = chartData.container();
+    if (chartDom === null) {
+        return chartData
+    }
+    if (chartData.charts.length === 0) {
+        const singleChart = await htmlToImage.toPng(
+            chartDom!,
+            {width: chartDom?.clientWidth, height: chartDom?.clientHeight}
+        )
+        return {
+            ...chartData,
+            nCols: 1,
+            nRows: 1,
+            charts: [{
+                colIndex: 0,
+                rowIndex: 0,
+                width: chartDom?.clientWidth,
+                height: chartDom?.clientHeight,
+                canvasWidth: chartDom?.clientWidth,
+                canvasHeight: chartDom?.clientHeight,
+                data: singleChart,
+                canvas: () => null
+            }],
+            singleChart
+        }
+    } else {
+        const singleChart = await htmlToImage.toPng(
+            chartDom!,
+            {width: chartDom?.scrollWidth, height: chartDom?.scrollHeight}
+        )
+        return {
+            ...chartData,
+            singleChart
+        }
     }
 }
