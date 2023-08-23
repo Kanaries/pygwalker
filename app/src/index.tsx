@@ -57,6 +57,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     const [exportOpen, setExportOpen] = useState(false);
     const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
     const { notify } = useNotification();
+    commonStore.setVersion(props.version!);
 
     const setData = (data?: IRow[], rawFields?: IMutField[]) => {
         if (specList.length !== 0) {
