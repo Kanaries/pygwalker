@@ -1,10 +1,11 @@
 from urllib import request
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, List
 from distutils.version import StrictVersion
 import json
 import os
 
 from pygwalker_utils.config import get_config
+from pygwalker.utils.randoms import rand_str
 from pygwalker.services.fname_encodings import rename_columns
 from pygwalker.errors import InvalidConfigIdError, PrivacyError
 from .fname_encodings import fname_encode
@@ -95,6 +96,33 @@ def _config_adapter(config: str) -> str:
                             param["value"] = old_new_fid_map[param["value"]]
                 else:
                     field["fid"] = old_new_fid_map[field["fid"]]
+    return json.dumps(config_obj)
+
+
+def fill_new_fields(config: str, all_fields: List[Dict[str, str]]) -> str:
+    """when df schema changed, fill new fields to every chart config"""
+    config_obj = json.loads(config)
+    for chart_item in config_obj:
+        field_set = {
+            field["fid"]
+            for field in chart_item["encodings"]["dimensions"] + chart_item["encodings"]["measures"]
+        }
+        new_dimension_fields = []
+        new_measure_fields = []
+        for field in all_fields:
+            if field["fid"] not in field_set:
+                gw_field = {
+                    **field,
+                    "basename": field["name"],
+                    "dragId": "GW_" + rand_str()
+                }
+                if field["analyticType"] == "dimension":
+                    new_dimension_fields.append(gw_field)
+                else:
+                    new_measure_fields.append(gw_field)
+
+        chart_item["encodings"]["dimensions"].extend(new_dimension_fields)
+        chart_item["encodings"]["measures"].extend(new_measure_fields)
     return json.dumps(config_obj)
 
 

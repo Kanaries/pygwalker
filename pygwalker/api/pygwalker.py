@@ -22,7 +22,7 @@ from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnWidgets,
     BatchUploadDatasToolOnJupyter
 )
-from pygwalker.services.spec import get_spec_json
+from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import create_shared_chart
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
@@ -67,12 +67,12 @@ class PygWalker:
         self.show_cloud_tool = show_cloud_tool
         self.use_preview = use_preview
         self.store_chart_data = store_chart_data
-        self._init_spec(spec)
+        self._init_spec(spec, self.field_specs)
         self.use_kernel_calc = use_kernel_calc
 
-    def _init_spec(self, spec: Dict[str, Any]):
+    def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
-        self.vis_spec = spec_obj["config"]
+        self.vis_spec = spec_obj["config"] and fill_new_fields(spec_obj["config"], field_specs)
         self.spec_type = spec_type
         self._chart_map = self._parse_chart_map_dict(spec_obj["chart_map"])
         self.spec_version = spec_obj.get("version", None)
@@ -266,8 +266,7 @@ class PygWalker:
             return {}
 
         def get_latest_vis_spec(_):
-            spec_obj, _ = get_spec_json(self.spec)
-            return {"visSpec": spec_obj["config"]}
+            return {"visSpec": self.vis_spec}
 
         def save_chart_endpoint(data: Dict[str, Any]):
             chart_data = ChartData.parse_obj(data)
