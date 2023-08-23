@@ -1,4 +1,6 @@
+from typing import List
 from math import ceil
+from collections import defaultdict
 
 
 def base36encode(s: str) -> str:
@@ -42,3 +44,13 @@ def fname_encode(fname: str) -> str:
 def fname_decode(encode_fname: str) -> str:
     """Decode fname in base32"""
     return base36decode(encode_fname[3:])
+
+
+def rename_columns(columns: List[str]) -> List[str]:
+    """rename columns to avoid duplicate column names"""
+    column_map = defaultdict(lambda: 0)
+    renamed_columns = []
+    for col in columns:
+        renamed_columns.append(f"{col}_{column_map[col]}")
+        column_map[col] += 1
+    return renamed_columns

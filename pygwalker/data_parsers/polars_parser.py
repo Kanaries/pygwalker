@@ -6,7 +6,7 @@ import polars as pl
 import duckdb
 
 from .base import BaseDataFrameDataParser
-from pygwalker.services.fname_encodings import fname_decode, fname_encode
+from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
 
 
 class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
@@ -31,7 +31,10 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return content
 
     def _init_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
-        df = df.rename({i: fname_encode(i) for i in df.columns})
+        df = df.rename({
+            old_col: fname_encode(new_col)
+            for old_col, new_col in zip(df.columns, rename_columns(df.columns))
+        })
         return df
 
     def _infer_semantic(self, s: pl.Series):
@@ -49,6 +52,6 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
             'dimension'
 
     def _decode_fname(self, s: pl.Series):
-        fname = fname_decode(s.name)
+        fname = fname_decode(s.name).rsplit('_', 1)[0]
         fname = json.dumps(fname, ensure_ascii=False)[1:-1]
         return fname

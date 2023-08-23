@@ -7,7 +7,7 @@ import sqlglot
 
 from .base import BaseDataParser
 from .pandas_parser import PandasDataFrameDataParser
-from pygwalker.services.fname_encodings import fname_encode
+from pygwalker.services.fname_encodings import fname_encode, rename_columns
 from pygwalker.data_parsers.base import FieldSpec
 
 logger = logging.getLogger(__name__)
@@ -48,5 +48,5 @@ class SparkDataFrameDataParser(BaseDataParser):
         return content
 
     def _init_dataframe(self, df: DataFrame) -> DataFrame:
-        new_columns = [fname_encode(f"{col}_{i+1}") for i, col in enumerate(df.columns)]
+        new_columns = [fname_encode(col) for col in rename_columns(list(df.columns))]
         return df.toDF(*new_columns)

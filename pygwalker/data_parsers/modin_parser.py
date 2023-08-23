@@ -6,7 +6,7 @@ from modin import pandas as mpd
 import duckdb
 
 from .base import BaseDataFrameDataParser
-from pygwalker.services.fname_encodings import fname_decode, fname_encode
+from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
 
 
 class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
@@ -37,8 +37,7 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
 
     def _init_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         df = df.reset_index(drop=True)
-        df.columns = [f"{col}_{i+1}" for i, col in enumerate(df.columns)]
-        df = df.rename(fname_encode, axis='columns')
+        df.columns = [fname_encode(col) for col in rename_columns(list(df.columns))]
         return df
 
     def _infer_semantic(self, s: mpd.Series):
