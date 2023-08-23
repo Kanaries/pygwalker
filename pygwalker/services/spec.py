@@ -1,10 +1,11 @@
 from urllib import request
 from typing import Tuple, Dict, Any
-import base64
+from distutils.version import StrictVersion
 import json
 import os
 
 from pygwalker_utils.config import get_config
+from pygwalker.services.fname_encodings import rename_columns
 from pygwalker.errors import InvalidConfigIdError, PrivacyError
 from .fname_encodings import fname_encode
 
@@ -75,22 +76,25 @@ def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
         return "", "json_file"
 
 
-def _base64_to_fname(s: str) -> str:
-    origin_str = base64.b64decode(s.encode()).decode()
-    return fname_encode(origin_str)
-
-
 def _config_adapter(config: str) -> str:
     config_obj = json.loads(config)
     for chart_item in config_obj:
+        old_fid_fname_map = {
+            field["fid"]: field["name"]
+            for field in chart_item["encodings"]["dimensions"] + chart_item["encodings"]["measures"]
+            if not field.get("computed", False)
+        }
+        new_fid_list = [fname_encode(fname) for fname in rename_columns(old_fid_fname_map.values())]
+        old_new_fid_map = dict(zip(old_fid_fname_map.keys(), new_fid_list))
+
         for fields in chart_item["encodings"].values():
             for field in fields:
                 if field.get("computed", False):
                     for param in field["expression"]["params"]:
                         if param["type"] == "field":
-                            param["value"] = _base64_to_fname(param["value"])
+                            param["value"] = old_new_fid_map[param["value"]]
                 else:
-                    field["fid"] = _base64_to_fname(field["fid"])
+                    field["fid"] = old_new_fid_map[field["fid"]]
     return json.dumps(config_obj)
 
 
@@ -108,7 +112,7 @@ def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
     if isinstance(spec_obj, list):
         spec_obj = {"chart_map": {}, "config": spec}
 
-    if spec_obj.get("version", None) is None:
+    if StrictVersion(spec_obj.get("version", "0.1.0")) < StrictVersion("0.3.4"):
         spec_obj["config"] = _config_adapter(spec_obj["config"])
 
     return spec_obj, spec_type
