@@ -8,7 +8,7 @@ import logging
 from pygwalker.utils.randoms import rand_str as __rand_str
 from pygwalker_utils.config import get_config as __get_config
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 __hash__ = __rand_str()
 
 from pygwalker.api.walker import walk
