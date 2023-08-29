@@ -15,7 +15,8 @@ from pygwalker.services.tip_tools import TipOnStartTool
 from pygwalker.services.render import (
     render_gwalker_html,
     render_gwalker_iframe,
-    get_max_limited_datas
+    get_max_limited_datas,
+    get_dsl_wasm
 )
 from pygwalker.services.preview_image import PreviewImageTool, render_preview_html, ChartData
 from pygwalker.services.upload_data import (
@@ -337,6 +338,7 @@ class PygWalker:
             "showCloudTool": self.show_cloud_tool,
             "needInitChart": not (self.store_chart_data and self._chart_map),
             "useKernelCalc": self.use_kernel_calc,
+            "dslToSqlWasmContent": get_dsl_wasm() if self.use_kernel_calc else "",
             **self.other_props,
         }
 
