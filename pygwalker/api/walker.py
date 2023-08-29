@@ -22,7 +22,7 @@ def walk(
     return_html: bool = False,
     spec: str = "",
     show_cloud_tool: bool = False,
-    use_preview: bool = False,
+    use_preview: bool = True,
     store_chart_data: bool = False,
     use_kernel_calc: bool = False,
     **kwargs
