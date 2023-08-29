@@ -23,6 +23,7 @@ import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getUploadTool } from './tools/uploadTool';
 import { formatExportedChartDatas } from "./utils/save"
+import { initDslToSql } from "./utils/initDslWasm"
 
 // @ts-ignore
 import style from './index.css?inline'
@@ -148,6 +149,9 @@ const initOnJupyter = async(props: IAppProps) => {
     props.visSpec = visSpecResp["data"]["visSpec"];
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
+    }
+    if (props.useKernelCalc) {
+        await initDslToSql(props.dslToSqlWasmContent);
     }
     hidePreview(props.id);
 }

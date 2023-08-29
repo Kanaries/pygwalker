@@ -101,5 +101,5 @@ class BatchUploadDatasToolOnWidgets:
         finish_msg = {
             'dataSourceId': data_source_id,
         }
-        time.sleep(1)
+        time.sleep(0.1)
         self.comm.send_msg_async("finishData", finish_msg)
