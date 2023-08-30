@@ -36,7 +36,7 @@
 
 **PyGWalker** (pronounced like "Pig Walker", just for fun) is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It integrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
-Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test), [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
+Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
 > If you prefer using R, you can check out [GWalkR](https://github.com/Kanaries/GWalkR) now!
 
@@ -95,6 +95,8 @@ See [conda-forge feedstock](https://github.com/conda-forge/pygwalker-feedstock) 
 
 ## Use pygwalker in Jupyter Notebook
 
+### Quick Start
+
 Import pygwalker and pandas to your Jupyter Notebook to get started.
 
 ```python    
@@ -105,27 +107,33 @@ import pygwalker as pyg
 You can use pygwalker without breaking your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
 
 ```python
-df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
+df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(df)
 ```
 
-When you use pygwalker(>=0.2.0), we recommend using pygwalker by this way, more about pygwalker0.2.0: [here](https://docs.kanaries.net/en/pygwalker/changelog/pygwalker-0-2).
+### Better Practice
 
 ```python
-df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
-walker = pyg.walk(df, spec="config.json", use_preview=True)
-
-# when pygwalker >= 0.3.0, you can use duckdb as computing engine, it can support larger datas and faster response.
-walker = pyg.walk(df, spec="config.json", use_preview=True, use_kernel_calc=True)
+df = pd.read_csv('./bike_sharing_dc.csv')
+walker = pyg.walk(
+    df,
+    spec="./chart_meta_0.json",    # this json file will save your chart state, you need to click save button in ui mannual when you finish a chart, 'autosave' will be supported in the future.
+    use_kernel_calc=True,          # set `use_kernel_calc=True`, pygwalker will use duckdb as computing engine, it support you explore bigger dataset(<=100GB).
+)
 ```
 
-You can use pygwalker with polars (since `pygwalker>=0.1.4.7a0`):
-```python
-import polars as pl
-df = pl.read_csv('./bike_sharing_dc.csv',try_parse_dates = True)
-walker = pyg.walk(df)
-```
-You can even try it online, simply visiting [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Kanaries/pygwalker/main?labpath=tests%2Fmain.ipynb), [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) or [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test).
+### Offline Example
+
+* Notebook Code: [Click Here](https://github.com/Kanaries/pygwalker-offline-example)
+* Preview Notebook Html: [Click Here](https://pygwalker-public-bucket.s3.amazonaws.com/demo.html)
+
+### Online Example
+
+* [Kaggle Code For New Pygwalker](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
+* [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test)
+* [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)
+
+***
 
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png) -->
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/1-8ms.gif) -->
