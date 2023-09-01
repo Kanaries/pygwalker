@@ -80,7 +80,7 @@ jobs:
       - name: Try Running
         working-directory: ./tests/
         run: |
-          pip install ipykernel nbconvert pandas polars
+          pip install ipykernel nbconvert "pandas<=2.0.3" polars
           python -m ipykernel install --name python --user
           jupyter kernelspec list
           jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=python --to html *.ipynb
