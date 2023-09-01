@@ -8,6 +8,7 @@ from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.utils.execute_env_check import check_convert
+from pygwalker.services.global_var import GlobalVarManager
 
 
 def walk(
@@ -21,7 +22,6 @@ def walk(
     dark: Literal['media', 'light', 'dark'] = 'media',
     return_html: bool = False,
     spec: str = "",
-    show_cloud_tool: bool = False,
     use_preview: bool = True,
     store_chart_data: bool = False,
     use_kernel_calc: bool = False,
@@ -41,7 +41,6 @@ def walk(
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - return_html (bool, optional): Directly return a html string. Defaults to False.
         - spec (str): chart config data. config id, json, remote file url
-        - show_cloud_tool(bool): Whether to use kanaries cloud function, Default to False.
         - use_preview(bool): Whether to use preview function, Default to False.
         - store_chart_data(bool): Whether to save chart to disk, only work when spec is json file, Default to False.
     """
@@ -61,7 +60,7 @@ def walk(
         hideDataSourceConfig,
         themeKey,
         dark,
-        show_cloud_tool,
+        bool(GlobalVarManager.kanaries_api_key),
         use_preview,
         store_chart_data,
         use_kernel_calc,

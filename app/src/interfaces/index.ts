@@ -9,7 +9,7 @@ export interface IAppProps extends IGWProps {
     userConfig?: IUserConfig;
     env?: string;
     needLoadDatas?: boolean;
-    specType?: string;
+    specType: string;
     showCloudTool: boolean;
     needInitChart: boolean;
     useKernelCalc: boolean;

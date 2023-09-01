@@ -21,3 +21,8 @@ class PrivacyError(BaseError):
 class CloudFunctionError(BaseError):
     """Raised when the cloud function is invalid."""
     pass
+
+
+class CsvFileTooLargeError(BaseError):
+    """Raised when the csv file is too large."""
+    pass

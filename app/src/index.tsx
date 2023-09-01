@@ -18,10 +18,11 @@ import initCommunication from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
+import ShareModal from './components/shareModal';
 import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
-import { getUploadTool } from './tools/uploadTool';
+import { getShareTool } from './tools/shareTool';
 import { formatExportedChartDatas } from "./utils/save"
 import { initDslToSql } from "./utils/initDslWasm"
 
@@ -56,6 +57,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     const {dataSource, ...props} = propsIn;
     const { dataSourceProps, rawFields, userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
+    const [shareModalOpen, setShareModalOpen] = useState(false);
     const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
     const { notify } = useNotification();
     commonStore.setVersion(props.version!);
@@ -114,7 +116,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
 
     const exportTool = getExportTool(setExportOpen);
     const saveTool = getSaveTool(props, gwRef, storeRef);
-    const uploadTool = getUploadTool(props, storeRef);
+    const uploadTool = getShareTool(setShareModalOpen);
 
     const tools = [exportTool];
     if (props.env === "jupyter_widgets") {
@@ -133,6 +135,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     <React.StrictMode>
         <style>{style}</style>
         <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
+        <ShareModal gwRef={gwRef} storeRef={storeRef} open={shareModalOpen} setOpen={setShareModalOpen} />
         <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={props.useKernelCalc ? getDatasFromKernel : undefined} />
         <InitModal />
         <Options {...props} toolbar={toolbarConfig} />
