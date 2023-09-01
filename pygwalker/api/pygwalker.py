@@ -26,7 +26,7 @@ from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import create_shared_chart
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
-from pygwalker.errors import CloudFunctionError
+from pygwalker.errors import CloudFunctionError, CsvFileTooLargeError
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__, __hash__
 
@@ -223,7 +223,7 @@ class PygWalker:
         )
         display_html(html)
 
-    def upload_charts_to_could(self) -> str:
+    def _upload_charts_to_could(self, name: str, new_notebook: bool, chart: ChartData) -> str:
         """upload charts config and datas to kanaries cloud"""
         fid_list = [field["fid"] for field in self.field_specs]
         meta = {
@@ -239,11 +239,18 @@ class PygWalker:
             }],
             "specList": json.loads(self.vis_spec)
         }
+
+        chart_base64 = chart.single_chart.split(",")[1]
         dataset_content = self.df_parser.to_csv()
+        if dataset_content.__sizeof__() > 100 * 1024 * 1024:
+            raise CsvFileTooLargeError("dataset too large(>100MB), currently unable to upload, the next version will optimize it.")
         return create_shared_chart(
+            chart_name=name,
             dataset_content=dataset_content,
             fid_list=fid_list,
-            meta=json.dumps(meta)
+            meta=json.dumps(meta),
+            new_notebook=new_notebook,
+            thumbnail=chart_base64
         )
 
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
@@ -285,7 +292,12 @@ class PygWalker:
             if not GlobalVarManager.kanaries_api_key:
                 raise CloudFunctionError("no_kanaries_api_key")
             self.vis_spec = data["visSpec"]
-            share_url = self.upload_charts_to_could()
+            chart_data = ChartData.parse_obj(data["chartData"])
+            share_url = self._upload_charts_to_could(
+                data["chartName"],
+                data["newNotebook"],
+                chart_data
+            )
             return {"shareUrl": share_url}
 
         comm.register("request_data", reuqest_data_callback)
