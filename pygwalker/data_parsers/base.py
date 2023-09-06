@@ -3,6 +3,8 @@ from typing_extensions import Literal
 import abc
 import io
 
+import arrow
+
 from pygwalker._typing import DataFrame
 
 
@@ -75,8 +77,8 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         s = self.example_df[col]
         orig_fname = self._decode_fname(s)
         field_spec = field_specs.get(orig_fname, default_field_spec)
-        semantic_type = self._infer_semantic(s) if field_spec.semanticType == '?' else field_spec.semanticType
-        analytic_type = self._infer_analytic(s) if field_spec.analyticType == '?' else field_spec.analyticType
+        semantic_type = self._infer_semantic(s, orig_fname) if field_spec.semanticType == '?' else field_spec.semanticType
+        analytic_type = self._infer_analytic(s, orig_fname) if field_spec.analyticType == '?' else field_spec.analyticType
         fname = orig_fname if field_spec.display_as is None else field_spec.display_as
         return {
             'fid': col,
@@ -84,3 +86,21 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             'semanticType': semantic_type,
             'analyticType': analytic_type,
         }
+
+
+def is_temporal_field(value: str) -> bool:
+    """check if field is temporal"""
+    try:
+        arrow.get(value)
+    except arrow.parser.ParserError:
+        return False
+    return True
+
+
+def is_geo_field(field_name: str) -> bool:
+    """check if filed is """
+    field_name = field_name.lower().strip(" .")
+    return field_name in {
+        "latitude", "longitude",
+        "lat", "long",
+    }

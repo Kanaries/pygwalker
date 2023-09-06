@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from modin import pandas as mpd
 import duckdb
 
-from .base import BaseDataFrameDataParser
+from .base import BaseDataFrameDataParser, is_temporal_field, is_geo_field
 from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
 
 
@@ -40,19 +40,28 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         df.columns = [fname_encode(col) for col in rename_columns(list(df.columns))]
         return df
 
-    def _infer_semantic(self, s: mpd.Series):
+    def _infer_semantic(self, s: mpd.Series, field_name: str):
         v_cnt = len(s.value_counts())
+        example_value = s[0]
         kind = s.dtype.kind
-        return 'quantitative' if (kind in 'fcmiu' and v_cnt > 16) else \
-            'temporal' if kind in 'M' else \
-            'nominal' if kind in 'bOSUV' or v_cnt <= 2 else \
-            'ordinal'
 
-    def _infer_analytic(self, s: mpd.Series):
+        if (kind in "fcmiu" and v_cnt > 16) or is_geo_field(field_name):
+            return "quantitative"
+        if kind in "M" or (kind in "bOSUV" and is_temporal_field(str(example_value))):
+            return "temporal"
+        if kind in "bOSUV" or v_cnt <= 2:
+            return "nominal"
+        return "ordinal"
+
+    def _infer_analytic(self, s: mpd.Series, field_name: str):
         kind = s.dtype.kind
-        return 'measure' if \
-            kind in 'fcm' or (kind in 'iu' and len(s.value_counts()) > 16) \
-                else 'dimension'
+
+        if is_geo_field(field_name):
+            return "dimension"
+        if kind in "fcm" or (kind in "iu" and len(s.value_counts()) > 16):
+            return "measure"
+
+        return "dimension"
 
     def _decode_fname(self, s: mpd.Series):
         fname = fname_decode(s.name).rsplit('_', 1)[0]
