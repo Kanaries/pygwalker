@@ -23,8 +23,8 @@ import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getShareTool } from './tools/shareTool';
-import { formatExportedChartDatas } from "./utils/save"
-import { initDslToSql } from "./utils/initDslWasm"
+import { formatExportedChartDatas } from "./utils/save";
+import initDslParser from "@kanaries-temp/gw-dsl-parser";
 
 // @ts-ignore
 import style from './index.css?inline'
@@ -154,7 +154,7 @@ const initOnJupyter = async(props: IAppProps) => {
         comm.sendMsgAsync("request_data", {}, null);
     }
     if (props.useKernelCalc) {
-        await initDslToSql(props.dslToSqlWasmContent);
+        await initDslParser();
     }
     hidePreview(props.id);
 }

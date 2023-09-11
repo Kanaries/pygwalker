@@ -1,4 +1,5 @@
 import { defineConfig, ConfigEnv, UserConfig } from 'vite'
+import wasm from 'vite-plugin-wasm';
 import path from 'path';
 import react from '@vitejs/plugin-react'
 import typescript from '@rollup/plugin-typescript'
@@ -19,6 +20,7 @@ export default defineConfig((config: ConfigEnv) => {
     },
     plugins: [
       react(),
+      wasm(),
       // @ts-ignore
       {
         ...typescript({

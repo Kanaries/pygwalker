@@ -35,31 +35,8 @@ jobs:
           name: pygwalker-app
           path: ./pygwalker/templates/dist/*
 
-  build-go-wasm:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.20'
-      - name: Try Build Wasm
-        working-directory: ./
-        run: |
-          chmod u+x ./scripts/gen_dsl_to_sql_wasm.sh
-          ./scripts/gen_dsl_to_sql_wasm.sh
-      - name: Uploading wasm
-        uses: actions/upload-artifact@v3
-        with:
-          name: pygwalker-wasm
-          path: ./pygwalker/templates/dsl_to_sql.wasm
-
   build-py:
-    needs: [build-js, build-go-wasm]
+    needs: [build-js]
 
     strategy:
       fail-fast: false
@@ -75,11 +52,6 @@ jobs:
         with:
           name: pygwalker-app
           path: ./pygwalker/templates/dist
-      - name: Download PyGWalkerWasm
-        uses: actions/download-artifact@v3
-        with:
-          name: pygwalker-wasm
-          path: ./pygwalker/templates/
       - name: Use Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
