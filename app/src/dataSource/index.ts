@@ -2,13 +2,8 @@ import type { IDataSourceProps } from "../interfaces";
 import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/dist/interfaces";
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
+import { parser_dsl_with_table } from "@kanaries-temp/gw-dsl-parser";
 
-declare global {
-    export interface Window {
-        dslToSql: (datasetStr: string, PayloadStr: string) => string;
-    }
-}
-  
 interface MessagePayload extends IDataSourceProps {
     action: "requestData" | "postData" | "finishData";
     dataSourceId: string;
@@ -84,8 +79,8 @@ export function finishDataService(msg: any) {
 }
 
 export async function getDatasFromKernel(payload: IDataQueryPayload) {
-    const sql = window.dslToSql(
-        JSON.stringify({type: "table", source: "pygwalker_mid_table"}),
+    const sql = parser_dsl_with_table(
+        "pygwalker_mid_table",
         JSON.stringify(payload)
     );
     const result = await communicationStore.comm?.sendMsg("get_datas", {"sql": sql});

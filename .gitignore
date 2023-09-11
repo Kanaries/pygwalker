@@ -139,6 +139,5 @@ poetry.lock
 
 pygwalker/templates/graphic-walker.umd.js
 pygwalker/templates/graphic-walker.iife.js
-pygwalker/templates/dsl_to_sql.wasm
 
 tests/*.csv

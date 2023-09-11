@@ -1,7 +1,5 @@
 import os
 import json
-import base64
-import zlib
 from typing import Dict, List, Any
 
 from jinja2 import Environment, PackageLoader
@@ -51,14 +49,3 @@ def render_gwalker_html(gid: int, props: Dict) -> str:
     template = jinja_env.get_template("index.html")
     html = f"{template.render(gwalker={'id': gid, 'script': js})}"
     return html
-
-
-def get_dsl_wasm() -> str:
-    """get compressed wasm code(base64) for dsl to sql"""
-    wasm_file_path = os.path.join(ROOT_DIR, 'templates', 'dsl_to_sql.wasm')
-    with open(wasm_file_path, 'rb') as f:
-        wasm_content = f.read()
-
-    content = zlib.compress(base64.b64encode(wasm_content))
-
-    return base64.b64encode(content).decode()

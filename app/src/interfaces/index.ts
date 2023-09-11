@@ -13,7 +13,6 @@ export interface IAppProps extends IGWProps {
     showCloudTool: boolean;
     needInitChart: boolean;
     useKernelCalc: boolean;
-    dslToSqlWasmContent: string;
 }
 
 export interface IDataSourceProps {
