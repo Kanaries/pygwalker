@@ -1,6 +1,7 @@
 import sys
+from typing import Dict, Optional
 
-from pygwalker.data_parsers.base import BaseDataParser
+from pygwalker.data_parsers.base import BaseDataParser, FieldSpec
 from pygwalker._typing import DataFrame
 
 __classname2method = {}
@@ -46,6 +47,12 @@ def _get_data_parser(df: DataFrame) -> BaseDataParser:
     raise TypeError(f"Unsupported data type: {type(df)}")
 
 
-def get_parser(df: DataFrame, use_kernel_calc: bool = False) -> BaseDataParser:
-    parser = _get_data_parser(df)(df, use_kernel_calc)
+def get_parser(
+    df: DataFrame,
+    use_kernel_calc: bool = False,
+    field_specs: Optional[Dict[str, FieldSpec]] = None,
+) -> BaseDataParser:
+    if field_specs is None:
+        field_specs = {}
+    parser = _get_data_parser(df)(df, use_kernel_calc, field_specs)
     return parser

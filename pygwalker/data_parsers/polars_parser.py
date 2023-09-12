@@ -5,7 +5,12 @@ import io
 import polars as pl
 import duckdb
 
-from .base import BaseDataFrameDataParser, is_temporal_field, is_geo_field
+from .base import (
+    BaseDataFrameDataParser,
+    is_temporal_field,
+    is_geo_field,
+    format_temporal_string
+)
 from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
 
 
@@ -30,11 +35,18 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         self.origin_df.write_csv(content)
         return content
 
-    def _init_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _rename_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
         df = df.rename({
             old_col: fname_encode(new_col)
             for old_col, new_col in zip(df.columns, rename_columns(df.columns))
         })
+        return df
+
+    def _preprocess_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
+        for column in self.raw_fields:
+            if column["semanticType"] == "temporal":
+                column_name = column["fid"]
+                df = df.with_columns(pl.col(column_name).apply(format_temporal_string).alias(column_name))
         return df
 
     def _infer_semantic(self, s: pl.Series, field_name: str):

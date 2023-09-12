@@ -1,21 +1,24 @@
 from typing import Any, Dict, List, Optional
+from functools import lru_cache
 import logging
 import io
 
 from pyspark.sql import DataFrame
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
 import sqlglot
 
 from .base import BaseDataParser
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.services.fname_encodings import fname_encode, rename_columns
-from pygwalker.data_parsers.base import FieldSpec
+from pygwalker.data_parsers.base import FieldSpec, format_temporal_string
 
 logger = logging.getLogger(__name__)
 
 
 class SparkDataFrameDataParser(BaseDataParser):
     """prop parser for DataFrame of spark"""
-    def __init__(self, df: DataFrame, use_kernel_calc: bool):
+    def __init__(self, df: DataFrame, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]):
         if not df.is_cached:
             logger.warning(
                 "The input dataframe is not cached, which may cause performance issues.\n"
@@ -24,13 +27,18 @@ class SparkDataFrameDataParser(BaseDataParser):
             )
         self.spark = df.sparkSession
         self.origin_df = df
-        self.df = self._init_dataframe(df)
+        self.df = self._rename_dataframe(df)
         self.example_pandas_df = df.limit(1000).toPandas()
         self.use_kernel_calc = use_kernel_calc
+        self.field_specs = field_specs
+        if self.use_kernel_calc:
+            self.df = self._preprocess_dataframe(self.df)
 
-    def raw_fields(self, field_specs: Dict[str, FieldSpec]) -> List[Dict[str, str]]:
-        pandas_parser = PandasDataFrameDataParser(self.example_pandas_df, False)
-        return pandas_parser.raw_fields(field_specs)
+    @property
+    @lru_cache()
+    def raw_fields(self) -> List[Dict[str, str]]:
+        pandas_parser = PandasDataFrameDataParser(self.example_pandas_df, False, self.field_specs)
+        return pandas_parser.raw_fields
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         df = self.df.limit(limit) if limit is not None else self.df
@@ -47,6 +55,14 @@ class SparkDataFrameDataParser(BaseDataParser):
         self.origin_df.toPandas().to_csv(content, index=False)
         return content
 
-    def _init_dataframe(self, df: DataFrame) -> DataFrame:
+    def _rename_dataframe(self, df: DataFrame) -> DataFrame:
         new_columns = [fname_encode(col) for col in rename_columns(list(df.columns))]
         return df.toDF(*new_columns)
+
+    def _preprocess_dataframe(self, df: DataFrame) -> DataFrame:
+        python_udf = udf(format_temporal_string, StringType())
+        for column in self.raw_fields:
+            if column["semanticType"] == "temporal":
+                column_name = column["fid"]
+                df = df.withColumn(column_name, python_udf(df[column_name]))
+        return df

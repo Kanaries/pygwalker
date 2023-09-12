@@ -5,14 +5,20 @@ from typing import Any, Dict, List, Optional
 from modin import pandas as mpd
 import duckdb
 
-from .base import BaseDataFrameDataParser, is_temporal_field, is_geo_field
+from .base import (
+    BaseDataFrameDataParser,
+    FieldSpec,
+    is_temporal_field,
+    is_geo_field,
+    format_temporal_string
+)
 from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
 
 
 class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
     """prop parser for modin.pandas.DataFrame"""
-    def __init__(self, df: mpd.DataFrame, use_kernel_calc: bool):
-        super().__init__(df, use_kernel_calc)
+    def __init__(self, df: mpd.DataFrame, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]):
+        super().__init__(df, use_kernel_calc, field_specs)
         if use_kernel_calc:
             # Temporarily use to_pandas to execute sql
             self._pandas_df = self.df._to_pandas()
@@ -35,9 +41,16 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         self.origin_df.to_csv(content, index=False)
         return content
 
-    def _init_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
+    def _rename_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         df = df.reset_index(drop=True)
         df.columns = [fname_encode(col) for col in rename_columns(list(df.columns))]
+        return df
+
+    def _preprocess_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
+        for column in self.raw_fields:
+            if column["semanticType"] == "temporal":
+                column_name = column["fid"]
+                df[column_name] = df[column_name].apply(format_temporal_string)
         return df
 
     def _infer_semantic(self, s: mpd.Series, field_name: str):

@@ -52,9 +52,9 @@ class PygWalker:
             self.gid = GlobalVarManager.get_global_gid()
         else:
             self.gid = gid
-        self.df_parser = get_parser(df, use_kernel_calc)
+        self.df_parser = get_parser(df, use_kernel_calc, field_specs)
         self.origin_data_source = self.df_parser.to_records(500 if use_kernel_calc else None)
-        self.field_specs = self.df_parser.raw_fields(field_specs=field_specs)
+        self.field_specs = self.df_parser.raw_fields
         self.spec = spec
         self.source_invoke_code = source_invoke_code
         self.hidedata_source_config = hidedata_source_config
