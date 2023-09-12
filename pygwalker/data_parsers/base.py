@@ -1,5 +1,6 @@
 from typing import NamedTuple, Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
+from functools import lru_cache
 import abc
 import io
 
@@ -28,11 +29,12 @@ class BaseDataParser(abc.ABC):
     """Base class for data parser"""
 
     @abc.abstractmethod
-    def __init__(self, data: Any, use_kernel_calc: bool) -> None:
+    def __init__(self, data: Any, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]) -> None:
         raise NotImplementedError
 
+    @property
     @abc.abstractmethod
-    def raw_fields(self, field_specs: Dict[str, FieldSpec]) -> List[Dict[str, str]]:
+    def raw_fields(self) -> List[Dict[str, str]]:
         """get raw fields"""
         raise NotImplementedError
 
@@ -54,16 +56,21 @@ class BaseDataParser(abc.ABC):
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
-    def __init__(self, df: DataFrame, use_kernel_calc: bool):
+    def __init__(self, df: DataFrame, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]):
         self.origin_df = df
-        self.df = self._init_dataframe(df)
-        self.example_df = self.df[:1000]
+        self.df = self._rename_dataframe(df)
+        self._example_df = self.df[:1000]
         self.use_kernel_calc = use_kernel_calc
+        self.field_specs = field_specs
+        if self.use_kernel_calc:
+            self.df = self._preprocess_dataframe(self.df)
 
-    def raw_fields(self, field_specs: Dict[str, FieldSpec]) -> List[Dict[str, str]]:
+    @property
+    @lru_cache()
+    def raw_fields(self) -> List[Dict[str, str]]:
         return [
-            self._infer_prop(col, field_specs)
-            for _, col in enumerate(self.example_df.columns)
+            self._infer_prop(col, self.field_specs)
+            for _, col in enumerate(self._example_df.columns)
         ]
 
     def _infer_prop(
@@ -74,7 +81,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         Returns:
             (IMutField, Dict)
         """
-        s = self.example_df[col]
+        s = self._example_df[col]
         orig_fname = self._decode_fname(s)
         field_spec = field_specs.get(orig_fname, default_field_spec)
         semantic_type = self._infer_semantic(s, orig_fname) if field_spec.semanticType == '?' else field_spec.semanticType
@@ -86,6 +93,14 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             'semanticType': semantic_type,
             'analyticType': analytic_type,
         }
+
+    def _rename_dataframe(self, df: DataFrame) -> DataFrame:
+        """rename dataframe"""
+        raise NotImplementedError
+
+    def _preprocess_dataframe(self, df: DataFrame) -> DataFrame:
+        """preprocess dataframe"""
+        raise NotImplementedError
 
 
 def is_temporal_field(value: str) -> bool:
@@ -104,3 +119,8 @@ def is_geo_field(field_name: str) -> bool:
         "latitude", "longitude",
         "lat", "long",
     }
+
+
+def format_temporal_string(value: str) -> str:
+    """Convert temporal fields to a fixed format"""
+    return arrow.get(value).strftime("%Y-%m-%d %H:%M:%S")

@@ -5,7 +5,12 @@ import io
 import pandas as pd
 import duckdb
 
-from .base import BaseDataFrameDataParser, is_temporal_field, is_geo_field
+from .base import (
+    BaseDataFrameDataParser,
+    is_temporal_field,
+    is_geo_field,
+    format_temporal_string
+)
 from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
 
 
@@ -30,9 +35,16 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         self.origin_df.to_csv(content, index=False)
         return content
 
-    def _init_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _rename_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.reset_index(drop=True)
         df.columns = [fname_encode(col) for col in rename_columns(list(df.columns))]
+        return df
+
+    def _preprocess_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        for column in self.raw_fields:
+            if column["semanticType"] == "temporal":
+                column_name = column["fid"]
+                df[column_name] = df[column_name].apply(format_temporal_string)
         return df
 
     def _infer_semantic(self, s: pd.Series, field_name: str):
