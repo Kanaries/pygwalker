@@ -17,7 +17,6 @@
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.8",
     "@kanaries-temp/gw-dsl-parser": "0.1.0",
-    "@kanaries/auth-wrapper": "file:./lib/auth-wrapper-v0.1.4.tgz",
     "@kanaries/graphic-walker": "0.4.3",
     "autoprefixer": "^10.3.5",
     "buffer": "^6.0.3",
