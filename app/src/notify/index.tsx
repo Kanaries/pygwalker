@@ -1,19 +1,9 @@
-import { Fragment, useState, createContext, useCallback, ReactElement, useContext } from "react";
+import { Fragment } from "react";
 import { Transition } from "@headlessui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-
-export interface INotification {
-    title: string;
-    message: string | ReactElement;
-    type: "success" | "error" | "info" | "warning";
-}
-
-const NotificationContext = createContext<{ notify: (not: INotification, t: number) => void }>(null!);
-
-export function useNotification() {
-    return useContext(NotificationContext);
-}
+import commonStore, { INotification } from "../store/common";
+import { observer } from "mobx-react-lite";
 
 function getNotificationIcon(type: INotification["type"]) {
     switch (type) {
@@ -28,28 +18,15 @@ function getNotificationIcon(type: INotification["type"]) {
     }
 }
 
-const NotificationWrapper: React.FC<{ children: ReactElement }> = (props) => {
-    const [show, setShow] = useState(false);
-    const [notification, setNotification] = useState<INotification | null>(null);
-
-    const notify = useCallback((not: INotification, t: number) => {
-        setShow(true);
-        setNotification(not);
-        setTimeout(() => {
-            setShow(false);
-        }, t);
-    }, []);
-
+const Notification: React.FC = observer(() => {
     return (
-        <NotificationContext.Provider value={{ notify }}>
-            {props.children}
-            {/* Global notification live region, render this permanently at the end of the document */}
-            {notification && (
+        <div>
+            {commonStore.notification && (
                 <div aria-live="assertive" className="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 z-[25539]">
                     <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
                         {/* Notification panel, dynamically insert this into the live region when it needs to be displayed */}
                         <Transition
-                            show={show}
+                            show={commonStore.notification != null}
                             as={Fragment}
                             enter="transform ease-out duration-300 transition"
                             enterFrom="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
@@ -62,18 +39,18 @@ const NotificationWrapper: React.FC<{ children: ReactElement }> = (props) => {
                                 <div className="p-4">
                                     <div className="flex items-start">
                                         <div className="flex-shrink-0">
-                                            {getNotificationIcon(notification.type)}
+                                            {getNotificationIcon(commonStore.notification.type)}
                                         </div>
                                         <div className="ml-3 w-0 flex-1 pt-0.5">
-                                            <p className="text-sm font-medium text-gray-50">{notification.title}</p>
-                                            <p className="mt-1 text-sm text-gray-300">{notification.message}</p>
+                                            <p className="text-sm font-medium text-gray-50">{commonStore.notification.title}</p>
+                                            <p className="mt-1 text-sm text-gray-300">{commonStore.notification.message}</p>
                                         </div>
                                         <div className="ml-4 flex flex-shrink-0">
                                             <button
                                                 type="button"
                                                 className="inline-flex rounded-md bg-zinc-900 text-gray-400 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                 onClick={() => {
-                                                    setShow(false);
+                                                    commonStore.setNotification(null);
                                                 }}
                                             >
                                                 <span className="sr-only">Close</span>
@@ -87,8 +64,8 @@ const NotificationWrapper: React.FC<{ children: ReactElement }> = (props) => {
                     </div>
                 </div>
             )}
-        </NotificationContext.Provider>
+        </div>
     );
-};
+});
 
-export default NotificationWrapper;
+export default Notification;

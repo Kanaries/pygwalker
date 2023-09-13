@@ -1,7 +1,7 @@
 import React, { useState, ReactElement, useEffect } from 'react';
 import { observer } from "mobx-react-lite";
-import { useNotification } from "../../notify";
-import communicationStore from "../../store/communication"
+import communicationStore from "../../store/communication";
+import commonStore from "../../store/common";
 import DefaultButton from "../button/default";
 import Modal from "../modal";
 import { formatExportedChartDatas } from "../../utils/save"
@@ -18,7 +18,6 @@ interface IShareModal {
 }
 
 const ShareModal: React.FC<IShareModal> = observer((props) => {
-    const { notify } = useNotification();
     const [ sharing, setSharing ] = useState(false);
     const [ name, setName ] = useState("");
     const [ isNewNotebook, setIsNewNotebook ] = useState(true);
@@ -31,7 +30,7 @@ const ShareModal: React.FC<IShareModal> = observer((props) => {
     }, [props.open]);
 
     const shareSuccess = (shareUrl: string) => {
-        notify({
+        commonStore.setNotification({
             type: "success",
             title: "Success",
             message: <>
@@ -41,7 +40,7 @@ const ShareModal: React.FC<IShareModal> = observer((props) => {
     }
 
     const shareFailed = (errorMsg: string | ReactElement) => {
-        notify({
+        commonStore.setNotification({
             type: "error",
             title: "Error",
             message: errorMsg,

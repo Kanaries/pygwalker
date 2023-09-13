@@ -8,11 +8,9 @@ import { IDataSetInfo, IMutField, IRow, IGWHandler } from '@kanaries/graphic-wal
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
-import NotificationWrapper from "./notify";
 
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernel } from './dataSource';
 
-import { useNotification } from "./notify";
 import commonStore from "./store/common";
 import initCommunication from "./utils/communication";
 import communicationStore from "./store/communication"
@@ -24,6 +22,7 @@ import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getShareTool } from './tools/shareTool';
 import { formatExportedChartDatas } from "./utils/save";
+import Notification from "./notify"
 import initDslParser from "@kanaries-temp/gw-dsl-parser";
 
 // @ts-ignore
@@ -59,7 +58,6 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     const [exportOpen, setExportOpen] = useState(false);
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
-    const { notify } = useNotification();
     commonStore.setVersion(props.version!);
 
     const setData = (data?: IRow[], rawFields?: IMutField[]) => {
@@ -106,7 +104,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         if (userConfig) setConfig(userConfig);
         // temporary notifcation
         if (props.useKernelCalc) {
-            notify({
+            commonStore.setNotification({
                 type: "info",
                 title: "Tips",
                 message: "in `useKernelCalc` mode, If your dataset too big, not suitable for some non-aggregated charts, such as scatter.",
@@ -131,16 +129,17 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         extra: tools
     }
   
-  return (
-    <React.StrictMode>
-        <style>{style}</style>
-        <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-        <ShareModal gwRef={gwRef} storeRef={storeRef} open={shareModalOpen} setOpen={setShareModalOpen} />
-        <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={props.useKernelCalc ? getDatasFromKernel : undefined} />
-        <InitModal />
-        <Options {...props} toolbar={toolbarConfig} />
-    </React.StrictMode>
-  );
+    return (
+        <React.StrictMode>
+            <style>{style}</style>
+            <Notification />
+            <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
+            <ShareModal gwRef={gwRef} storeRef={storeRef} open={shareModalOpen} setOpen={setShareModalOpen} />
+            <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={props.useKernelCalc ? getDatasFromKernel : undefined} />
+            <InitModal />
+            <Options {...props} toolbar={toolbarConfig} />
+        </React.StrictMode>
+    );
 })
 
 const initOnJupyter = async(props: IAppProps) => {
@@ -167,9 +166,7 @@ function GWalker(props: IAppProps, id: string) {
 
     preRender(props).then(() => {
         ReactDOM.render(
-            <NotificationWrapper>
-                <App {...props}></App>
-            </NotificationWrapper>,
+            <App {...props}></App>,
             document.getElementById(id)
         );
     })

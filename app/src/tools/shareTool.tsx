@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNotification } from "../notify";
 
 import { ArrowUpCircleIcon } from '@heroicons/react/24/outline';
 

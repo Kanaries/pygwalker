@@ -1,4 +1,5 @@
 import { makeObservable, observable, action } from 'mobx';
+import { ReactElement } from "react";
 
 interface IInitModalInfo {
     total: number;
@@ -6,7 +7,15 @@ interface IInitModalInfo {
     title: string;
 }
 
+export interface INotification {
+    title: string;
+    message: string | ReactElement;
+    type: "success" | "error" | "info" | "warning";
+}
+
 class CommonStore {
+    _notifyTimeoutFunc = setTimeout(() => {}, 0);
+
     initModalOpen: boolean = false;
     initModalInfo: IInitModalInfo = {
         total: 0,
@@ -15,6 +24,7 @@ class CommonStore {
     };
     showCloudTool: boolean = false;
     version: string = "";
+    notification: INotification | null = null;
 
     setInitModalOpen(value: boolean) {
         this.initModalOpen = value;
@@ -31,6 +41,14 @@ class CommonStore {
     setVersion(value: string) {
         this.version = value;
     }
+    
+    setNotification(value: INotification | null, timeout: number = 5_000) {
+        clearTimeout(this._notifyTimeoutFunc);
+        this.notification = value;
+        this._notifyTimeoutFunc = setTimeout(() => {
+            this.notification = null;
+        }, timeout);
+    }
 
     constructor() {
         makeObservable(this, {
@@ -38,10 +56,12 @@ class CommonStore {
             initModalInfo: observable,
             showCloudTool: observable,
             version: observable,
+            notification: observable,
             setInitModalOpen: action,
             setInitModalInfo: action,
             setShowCloudTool: action,
-            setVersion: action
+            setVersion: action,
+            setNotification: action,
         });
     }
 }

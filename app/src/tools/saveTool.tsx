@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNotification } from "../notify";
 import communicationStore from "../store/communication"
+import commonStore from '../store/common';
 import { formatExportedChartDatas } from "../utils/save"
 
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
@@ -29,10 +29,9 @@ export function getSaveTool(
     storeRef: React.MutableRefObject<IGlobalStore | null>
 ) : ToolbarButtonItem {
     const [saving, setSaving] = useState(false);
-    const { notify } = useNotification();
 
     const saveSuccess = () => {
-        notify({
+        commonStore.setNotification({
             type: "success",
             title: "Tips",
             message: "save success.",
@@ -45,7 +44,7 @@ export function getSaveTool(
 
     const onClick = async () => {
         if (props.specType !== "json_file") {
-            notify({
+            commonStore.setNotification({
                 type: "warning",
                 title: "Tips",
                 message: "spec params is not 'json_file', save is not supported.",
