@@ -1,11 +1,7 @@
-<!-- <p align="center"><a href="#"><img width=60% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/screenshot-top-img.png"></a></p> -->
-<!-- <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/frontpage-rendered.png"></a></p> -->
-[English](README.md) | [中文](./docs/README.zh.md) | [Türkçe](./docs/README.tr.md)
-
-> PyGWalker 0.3 is released! Check out the [changelog](https://github.com/Kanaries/pygwalker/releases/tag/0.3.0) for more details. You can now active duckdb mode for larger datasets with extremely fast speed.
+> PyGWalker 0.3 yayınlandı! [changelog](https://github.com/Kanaries/pygwalker/releases/tag/0.3.0) daha fazla ayrıntı için. Artık daha büyük veri kümeleri için son derece hızlı bir şekilde duckdb modunu etkinleştirebilirsiniz.
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png"></a></p>
 
-<h2 align="center">PyGWalker: A Python Library for Exploratory Data Analysis with Visualization</h2>
+<h2 align="center">PyGWalker: Görselleştirmeyle Keşif Amaçlı Veri Analizi için Python Kütüphanesi</h2>
 
 <p align="center">
     <a href="https://badge.fury.io/py/pygwalker">
@@ -32,15 +28,15 @@
     </a> 
 </p>
 
-[**PyGWalker**](https://github.com/Kanaries/pygwalker) can simplify your Jupyter Notebook data analysis and data visualization workflow, by turning your pandas dataframe (and polars dataframe) into a Tableau-style User Interface for visual exploration.
+[**PyGWalker**](https://github.com/Kanaries/pygwalker) pandas dataframe (ve polars dataframe) görsel keşif için Tableau tarzı bir Kullanıcı Arayüzüne dönüştürerek Jupyter Notebook veri analizi ve veri görselleştirme iş akışınızı basitleştirebilir.
 
-**PyGWalker** (pronounced like "Pig Walker", just for fun) is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It integrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
+**PyGWalker** (şöyle telaffuz edilir "Pig Walker", sadece eğlence için) kısaltması olarak adlandırılır "**Py**thon binding of **G**raphic **Walker**". Jupyter Notebook'u (veya diğer jupyter tabanlı not defterlerini), Tableau'ya farklı türde bir açık kaynak alternatifi olan [Graphic Walker](https://github.com/Kanaries/graphic-walker) ile entegre eder. Veri bilimcilerinin basit sürükle ve bırak işlemleriyle verileri analiz etmelerine ve kalıpları görselleştirmelerine olanak tanır.
      
 Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
-> If you prefer using R, you can check out [GWalkR](https://github.com/Kanaries/GWalkR) now!
+> R kullanmayı tercih ediyorsanız şimdi [GWalkR](https://github.com/Kanaries/GWalkR)'a göz atabilirsiniz!
 
-# Getting Started
+# Başlarken
 
 <table>
 <thead>
@@ -69,18 +65,18 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 </tbody>
 </table>
 
-## Setup pygwalker
+## kurmak pygwalker
 
-Before using pygwalker, make sure to install the packages through the command line using pip or conda.
+Pygwalker'ı kullanmadan önce paketleri komut satırından pip veya conda kullanarak yüklediğinizden emin olun.
 
 ### pip
 
 ```bash
 pip install pygwalker
 ```
-> **Note**
+> **Not**
 > 
-> For an early trial, you can install with `pip install pygwalker --upgrade` to keep your version up to date with the latest release or even `pip install pygwaler --upgrade --pre` to obtain latest features and bug-fixes.
+> Erken deneme için, sürümünüzü en son sürümle güncel tutmak için `pip install pygwalker --upgrade` ile, hatta en son özellikleri ve hata düzeltmelerini elde etmek için `pip install pygwaler --upgrade --pre` ile kurulum yapabilirsiniz.
 
 ### Conda-forge
 ```bash
@@ -90,44 +86,44 @@ or
 ```bash
 mamba install -c conda-forge pygwalker
 ```
-See [conda-forge feedstock](https://github.com/conda-forge/pygwalker-feedstock) for more help.
+Daha fazla yardım için [conda-forge feedstock](https://github.com/conda-forge/pygwalker-feedstock) bakın.
 
 
-## Use pygwalker in Jupyter Notebook
+## Jupyter Notebook'ta pygwalker'ı kullanın
 
-### Quick Start
+### Hızlı başlangıç
 
-Import pygwalker and pandas to your Jupyter Notebook to get started.
+Başlamak için pygwalker ve pandas Jupyter Notebook'unuza aktarın.
 
 ```python    
 import pandas as pd
 import pygwalker as pyg
 ```
 
-You can use pygwalker without breaking your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
+Pygwalker'ı mevcut iş akışınızı bozmadan kullanabilirsiniz. Örneğin, dataframe şu şekilde yüklenmişken Graphic Walker'ı çağırabilirsiniz:
 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(df)
 ```
 
-### Better Practice
+### Daha İyi Uygulama
 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
-    spec="./chart_meta_0.json",    # this json file will save your chart state, you need to click save button in ui mannual when you finish a chart, 'autosave' will be supported in the future.
-    use_kernel_calc=True,          # set `use_kernel_calc=True`, pygwalker will use duckdb as computing engine, it support you explore bigger dataset(<=100GB).
+    spec="./chart_meta_0.json",    # bu json dosyası grafik durumunuzu kaydedecektir, bir grafiği bitirdiğinizde kullanıcı arayüzü kılavuzundaki kaydet düğmesine tıklamanız gerekir, 'otomatik kaydetme' gelecekte desteklenecektir
+    use_kernel_calc=True,          # `use_kernel_calc=True` ayarını yapın, pygwalker bilgi işlem motoru olarak duckdb'yi kullanacak, daha büyük veri kümesini keşfetmenizi destekleyecektir (<=100GB).
 )
 ```
 
-### Offline Example
+### Çevrimdışı Örnek
 
 * Notebook Code: [Click Here](https://github.com/Kanaries/pygwalker-offline-example)
 * Preview Notebook Html: [Click Here](https://pygwalker-public-bucket.s3.amazonaws.com/demo.html)
 
-### Online Example
+### Çevrimiçi Örnek
 
 * [Kaggle Code For New Pygwalker](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
 * [Kanaries Share page](https://kanaries.net/share/notebook/cwa8g22r6kg0#heading-0)
@@ -140,7 +136,7 @@ walker = pyg.walk(
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/1-8ms.gif) -->
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-0-light.gif)
 
-That's it. Now you have a Tableau-like user interface to analyze and visualize data by dragging and dropping variables.
+Bu kadar. Artık değişkenleri sürükleyip bırakarak verileri analiz etmek ve görselleştirmek için Tableau benzeri bir kullanıcı arayüzünüz var.
 
 <!-- ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/2-8ms.gif) -->
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-1-light.gif)
@@ -150,36 +146,40 @@ That's it. Now you have a Tableau-like user interface to analyze and visualize d
 [![Manually explore your data with a Tableau-like UI](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/drag-and-drop.gif)](https://docs.kanaries.net/graphic-walker/overview)
 -->
 
-Cool things you can do with Graphic Walker:
+Graphic Walker ile yapabileceğiniz harika şeyler:
 
-+ You can change the mark type into others to make different charts, for example, a line chart:
++ Çizgi grafiği gibi farklı grafikler oluşturmak için işaret türünü başka türlerle değiştirebilirsiniz:
+
 ![graphic walker line chart](https://user-images.githubusercontent.com/8137814/221894699-b9623304-4eb1-4051-b29d-ca4a913fb7c7.png)
 
 <!-- ![graphic walker line chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-line-01.png) -->
 <!-- ![graphic walker line chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen-timeseries.png) -->
 
 
-+ To compare different measures, you can create a concat view by adding more than one measure into rows/columns.
++ Farklı ölçüleri karşılaştırmak için satırlara/sütunlara birden fazla ölçü ekleyerek birleşik görünüm oluşturabilirsiniz.
+
 ![graphic walker area chart](https://user-images.githubusercontent.com/8137814/224550839-7b8a2193-d3e9-4c11-a19e-ad8e5ec19539.png)
 
 <!-- ![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-area-01.png) -->
 <!-- ![graphic walker area chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen2-timeseries-area.png) -->
 
 
-+ To make a facet view of several subviews divided by the value in dimension, put dimensions into rows or columns to make a facets view. The rules are similar to Tableau.
++ Boyuttaki değere bölünen çeşitli alt görünümlerden oluşan bir görünüm oluşturmak için boyutları satırlara veya sütunlara yerleştirerek bir görünüm görünümü oluşturun. Kurallar Tableau'ya benzer.
+
 ![graphic walker scatter chart](https://user-images.githubusercontent.com/8137814/221894480-b5ec5df2-d0bb-45bc-aa3d-6479920b6fe2.png)
 <!-- ![graphic walker scatter chart](https://docs-us.oss-us-west-1.aliyuncs.com/images/graphic-walker/gw-scatter-01.png) -->
 <!-- ![graphic walker scatter chart](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/fullscreen-scatter-3.png) -->
 
-+ You can view the data frame in a table and configure the analytic types and semantic types.
++ Veri çerçevesini bir tabloda görüntüleyebilir ve analitik türleri ile anlamsal türleri yapılandırabilirsiniz.
+
 ![page-data-view-light](https://user-images.githubusercontent.com/8137814/221895610-76165bc6-95ee-4567-a55b-41d47d3310eb.png)
 
 
-+ You can save the data exploration result to a local file
++ Veri araştırma sonucunu yerel bir dosyaya kaydedebilirsiniz
 
-For more detailed instructions, visit the [Graphic Walker GitHub page](https://github.com/Kanaries/graphic-walker).
+Daha ayrıntılı talimatlar için [Graphic Walker GitHub page](https://github.com/Kanaries/graphic-walker) ziyaret edin..
 
-## Tested Environments
+## Test Edilen Ortamlar
 
 - [x] Jupyter Notebook
 - [x] Google Colab
@@ -194,9 +194,9 @@ For more detailed instructions, visit the [Graphic Walker GitHub page](https://g
 - [x] DataCamp Workspace (Since version `0.1.4a0`)
 - [ ] ...feel free to raise an issue for more environments.
 
-## Configuration
+## Yapılandırma
 
-Since `pygwalker>=0.1.7a0`, we provide the ability to modify user-wide configuration either through the command line interface
+`pygwalker>=0.1.7a0` olduğundan, kullanıcı çapındaki yapılandırmayı komut satırı arayüzü aracılığıyla değiştirme olanağı sağlıyoruz
 ```bash
 $ pygwalker config   
 usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
@@ -257,11 +257,11 @@ have the same effect.
 
 # Resources
 
-+ Check out more resources about Graphic Walker on [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)
-+ We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis software that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [Kanaries website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
++ [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)'da Graphic Walker hakkında daha fazla kaynağa göz atın
++ Ayrıca, yapay zeka destekli otomasyonla veri düzenleme, keşif ve görselleştirme iş akışını yeniden tanımlayan Açık Kaynaklı, Otomatik keşif amaçlı veri analizi yazılımı olan [RATH](https://kanaries.net) üzerinde de çalışıyoruz. Daha fazla bilgi için [Kanaries web sitesine](https://kanaries.net) ve [RATH GitHub'a](https://github.com/Kanaries/Rath) göz atın!
 + [Use pygwalker to build visual analysis app in streamlit](https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit)
-+ If you encounter any issues and need support, join our [Slack](https://join.slack.com/t/kanaries-community/shared_invite/zt-1pcosgbua-E_GBPawQOI79C41dPDyyvw) or [Discord](https://discord.gg/Z4ngFWXz2U) channels.
-+ Share pygwalker on these social media platforms:
++ Herhangi bir sorunla karşılaşırsanız ve desteğe ihtiyacınız varsa [Slack](https://join.slack.com/t/kanaries-community/shared_invite/zt-1pcosgbua-E_GBPawQOI79C41dPDyyvw) veya [Discord](https://discord.gg/Z4ngFWXz2U) kanalları.
++ Pygwalker'ı şu sosyal medya platformlarında paylaşın:
 
 [![Reddit](https://img.shields.io/badge/share%20on-reddit-red?style=flat-square&logo=reddit)](https://reddit.com/submit?url=https://github.com/Kanaries/pygwalker&title=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-like%20UI)
 [![HackerNews](https://img.shields.io/badge/share%20on-hacker%20news-orange?style=flat-square&logo=ycombinator)](https://news.ycombinator.com/submitlink?u=https://github.com/Kanaries/pygwalker)

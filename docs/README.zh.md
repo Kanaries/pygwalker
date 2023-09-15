@@ -75,27 +75,46 @@ mamba install -c conda-forge pygwalker
 
 ## 在Jupyter Notebook中使用PyGWalker
 
-导入库
+### 快速开始
+
+在您的Jupyter Notebook中导入pygwalker和pandas来开始使用。
 
 ```python    
 import pandas as pd
 import pygwalker as pyg
 ```
 
-将dataframe 导入PyGWalker
+您可以在不中断现有工作流程的情况下使用pygwalker。例如，您可以通过记载你的DataFrame来调用Graphic Walker，就像这样：
 
 ```python
-df = pd.read_csv('./bike_sharing_dc.csv', parse_dates=['date'])
-gwalker = pyg.walk(df)
+df = pd.read_csv('./bike_sharing_dc.csv')
+walker = pyg.walk(df)
 ```
 
-使用Polars dataframe (需要 `pygwalker>=0.1.4.7a0`):
+### 更佳实践
 
 ```python
-import polars as pl
-df = pl.read_csv('./bike_sharing_dc.csv',try_parse_dates = True)
-gwalker = pyg.walk(df)
+df = pd.read_csv('./bike_sharing_dc.csv')
+walker = pyg.walk(
+    df,
+    spec="./chart_meta_0.json",    # 这个JSON文件将保存您的图表状态，当您完成一个图表时，需要在UI界面上手动点击保存按钮。在未来，将支持“自动保存”。
+    use_kernel_calc=True,          # 如果设置`use_kernel_calc=True` ，pygwalker 将使用duckdb作为计算引擎，它支持您探索更大的数据集（<=100GB）。
+)
 ```
+
+### 离线示例
+
+* Notebook Code: [Click Here](https://github.com/Kanaries/pygwalker-offline-example)
+* Preview Notebook Html: [Click Here](https://pygwalker-public-bucket.s3.amazonaws.com/demo.html)
+
+### 在线示例
+
+* [Kaggle Code For New Pygwalker](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
+* [Kanaries Share page](https://kanaries.net/share/notebook/cwa8g22r6kg0#heading-0)
+* [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test)
+* [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)
+
+***
 
 大功告成。现在你可以使用拖拉拽，直接操作dataframe，创建可视化视图，完成数据分析：
 
