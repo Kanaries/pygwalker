@@ -38,7 +38,7 @@ def hack_streamlit_server():
             tornado_obj = obj
             break
 
-    tornado_obj.add_handlers(".*", [(r"/_pygwalker/comm/(.+)", PygwalkerHandler)])
+    tornado_obj.add_handlers(".*", [(r"/_stcore/_pygwalker/comm/(.+)", PygwalkerHandler)])
 
 
 class StreamlitCommunication(BaseCommunication):
