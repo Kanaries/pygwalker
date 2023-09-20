@@ -112,7 +112,14 @@ const initJupyterCommunication = (gid: string) => {
 }
 
 const initStreamlitCommunication = (gid: string) => {
-    const url = `/_stcore/_pygwalker/comm/${gid}`
+    // temporary solution in streamlit could
+    const domain = window.document.location.host.split(".").slice(-2).join('.');
+    let url = "";
+    if (domain === "streamlit.app") {
+        url = `/~/+/_stcore/_pygwalker/comm/${gid}`
+    } else {
+        url = `/_stcore/_pygwalker/comm/${gid}`
+    }
 
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
         const timer = setTimeout(() => {
