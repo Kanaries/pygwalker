@@ -12,7 +12,7 @@ import { IAppProps } from './interfaces';
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernel } from './dataSource';
 
 import commonStore from "./store/common";
-import initCommunication from "./utils/communication";
+import { initJupyterCommunication, initStreamlitCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
@@ -117,7 +117,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     const uploadTool = getShareTool(setShareModalOpen);
 
     const tools = [exportTool];
-    if (props.env === "jupyter_widgets") {
+    if ((props.env === "jupyter_widgets" || props.env === "streamlit") && props.useSaveTool) {
         tools.push(saveTool);
     }
     if (checkUploadPrivacy() && commonStore.showCloudTool) {
@@ -143,7 +143,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
 })
 
 const initOnJupyter = async(props: IAppProps) => {
-    const comm = initCommunication(props.id);
+    const comm = initJupyterCommunication(props.id);
     comm.registerEndpoint("postData", postDataService);
     comm.registerEndpoint("finishData", finishDataService);
     communicationStore.setComm(comm);
@@ -158,11 +158,31 @@ const initOnJupyter = async(props: IAppProps) => {
     hidePreview(props.id);
 }
 
+const initOnStreamlit = async(props: IAppProps) => {
+    const comm = initStreamlitCommunication(props.id);
+    communicationStore.setComm(comm);
+    const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
+    props.visSpec = visSpecResp["data"]["visSpec"];
+    if (props.useKernelCalc) {
+        await initDslParser();
+    }
+}
+
 const defaultInit = async(props: IAppProps) => {}
 
 
 function GWalker(props: IAppProps, id: string) {
-    const preRender = props.env === "jupyter_widgets" ? initOnJupyter : defaultInit;
+    let preRender = defaultInit;
+    switch(props.env) {
+        case "jupyter_widgets":
+            preRender = initOnJupyter;
+            break;
+        case "streamlit":
+            preRender = initOnStreamlit;
+            break;
+        default:
+            preRender = defaultInit;
+    }
 
     preRender(props).then(() => {
         ReactDOM.render(

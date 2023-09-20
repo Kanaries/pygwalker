@@ -46,6 +46,7 @@ class PygWalker:
         use_preview: bool,
         store_chart_data: bool,
         use_kernel_calc: bool,
+        use_save_tool: bool,
         **kwargs
     ):
         if gid is None:
@@ -68,6 +69,7 @@ class PygWalker:
         self.store_chart_data = store_chart_data
         self._init_spec(spec, self.field_specs)
         self.use_kernel_calc = use_kernel_calc
+        self.use_save_tool = use_save_tool
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
@@ -99,6 +101,22 @@ class PygWalker:
 
     def display_on_streamlit(self):
         display_on_streamlit(self.to_html())
+
+    def get_html_on_streamlit_v2(self) -> str:
+        """
+        The streamlit version with communication is currently only supported in dev mode.
+        """
+        from pygwalker.communications.streamlit_comm import StreamlitCommunication
+
+        comm = StreamlitCommunication(str(self.gid))
+        self._init_callback(comm)
+        if self.use_kernel_calc:
+            data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
+            props = self._get_props("streamlit", data_source)
+        else:
+            props = self._get_props("streamlit")
+        html = self._get_render_iframe(props, False)
+        return html
 
     def display_on_convert_html(self):
         """
@@ -257,7 +275,7 @@ class PygWalker:
             raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
         return self._chart_map[chart_name]
 
-    def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool):
+    def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool = None):
         upload_tool = BatchUploadDatasToolOnWidgets(comm)
 
         def reuqest_data_callback(_):
@@ -299,11 +317,15 @@ class PygWalker:
             )
             return {"shareUrl": share_url}
 
-        comm.register("request_data", reuqest_data_callback)
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
-        comm.register("update_spec", update_spec)
-        comm.register("save_chart", save_chart_endpoint)
-        comm.register("upload_charts", upload_charts)
+
+        if self.use_save_tool:
+            comm.register("update_spec", update_spec)
+            comm.register("save_chart", save_chart_endpoint)
+            comm.register("request_data", reuqest_data_callback)
+
+        if self.show_cloud_tool:
+            comm.register("upload_charts", upload_charts)
 
         if self.use_kernel_calc:
             def _get_datas(data: Dict[str, Any]):
@@ -345,10 +367,14 @@ class PygWalker:
             "showCloudTool": self.show_cloud_tool,
             "needInitChart": not (self.store_chart_data and self._chart_map),
             "useKernelCalc": self.use_kernel_calc,
+            "useSaveTool": self.use_save_tool,
             **self.other_props,
         }
 
-    def _get_render_iframe(self, props: Dict[str, Any]) -> str:
+    def _get_render_iframe(self, props: Dict[str, Any], return_iframe: bool = True) -> str:
         html = render_gwalker_html(self.gid, props)
-        srcdoc = m_html.escape(html)
-        return render_gwalker_iframe(self.gid, srcdoc)
+        if return_iframe:
+            srcdoc = m_html.escape(html)
+            return render_gwalker_iframe(self.gid, srcdoc)
+        else:
+            return html
