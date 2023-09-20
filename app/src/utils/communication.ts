@@ -113,7 +113,7 @@ const initJupyterCommunication = (gid: string) => {
 
 const initStreamlitCommunication = (gid: string) => {
     // temporary solution in streamlit could
-    const domain = window.document.location.host.split(".").slice(-2).join('.');
+    const domain = window.parent.document.location.host.split(".").slice(-2).join('.');
     let url = "";
     if (domain === "streamlit.app") {
         url = `/~/+/_stcore/_pygwalker/comm/${gid}`
