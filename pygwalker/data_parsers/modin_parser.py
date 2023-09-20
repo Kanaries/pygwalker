@@ -9,8 +9,7 @@ from .base import (
     BaseDataFrameDataParser,
     FieldSpec,
     is_temporal_field,
-    is_geo_field,
-    format_temporal_string
+    is_geo_field
 )
 from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
 
@@ -47,10 +46,6 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         return df
 
     def _preprocess_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
-        for column in self.raw_fields:
-            if column["semanticType"] == "temporal":
-                column_name = column["fid"]
-                df[column_name] = df[column_name].apply(format_temporal_string)
         return df
 
     def _infer_semantic(self, s: mpd.Series, field_name: str):

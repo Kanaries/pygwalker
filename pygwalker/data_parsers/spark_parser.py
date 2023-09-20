@@ -4,14 +4,12 @@ import logging
 import io
 
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import udf
-from pyspark.sql.types import StringType
 import sqlglot
 
 from .base import BaseDataParser
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.services.fname_encodings import fname_encode, rename_columns
-from pygwalker.data_parsers.base import FieldSpec, format_temporal_string
+from pygwalker.data_parsers.base import FieldSpec
 
 logger = logging.getLogger(__name__)
 
@@ -60,9 +58,4 @@ class SparkDataFrameDataParser(BaseDataParser):
         return df.toDF(*new_columns)
 
     def _preprocess_dataframe(self, df: DataFrame) -> DataFrame:
-        python_udf = udf(format_temporal_string, StringType())
-        for column in self.raw_fields:
-            if column["semanticType"] == "temporal":
-                column_name = column["fid"]
-                df = df.withColumn(column_name, python_udf(df[column_name]))
         return df
