@@ -24,7 +24,7 @@ const getCurrentJupyterEnv = () => {
     return "jupyter";
 }
 
-const initCommunication = (gid: string) => {
+const initJupyterCommunication = (gid: string) => {
     const jupyterEnv = getCurrentJupyterEnv();
     const document = window.parent.document;
     const htmlText = document.getElementsByClassName(`hacker-comm-pyg-html-store-${gid}`)[0].childNodes[1] as HTMLInputElement;
@@ -111,5 +111,41 @@ const initCommunication = (gid: string) => {
     }
 }
 
+const initStreamlitCommunication = (gid: string) => {
+    const url = `/_pygwalker/comm/${gid}`
+
+    const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
+        const timer = setTimeout(() => {
+            throw new Error("timeout");
+        }, timeout);
+        try {
+            return (await sendMsgAsync(action, data)).json();
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    const sendMsgAsync = (action: string, data: any) => {
+        const rid = uuidv4();
+        return fetch(
+            url,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ gid, rid, action, data }),
+
+            }
+        )
+    }
+
+    const registerEndpoint = (_: string, __: (data: any) => any) => {}
+
+    return {
+        sendMsg,
+        registerEndpoint,
+        sendMsgAsync,
+    }
+}
+
 export type { ICommunication };
-export default initCommunication;
+export { initJupyterCommunication, initStreamlitCommunication };

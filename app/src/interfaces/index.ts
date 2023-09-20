@@ -13,6 +13,7 @@ export interface IAppProps extends IGWProps {
     showCloudTool: boolean;
     needInitChart: boolean;
     useKernelCalc: boolean;
+    useSaveTool: boolean;
 }
 
 export interface IDataSourceProps {
