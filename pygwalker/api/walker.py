@@ -1,10 +1,11 @@
-from typing import Union, Dict, Optional, Any
+from typing import Union, Dict, Optional
 import inspect
 
 from typing_extensions import Literal
 
 from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
+from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.utils.execute_env_check import check_convert
@@ -12,7 +13,7 @@ from pygwalker.services.global_var import GlobalVarManager
 
 
 def walk(
-    df: Union[DataFrame, Any],
+    dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
     env: Literal['Jupyter', 'Streamlit', 'JupyterWidget'] = 'JupyterWidget',
@@ -30,7 +31,7 @@ def walk(
     """Walk through pandas.DataFrame df with Graphic Walker
 
     Args:
-        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
@@ -53,7 +54,7 @@ def walk(
 
     walker = PygWalker(
         gid,
-        df,
+        dataset,
         fieldSpecs,
         spec,
         source_invoke_code,
@@ -63,7 +64,7 @@ def walk(
         bool(GlobalVarManager.kanaries_api_key),
         use_preview,
         store_chart_data,
-        use_kernel_calc,
+        isinstance(dataset, Connector) or use_kernel_calc,
         True,
         **kwargs
     )

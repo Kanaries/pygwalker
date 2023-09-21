@@ -49,6 +49,11 @@ class BaseDataParser(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """get records"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def to_csv(self) -> io.BytesIO:
         """get records"""
         raise NotImplementedError
@@ -100,6 +105,9 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
 
     def _preprocess_dataframe(self, df: DataFrame) -> DataFrame:
         """preprocess dataframe"""
+        raise NotImplementedError
+
+    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
 

@@ -48,6 +48,9 @@ class SparkDataFrameDataParser(BaseDataParser):
         result_df = self.spark.sql(sql)
         return [row.asDict() for row in result_df.collect()]
 
+    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+        return []
+
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
         self.origin_df.toPandas().to_csv(content, index=False)

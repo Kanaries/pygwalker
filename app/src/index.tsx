@@ -9,7 +9,7 @@ import { IDataSetInfo, IMutField, IRow, IGWHandler } from '@kanaries/graphic-wal
 import Options from './components/options';
 import { IAppProps } from './interfaces';
 
-import { loadDataSource, postDataService, finishDataService, getDatasFromKernel } from './dataSource';
+import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
 import commonStore from "./store/common";
 import { initJupyterCommunication, initStreamlitCommunication } from "./utils/communication";
@@ -128,6 +128,14 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         exclude: ["export_code"],
         extra: tools
     }
+
+    let computationCallback;
+    if (props.useKernelCalc && props.parseDslType === "client") {
+        computationCallback = getDatasFromKernelBySql;
+    }
+    if (props.useKernelCalc && props.parseDslType === "server") {
+        computationCallback = getDatasFromKernelByPayload;
+    }
   
     return (
         <React.StrictMode>
@@ -135,7 +143,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
             <Notification />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
             <ShareModal gwRef={gwRef} storeRef={storeRef} open={shareModalOpen} setOpen={setShareModalOpen} />
-            <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={props.useKernelCalc ? getDatasFromKernel : undefined} />
+            <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={computationCallback} />
             <InitModal />
             <Options {...props} toolbar={toolbarConfig} />
         </React.StrictMode>

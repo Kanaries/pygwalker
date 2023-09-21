@@ -8,6 +8,7 @@ import ipywidgets
 
 from pygwalker_utils.config import get_config
 from pygwalker._typing import DataFrame
+from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html, display_on_streamlit
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.global_var import GlobalVarManager
@@ -35,7 +36,7 @@ class PygWalker:
     def __init__(
         self,
         gid: Optional[Union[int, str]],
-        df: DataFrame,
+        dataset: Union[DataFrame, Connector],
         field_specs: Dict[str, Any],
         spec: str,
         source_invoke_code: str,
@@ -53,9 +54,9 @@ class PygWalker:
             self.gid = GlobalVarManager.get_global_gid()
         else:
             self.gid = gid
-        self.df_parser = get_parser(df, use_kernel_calc, field_specs)
-        self.origin_data_source = self.df_parser.to_records(500 if use_kernel_calc else None)
-        self.field_specs = self.df_parser.raw_fields
+        self.data_parser = get_parser(dataset, use_kernel_calc, field_specs)
+        self.origin_data_source = self.data_parser.to_records(500 if use_kernel_calc else None)
+        self.field_specs = self.data_parser.raw_fields
         self.spec = spec
         self.source_invoke_code = source_invoke_code
         self.hidedata_source_config = hidedata_source_config
@@ -70,6 +71,7 @@ class PygWalker:
         self._init_spec(spec, self.field_specs)
         self.use_kernel_calc = use_kernel_calc
         self.use_save_tool = use_save_tool
+        self.parse_dsl_type = "server" if isinstance(dataset, Connector) else "client"
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
@@ -258,7 +260,7 @@ class PygWalker:
         }
 
         chart_base64 = chart.single_chart.split(",")[1]
-        dataset_content = self.df_parser.to_csv()
+        dataset_content = self.data_parser.to_csv()
         if dataset_content.__sizeof__() > 100 * 1024 * 1024:
             raise CsvFileTooLargeError("dataset too large(>100MB), currently unable to upload, the next version will optimize it.")
         return create_shared_chart(
@@ -317,6 +319,17 @@ class PygWalker:
             )
             return {"shareUrl": share_url}
 
+        def _get_datas(data: Dict[str, Any]):
+            sql = data["sql"].encode('utf-8').decode('unicode_escape')
+            return {
+                "datas": self.data_parser.get_datas_by_sql(sql)
+            }
+
+        def _get_datas_by_payload(data: Dict[str, Any]):
+            return {
+                "datas": self.data_parser.get_datas_by_payload(data["payload"])
+            }
+
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
 
         if self.use_save_tool:
@@ -328,12 +341,8 @@ class PygWalker:
             comm.register("upload_charts", upload_charts)
 
         if self.use_kernel_calc:
-            def _get_datas(data: Dict[str, Any]):
-                sql = data["sql"].encode('utf-8').decode('unicode_escape')
-                return {
-                    "datas": self.df_parser.get_datas_by_sql(sql)
-                }
             comm.register("get_datas", _get_datas)
+            comm.register("get_datas_by_payload", _get_datas_by_payload)
 
     def _get_props(
         self,
@@ -368,6 +377,7 @@ class PygWalker:
             "needInitChart": not (self.store_chart_data and self._chart_map),
             "useKernelCalc": self.use_kernel_calc,
             "useSaveTool": self.use_save_tool,
+            "parseDslType": self.parse_dsl_type,
             **self.other_props,
         }
 

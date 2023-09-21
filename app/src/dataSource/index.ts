@@ -78,11 +78,16 @@ export function finishDataService(msg: any) {
     )
 }
 
-export async function getDatasFromKernel(payload: IDataQueryPayload) {
+export async function getDatasFromKernelBySql(payload: IDataQueryPayload) {
     const sql = parser_dsl_with_table(
         "pygwalker_mid_table",
         JSON.stringify(payload)
     );
     const result = await communicationStore.comm?.sendMsg("get_datas", {"sql": sql});
+    return result["data"]["datas"] as IRow[];
+}
+
+export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
+    const result = await communicationStore.comm?.sendMsg("get_datas_by_payload", {payload});
     return result["data"]["datas"] as IRow[];
 }

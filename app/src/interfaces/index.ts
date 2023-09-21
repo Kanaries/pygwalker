@@ -14,6 +14,7 @@ export interface IAppProps extends IGWProps {
     needInitChart: boolean;
     useKernelCalc: boolean;
     useSaveTool: boolean;
+    parseDslType: "server" | "client";
 }
 
 export interface IDataSourceProps {
