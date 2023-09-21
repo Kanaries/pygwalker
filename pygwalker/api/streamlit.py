@@ -1,10 +1,11 @@
-from typing import Union, Dict, Optional, Any
+from typing import Union, Dict, Optional
 
 from typing_extensions import Literal
 
 from .pygwalker import PygWalker
 from pygwalker.communications.streamlit_comm import hack_streamlit_server
 from pygwalker.data_parsers.base import FieldSpec
+from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 
 
@@ -14,7 +15,7 @@ def init_streamlit_comm():
 
 
 def get_streamlit_html(
-    df: Union[DataFrame, Any],
+    dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
@@ -29,7 +30,7 @@ def get_streamlit_html(
     """Get pygwalker html render to streamlit
 
     Args:
-        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
@@ -46,7 +47,7 @@ def get_streamlit_html(
 
     walker = PygWalker(
         gid,
-        df,
+        dataset,
         fieldSpecs,
         spec,
         "",
@@ -56,7 +57,7 @@ def get_streamlit_html(
         False,
         False,
         False,
-        use_kernel_calc,
+        isinstance(dataset, Connector) or use_kernel_calc,
         debug,
         **kwargs
     )
