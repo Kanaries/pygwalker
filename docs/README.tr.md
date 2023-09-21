@@ -38,32 +38,9 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 
 # Başlarken
 
-<table>
-<thead>
-  <tr>
-    <th>
-      <a href="https://www.kaggle.com/asmdef/pygwalker-test">Run in Kaggle</a>
-    </th>
-    <th>
-      <a href="https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing">Run in Colab</a>
-    </th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>
-      <a href="https://www.kaggle.com/asmdef/pygwalker-test">
-        <img src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/kaggle.png" alt="Kaggle Code" />
-      </a>
-    </td>
-    <td>
-      <a href="https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing">
-        <img src="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/colab.png" alt="Google Colab" />
-      </a>
-    </td>
-</tr>
-</tbody>
-</table>
+| [Run in Kaggle](https://www.kaggle.com/asmdef/pygwalker-test) | [Run in Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) |
+|--------------------------------------------------------------|--------------------------------------------------------|
+| [![Kaggle Code](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/kaggle.png)](https://www.kaggle.com/asmdef/pygwalker-test) | [![Google Colab](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/colab.png)](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) |
 
 ## kurmak pygwalker
 
