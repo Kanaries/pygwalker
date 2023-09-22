@@ -13,6 +13,7 @@ import sqlglot
 from .base import BaseDataParser
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -60,10 +61,13 @@ class DatabaseDataParser(BaseDataParser):
     }
 
     def __init__(self, conn: Connector, _: bool, field_specs: Dict[str, FieldSpec]):
-        self.conn = conn
+        self.conn = conn        
         self.example_pandas_df = pd.DataFrame(
             self.conn.query_datas(f"SELECT * FROM {self.conn.view_name} LIMIT 1000")
         )
+        for column in self.example_pandas_df.columns:
+            if any(isinstance(val, Decimal) for val in self.example_pandas_df[column]):
+                self.example_pandas_df[column] = self.example_pandas_df[column].astype(float)
         self.field_specs = field_specs
 
     @property

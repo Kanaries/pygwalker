@@ -15,7 +15,7 @@ sql = "SELECT COUNT(1) total FROM pygwalker_mid_table"
 sql_result = [{"total": 5}]
 raw_fields_result = [
     {'fid': 'GW_170Q6OGL68', 'name': 'name', 'semanticType': 'nominal', 'analyticType': 'dimension'},
-    {'fid': 'GW_7NL4CV2YF5C', 'name': 'count', 'semanticType': 'ordinal', 'analyticType': 'dimension'},
+    {'fid': 'GW_7NL4CV2YF5C', 'name': 'count', 'semanticType': 'quantitative', 'analyticType': 'dimension'},
     {'fid': 'GW_134F5I1A28', 'name': 'date', 'semanticType': 'temporal', 'analyticType': 'dimension'}
 ]
 to_records_result = [{'GW_170Q6OGL68': 'padnas', 'GW_7NL4CV2YF5C': 3, 'GW_134F5I1A28': '2022-01-01'}]

@@ -125,7 +125,7 @@ def is_geo_field(field_name: str) -> bool:
     field_name = field_name.lower().strip(" .")
     return field_name in {
         "latitude", "longitude",
-        "lat", "long",
+        "lat", "long", "lon"
     }
 
 
