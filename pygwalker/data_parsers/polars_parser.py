@@ -49,13 +49,13 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         example_value = s[0]
         kind = s.dtype
 
-        if (kind in pl.NUMERIC_DTYPES and v_cnt > 16) or is_geo_field(field_name):
+        if (kind in pl.NUMERIC_DTYPES and v_cnt > 2) or is_geo_field(field_name):
             return "quantitative"
         if kind in pl.TEMPORAL_DTYPES or is_temporal_field(str(example_value)):
             return "temporal"
-        if kind in [pl.Boolean, pl.Object, pl.Utf8, pl.Categorical, pl.Struct, pl.List] or v_cnt <= 2:
-            return "nominal"
-        return "ordinal"
+        if kind in [pl.Int8, pl.Int166, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64]:
+            return "ordinal"
+        return "nominal"
 
     def _infer_analytic(self, s: pl.Series, field_name: str):
         kind = s.dtype
