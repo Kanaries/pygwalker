@@ -115,7 +115,7 @@ def is_temporal_field(value: str) -> bool:
     """check if field is temporal"""
     try:
         arrow.get(value)
-    except arrow.parser.ParserError:
+    except:
         return False
     return True
 
