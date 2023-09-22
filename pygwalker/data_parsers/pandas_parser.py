@@ -46,14 +46,13 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         v_cnt = len(s.value_counts())
         example_value = s[0]
         kind = s.dtype.kind
-
-        if (kind in "fcmiu" and v_cnt > 16) or is_geo_field(field_name):
+        if (kind in "fcmiu" and v_cnt > 2) or is_geo_field(field_name):
             return "quantitative"
         if kind in "M" or (kind in "bOSUV" and is_temporal_field(str(example_value))):
             return 'temporal'
-        if kind in "bOSUV" or v_cnt <= 2:
-            return "nominal"
-        return "ordinal"
+        if kind in "iu":
+            return "ordinal"
+        return "nominal"
 
     def _infer_analytic(self, s: pd.Series, field_name: str):
         kind = s.dtype.kind
