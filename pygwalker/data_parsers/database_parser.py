@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 from functools import lru_cache
+from decimal import Decimal
 import logging
 import io
 
@@ -13,7 +14,6 @@ import sqlglot
 from .base import BaseDataParser
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
-from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class DatabaseDataParser(BaseDataParser):
     }
 
     def __init__(self, conn: Connector, _: bool, field_specs: Dict[str, FieldSpec]):
-        self.conn = conn        
+        self.conn = conn
         self.example_pandas_df = pd.DataFrame(
             self.conn.query_datas(f"SELECT * FROM {self.conn.view_name} LIMIT 1000")
         )
