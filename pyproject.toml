@@ -41,6 +41,11 @@ notebook = [
     "jupyter-server<=2.5.0",
     "ipywidgets<8.0.0,>7.0.0"
 ]
+snowflake = [
+    "SQLAlchemy==1.4.49",
+    "snowflake-sqlalchemy==1.5.0",
+    "pyarrow==10.0.1"
+]
 labv4 = [
     "jupyter-client>7.4.9",
     "jupyter-server>2.5.0",
