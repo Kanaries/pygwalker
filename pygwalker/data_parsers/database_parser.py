@@ -25,20 +25,12 @@ class Connector:
         self.engine = self._get_engine()
         self.view_sql = view_sql
 
-    def _format_sql(self, sql: str) -> str:
-        sub_query = exp.Subquery(
-            this=sqlglot.parse(self.view_sql)[0],
-            alias=self.view_name
-        )
-        ast = sqlglot.parse(sql)[0]
-        ast.args["from"].this.replace(sub_query)
-        return str(ast)
-
     def _get_engine(self) -> Engine:
-        return create_engine(self.url)
+        engine = create_engine(self.url)
+        engine.dialect.requires_name_normalize = False
+        return engine
 
     def query_datas(self, sql: str) -> List[Dict[str, Any]]:
-        sql = self._format_sql(sql)
         with self.engine.connect() as connection:
             return [
                 dict(item)
@@ -48,10 +40,6 @@ class Connector:
     @property
     def dialect_name(self) -> str:
         return self.engine.dialect.name
-
-    @property
-    def view_name(self) -> str:
-        return "pygwalker_temp_view"
 
 
 class DatabaseDataParser(BaseDataParser):
@@ -63,12 +51,24 @@ class DatabaseDataParser(BaseDataParser):
     def __init__(self, conn: Connector, _: bool, field_specs: Dict[str, FieldSpec]):
         self.conn = conn
         self.example_pandas_df = pd.DataFrame(
-            self.conn.query_datas(f"SELECT * FROM {self.conn.view_name} LIMIT 1000")
+            self.conn.query_datas(self._format_sql("SELECT * FROM tmp LIMIT 1000"))
         )
         for column in self.example_pandas_df.columns:
             if any(isinstance(val, Decimal) for val in self.example_pandas_df[column]):
                 self.example_pandas_df[column] = self.example_pandas_df[column].astype(float)
         self.field_specs = field_specs
+
+    def _format_sql(self, sql: str) -> str:
+        sqlglot_dialect_name = self.sqlglot_dialect_map.get(self.conn.dialect_name, self.conn.dialect_name)
+        sql = sqlglot.transpile(sql, read="duckdb", write=sqlglot_dialect_name)[0]
+        sub_query = exp.Subquery(
+            this=sqlglot.parse(self.conn.view_sql)[0],
+            alias="temp_view_name"
+        )
+        ast = sqlglot.parse(sql, read=sqlglot_dialect_name)[0]
+        ast.args["from"].this.replace(sub_query)
+        sql = ast.sql(sqlglot_dialect_name)
+        return sql
 
     @property
     @lru_cache()
@@ -88,13 +88,10 @@ class DatabaseDataParser(BaseDataParser):
         return df.to_dict(orient='records')
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-        sql = get_sql_from_payload(self.conn.view_name, payload, 0)
-        sqlglot_dialect_name = self.sqlglot_dialect_map.get(
-            self.conn.dialect_name,
-            self.conn.dialect_name
-        )
-        sql = sqlglot.transpile(sql, read="duckdb", write=sqlglot_dialect_name)[0]
-        return self.conn.query_datas(sql)
+        sql = get_sql_from_payload("temp_view_name", payload)
+        sql = self._format_sql(sql)
+        result = self.conn.query_datas(sql)
+        return result
 
     def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
         return []
