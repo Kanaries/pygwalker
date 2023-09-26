@@ -14,6 +14,7 @@ import sqlglot
 from .base import BaseDataParser
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
+from pygwalker.utils.custom_sqlglot import DuckdbDialect
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class DatabaseDataParser(BaseDataParser):
 
     def _format_sql(self, sql: str) -> str:
         sqlglot_dialect_name = self.sqlglot_dialect_map.get(self.conn.dialect_name, self.conn.dialect_name)
-        sql = sqlglot.transpile(sql, read="duckdb", write=sqlglot_dialect_name)[0]
+        sql = sqlglot.transpile(sql, read=DuckdbDialect, write=sqlglot_dialect_name)[0]
         sub_query = exp.Subquery(
             this=sqlglot.parse(self.conn.view_sql)[0],
             alias="temp_view_name"
