@@ -51,7 +51,9 @@ const initJupyterCommunication = (gid: string) => {
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
         const rid = uuidv4();
         const promise = new Promise<any>((resolve, reject) => {
-            sendMsgAsync(action, data, rid);
+            setTimeout(() => {
+                sendMsgAsync(action, data, rid);
+            }, 0);
             setTimeout(() => {
                 reject(new Error("get result timeout"))
             }, timeout);
