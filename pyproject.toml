@@ -25,7 +25,7 @@ dependencies = [
     "requests",
     "arrow",
     "sqlalchemy",
-    "gw_dsl_parser==0.1.6a1"
+    "gw_dsl_parser==0.1.6a4"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
