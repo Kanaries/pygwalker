@@ -51,25 +51,36 @@ class DatabaseDataParser(BaseDataParser):
 
     def __init__(self, conn: Connector, _: bool, field_specs: Dict[str, FieldSpec]):
         self.conn = conn
-        self.example_pandas_df = pd.DataFrame(
-            self.conn.query_datas(self._format_sql("SELECT * FROM tmp LIMIT 1000"))
-        )
-        for column in self.example_pandas_df.columns:
-            if any(isinstance(val, Decimal) for val in self.example_pandas_df[column]):
-                self.example_pandas_df[column] = self.example_pandas_df[column].astype(float)
+        self.example_pandas_df = self._get_example_pandas_df()
         self.field_specs = field_specs
+
+    def _get_example_pandas_df(self) -> pd.DataFrame:
+        sql = self._format_sql(f"SELECT * FROM {self.placeholder_table_name} LIMIT 1000")
+        example_df = pd.DataFrame(self.conn.query_datas(sql))
+        for column in example_df.columns:
+            if any(isinstance(val, Decimal) for val in example_df[column]):
+                example_df[column] = example_df[column].astype(float)
+        return example_df
 
     def _format_sql(self, sql: str) -> str:
         sqlglot_dialect_name = self.sqlglot_dialect_map.get(self.conn.dialect_name, self.conn.dialect_name)
         sql = sqlglot.transpile(sql, read=DuckdbDialect, write=sqlglot_dialect_name)[0]
+
         sub_query = exp.Subquery(
             this=sqlglot.parse(self.conn.view_sql)[0],
             alias="temp_view_name"
         )
         ast = sqlglot.parse(sql, read=sqlglot_dialect_name)[0]
-        ast.args["from"].this.replace(sub_query)
+        for from_exp in ast.find_all(exp.From):
+            if str(from_exp.this) == self.placeholder_table_name:
+                from_exp.this.replace(sub_query)
+
         sql = ast.sql(sqlglot_dialect_name)
         return sql
+
+    @property
+    def placeholder_table_name(self) -> str:
+        return "___pygwalker_temp_view_name___"
 
     @property
     @lru_cache()
@@ -89,7 +100,7 @@ class DatabaseDataParser(BaseDataParser):
         return df.to_dict(orient='records')
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-        sql = get_sql_from_payload("temp_view_name", payload)
+        sql = get_sql_from_payload(self.placeholder_table_name, payload)
         sql = self._format_sql(sql)
         result = self.conn.query_datas(sql)
         return result
