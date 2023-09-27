@@ -42,6 +42,7 @@ notebook = [
     "ipywidgets<8.0.0,>7.0.0"
 ]
 snowflake = [
+    "pandas",
     "SQLAlchemy==1.4.49",
     "snowflake-sqlalchemy==1.5.0",
     "pyarrow==10.0.1"
