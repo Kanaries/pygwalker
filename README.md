@@ -34,15 +34,15 @@
 
 **PyGWalker** (pronounced like "Pig Walker", just for fun) is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It integrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
      
-Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
+Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
 > If you prefer using R, you can check out [GWalkR](https://github.com/Kanaries/GWalkR) now!
 
 # Getting Started
 
-| [Run in Kaggle](https://www.kaggle.com/asmdef/pygwalker-test) | [Run in Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) |
+| [Run in Kaggle](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo) | [Run in Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) |
 |--------------------------------------------------------------|--------------------------------------------------------|
-| [![Kaggle Code](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/kaggle.png)](https://www.kaggle.com/asmdef/pygwalker-test) | [![Google Colab](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/colab.png)](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) |
+| [![Kaggle Code](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/kaggle.png)](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo) | [![Google Colab](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/colab.png)](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) |
 
 ## Setup pygwalker
 
@@ -86,38 +86,13 @@ df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(df)
 ```
 
-### Better Practice
-
-```python
-df = pd.read_csv('./bike_sharing_dc.csv')
-walker = pyg.walk(
-    df,
-    spec="./chart_meta_0.json",    # this json file will save your chart state, you need to click save button in ui mannual when you finish a chart, 'autosave' will be supported in the future.
-    use_kernel_calc=True,          # set `use_kernel_calc=True`, pygwalker will use duckdb as computing engine, it support you explore bigger dataset(<=100GB).
-)
-```
-
-### Offline Example
-
-* Notebook Code: [Click Here](https://github.com/Kanaries/pygwalker-offline-example)
-* Preview Notebook Html: [Click Here](https://pygwalker-public-bucket.s3.amazonaws.com/demo.html)
-
-### Online Example
-
-* [Kaggle Code For New Pygwalker](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
-* [Kanaries Share page](https://kanaries.net/share/notebook/cwa8g22r6kg0#heading-0)
-* [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test)
-* [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)
-
-***
-
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-0-light.gif)
 
-That's it. Now you have a Tableau-like user interface to analyze and visualize data by dragging and dropping variables.
+That's it. Now you have a interactive UI to analyze and visualize data with simple drag-and-drop operations.
 
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-1-light.gif)
 
-Cool things you can do with Graphic Walker:
+Cool things you can do with PyGwalker:
 
 + You can change the mark type into others to make different charts, for example, a line chart:
 ![graphic walker line chart](https://user-images.githubusercontent.com/8137814/221894699-b9623304-4eb1-4051-b29d-ca4a913fb7c7.png)
@@ -135,6 +110,73 @@ Cool things you can do with Graphic Walker:
 + You can save the data exploration result to a local file
 
 For more detailed instructions, visit the [Graphic Walker GitHub page](https://github.com/Kanaries/graphic-walker).
+
+### Better Practice
+There are some important parameters you should know when using pygwalker: 
++ `spec`: for save/load chart config (json string or file path)
++ `use_kernel_calc`: for using duckdb as computing engine which allows you to handle larger dataset faster in your local machine.
+
+```python
+df = pd.read_csv('./bike_sharing_dc.csv')
+walker = pyg.walk(
+    df,
+    spec="./chart_meta_0.json",    # this json file will save your chart state, you need to click save button in ui mannual when you finish a chart, 'autosave' will be supported in the future.
+    use_kernel_calc=True,          # set `use_kernel_calc=True`, pygwalker will use duckdb as computing engine, it support you explore bigger dataset(<=100GB).
+)
+```
+
+### Example in local notebook
+
+* Notebook Code: [Click Here](https://github.com/Kanaries/pygwalker-offline-example)
+* Preview Notebook Html: [Click Here](https://pygwalker-public-bucket.s3.amazonaws.com/demo.html)
+
+### Example in cloud notebook
+
+* [Kanaries Share page](https://kanaries.net/share/notebook/cwa8g22r6kg0#heading-0)
+* [Use PyGWalker in Kaggle](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
+* [Use PyGWalker in Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)
+
+## Use pygwalker in Streamlit
+Streamlit allows you to host a web version of pygwalker without figuring out details of how web application works.
+
+Here are some of the app examples build with pygwalker and streamlit:
++ [PyGWalker + streamlit for Bike sharing dataset](https://pygwalker-in-app-dngxb2r82ho2zqct244v7b.streamlit.app/)
++ [Earthquake Dashboard](https://earthquake-dashboard-pygwalker.streamlit.app/)
+
+[![](https://user-images.githubusercontent.com/22167673/271170853-5643c3b1-6216-4ade-87f4-41c6e6893eab.png)](https://earthquake-dashboard-pygwalker.streamlit.app/)
+
+```python
+import pandas as pd
+import streamlit.components.v1 as components
+import streamlit as st
+from pygwalker.api.streamlit import init_streamlit_comm, get_streamlit_html
+
+st.set_page_config(
+    page_title="Use Pygwalker In Streamlit",
+    layout="wide"
+)
+
+st.title("Use Pygwalker In Streamlit(support communication)")
+
+# Initialize pygwalker communication
+init_streamlit_comm()
+
+# When using `use_kernel_calc=True`, you should cache your pygwalker html, if you don't want your memory to explode
+@st.cache_resource
+def get_pyg_html(df: pd.DataFrame) -> str:
+    # When you need to publish your application, you need set `debug=False`,prevent other users to write your config file.
+    # If you want to use feature of saving chart config, set `debug=True`
+    html = get_streamlit_html(df, spec="./gw0.json", use_kernel_calc=True, debug=False)
+    return html
+
+@st.cache_data
+def get_df() -> pd.DataFrame:
+    return pd.read_csv("/bike_sharing_dc.csv")
+
+df = get_df()
+
+components.html(get_pyg_html(df), width=1300, height=1000, scrolling=True)
+```
 
 ## Tested Environments
 
@@ -192,8 +234,8 @@ usage: pygwalker config [--set [key=value ...]] | [--reset [key ...]].
 Available configurations:
 - privacy        ['offline', 'get-only', 'meta', 'any'] (default: meta).
     "offline"   : no data will be transfered other than the front-end and back-end of the notebook.
-    "get-only"  : the data will not be uploaded but only fetched from external servers.
-    "meta"      : only the desensitized data will be processed by external servers. There might be some server-side processing tasks performed on the metadata in future versions.
+    "get-only"  : allow fetch latest pygwalker version to check update.
+    "meta"      : only the desensitized data will be processed by external servers. Required for using LLM to generate charts.
     "any"       : the data can be processed by external services.
 ```
 
@@ -218,7 +260,7 @@ have the same effect.
 + We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis software that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [Kanaries website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
 + [Use pygwalker to build visual analysis app in streamlit](https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit)
 + If you encounter any issues and need support, join our [Slack](https://join.slack.com/t/kanaries-community/shared_invite/zt-1pcosgbua-E_GBPawQOI79C41dPDyyvw) or [Discord](https://discord.gg/Z4ngFWXz2U) channels.
-+ Share pygwalker on these social media platforms:
++ Share pygwalker on these social media platforms if you like it!
 
 [![Reddit](https://img.shields.io/badge/share%20on-reddit-red?style=flat-square&logo=reddit)](https://reddit.com/submit?url=https://github.com/Kanaries/pygwalker&title=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-like%20UI)
 [![HackerNews](https://img.shields.io/badge/share%20on-hacker%20news-orange?style=flat-square&logo=ycombinator)](https://news.ycombinator.com/submitlink?u=https://github.com/Kanaries/pygwalker)
