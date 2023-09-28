@@ -67,7 +67,7 @@ class DatabaseDataParser(BaseDataParser):
         sql = sqlglot.transpile(sql, read=DuckdbDialect, write=sqlglot_dialect_name)[0]
 
         sub_query = exp.Subquery(
-            this=sqlglot.parse(self.conn.view_sql)[0],
+            this=sqlglot.parse(self.conn.view_sql, read=sqlglot_dialect_name)[0],
             alias="temp_view_name"
         )
         ast = sqlglot.parse(sql, read=sqlglot_dialect_name)[0]
