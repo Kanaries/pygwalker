@@ -6,7 +6,6 @@ import io
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
-from gw_dsl_parser import get_sql_from_payload
 import pandas as pd
 import sqlglot.expressions as exp
 import sqlglot
@@ -100,6 +99,9 @@ class DatabaseDataParser(BaseDataParser):
         return df.to_dict(orient='records')
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+        # temporary solution: wasmtime is not supported in conda
+        # pylint: disable=import-outside-toplevel
+        from gw_dsl_parser import get_sql_from_payload
         sql = get_sql_from_payload(self.placeholder_table_name, payload)
         sql = self._format_sql(sql)
         result = self.conn.query_datas(sql)
