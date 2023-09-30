@@ -7,11 +7,11 @@ import atomOneLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one
 import type { IGlobalStore } from "@kanaries/graphic-walker/dist/store";
 import type { IVisSpec } from "@kanaries/graphic-walker/dist/interfaces";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-
-import Modal from "../modal";
-import { usePythonCode } from "./usePythonCode";
 import commonStore from "@/store/common";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+import { usePythonCode } from "./usePythonCode";
 
 SyntaxHighlighter.registerLanguage("json", json);
 SyntaxHighlighter.registerLanguage("python", py);
@@ -61,9 +61,19 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     }, [open]);
 
     return (
-        <Modal show={open} onClose={closeModal}>
-            <div>
-                <h2 className="mb-4 font-semibold">Code Export</h2>
+        <Dialog
+            open={open}
+            onOpenChange={(show) => {
+                setOpen(show);
+            }}
+        >
+            <DialogContent className="sm:max-w-[90%] lg:max-w-[900px]">
+                <DialogHeader>
+                    <DialogTitle>Code Export</DialogTitle>
+                    <DialogDescription>
+                        Export the code of all charts in PyGWalker.
+                    </DialogDescription>
+                </DialogHeader>
                 <div className="text-sm max-h-64 overflow-auto">
                     <Tabs defaultValue="python" className="w-full">
                         <TabsList>
@@ -74,7 +84,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                             <p>{tips}</p>
                         </div>
                         <TabsContent className="py-4" value="python">
-                        <h3 className="text-sm font-medium mb-2">PyGWalker Code</h3>
+                            <h3 className="text-sm font-medium mb-2">PyGWalker Code</h3>
                             <SyntaxHighlighter showLineNumbers language="python" style={atomOneLight}>
                                 {pyCode}
                             </SyntaxHighlighter>
@@ -109,8 +119,8 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         </TabsContent>
                     </Tabs>
                 </div>
-            </div>
-        </Modal>
+            </DialogContent>
+        </Dialog>
     );
 });
 
