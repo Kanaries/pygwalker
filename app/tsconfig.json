@@ -21,6 +21,10 @@
       "sourceMap": false,
       // "outDir": "./dist",
       "outDir": "../pygwalker/templates/dist",
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["./src/*"]
+      }
     },
     "include": ["src"]
   }

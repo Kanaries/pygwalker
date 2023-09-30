@@ -10,8 +10,8 @@ class CommunicationStore {
 
     constructor() {
         makeObservable(this, {
-        comm: observable,
-        setComm: action,
+            comm: observable,
+            setComm: action,
         });
     }
 }
