@@ -1,14 +1,13 @@
 import React, { useState, ReactElement, useEffect } from 'react';
 import { observer } from "mobx-react-lite";
-import communicationStore from "../../store/communication";
-import commonStore from "../../store/common";
-import DefaultButton from "../button/default";
-import Modal from "../modal";
-import { formatExportedChartDatas } from "../../utils/save"
-
 import type { IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
 import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
 
+import communicationStore from "../../store/communication";
+import commonStore from "../../store/common";
+import { formatExportedChartDatas } from "../../utils/save"
+import Modal from "../modal";
+import { Button } from "@/components/ui/button"
 
 interface IShareModal {
     gwRef: React.MutableRefObject<IGWHandler | null>,
@@ -93,12 +92,11 @@ const ShareModal: React.FC<IShareModal> = observer((props) => {
                     </div>
                 </div>
                 <div className="mt-4 flex justify-end">
-                    <DefaultButton
-                        text={sharing ? "sharing.." : "share"}
-                        className="mr-2 px-6"
+                    <Button variant="outline" className="mr-2 px-6"
                         disabled={sharing}
-                        onClick={onClick}
-                    />
+                        onClick={onClick}>
+                            {sharing ? "sharing.." : "share"}
+                    </Button>
                 </div>
             </div>
         </Modal>

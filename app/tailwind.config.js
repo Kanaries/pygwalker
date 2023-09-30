@@ -1,27 +1,36 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: ["class"],
   content: [
-    "./src/**/*.tsx"
-  ],
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+	],
   theme: {
-    minWidth: {
-      '96': '96px'
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
     },
-    extend: {},
-  },
-  darkMode: 'class', // or 'media' or 'class
-  variants: {
     extend: {
-      'backgroundColor': ['disabled']
+      keyframes: {
+        "accordion-down": {
+          from: { height: 0 },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 0 },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
     },
   },
-  safelist: [
-    'text-orange-500',
-    'text-green-500',
-    'text-blue-500',
-    'text-red-500',
-    {
-      pattern: /text-([a-z]+)-(500)/,
-    }
-  ],
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
