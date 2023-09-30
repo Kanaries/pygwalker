@@ -83,6 +83,7 @@ const ShareModal: React.FC<IShareModal> = observer((props) => {
     return (
         <Dialog
             open={props.open}
+            modal={false}
             onOpenChange={(show) => {
                 props.setOpen(show);
             }}

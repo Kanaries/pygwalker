@@ -63,6 +63,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     return (
         <Dialog
             open={open}
+            modal={false}
             onOpenChange={(show) => {
                 setOpen(show);
             }}

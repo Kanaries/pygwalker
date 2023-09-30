@@ -9,7 +9,7 @@ interface IInitModal {}
 const InitModal: React.FC<IInitModal> = observer((props) => {
     return (
         <Dialog open={commonStore.initModalOpen} modal={true}>
-            <DialogContent>
+            <DialogContent hideClose>
                 <div className="flex justify-between mb-1">
                     <span className="text-base font-medium text-blue-700 dark:text-white">{commonStore.initModalInfo.title}</span>
                     <span className="text-sm font-medium text-blue-700 dark:text-white">
