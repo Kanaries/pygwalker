@@ -15,6 +15,7 @@ export interface IAppProps extends IGWProps {
     useKernelCalc: boolean;
     useSaveTool: boolean;
     parseDslType: "server" | "client";
+    streamlitBaseUrl: string;
 }
 
 export interface IDataSourceProps {

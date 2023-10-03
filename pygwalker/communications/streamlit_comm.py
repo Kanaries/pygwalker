@@ -3,12 +3,20 @@ import gc
 import json
 
 from tornado.web import Application
+from streamlit import config
+from streamlit.web.server.server_util import make_url_path_regex
 import tornado.web
 import streamlit as st
 
 from .base import BaseCommunication
 
 streamlit_comm_map = {}
+
+BASE_URL_PATH = config.get_option("server.baseUrlPath").strip("/")
+PYGWALKER_API_PATH = make_url_path_regex(
+    BASE_URL_PATH,
+    r"/_stcore/_pygwalker/comm/(.+)"
+)
 
 
 class PygwalkerHandler(tornado.web.RequestHandler):
@@ -38,7 +46,7 @@ def hack_streamlit_server():
             tornado_obj = obj
             break
 
-    tornado_obj.add_handlers(".*", [(r"/_stcore/_pygwalker/comm/(.+)", PygwalkerHandler)])
+    tornado_obj.add_handlers(".*", [(PYGWALKER_API_PATH, PygwalkerHandler)])
 
 
 class StreamlitCommunication(BaseCommunication):
