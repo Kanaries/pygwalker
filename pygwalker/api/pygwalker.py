@@ -108,7 +108,7 @@ class PygWalker:
         """
         The streamlit version with communication is currently only supported in dev mode.
         """
-        from pygwalker.communications.streamlit_comm import StreamlitCommunication
+        from pygwalker.communications.streamlit_comm import StreamlitCommunication, BASE_URL_PATH
 
         comm = StreamlitCommunication(str(self.gid))
         self._init_callback(comm)
@@ -117,6 +117,7 @@ class PygWalker:
             props = self._get_props("streamlit", data_source)
         else:
             props = self._get_props("streamlit")
+        props["streamlitBaseUrl"] = BASE_URL_PATH
         html = self._get_render_iframe(props, False)
         return html
 
