@@ -53,19 +53,20 @@ def walk(
     )
 
     walker = PygWalker(
-        gid,
-        dataset,
-        fieldSpecs,
-        spec,
-        source_invoke_code,
-        hideDataSourceConfig,
-        themeKey,
-        dark,
-        bool(GlobalVarManager.kanaries_api_key),
-        use_preview,
-        store_chart_data,
-        isinstance(dataset, Connector) or use_kernel_calc,
-        True,
+        gid=gid,
+        dataset=dataset,
+        field_specs=fieldSpecs,
+        spec=spec,
+        source_invoke_code=source_invoke_code,
+        hidedata_source_config=hideDataSourceConfig,
+        theme_key=themeKey,
+        dark=dark,
+        show_cloud_tool=bool(GlobalVarManager.kanaries_api_key),
+        use_preview=use_preview,
+        store_chart_data=store_chart_data,
+        use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
+        use_save_tool=True,
+        gw_mode="explore",
         **kwargs
     )
 

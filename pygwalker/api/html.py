@@ -44,19 +44,20 @@ def to_html(
         fieldSpecs = {}
 
     walker = PygWalker(
-        gid,
-        df,
-        fieldSpecs,
-        "",
-        "",
-        hideDataSourceConfig,
-        themeKey,
-        dark,
-        False,
-        False,
-        False,
-        False,
-        False,
+        gid=gid,
+        dataset=df,
+        field_specs=fieldSpecs,
+        spec="",
+        source_invoke_code="",
+        hidedata_source_config=hideDataSourceConfig,
+        theme_key=themeKey,
+        dark=dark,
+        show_cloud_tool=False,
+        use_preview=False,
+        store_chart_data=False,
+        use_kernel_calc=False,
+        use_save_tool=False,
+        gw_mode="explore",
         **kwargs
     )
 
