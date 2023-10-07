@@ -25,6 +25,7 @@ def get_streamlit_html(
     spec: str = "",
     use_kernel_calc: bool = False,
     debug: bool = False,
+    gw_mode: Literal["explore", "renderer"] = "explore",
     **kwargs
 ):
     """Get pygwalker html render to streamlit
@@ -41,24 +42,26 @@ def get_streamlit_html(
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - debug (bool): Whether to use debug mode, Default to False.
+        - gw_mode (Literal["explore", "renderer"]): GraphicWalker mode, Default to "explore".
     """
     if fieldSpecs is None:
         fieldSpecs = {}
 
     walker = PygWalker(
-        gid,
-        dataset,
-        fieldSpecs,
-        spec,
-        "",
-        hideDataSourceConfig,
-        themeKey,
-        dark,
-        False,
-        False,
-        False,
-        isinstance(dataset, Connector) or use_kernel_calc,
-        debug,
+        gid=gid,
+        dataset=dataset,
+        field_specs=fieldSpecs,
+        spec=spec,
+        source_invoke_code="",
+        hidedata_source_config=hideDataSourceConfig,
+        theme_key=themeKey,
+        dark=dark,
+        show_cloud_tool=False,
+        use_preview=False,
+        store_chart_data=False,
+        use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
+        use_save_tool=debug,
+        gw_mode=gw_mode,
         **kwargs
     )
 

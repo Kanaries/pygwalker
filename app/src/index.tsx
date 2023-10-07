@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
-import { GraphicWalker } from '@kanaries/graphic-walker'
+import { GraphicWalker, PureRenderer } from '@kanaries/graphic-walker'
 import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
 import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
 import { IDataSetInfo, IMutField, IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
@@ -48,6 +48,15 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
         }
     }
     commonStore.setInitModalOpen(false);
+}
+
+const getComputationCallback = (props: IAppProps) => {
+    if (props.useKernelCalc && props.parseDslType === "client") {
+        return getDatasFromKernelBySql;
+    }
+    if (props.useKernelCalc && props.parseDslType === "server") {
+        return getDatasFromKernelByPayload;
+    }
 }
 
 const App: React.FC<IAppProps> = observer((propsIn) => {
@@ -129,13 +138,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         extra: tools
     }
 
-    let computationCallback;
-    if (props.useKernelCalc && props.parseDslType === "client") {
-        computationCallback = getDatasFromKernelBySql;
-    }
-    if (props.useKernelCalc && props.parseDslType === "server") {
-        computationCallback = getDatasFromKernelByPayload;
-    }
+    const computationCallback = getComputationCallback(props);
   
     return (
         <React.StrictMode>
@@ -149,6 +152,26 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         </React.StrictMode>
     );
 })
+
+const PureRednererApp: React.FC<IAppProps> = observer((propsIn) => {
+    const computationCallback = getComputationCallback(propsIn);
+    const spec = propsIn.visSpec ? JSON.parse(propsIn.visSpec)[0] : {};
+
+    return (
+        <React.StrictMode>
+            <style>{style}</style>
+            <PureRenderer
+                {...propsIn}
+                name={spec.name}
+                visualConfig={spec.config}
+                visualState={spec.encodings}
+                type='remote'
+                computation={computationCallback!}
+                limit={spec.config.limit}
+            />
+        </React.StrictMode>
+    )
+});
 
 const initOnJupyter = async(props: IAppProps) => {
     const comm = initJupyterCommunication(props.id);
@@ -194,7 +217,7 @@ function GWalker(props: IAppProps, id: string) {
 
     preRender(props).then(() => {
         ReactDOM.render(
-            <App {...props}></App>,
+            props.gwMode === "explore" ? <App {...props} /> : <PureRednererApp {...props} />,
             document.getElementById(id)
         );
     })
