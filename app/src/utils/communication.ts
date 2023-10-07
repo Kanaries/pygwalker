@@ -120,7 +120,7 @@ const initStreamlitCommunication = (gid: string, baseUrl: string) => {
     if (domain === "streamlit.app") {
         url = `/~/+/_stcore/_pygwalker/comm/${gid}`
     } else {
-        url = `/${baseUrl}/_stcore/_pygwalker/comm/${gid}`
+        url = baseUrl ? `/${baseUrl}/_stcore/_pygwalker/comm/${gid}` : `/_stcore/_pygwalker/comm/${gid}`
     }
 
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
