@@ -49,7 +49,6 @@ class PygWalker:
         store_chart_data: bool,
         use_kernel_calc: bool,
         use_save_tool: bool,
-        gw_mode: Literal["explore", "renderer"],
         **kwargs
     ):
         if gid is None:
@@ -74,7 +73,7 @@ class PygWalker:
         self.use_kernel_calc = use_kernel_calc
         self.use_save_tool = use_save_tool
         self.parse_dsl_type = "server" if isinstance(dataset, Connector) else "client"
-        self.gw_mode = gw_mode
+        self.gw_mode = "explore"
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
@@ -107,20 +106,34 @@ class PygWalker:
     def display_on_streamlit(self):
         display_on_streamlit(self.to_html())
 
-    def get_html_on_streamlit_v2(self) -> str:
+    def init_streamlit_comm(self):
         """
-        The streamlit version with communication is currently only supported in dev mode.
+        Initialize the communication of streamlit.
         """
-        from pygwalker.communications.streamlit_comm import StreamlitCommunication, BASE_URL_PATH
+        from pygwalker.communications.streamlit_comm import StreamlitCommunication
 
         comm = StreamlitCommunication(str(self.gid))
         self._init_callback(comm)
+
+    def get_html_on_streamlit_v2(
+        self,
+        *,
+        mode: Literal["explore", "renderer"] = "explore",
+        vis_spec: Optional[str] = None
+    ) -> str:
+        from pygwalker.communications.streamlit_comm import BASE_URL_PATH
+
         if self.use_kernel_calc:
             data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
             props = self._get_props("streamlit", data_source)
         else:
             props = self._get_props("streamlit")
+
         props["streamlitBaseUrl"] = BASE_URL_PATH
+        props["gwMode"] = mode
+        if vis_spec is not None:
+            props["visSpec"] = vis_spec
+
         html = self._get_render_iframe(props, False)
         return html
 
