@@ -192,8 +192,10 @@ const initOnJupyter = async(props: IAppProps) => {
 const initOnStreamlit = async(props: IAppProps) => {
     const comm = initStreamlitCommunication(props.id, props.streamlitBaseUrl);
     communicationStore.setComm(comm);
-    const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
-    props.visSpec = visSpecResp["data"]["visSpec"];
+    if (props.gwMode === "explore") {
+        const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
+        props.visSpec = visSpecResp["data"]["visSpec"];
+    }
     if (props.useKernelCalc) {
         await initDslParser();
     }

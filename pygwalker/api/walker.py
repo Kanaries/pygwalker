@@ -44,6 +44,7 @@ def walk(
         - spec (str): chart config data. config id, json, remote file url
         - use_preview(bool): Whether to use preview function, Default to False.
         - store_chart_data(bool): Whether to save chart to disk, only work when spec is json file, Default to False.
+        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
     """
     if fieldSpecs is None:
         fieldSpecs = {}
