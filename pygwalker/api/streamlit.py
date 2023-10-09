@@ -2,6 +2,7 @@ from typing import Union, Dict, Optional
 import json
 
 from typing_extensions import Literal
+import streamlit.components.v1 as components
 
 from .pygwalker import PygWalker
 from pygwalker.communications.streamlit_comm import hack_streamlit_server
@@ -116,14 +117,39 @@ class StreamlitRenderer:
         )
         self.walker.init_streamlit_comm()
 
-    def render_explore(self) -> str:
+    def render_explore(
+        self,
+        width: int = 1300,
+        height: int = 1000,
+        scrolling: bool = False,
+    ):
         """Render explore UI(it can drag and drop fields)"""
-        return self.walker.get_html_on_streamlit_v2()
+        html = self.walker.get_html_on_streamlit_v2()
+        components.html(html, height=height, width=width, scrolling=scrolling)
 
-    def render_pure_chart(self, index: int) -> str:
+    def render_pure_chart(
+        self,
+        index: int,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+        scrolling: bool = False,
+    ) -> str:
         """Render pure chart, index is the order of chart, starting from 0."""
-        spec_obj = json.loads(self.walker.vis_spec)
-        return self.walker.get_html_on_streamlit_v2(
+        cur_spec_obj = json.loads(self.walker.vis_spec)[index]
+        cur_spec_obj["config"]["size"]["mode"] = "fixed"
+
+        if width is None:
+            width = cur_spec_obj["config"]["size"]["width"]
+        else:
+            cur_spec_obj["config"]["size"]["width"] = width
+
+        if height is None:
+            height = cur_spec_obj["config"]["size"]["height"]
+        else:
+            cur_spec_obj["config"]["size"]["height"] = height
+
+        html = self.walker.get_html_on_streamlit_v2(
             mode="renderer",
-            vis_spec=json.dumps([spec_obj[index]])
+            vis_spec=json.dumps([cur_spec_obj])
         )
+        components.html(html, height=height, width=width, scrolling=scrolling)
