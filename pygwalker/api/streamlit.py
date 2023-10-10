@@ -1,16 +1,36 @@
-from typing import Union, Dict, Optional, TYPE_CHECKING
+from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any
 import json
 
 from typing_extensions import Literal
+from pydantic import BaseModel
 import streamlit.components.v1 as components
-if TYPE_CHECKING:
-    from streamlit.delta_generator import DeltaGenerator
 
 from .pygwalker import PygWalker
 from pygwalker.communications.streamlit_comm import hack_streamlit_server
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
+from pygwalker.utils.randoms import rand_str
+
+if TYPE_CHECKING:
+    from streamlit.delta_generator import DeltaGenerator
+
+
+class PreFilter(BaseModel):
+    """
+    Pre Filter.
+    example:
+        1. use temporal range: pass in millisecond timestamp.
+        PreFilter(field="date", op="temporal range", value=[1293840000000, 1297641600000])
+        PreFilter(field="date", op="temporal range", value=["2019-01-01", "2020-01-01"])
+        2. use range: pass in number.
+        PreFilter(field="age", op="range", value=[0, 100])
+        3. use one of: pass in string or number.
+        PreFilter(field="category", op="one of", value=["a", "b", "c"])
+    """
+    field: str
+    op: Literal["range", "temporal range", "one of"]
+    value: List[Union[int, float, str]]
 
 
 def init_streamlit_comm():
@@ -118,6 +138,17 @@ class StreamlitRenderer:
             **kwargs
         )
         self.walker.init_streamlit_comm()
+        self.global_pre_filters = None
+
+    def _get_field_map(self, spec_obj: Dict[str, Any]) -> Dict[str, str]:
+        return {
+            field["name"]: field["fid"]
+            for field in spec_obj["encodings"]["dimensions"] + spec_obj["encodings"]["measures"]
+        }
+
+    def set_global_pre_filters(self, pre_filters: List[PreFilter]):
+        """It will append new filters to exists charts."""
+        self.global_pre_filters = pre_filters
 
     def render_explore(
         self,
@@ -135,10 +166,31 @@ class StreamlitRenderer:
         width: Optional[int] = None,
         height: Optional[int] = None,
         scrolling: bool = False,
+        pre_filters: Optional[List[PreFilter]] = None,
     ) -> "DeltaGenerator":
-        """Render pure chart, index is the order of chart, starting from 0."""
+        """
+        Render pure chart, index is the order of chart, starting from 0.
+        If you set `pre_filters`, it will overwritre global_pre_filters.
+        """
         cur_spec_obj = json.loads(self.walker.vis_spec)[index]
         cur_spec_obj["config"]["size"]["mode"] = "fixed"
+        field_map = self._get_field_map(cur_spec_obj)
+        if pre_filters is None:
+            pre_filters = self.global_pre_filters
+
+        if pre_filters is not None:
+            pre_filters_json = [
+                {
+                    "fid": field_map[pre_filter.field],
+                    "dragId": "gw_" + rand_str(4),
+                    "rule": {
+                        "type": pre_filter.op,
+                        "value": pre_filter.value
+                    }
+                }
+                for pre_filter in pre_filters
+            ]
+            cur_spec_obj["encodings"]["filters"].extend(pre_filters_json)
 
         if width is None:
             width = cur_spec_obj["config"]["size"]["width"]

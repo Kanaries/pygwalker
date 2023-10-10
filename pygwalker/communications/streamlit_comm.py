@@ -8,6 +8,7 @@ from streamlit.web.server.server_util import make_url_path_regex
 import tornado.web
 import streamlit as st
 
+from pygwalker.utils.encode import DataFrameEncoder
 from .base import BaseCommunication
 
 streamlit_comm_map = {}
@@ -33,7 +34,12 @@ class PygwalkerHandler(tornado.web.RequestHandler):
             return
         json_data = json.loads(self.request.body)
         # pylint: disable=protected-access
-        self.write(comm_obj._receive_msg(json_data["action"], json_data["data"]))
+        self.write(
+            json.dumps(
+                comm_obj._receive_msg(json_data["action"], json_data["data"]),
+                cls=DataFrameEncoder
+            )
+        )
         # pylint: enable=protected-access
         return
 
