@@ -1,8 +1,10 @@
-from typing import Union, Dict, Optional
+from typing import Union, Dict, Optional, TYPE_CHECKING
 import json
 
 from typing_extensions import Literal
 import streamlit.components.v1 as components
+if TYPE_CHECKING:
+    from streamlit.delta_generator import DeltaGenerator
 
 from .pygwalker import PygWalker
 from pygwalker.communications.streamlit_comm import hack_streamlit_server
@@ -122,10 +124,10 @@ class StreamlitRenderer:
         width: int = 1300,
         height: int = 1000,
         scrolling: bool = False,
-    ):
+    ) -> "DeltaGenerator":
         """Render explore UI(it can drag and drop fields)"""
         html = self.walker.get_html_on_streamlit_v2()
-        components.html(html, height=height, width=width, scrolling=scrolling)
+        return components.html(html, height=height, width=width, scrolling=scrolling)
 
     def render_pure_chart(
         self,
@@ -133,7 +135,7 @@ class StreamlitRenderer:
         width: Optional[int] = None,
         height: Optional[int] = None,
         scrolling: bool = False,
-    ) -> str:
+    ) -> "DeltaGenerator":
         """Render pure chart, index is the order of chart, starting from 0."""
         cur_spec_obj = json.loads(self.walker.vis_spec)[index]
         cur_spec_obj["config"]["size"]["mode"] = "fixed"
@@ -152,4 +154,4 @@ class StreamlitRenderer:
             mode="renderer",
             vis_spec=json.dumps([cur_spec_obj])
         )
-        components.html(html, height=height, width=width, scrolling=scrolling)
+        return components.html(html, height=height, width=width, scrolling=scrolling)
