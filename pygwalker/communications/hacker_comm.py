@@ -1,5 +1,5 @@
 from threading import Lock
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 import uuid
 import json
 import time
@@ -65,13 +65,13 @@ class HackerCommunication(BaseCommunication):
 
     def get_widgets(self) -> Box:
         return Box(
-            children=[self._html_widget, self._kernel_widget],
+            children=[self._html_widget, *self._kernel_widget],
             layout=Layout(display="none")
         )
 
-    def _on_mesage(self, _):
+    def _on_mesage(self, info: Dict[str, Any]):
         self.__increase += 1
-        msg_json = json.loads(self._kernel_widget.value)
+        msg_json = json.loads(info["new"])
         action = msg_json["action"]
         data = msg_json["data"]
         rid = msg_json["rid"]
@@ -92,11 +92,14 @@ class HackerCommunication(BaseCommunication):
         text.add_class(f"hacker-comm-pyg-html-store-{self.gid}")
         return text
 
-    def _get_kernel_widget(self) -> Text:
-        text = Text(value="", placeholder="")
-        text.add_class(f"hacker-comm-pyg-kernel-store-{self.gid}")
-        text.observe(self._on_mesage, "value")
-        return text
+    def _get_kernel_widget(self) -> List[Text]:
+        text_list = []
+        for index in range(3):
+            text = Text(value="", placeholder="")
+            text.add_class(f"hacker-comm-pyg-kernel-store-{self.gid}-{index}")
+            text.observe(self._on_mesage, "value")
+            text_list.append(text)
+        return text_list
 
     def _get_request_lock(self, rid: str, new: bool = True) -> Optional[Lock]:
         with self._global_lock:
