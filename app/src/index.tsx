@@ -167,7 +167,6 @@ const PureRednererApp: React.FC<IAppProps> = observer((propsIn) => {
                 visualState={spec.encodings}
                 type='remote'
                 computation={computationCallback!}
-                limit={spec.config.limit}
             />
         </React.StrictMode>
     )

@@ -444,15 +444,15 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries-temp/gw-dsl-parser@0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.3.tgz#95da104a97b6c8cd3d84be9bccd2b08037608580"
-  integrity sha512-zpxPvywNFGOvaafJwN/VcERH4lXGPAAyKqaRXb8lxKW57lniP7R/Ie35/XM7Mump2K+NBkc559hk2EfvH2DTAA==
+"@kanaries-temp/gw-dsl-parser@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.9.tgz#2878fa1ffd9179d86ce322dfb1ee5ddc96468a8d"
+  integrity sha512-6cXsMB0MP2z9ULNzpVYbEP3o1E2hY3RPHu1MSfYH93JBbf93zHfWG4i5iio2rqANFYD6ATEzCyA0Ip4SGHHmtQ==
 
-"@kanaries/graphic-walker@0.4.19":
-  version "0.4.19"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.19.tgz#9064b016e62ccabc208d72097de5f1357b8b7f5a"
-  integrity sha512-/YgFJxvetps4iqoCtWWostYTyF+x1Y7Ub8hDqFgn9kX6ZGhKfR7/VodIapsn3eSUBN58se+NVwiX3HgU4Xa6wg==
+"@kanaries/graphic-walker@0.4.20":
+  version "0.4.20"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.20.tgz#dbcf4e334cf24c7f549e604f9327f73bf357ae87"
+  integrity sha512-ZZrO6/uHshOwPJ6q8T+NOZqNU3qRtGYyGGPuE9UhZg0nZvJO1faoo+eBnena4TOaeEI7ru7GH2G9QLcgXhbCAg==
   dependencies:
     "@headlessui/react" "^1.7.12"
     "@heroicons/react" "^2.0.8"
