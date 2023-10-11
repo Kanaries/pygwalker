@@ -25,10 +25,14 @@ const getCurrentJupyterEnv = () => {
 }
 
 const initJupyterCommunication = (gid: string) => {
+    const kernelTextCount = 3;
+    let curKernelTextIndex = 0;
     const jupyterEnv = getCurrentJupyterEnv();
     const document = window.parent.document;
     const htmlText = document.getElementsByClassName(`hacker-comm-pyg-html-store-${gid}`)[0].childNodes[1] as HTMLInputElement;
-    const kernelText = document.getElementsByClassName(`hacker-comm-pyg-kernel-store-${gid}`)[0].childNodes[1] as HTMLInputElement;;
+    const kernelTextList = Array.from({ length: kernelTextCount }, (_, index) => index).map(index => {
+        return document.getElementsByClassName(`hacker-comm-pyg-kernel-store-${gid}-${index}`)[0].childNodes[1] as HTMLInputElement;
+    })
 
     const endpoints = new Map<string, (data: any) => any>();
     const bufferMap = new Map<string, any>();
@@ -68,8 +72,10 @@ const initJupyterCommunication = (gid: string) => {
     const sendMsgAsync = (action: string, data: any, rid: string | null) => {
         rid = rid ?? uuidv4();
         const event = new Event("input", { bubbles: true })
+        const kernelText = kernelTextList[curKernelTextIndex];
         kernelText.value = JSON.stringify({ gid: gid, rid: rid, action, data });
         kernelText.dispatchEvent(event);
+        curKernelTextIndex = (curKernelTextIndex + 1) % kernelTextCount;
     }
 
     const registerEndpoint = (action: string, callback: (data: any) => any) => {
