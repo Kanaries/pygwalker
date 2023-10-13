@@ -1,32 +1,32 @@
 [English](README.md) | [中文](./docs/README.zh.md) | [Türkçe](./docs/README.tr.md) | [Español](./docs/README.es.md) | [Français](./docs/README.fr.md) | [Deutsch](./docs/README.de.md) | [日本語](./docs/README.ja.md) | [한국어](./docs/README.ko.md)
 
 > PyGWalker 0.3 is released! Check out the [changelog](https://github.com/Kanaries/pygwalker/releases/tag/0.3.0) for more details. You can now active duckdb mode for larger datasets with extremely fast speed.
-<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png"></a></p>
+<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png" /></a></p>
 
 <h2 align="center">PyGWalker: A Python Library for Exploratory Data Analysis with Visualization</h2>
 
 <p align="center">
     <a href="https://badge.fury.io/py/pygwalker">
-        <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center">
+        <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center" />
     </a>
     <a href="https://mybinder.org/v2/gh/Kanaries/pygwalker/main">
-      <img src="https://mybinder.org/badge_logo.svg" alt="binder" height="18" align="center">
+      <img src="https://mybinder.org/badge_logo.svg" alt="binder" height="18" align="center" />
     </a>
     <a href="https://pypi.org/project/pygwalker">
-      <img src="https://img.shields.io/pypi/dm/pygwalker" alt="PyPI downloads" height="18" align="center">
+      <img src="https://img.shields.io/pypi/dm/pygwalker" alt="PyPI downloads" height="18" align="center" />
     </a>
     <a href="https://anaconda.org/conda-forge/pygwalker"> <img src="https://anaconda.org/conda-forge/pygwalker/badges/version.svg" alt="conda-forge" height="18" align="center" /> </a>
 </p>
 
 <p align="center">
     <a href="https://discord.gg/Z4ngFWXz2U">
-      <img alt="discord invitation link" src="https://dcbadge.vercel.app/api/server/Z4ngFWXz2U?style=flat" align="center">
+      <img alt="discord invitation link" src="https://dcbadge.vercel.app/api/server/Z4ngFWXz2U?style=flat" align="center" />
     </a>
     <a href='https://twitter.com/intent/follow?original_referer=https%3A%2F%2Fpublish.twitter.com%2F&ref_src=twsrc%5Etfw&screen_name=kanaries_data&tw_p=followbutton'>
-        <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/kanaries_data?style=social" alt='Twitter' align="center"/>
+        <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/kanaries_data?style=social" alt='Twitter' align="center" />
     </a>
     <a href="https://kanaries-community.slack.com/join/shared_invite/zt-20kpp56wl-ke9S0MxTcNQjUhKf6SOfvQ#/shared-invite/email">
-      <img src="https://img.shields.io/badge/Slack-green?style=flat-square&logo=slack&logoColor=white" alt="Join Kanaries on Slack" align="center"/>
+      <img src="https://img.shields.io/badge/Slack-green?style=flat-square&logo=slack&logoColor=white" alt="Join Kanaries on Slack" align="center" />
     </a> 
 </p>
 
@@ -79,7 +79,7 @@ import pandas as pd
 import pygwalker as pyg
 ```
 
-You can use pygwalker without breaking your existing workflow. For example, you can call up Graphic Walker with the dataframe loaded in this way:
+You can use pygwalker without breaking your existing workflow. For example, you can call up PyGWalker with the dataframe loaded in this way:
 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv')
@@ -178,19 +178,40 @@ df = get_df()
 components.html(get_pyg_html(df), width=1300, height=1000, scrolling=True)
 ```
 
+## [API Reference](https://docs.kanaries.net/pygwalker/api-reference)
+
+### [pygwalker.walk](https://docs.kanaries.net/pygwalker/api-reference/core#pygwalkerwalk)
+
+
+| Parameter              | Type                                                      | Default              | Description                                                                                                                                      |
+|------------------------|-----------------------------------------------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| dataset                | Union[DataFrame, Connector]                               | -                    | The dataframe or connector to be used.                                                                                                           |
+| gid                    | Union[int, str]                                           | None                 | ID for the GraphicWalker container div, formatted as 'gwalker-{gid}'.                                                                            |
+| env                    | Literal['Jupyter', 'Streamlit', 'JupyterWidget']          | 'JupyterWidget'      | Environment using pygwalker.                                                                                                                     |
+| fieldSpecs             | Optional[Dict[str, FieldSpec]]                            | None                 | Specifications of fields. Will be automatically inferred from `dataset` if not specified.                                                        |
+| hideDataSourceConfig   | bool                                                      | True                 | If True, hides DataSource import and export button.                                                                                              |
+| themeKey               | Literal['vega', 'g2']                                     | 'g2'                 | Theme type for the GraphicWalker.                                                                                                                |
+| dark                   | Literal['media', 'light', 'dark']                         | 'media'              | Theme setting. 'media' will auto-detect the OS theme.                                                                                            |
+| return_html            | bool                                                      | False                | If True, returns the result as an HTML string.                                                                                                   |
+| spec                   | str                                                       | ""                   | Chart configuration data. Can be a configuration ID, JSON, or remote file URL.                                                                   |
+| use_preview            | bool                                                      | True                 | If True, uses the preview function.                                                                                                              |
+| store_chart_data       | bool                                                      | False                | If True and `spec` is a JSON file, saves the chart to disk.                                                                                      |
+| use_kernel_calc        | bool                                                      | False                | If True, uses kernel computation for data.                                                                                                       |
+| **kwargs               | Any                                                       | -                    | Additional keyword arguments.                                                                                                                    |
+
 ## Tested Environments
 
 - [x] Jupyter Notebook
 - [x] Google Colab
 - [x] Kaggle Code
-- [x] Jupyter Lab (WIP: There're still some tiny CSS issues)
+- [x] Jupyter Lab
 - [x] Jupyter Lite
 - [x] Databricks Notebook (Since version `0.1.4a0`)
 - [x] Jupyter Extension for Visual Studio Code (Since version `0.1.4a0`)
-- [x] Hex Projects (Since version `0.1.4a0`)
 - [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4a0`)
 - [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
 - [x] DataCamp Workspace (Since version `0.1.4a0`)
+- [ ] Hex Projects 
 - [ ] ...feel free to raise an issue for more environments.
 
 ## Configuration
