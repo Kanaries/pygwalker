@@ -17,6 +17,7 @@ export interface IAppProps extends IGWProps {
     parseDslType: "server" | "client";
     streamlitBaseUrl: string;
     gwMode: "explore" | "renderer";
+    needLoadLastSpec: boolean;
 }
 
 export interface IDataSourceProps {
