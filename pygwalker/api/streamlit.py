@@ -11,6 +11,7 @@ from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.utils.randoms import rand_str
+from pygwalker.services.streamlit_components import render_explore_modal_button
 
 if TYPE_CHECKING:
     from streamlit.delta_generator import DeltaGenerator
@@ -175,6 +176,7 @@ class StreamlitRenderer:
         cur_spec_obj = json.loads(self.walker.vis_spec)[index]
         cur_spec_obj["config"]["size"]["mode"] = "fixed"
         field_map = self._get_field_map(cur_spec_obj)
+        explore_button_size = 20
         if pre_filters is None:
             pre_filters = self.global_pre_filters
 
@@ -194,8 +196,11 @@ class StreamlitRenderer:
 
         if width is None:
             width = cur_spec_obj["config"]["size"]["width"]
+            left = width + 6
         else:
+            width = width - explore_button_size - 6
             cur_spec_obj["config"]["size"]["width"] = width
+            left = width + 6
 
         if height is None:
             height = cur_spec_obj["config"]["size"]["height"]
@@ -206,4 +211,12 @@ class StreamlitRenderer:
             mode="renderer",
             vis_spec=json.dumps([cur_spec_obj])
         )
+
+        explore_html = self.walker.get_html_on_streamlit_v2(
+            vis_spec=json.dumps([cur_spec_obj]),
+            needLoadLastSpec=False,
+            useSaveTool=False
+        )
+        render_explore_modal_button(explore_html, left, explore_button_size)
+
         return components.html(html, height=height, width=width, scrolling=scrolling)

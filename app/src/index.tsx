@@ -177,8 +177,10 @@ const initOnJupyter = async(props: IAppProps) => {
     comm.registerEndpoint("postData", postDataService);
     comm.registerEndpoint("finishData", finishDataService);
     communicationStore.setComm(comm);
-    const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
-    props.visSpec = visSpecResp["data"]["visSpec"];
+    if (props.needLoadLastSpec) {
+        const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
+        props.visSpec = visSpecResp["data"]["visSpec"];
+    }
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
     }
@@ -191,7 +193,7 @@ const initOnJupyter = async(props: IAppProps) => {
 const initOnStreamlit = async(props: IAppProps) => {
     const comm = initStreamlitCommunication(props.id, props.streamlitBaseUrl);
     communicationStore.setComm(comm);
-    if (props.gwMode === "explore") {
+    if (props.gwMode === "explore" && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
         props.visSpec = visSpecResp["data"]["visSpec"];
     }

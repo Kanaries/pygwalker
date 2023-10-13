@@ -119,8 +119,13 @@ class PygWalker:
         self,
         *,
         mode: Literal["explore", "renderer"] = "explore",
-        vis_spec: Optional[str] = None
+        vis_spec: Optional[str] = None,
+        **params: Dict[str, Any]
     ) -> str:
+        """
+        Get the html for streamlit v2.
+        Params will update origin props.
+        """
         from pygwalker.communications.streamlit_comm import BASE_URL_PATH
 
         if self.use_kernel_calc:
@@ -133,6 +138,8 @@ class PygWalker:
         props["gwMode"] = mode
         if vis_spec is not None:
             props["visSpec"] = vis_spec
+
+        props.update(params)
 
         html = self._get_render_iframe(props, False)
         return html
@@ -396,6 +403,7 @@ class PygWalker:
             "useSaveTool": self.use_save_tool,
             "parseDslType": self.parse_dsl_type,
             "gwMode": self.gw_mode,
+            "needLoadLastSpec": True,
             **self.other_props,
         }
 
