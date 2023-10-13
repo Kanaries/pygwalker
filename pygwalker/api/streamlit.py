@@ -143,7 +143,7 @@ class StreamlitRenderer:
 
     def _get_field_map(self, spec_obj: Dict[str, Any]) -> Dict[str, str]:
         return {
-            field["name"]: field["fid"]
+            field["name"]: field
             for field in spec_obj["encodings"]["dimensions"] + spec_obj["encodings"]["measures"]
         }
 
@@ -183,7 +183,7 @@ class StreamlitRenderer:
         if pre_filters is not None:
             pre_filters_json = [
                 {
-                    "fid": field_map[pre_filter.field],
+                    **field_map[pre_filter.field],
                     "dragId": "gw_" + rand_str(4),
                     "rule": {
                         "type": pre_filter.op,
