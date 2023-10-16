@@ -71,7 +71,7 @@ class DatabaseDataParser(BaseDataParser):
         )
         ast = sqlglot.parse(sql, read=sqlglot_dialect_name)[0]
         for from_exp in ast.find_all(exp.From):
-            if str(from_exp.this) == self.placeholder_table_name:
+            if str(from_exp.this).strip('"') == self.placeholder_table_name:
                 from_exp.this.replace(sub_query)
 
         sql = ast.sql(sqlglot_dialect_name)
