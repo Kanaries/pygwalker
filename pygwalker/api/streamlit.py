@@ -3,6 +3,7 @@ import json
 
 from typing_extensions import Literal
 from pydantic import BaseModel
+import arrow
 import streamlit.components.v1 as components
 
 from .pygwalker import PygWalker
@@ -141,11 +142,35 @@ class StreamlitRenderer:
         self.walker.init_streamlit_comm()
         self.global_pre_filters = None
 
-    def _get_field_map(self, spec_obj: Dict[str, Any]) -> Dict[str, str]:
-        return {
+    def _convert_pre_filters_to_gw_config(
+        self,
+        pre_filters: List[PreFilter],
+        spec_obj: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        field_map = {
             field["name"]: field
             for field in spec_obj["encodings"]["dimensions"] + spec_obj["encodings"]["measures"]
         }
+
+        gw_filters = []
+        for pre_filter in pre_filters:
+            if pre_filter.op == "temporal range":
+                values = [
+                    int(arrow.get(value).timestamp() * 1000)
+                    for value in pre_filter.value
+                ]
+            else:
+                values = pre_filter.value
+
+            gw_filters.append({
+                **field_map[pre_filter.field],
+                "dragId": "gw_" + rand_str(4),
+                "rule": {
+                    "type": pre_filter.op,
+                    "value": values
+                }
+            })
+        return gw_filters
 
     def set_global_pre_filters(self, pre_filters: List[PreFilter]):
         """It will append new filters to exists charts."""
@@ -175,23 +200,14 @@ class StreamlitRenderer:
         """
         cur_spec_obj = json.loads(self.walker.vis_spec)[index]
         cur_spec_obj["config"]["size"]["mode"] = "fixed"
-        field_map = self._get_field_map(cur_spec_obj)
         explore_button_size = 20
         if pre_filters is None:
             pre_filters = self.global_pre_filters
 
         if pre_filters is not None:
-            pre_filters_json = [
-                {
-                    **field_map[pre_filter.field],
-                    "dragId": "gw_" + rand_str(4),
-                    "rule": {
-                        "type": pre_filter.op,
-                        "value": pre_filter.value
-                    }
-                }
-                for pre_filter in pre_filters
-            ]
+            pre_filters_json = self._convert_pre_filters_to_gw_config(
+                pre_filters, cur_spec_obj
+            )
             cur_spec_obj["encodings"]["filters"].extend(pre_filters_json)
 
         if width is None:
