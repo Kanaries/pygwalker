@@ -35,7 +35,7 @@ def _get_spec_from_url(url: str) -> str:
         return resp.read().decode("utf-8")
 
 
-def _get_sepc_from_local(path: str) -> str:
+def _get_spec_from_local(path: str) -> str:
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
@@ -70,7 +70,7 @@ def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
 
     file_exist = os.path.exists(spec)
     if file_exist:
-        return _get_sepc_from_local(spec), "json_file"
+        return _get_spec_from_local(spec), "json_file"
     else:
         with open(spec, "w", encoding="utf-8") as f:
             f.write("")
