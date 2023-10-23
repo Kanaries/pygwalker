@@ -139,6 +139,17 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     }
 
     const computationCallback = getComputationCallback(props);
+    let enhanceAPI;
+    if (props.showCloudTool) {
+        enhanceAPI = {
+            header: {
+                "kanaries-api-key": props.kanariesToken
+            },
+            features: {
+                "askviz": "https://api.kanaries.net/vis/text2gw"
+            }
+        }
+    }
   
     return (
         <React.StrictMode>
@@ -146,7 +157,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
             <Notification />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
             <ShareModal gwRef={gwRef} storeRef={storeRef} open={shareModalOpen} setOpen={setShareModalOpen} />
-            <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={computationCallback} />
+            <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={computationCallback} enhanceAPI={enhanceAPI} />
             <InitModal />
             <Options {...props} toolbar={toolbarConfig} />
         </React.StrictMode>
