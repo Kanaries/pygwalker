@@ -404,6 +404,7 @@ class PygWalker:
             "parseDslType": self.parse_dsl_type,
             "gwMode": self.gw_mode,
             "needLoadLastSpec": True,
+            "kanariesToken": GlobalVarManager.kanaries_api_key,
             **self.other_props,
         }
 
