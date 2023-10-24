@@ -18,9 +18,10 @@ class PrivateSession(requests.Session):
 
     def send(self, request: requests.Request, **kwargs) -> requests.Response:
         resp = super().send(request, **kwargs)
-        if resp.status_code != 200:
-            raise CloudFunctionError(f"Request failed: {resp.text}")
-        resp_json = resp.json()
+        try:
+            resp_json = resp.json()
+        except Exception as e:
+            raise CloudFunctionError(f"Request failed: {resp.text}") from e
         if resp_json["success"] is False:
             raise CloudFunctionError(f"Request failed: {resp_json['message']}")
         return resp
@@ -98,6 +99,22 @@ def _create_notebook(title: str, chart_id: str) -> Dict[str, Any]:
 
 def _upload_file_to_s3(url: str, content: io.BytesIO):
     requests.put(url, content.getvalue(), timeout=300)
+
+
+def write_config_to_cloud(path: str, config: str):
+    """Write config to cloud"""
+    url = f"{GlobalVarManager.kanaries_api_host}/pygConfig"
+    session.put(url, json={
+        "path": path,
+        "config": config
+    })
+
+
+def read_config_from_cloud(path: str) -> str:
+    """Return config, if not exist, return empty string"""
+    url = f"{GlobalVarManager.kanaries_api_host}/pygConfig"
+    resp = session.get(url, params={"path": path}, timeout=15)
+    return resp.json()["data"]["config"]
 
 
 def create_shared_chart(

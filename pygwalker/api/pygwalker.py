@@ -24,7 +24,7 @@ from pygwalker.services.upload_data import (
 )
 from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.services.cloud_service import create_shared_chart
+from pygwalker.services.cloud_service import create_shared_chart, write_config_to_cloud
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker.errors import CloudFunctionError, CsvFileTooLargeError
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
@@ -328,8 +328,11 @@ class PygWalker:
             if self.store_chart_data:
                 spec_obj["chart_map"] = self._get_chart_map_dict(self._chart_map)
 
-            with open(self.spec, "w", encoding="utf-8") as f:
-                f.write(json.dumps(spec_obj))
+            if self.spec_type == "json_file":
+                with open(self.spec, "w", encoding="utf-8") as f:
+                    f.write(json.dumps(spec_obj))
+            if self.spec_type == "json_ksf":
+                write_config_to_cloud(self.spec[6:], json.dumps(spec_obj))
 
         def upload_charts(data: Dict[str, Any]):
             if not GlobalVarManager.kanaries_api_key:

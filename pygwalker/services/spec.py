@@ -7,6 +7,7 @@ import os
 from pygwalker_utils.config import get_config
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.fname_encodings import rename_columns
+from pygwalker.services.cloud_service import read_config_from_cloud
 from pygwalker.errors import InvalidConfigIdError, PrivacyError
 from .fname_encodings import fname_encode
 
@@ -54,6 +55,11 @@ def _is_config_id(config_id: str) -> bool:
 def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
     if not spec or _is_json(spec):
         return spec, "json_string"
+
+    if spec.startswith("ksf://"):
+        if get_config("privacy")[0] == "offline":
+            raise PrivacyError("Due to privacy policy, you can't use this spec offline")
+        return read_config_from_cloud(spec[6:]), "json_ksf"
 
     if spec.startswith(("http:", "https:")):
         if get_config("privacy")[0] == "offline":
