@@ -43,7 +43,7 @@ export function getSaveTool(
     }
 
     const onClick = async () => {
-        if (props.specType !== "json_file") {
+        if (["json_file", "json_ksf"].indexOf(props.specType) === -1) {
             commonStore.setNotification({
                 type: "warning",
                 title: "Tips",
@@ -60,13 +60,17 @@ export function getSaveTool(
             return;
         }
         let chartData = await gwRef.current?.exportChart!("data-url");
-        await communicationStore.comm?.sendMsg("update_spec", {
-            "visSpec": JSON.stringify(storeRef.current?.vizStore.exportViewSpec()!),
-            "chartData": await formatExportedChartDatas(chartData),
-        });
-        hidePreview(props.id);
-        saveSuccess();
-        saveJupyterNotebook();
+        try {
+            await communicationStore.comm?.sendMsg("update_spec", {
+                "visSpec": JSON.stringify(storeRef.current?.vizStore.exportViewSpec()!),
+                "chartData": await formatExportedChartDatas(chartData),
+            });
+            saveSuccess();
+            saveJupyterNotebook();
+        } finally {
+            setSaving(false);
+            hidePreview(props.id);
+        }
     }
 
     useEffect(() => {

@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import commonStore from '../store/common';
 
 interface IResponse {
     data?: any;
@@ -22,6 +23,14 @@ const getCurrentJupyterEnv = () => {
         return 'datalore';
     }
     return "jupyter";
+}
+
+const raiseRequestError = (message: string) => {
+    commonStore.setNotification({
+        type: "error",
+        title: "Error",
+        message: message || "Unknown error",
+    }, 20_000);
 }
 
 const initJupyterCommunication = (gid: string) => {
@@ -62,7 +71,12 @@ const initJupyterCommunication = (gid: string) => {
                 reject(new Error("get result timeout"))
             }, timeout);
             document.addEventListener(getSignalName(rid), (_) => {
-                resolve(bufferMap.get(rid));
+                const resp = bufferMap.get(rid);
+                if (!resp.success) {
+                    raiseRequestError(resp.message);
+                    reject(new Error(resp.message));
+                }
+                resolve(resp);
             });
         });
 
@@ -134,7 +148,12 @@ const initStreamlitCommunication = (gid: string, baseUrl: string) => {
             throw new Error("timeout");
         }, timeout);
         try {
-            return (await sendMsgAsync(action, data)).json();
+            const resp = await (await sendMsgAsync(action, data)).json();
+            if (!resp.success) {
+                raiseRequestError(resp.message);
+                throw new Error(resp.message);
+            }
+            return resp;
         } finally {
             clearTimeout(timer);
         }
@@ -148,7 +167,6 @@ const initStreamlitCommunication = (gid: string, baseUrl: string) => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ gid, rid, action, data }),
-
             }
         )
     }

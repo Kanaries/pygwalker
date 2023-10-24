@@ -1,4 +1,4 @@
-import React, { useState, ReactElement, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import type { IGWHandler } from "@kanaries/graphic-walker/dist/interfaces";
 import type { IGlobalStore } from "@kanaries/graphic-walker/dist/store";
@@ -45,39 +45,27 @@ const ShareModal: React.FC<IShareModal> = observer((props) => {
         );
     };
 
-    const shareFailed = (errorMsg: string | ReactElement) => {
-        commonStore.setNotification(
-            {
-                type: "error",
-                title: "Error",
-                message: errorMsg,
-            },
-            30_000
-        );
-    };
-
     const onClick = async () => {
         if (sharing) return;
         setSharing(true);
 
         let chartData = await props.gwRef.current?.exportChart!("data-url");
-        const resp = await communicationStore.comm?.sendMsg(
-            "upload_charts",
-            {
-                chartName: name,
-                newNotebook: isNewNotebook,
-                visSpec: JSON.stringify(props.storeRef.current?.vizStore.exportViewSpec()!),
-                chartData: await formatExportedChartDatas(chartData!),
-            },
-            120_000
-        );
-        if (resp?.success) {
+        try {
+            const resp = await communicationStore.comm?.sendMsg(
+                "upload_charts",
+                {
+                    chartName: name,
+                    newNotebook: isNewNotebook,
+                    visSpec: JSON.stringify(props.storeRef.current?.vizStore.exportViewSpec()!),
+                    chartData: await formatExportedChartDatas(chartData!),
+                },
+                120_000
+            );
             props.setOpen(false);
-            shareSuccess(resp.data?.shareUrl);
-        } else {
-            shareFailed(resp?.message!);
+            shareSuccess(resp?.data?.shareUrl);
+        } finally {
+            setSharing(false);
         }
-        setSharing(false);
     };
 
     return (
