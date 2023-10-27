@@ -1,11 +1,20 @@
 """
     This module contains all the custom errors used by pygwalker.
 """
+from enum import Enum
+
+
+class ErrorCode(int, Enum):
+    UNKNOWN_ERROR = -1
+    TOKEN_ERROR = 20001
+    CLOUD_CONFIG_LIMIT = 20002
 
 
 class BaseError(Exception):
     """Base class for all exceptions raised by pygwalker."""
-    pass
+    def __init__(self, *args, code: ErrorCode = ErrorCode.UNKNOWN_ERROR) -> None:
+        super().__init__(*args)
+        self.code = code
 
 
 class InvalidConfigIdError(BaseError):

@@ -4,7 +4,7 @@ import commonStore from '../store/common';
 interface IResponse {
     data?: any;
     message?: string;
-    success: boolean;
+    code: number;
 }
 
 interface ICommunication {
@@ -25,11 +25,46 @@ const getCurrentJupyterEnv = () => {
     return "jupyter";
 }
 
-const raiseRequestError = (message: string) => {
+const raiseRequestError = (message: string, code: number) => {
+    let showMsg = (
+        <>{message}</>
+    )
+    switch (code) {
+        case 20001:
+            showMsg = (
+                <>
+                <p className="py-1">kanaries_api_key is not valid.</p>
+                <p className="py-1">Please set kanaries_api_key first.</p>
+                <p className="py-1">If you are not kanaries user, please register it from
+                    <a className="font-semibold px-1" href="https://kanaries.net/home/access" target='_blank'>
+                        https://kanaries.net/home/access
+                    </a>
+                </p>
+                <p className="py-1">Then refer
+                    <a className="font-semibold px-1" href="https://space.kanaries.net/t/how-to-get-api-key-of-kanaries" target='_blank'>
+                        document
+                    </a>
+                    to set kanaries_api_key.</p>
+                </>
+            );
+            break;
+        case 20002:
+            showMsg = (<>
+                <p className="py-1">
+                    The usage of cloud config has reached the upper limit.
+                    If you want to use more cloud config files, please subscribe to different cloud packages according to your usage:
+                    <a className="font-semibold px-1" href="https://kanaries.net/home/pygwalker" target='_blank'>
+                        https://kanaries.net/home/pygwalker
+                    </a>
+                </p>
+            </>)
+            break;
+    }
+    console.log(code)
     commonStore.setNotification({
         type: "error",
         title: "Error",
-        message: message || "Unknown error",
+        message: showMsg || "Unknown error",
     }, 20_000);
 }
 
@@ -72,8 +107,8 @@ const initJupyterCommunication = (gid: string) => {
             }, timeout);
             document.addEventListener(getSignalName(rid), (_) => {
                 const resp = bufferMap.get(rid);
-                if (!resp.success) {
-                    raiseRequestError(resp.message);
+                if (resp.code !== 0) {
+                    raiseRequestError(resp.message, resp.code);
                     reject(new Error(resp.message));
                 }
                 resolve(resp);
@@ -149,8 +184,8 @@ const initStreamlitCommunication = (gid: string, baseUrl: string) => {
         }, timeout);
         try {
             const resp = await (await sendMsgAsync(action, data)).json();
-            if (!resp.success) {
-                raiseRequestError(resp.message);
+            if (resp.code !== 0) {
+                raiseRequestError(resp.message, resp.code);
                 throw new Error(resp.message);
             }
             return resp;

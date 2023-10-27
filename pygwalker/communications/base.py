@@ -1,5 +1,7 @@
 from typing import Any, Callable, Dict
 
+from pygwalker.errors import BaseError, ErrorCode
+
 
 class BaseCommunication:
     """
@@ -23,12 +25,14 @@ class BaseCommunication:
     def _receive_msg(self, action: str, data: Dict[str, Any]) -> Dict[str, Any]:
         handler_func = self._endpoint_map.get(action, None)
         if handler_func is None:
-            return {"success": False, "message": f"Unknown action: {action}"}
+            return {"code": ErrorCode.UNKNOWN_ERROR, "data": None, "message": f"Unknown action: {action}"}
         try:
             data = handler_func(data)
-            return {"success": True, "data": data}
+            return {"code": 0, "data": data, "message": "success"}
+        except BaseError as e:
+            return {"code": e.code, "data": data, "message": str(e)}
         except Exception as e:
-            return {"success": False, "message": str(e)}
+            return {"code": ErrorCode.UNKNOWN_ERROR, "data": data, "message": str(e)}
 
     def register(self, endpoint: str, func: Callable[[Dict[str, Any]], Any]):
         self._endpoint_map[endpoint] = func
