@@ -2,12 +2,15 @@ import os
 
 from typing_extensions import Literal
 
+from .config import get_config
+
 
 class GlobalVarManager:
     """A class to manage global variables."""
     global_gid = 0
     env = None
-    kanaries_api_key = os.getenv("KANARIES_API_KEY", "")
+    privacy = get_config("privacy") or "events"
+    kanaries_api_key = get_config("kanaries_token") or os.getenv("KANARIES_API_KEY", "")
     kanaries_api_host = "https://api.kanaries.net"
 
     @classmethod
@@ -31,3 +34,7 @@ class GlobalVarManager:
     @classmethod
     def set_kanaries_api_host(cls, api_host: str):
         cls.kanaries_api_host = api_host
+
+    @classmethod
+    def set_privacy(cls, privacy: Literal['offline', 'update-only', 'events']):
+        cls.privacy = privacy

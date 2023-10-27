@@ -1,7 +1,7 @@
 from typing import Tuple
 import argparse
 
-from config import (
+from pygwalker.services.config import (
     reset_all_config,
     set_config,
     get_config_params_help,
