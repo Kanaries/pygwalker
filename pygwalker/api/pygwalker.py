@@ -25,6 +25,7 @@ from pygwalker.services.config import get_local_user_id
 from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import create_shared_chart, write_config_to_cloud
+from pygwalker.services.check_update import check_update
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker.errors import CloudFunctionError, CsvFileTooLargeError, ErrorCode
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
@@ -77,6 +78,8 @@ class PygWalker:
         self.use_save_tool = use_save_tool
         self.parse_dsl_type = "server" if isinstance(dataset, Connector) else "client"
         self.gw_mode = "explore"
+        if GlobalVarManager.privacy != "offline":
+            check_update()
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
