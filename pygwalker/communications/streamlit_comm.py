@@ -1,4 +1,3 @@
-from typing import Any, Dict
 import gc
 import json
 
@@ -64,13 +63,3 @@ class StreamlitCommunication(BaseCommunication):
         super().__init__()
         streamlit_comm_map[gid] = self
         self.gid = gid
-
-    def _receive_msg(self, action: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        handler_func = self._endpoint_map.get(action, None)
-        if handler_func is None:
-            return {"success": False, "message": f"Unknown action: {action}"}
-        try:
-            data = handler_func(data)
-            return {"success": True, "data": data}
-        except Exception as e:
-            return {"success": False, "message": str(e)}

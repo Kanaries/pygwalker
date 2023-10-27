@@ -6,7 +6,7 @@ import json
 import requests
 
 from .global_var import GlobalVarManager
-from pygwalker.errors import CloudFunctionError
+from pygwalker.errors import CloudFunctionError, ErrorCode
 
 
 class PrivateSession(requests.Session):
@@ -23,7 +23,7 @@ class PrivateSession(requests.Session):
         except Exception as e:
             raise CloudFunctionError(f"Request failed: {resp.text}") from e
         if resp_json["success"] is False:
-            raise CloudFunctionError(f"Request failed: {resp_json['message']}")
+            raise CloudFunctionError(f"Request failed: {resp_json['message']}", code=resp_json["code"])
         return resp
 
 
@@ -127,11 +127,7 @@ def create_shared_chart(
     thumbnail: str,
 ) -> str:
     if not GlobalVarManager.kanaries_api_key:
-        raise CloudFunctionError((
-            "Please set kanaries_api_key first. "
-            "If you are not kanaries user, please register it from `https://kanaries.net/home/access`. "
-            "If you are kanaries user, please get your api key from `https://kanaries.net/app/u/MarilynMonroe`, go workspace detail page to get it."
-        ))
+        raise CloudFunctionError("no kanaries api key", code=ErrorCode.TOKEN_ERROR)
     dataset_name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
     dataset_info = _upload_dataset_meta(dataset_name)
     dataset_id = dataset_info["datasetId"]

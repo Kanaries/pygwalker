@@ -26,7 +26,7 @@ from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import create_shared_chart, write_config_to_cloud
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
-from pygwalker.errors import CloudFunctionError, CsvFileTooLargeError
+from pygwalker.errors import CloudFunctionError, CsvFileTooLargeError, ErrorCode
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__
 
@@ -66,7 +66,10 @@ class PygWalker:
         self.data_source_id = rand_str()
         self.other_props = kwargs
         self.tunnel_id = "tunnel!"
-        self.show_cloud_tool = show_cloud_tool
+        if GlobalVarManager.privacy == "offline":
+            self.show_cloud_tool = False
+        else:
+            self.show_cloud_tool = show_cloud_tool
         self.use_preview = use_preview
         self.store_chart_data = store_chart_data
         self._init_spec(spec, self.field_specs)
@@ -336,7 +339,7 @@ class PygWalker:
 
         def upload_charts(data: Dict[str, Any]):
             if not GlobalVarManager.kanaries_api_key:
-                raise CloudFunctionError("no_kanaries_api_key")
+                raise CloudFunctionError("no_kanaries_api_key", code=ErrorCode.TOKEN_ERROR)
             self.vis_spec = data["visSpec"]
             chart_data = ChartData.parse_obj(data["chartData"])
             share_url = self._upload_charts_to_could(
