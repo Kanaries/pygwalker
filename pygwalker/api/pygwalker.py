@@ -21,13 +21,14 @@ from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnWidgets,
     BatchUploadDatasToolOnJupyter
 )
+from pygwalker.services.config import get_local_user_id
 from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import create_shared_chart, write_config_to_cloud
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker.errors import CloudFunctionError, CsvFileTooLargeError
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
-from pygwalker import __version__, __hash__
+from pygwalker import __version__
 
 
 class PygWalker:
@@ -383,7 +384,7 @@ class PygWalker:
             "dataSource": data_source,
             "len": len(data_source),
             "version": __version__,
-            "hashcode": __hash__,
+            "hashcode": get_local_user_id(),
             "userConfig": {
                 "privacy": GlobalVarManager.privacy,
             },

@@ -1,6 +1,9 @@
 import os
 import json
 from typing import List, Optional, Dict
+from functools import lru_cache
+
+from pygwalker.utils.randoms import generate_hash_code
 
 from appdirs import user_config_dir
 
@@ -12,6 +15,7 @@ DEFAULT_CONFIG = {
 CONFIG_KEYS = list(DEFAULT_CONFIG.keys())
 APP_DIR = user_config_dir("pygwalker")
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
+USER_CONFIG_PATH = os.path.join(APP_DIR, "user_config.json")
 
 
 class ConfigItem:
@@ -65,7 +69,7 @@ def get_config_params_help() -> str:
 
 def _read_and_create_file(path: str, default_content: Dict[str, str]) -> Dict[str, str]:
     if not os.path.exists(path):
-        os.makedirs(os.path.dirname(path))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w', encoding="utf-8") as f:
             json.dump(default_content, f, indent=4)
 
@@ -134,3 +138,11 @@ def get_config_dict() -> Dict[str, str]:
 def get_all_config_str() -> str:
     config = _read_and_create_file(CONFIG_PATH, DEFAULT_CONFIG)
     return json.dumps(config, indent=4)
+
+
+@lru_cache(maxsize=1)
+def get_local_user_id() -> str:
+    return _read_and_create_file(
+        USER_CONFIG_PATH,
+        {"user_id": generate_hash_code()}
+    ).get("user_id", "")

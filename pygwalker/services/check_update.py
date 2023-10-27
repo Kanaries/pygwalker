@@ -7,7 +7,9 @@ import logging
 import sys
 import json
 
-from pygwalker import __version__, __hash__
+from .config import get_local_user_id
+from pygwalker import __version__
+
 
 _UPDATE_URL = 'https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates'
 
@@ -34,7 +36,7 @@ def _request_on_python(url: str) -> Dict[str, Any]:
 
 
 def _check_update() -> Dict[str, Any]:
-    payload = {'pkg': 'pygwalker', 'v': __version__, 'hashcode': __hash__}
+    payload = {'pkg': 'pygwalker', 'v': __version__, 'hashcode': get_local_user_id()}
     request_func = _request_on_python
 
     if "pyodide" in sys.modules:
