@@ -6,7 +6,7 @@ import json
 from typing_extensions import Literal
 import ipywidgets
 
-from pygwalker_utils.config import get_config
+from pygwalker_utils.config import get_config_dict
 from pygwalker._typing import DataFrame
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html, display_on_streamlit
@@ -385,7 +385,7 @@ class PygWalker:
             "len": len(data_source),
             "version": __version__,
             "hashcode": __hash__,
-            "userConfig": get_config()[0],
+            "userConfig": get_config_dict(),
             "visSpec": self.vis_spec,
             "rawFields": self.field_specs,
             "hideDataSourceConfig": self.hidedata_source_config,

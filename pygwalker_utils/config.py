@@ -1,114 +1,136 @@
-#!/usr/bin/env python
-"""Load configuration files.
-The order
-"""
-import os, sys, json
-CONFIG, DEFAULT_CONFIG = {}, {}
-HERE = os.path.dirname(os.path.abspath(__file__))
-def load_default_config():
-    """Load default configuration file.
+import os
+import json
+from typing import List, Optional, Dict
+
+from appdirs import user_config_dir
+
+
+DEFAULT_CONFIG = {
+    "privacy": "events",
+    "kanaries_token": "",
+}
+CONFIG_KEYS = list(DEFAULT_CONFIG.keys())
+APP_DIR = user_config_dir("pygwalker")
+CONFIG_PATH = os.path.join(APP_DIR, "config.json")
+
+
+class ConfigItem:
+    """Configuration item."""
+    def __init__(
+        self,
+        name: str,
+        type_list: List[str],
+        default: Optional[str] = None,
+        description: str = ''
+    ) -> None:
+        self.name = name
+        self.type_list = type_list
+        self.default = default
+        self.description = description
+
+    def __str__(self) -> str:
+        return f"- {self.name}  {self.type_list} (default: {self.default}).{self.description}"
+
+
+privacy_item = ConfigItem(
+    "privacy",
+    ["offline", "update-only", "events"],
+    default="events",
+    description="""
+    "offline": fully offline, no data is send or api is requested
+    "update-only": only check whether this is a new version of pygwalker to update
+    "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.
     """
-    global CONFIG, DEFAULT_CONFIG
-    with open(os.path.join(HERE, "defaults.json"), 'r', encoding='utf-8') as f:
-        DEFAULT_CONFIG = json.load(f)
-    CONFIG.update(DEFAULT_CONFIG)
-    conf_list = [
-        os.path.join(sys.prefix, "etc", "pygwalker", "config.json"),
-        os.path.join(os.path.expanduser('~'), ".config", "pygwalker", "config.json")
-    ]
-    for conf in conf_list:
-        try:
-            with open(conf, 'r', encoding='utf-8') as f:
-                CONFIG.update(json.load(f))
-        except:
-            pass
-load_default_config()
-
-def load_config(filename: str, encoding='utf-8'):
-    """Load user-specified configuration file.
-    
-    Args:
-        filename (str): user-specified configuration filename
-        encoding (str, optional): Defaults to 'utf-8'.
+)
+kanati_token_item = ConfigItem(
+    "kanaries_token",
+    ["your kanaries token"],
+    default="empty string",
+    description="""
+    your kanaries token, you can get it from https://kanaries.net.
+    refer: https://space.kanaries.net/t/how-to-get-api-key-of-kanaries.
+    by kanaries token, you can use kanaries service in pygwalker, such as share chart, share config.
     """
-    try:
-        CONFIG.update(json.load(open(filename, 'r', encoding=encoding)))
-    except Exception as e:
-        import logging
-        logging.warn(f"Cannot load user-specified configuration file {filename}: {e}")
+)
+config_items = [privacy_item, kanati_token_item]
 
-class Item:
-    __slots__ = ['name', 'type', 'default', 'description']
-    def __init__(self, name: str, type_, default=None, description='') -> None:
-        self.name, self.type, self.default, self.description = name, type_, default, description
-items = [
-Item('privacy', ['offline', 'get-only', 'meta', 'any'], 'meta', description="""
-    "offline"\t: no data will be transfered other than the front-end and back-end of the notebook.
-    "get-only"\t: the data will not be uploaded but only fetched from external servers.
-    "meta" \t: only the desensitized data will be processed by external servers. There might be some server-side processing tasks performed on the metadata in future versions.
-    "any" \t: the data can be processed by external services."""),
-]
-        
-def print_help():
-    print("usage: pygwalker config [--set [key=value ...]] | [--reset [key ...]].\n")
-    print("Available configurations:")
-    for item in items:
-        print(f"- {item.name}\t {item.type} (default: {item.default}).{item.description}")
 
-def set_config(config: dict, save=False):
+def get_config_params_help() -> str:
+    help_str = ""
+    help_str += "Available configurations:\n\n"
+    for item in config_items: 
+        help_str += (str(item) + "\n")
+    return help_str
+
+
+def _read_and_create_file(path: str, default_content: Dict[str, str]) -> Dict[str, str]:
+    if not os.path.exists(path):
+        os.makedirs(os.path.dirname(path))
+        with open(path, 'w', encoding="utf-8") as f:
+            json.dump(default_content, f, indent=4)
+
+    with open(path, 'r', encoding="utf-8") as f:
+        file_content = json.load(f)
+    return file_content
+
+
+def set_config(new_config: Dict[str, str]):
     """Set configuration.
-    
+
     Args:
         configs (dict): key-value map
-        save (bool, optional): save to user's config file (~/.config/pygwalker/config.json). Defaults to False.
+        save (bool, optional): save to user's config path. Defaults to False.
     """
-    CONFIG.update(config)
-    if save:
-        filename = os.path.join(os.path.expanduser('~'), ".config", "pygwalker", "config.json")
-        user_config = {}
-        try:
-            with open(filename, 'r') as f:
-                user_config.update(json.load(f))
-        except Exception as e:  # user config file not existed, create it.
-            import logging
-            logging.info(f"Cannot access user's config file {filename}. (creating it...)")
-            logging.debug(f"{e}")
-            user_config.update(DEFAULT_CONFIG)
-        try:
-            user_config.update(config)
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            # overwrite to file
-            with open(filename, 'w') as f:
-                json.dump(user_config, f)
-        except Exception as e:
-            logging.warning(f"Failed to write config file {filename}: {e}")
+    config = _read_and_create_file(CONFIG_PATH, DEFAULT_CONFIG)
 
-def reset_config(keys: list=None, save=False):
+    config.update(new_config)
+
+    with open(CONFIG_PATH, 'w', encoding="utf-8") as f:
+        json.dump(config, f, indent=4)
+
+
+def reset_config(keys: List[str]):
     """Unset user configuration and use default value instead.
-    
     Args:
         keys (List[str], optional): Defaults to None.
     """
-    if keys is None:
-        set_config(DEFAULT_CONFIG, save=save)
-    else:
-        config = {}
-        for k in keys:
-            if k in DEFAULT_CONFIG:
-                config[k] = DEFAULT_CONFIG[k]
-        set_config(config, save=save)
-        
+    config = _read_and_create_file(CONFIG_PATH, DEFAULT_CONFIG)
 
-def get_config(key: str=None, default=None):
+    for key in keys:
+        if key in DEFAULT_CONFIG:
+            config[key] = DEFAULT_CONFIG[key]
+        else:
+            config.pop(key, None)
+
+    with open(CONFIG_PATH, 'w', encoding="utf-8") as f:
+        json.dump(config, f, indent=4)
+
+
+def reset_all_config():
+    """Unset all user configuration and use default value instead."""
+    with open(CONFIG_PATH, 'w', encoding="utf-8") as f:
+        json.dump(DEFAULT_CONFIG, f, indent=4)
+
+
+def get_config(key: str) -> str:
     """Get configuration.
-    
+
     Args:
         key (str, optional): Defaults to None.
         default (any, optional): Defaults to None.
-    
+
     Returns:
         value, default_value: value of the key
     """
-    if key is None:
-        return CONFIG, DEFAULT_CONFIG
-    return CONFIG.get(key, default), DEFAULT_CONFIG.get(key, default)
+    config = _read_and_create_file(CONFIG_PATH, DEFAULT_CONFIG)
+    return config.get(key, "")
+
+
+def get_config_dict() -> Dict[str, str]:
+    config = _read_and_create_file(CONFIG_PATH, DEFAULT_CONFIG)
+    return config
+
+
+def get_all_config_str() -> str:
+    config = _read_and_create_file(CONFIG_PATH, DEFAULT_CONFIG)
+    return json.dumps(config, indent=4)
