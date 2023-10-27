@@ -1,44 +1,100 @@
-#!/usr/bin/env python
+from typing import Tuple
 import argparse
-from . import config
 
-parser = argparse.ArgumentParser(description='PyGWalker: Combining Jupyter Notebook with a Tableau-like UI')
+from config import (
+    reset_all_config,
+    set_config,
+    get_config_params_help,
+    reset_config,
+    get_all_config_str,
+    CONFIG_PATH
+)
+
+parser = argparse.ArgumentParser(
+    prog="pygwalker",
+    description='PyGWalker: Combining Jupyter Notebook with a Tableau-like UI'
+)
 subparsers = parser.add_subparsers(dest='command')
-# config
-config_parser = subparsers.add_parser('config', help='Modify configuration file. (default: ~/.config/pygwalker/config.json)', add_help=True, description='Modify configuration file.')
-config_parser.add_argument('--set', nargs='*', metavar='key=value', help='Set configuration. e.g. "pygwalker config --set privacy=get-only"')
-config_parser.add_argument('--reset', nargs='*', metavar='key', help='Reset user configuration and use default values instead. e.g. "pygwalker config --reset privacy"')
-config_parser.add_argument('--reset-all', action='store_true', help='Reset all user configuration and use default values instead. e.g. "pygwalker config --reset-all"')
-config_parser.add_argument('--list', action='store_true', help='List current used configuration.')
-# other commands
+
+# config command
+config_parser = subparsers.add_parser(
+    'config',
+    help=f'Modify configuration file. (default: {CONFIG_PATH})',
+    add_help=True,
+    description=f'Modify configuration file. (default: {CONFIG_PATH}) \n' + get_config_params_help(),
+    formatter_class=argparse.RawTextHelpFormatter
+)
+config_parser.add_argument(
+    '--set',
+    nargs='*',
+    metavar='key=value',
+    help='Set configuration. e.g. "pygwalker config --set privacy=update-only"'
+)
+config_parser.add_argument(
+    '--reset',
+    nargs='*',
+    metavar='key',
+    help='Reset user configuration and use default values instead. e.g. "pygwalker config --reset privacy"'
+)
+config_parser.add_argument(
+    '--reset-all',
+    action='store_true',
+    help='Reset all user configuration and use default values instead. e.g. "pygwalker config --reset-all"'
+)
+config_parser.add_argument(
+    '--list',
+    action='store_true',
+    help='List current used configuration.'
+)
+
+
+def command_set_config(value: Tuple[str]):
+    config = dict(
+        item.split('=')
+        for item in value
+    )
+    set_config(config)
+
+
+def command_reset_config(value: Tuple[str]):
+    reset_config(value)
+
+
+def command_reset_all_config(_):
+    reset_all_config()
+
+
+def command_list_config(_):
+    config = get_all_config_str()
+    print("Current configuration:")
+    print(config)
+
 
 def main():
+    conifg_command_list = [
+        ("set", command_set_config),
+        ("reset", command_reset_config),
+        ("reset_all", command_reset_all_config),
+        ("list", command_list_config)
+    ]
+
     args = parser.parse_args()
+
     if args.command is None:
         parser.print_help()
-    elif args.command == 'config':
-        if args.set is not None:
-            if len(args.set):
-                configs = {}
-                for item in args.set:
-                    k, v = item.split('=')
-                    configs[k] = v
-                config.set_config(configs, save=True)
-            else:
-                config.print_help()
-        elif args.reset is not None:
-            if len(args.reset):
-                config.reset_config(args.reset, save=True)
-            else:
-                config.print_help()
-        elif args.reset_all:
-            config.reset_config(save=True)
-        elif args.list:
-            conf, default_conf = config.get_config()
-            print("PyGWalker Configuration:\n\n{}\n".format('\n'.join([f"{k}={v}\t# {default_conf.get(k, None)}" for k, v in conf.items()])))
-        else:
-            config_parser.print_help()
-    # other commands
+        return
+
+    if args.command == 'config':
+        for action, action_func in conifg_command_list:
+            value = getattr(args, action)
+            if value:
+                action_func(value)
+                return
+        config_parser.print_help()
+        return
+
+    parser.print_help()
+
 
 if __name__ == '__main__':
     main()

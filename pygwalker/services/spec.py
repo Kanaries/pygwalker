@@ -57,17 +57,17 @@ def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
         return spec, "json_string"
 
     if spec.startswith("ksf://"):
-        if get_config("privacy")[0] == "offline":
+        if get_config("privacy") == "offline":
             raise PrivacyError("Due to privacy policy, you can't use this spec offline")
         return read_config_from_cloud(spec[6:]), "json_ksf"
 
     if spec.startswith(("http:", "https:")):
-        if get_config("privacy")[0] == "offline":
+        if get_config("privacy") == "offline":
             raise PrivacyError("Due to privacy policy, you can't use this spec offline")
         return _get_spec_from_url(spec), "json_http"
 
     if _is_config_id(spec):
-        if get_config("privacy")[0] == "offline":
+        if get_config("privacy") == "offline":
             raise PrivacyError("Due to privacy policy, you can't use this spec offline")
         return _get_spec_from_server(spec), "json_server"
 

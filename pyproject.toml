@@ -25,7 +25,8 @@ dependencies = [
     "requests",
     "arrow",
     "sqlalchemy",
-    "gw_dsl_parser==0.1.6a6"
+    "gw_dsl_parser==0.1.6a6",
+    "appdirs"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
@@ -59,8 +60,9 @@ dev = [
     "build",
     "twine",
 ]
+
 [project.scripts]
-pygwalker = "pygwalker_utils.__main__:main"
+pygwalker = "bin.pygwalker_command:main"
 
 [tool.hatch]
 # metadata = { allow-direct-references = true }
@@ -69,7 +71,7 @@ version = { path = "pygwalker/__init__.py" }
 [tool.hatch.build]
 include = [
     "pygwalker",
-    "pygwalker_utils",
+    "bin",
     "pygwalker/templates/**",
     "pygwalker/templates/**/*",
 ]
@@ -96,15 +98,13 @@ build_cmd = "dev"
 
 
 [tool.hatch.build.targets.wheel]
-# force-include = 
-shared-data = { "pygwalker_utils/defaults.json" = "etc/pygwalker/config.json" }
 
 [tool.hatch.build.targets.sdist]
 include = [
     "README.md", "LICENSE",
     "app",
     "pygwalker",
-    "pygwalker_utils",
+    "bin",
     "pygwalker/templates/**",
     "pygwalker/templates/**/*",
     "scripts",
