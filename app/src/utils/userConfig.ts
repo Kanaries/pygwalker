@@ -1,11 +1,11 @@
 import { IUserConfig } from "../interfaces";
 
 let config: IUserConfig = {
-    privacy: 'meta',
+    privacy: 'events',
 };
 
 export function checkUploadPrivacy() {
-    return config.privacy === "meta" || config.privacy === "any";
+    return config.privacy !== "offline";
 }
 
 export function setConfig(newConfig: IUserConfig) {

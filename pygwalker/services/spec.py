@@ -4,7 +4,7 @@ from distutils.version import StrictVersion
 import json
 import os
 
-from pygwalker_utils.config import get_config
+from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.fname_encodings import rename_columns
 from pygwalker.services.cloud_service import read_config_from_cloud
@@ -57,17 +57,17 @@ def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
         return spec, "json_string"
 
     if spec.startswith("ksf://"):
-        if get_config("privacy") == "offline":
+        if GlobalVarManager.privacy == "offline":
             raise PrivacyError("Due to privacy policy, you can't use this spec offline")
         return read_config_from_cloud(spec[6:]), "json_ksf"
 
     if spec.startswith(("http:", "https:")):
-        if get_config("privacy") == "offline":
+        if GlobalVarManager.privacy == "offline":
             raise PrivacyError("Due to privacy policy, you can't use this spec offline")
         return _get_spec_from_url(spec), "json_http"
 
     if _is_config_id(spec):
-        if get_config("privacy") == "offline":
+        if GlobalVarManager.privacy == "offline":
             raise PrivacyError("Due to privacy policy, you can't use this spec offline")
         return _get_spec_from_server(spec), "json_server"
 

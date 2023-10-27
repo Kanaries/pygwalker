@@ -29,5 +29,5 @@ export interface IDataSourceProps {
 
 export interface IUserConfig {
     [key: string]: any;
-    privacy: 'offline' | 'get-only' | 'meta' | 'any';
+    privacy: 'events' | 'update-only' | 'offline';
 }
