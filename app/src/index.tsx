@@ -12,7 +12,7 @@ import { IAppProps } from './interfaces';
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
 import commonStore from "./store/common";
-import { initJupyterCommunication, initStreamlitCommunication } from "./utils/communication";
+import { initJupyterCommunication, initHttpCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
@@ -201,8 +201,8 @@ const initOnJupyter = async(props: IAppProps) => {
     hidePreview(props.id);
 }
 
-const initOnStreamlit = async(props: IAppProps) => {
-    const comm = initStreamlitCommunication(props.id, props.streamlitBaseUrl);
+const initOnHttpCommunication = async(props: IAppProps) => {
+    const comm = initHttpCommunication(props.id, props.communicationUrl);
     communicationStore.setComm(comm);
     if (props.gwMode === "explore" && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
@@ -223,7 +223,10 @@ function GWalker(props: IAppProps, id: string) {
             preRender = initOnJupyter;
             break;
         case "streamlit":
-            preRender = initOnStreamlit;
+            preRender = initOnHttpCommunication;
+            break;
+        case "gradio":
+            preRender = initOnHttpCommunication;
             break;
         default:
             preRender = defaultInit;

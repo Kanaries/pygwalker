@@ -12,9 +12,10 @@ from .base import BaseCommunication
 
 streamlit_comm_map = {}
 
-BASE_URL_PATH = config.get_option("server.baseUrlPath").strip("/")
+_STREAMLIT_PREFIX_URL = config.get_option("server.baseUrlPath").strip("/")
+BASE_URL_PATH = (_STREAMLIT_PREFIX_URL + "/_stcore/_pygwalker/comm/").strip("/")
 PYGWALKER_API_PATH = make_url_path_regex(
-    BASE_URL_PATH,
+    _STREAMLIT_PREFIX_URL,
     r"/_stcore/_pygwalker/comm/(.+)"
 )
 
