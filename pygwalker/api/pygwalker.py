@@ -121,6 +121,15 @@ class PygWalker:
         comm = StreamlitCommunication(str(self.gid))
         self._init_callback(comm)
 
+    def init_gradio_comm(self):
+        """
+        Initialize the communication of gradio.
+        """
+        from pygwalker.communications.gradio_comm import GradioCommunication
+
+        comm = GradioCommunication(str(self.gid))
+        self._init_callback(comm)
+
     def get_html_on_streamlit_v2(
         self,
         *,
@@ -140,7 +149,7 @@ class PygWalker:
         else:
             props = self._get_props("streamlit")
 
-        props["streamlitBaseUrl"] = BASE_URL_PATH
+        props["communicationUrl"] = BASE_URL_PATH
         props["gwMode"] = mode
         if vis_spec is not None:
             props["visSpec"] = vis_spec

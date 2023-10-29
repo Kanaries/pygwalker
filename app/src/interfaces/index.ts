@@ -15,7 +15,7 @@ export interface IAppProps extends IGWProps {
     useKernelCalc: boolean;
     useSaveTool: boolean;
     parseDslType: "server" | "client";
-    streamlitBaseUrl: string;
+    communicationUrl: string;
     gwMode: "explore" | "renderer";
     needLoadLastSpec: boolean;
     // temporary solution of saving token

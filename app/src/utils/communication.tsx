@@ -168,14 +168,14 @@ const initJupyterCommunication = (gid: string) => {
     }
 }
 
-const initStreamlitCommunication = (gid: string, baseUrl: string) => {
+const initHttpCommunication = (gid: string, baseUrl: string) => {
     // temporary solution in streamlit could
     const domain = window.parent.document.location.host.split(".").slice(-2).join('.');
     let url = "";
     if (domain === "streamlit.app") {
         url = `/~/+/_stcore/_pygwalker/comm/${gid}`
     } else {
-        url = baseUrl ? `/${baseUrl}/_stcore/_pygwalker/comm/${gid}` : `/_stcore/_pygwalker/comm/${gid}`
+        url = `/${baseUrl}/${gid}`
     }
 
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
@@ -216,4 +216,4 @@ const initStreamlitCommunication = (gid: string, baseUrl: string) => {
 }
 
 export type { ICommunication };
-export { initJupyterCommunication, initStreamlitCommunication };
+export { initJupyterCommunication, initHttpCommunication };
