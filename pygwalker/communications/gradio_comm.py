@@ -1,5 +1,7 @@
 import json
+import gc
 
+from fastapi import FastAPI
 from starlette.routing import Route
 from starlette.responses import JSONResponse, Response
 from starlette.requests import Request
@@ -42,3 +44,16 @@ PYGWALKER_ROUTE = Route(
     _pygwalker_router,
     methods=["POST"]
 )
+
+
+# it will work when gradio server reload
+def _hack_gradio_server():
+    for obj in gc.get_objects():
+        if isinstance(obj, FastAPI):
+            for index, route in enumerate(obj.routes):
+                if route.path == "/_pygwalker/comm/{gid}":
+                    obj.routes[index] = PYGWALKER_ROUTE
+                    return
+
+
+_hack_gradio_server()
