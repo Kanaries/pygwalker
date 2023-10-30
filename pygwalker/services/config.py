@@ -68,14 +68,17 @@ def get_config_params_help() -> str:
 
 
 def _read_and_create_file(path: str, default_content: Dict[str, str]) -> Dict[str, str]:
-    if not os.path.exists(path):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, 'w', encoding="utf-8") as f:
-            json.dump(default_content, f, indent=4)
+    try:
+        if not os.path.exists(path):
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, 'w', encoding="utf-8") as f:
+                json.dump(default_content, f, indent=4)
 
-    with open(path, 'r', encoding="utf-8") as f:
-        file_content = json.load(f)
-    return file_content
+        with open(path, 'r', encoding="utf-8") as f:
+            file_content = json.load(f)
+        return file_content
+    except Exception:
+        return default_content
 
 
 def set_config(new_config: Dict[str, str]):
