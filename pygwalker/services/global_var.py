@@ -12,6 +12,7 @@ class GlobalVarManager:
     privacy = get_config("privacy") or "events"
     kanaries_api_key = get_config("kanaries_token") or os.getenv("KANARIES_API_KEY", "")
     kanaries_api_host = "https://api.kanaries.net"
+    kanaries_main_host = "https://kanaries.net"
 
     @classmethod
     def get_global_gid(cls) -> int:
@@ -34,6 +35,10 @@ class GlobalVarManager:
     @classmethod
     def set_kanaries_api_host(cls, api_host: str):
         cls.kanaries_api_host = api_host
+
+    @classmethod
+    def set_kanaries_main_host(cls, main_host: str):
+        cls.kanaries_main_host = main_host
 
     @classmethod
     def set_privacy(cls, privacy: Literal['offline', 'update-only', 'events']):
