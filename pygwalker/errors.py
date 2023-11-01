@@ -8,6 +8,7 @@ class ErrorCode(int, Enum):
     UNKNOWN_ERROR = -1
     TOKEN_ERROR = 20001
     CLOUD_CONFIG_LIMIT = 20002
+    CLOUD_CHART_NOT_FOUND = 20003
 
 
 class BaseError(Exception):
