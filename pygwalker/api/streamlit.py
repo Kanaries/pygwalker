@@ -7,7 +7,7 @@ import arrow
 import streamlit.components.v1 as components
 
 from .pygwalker import PygWalker
-from pygwalker.communications.streamlit_comm import hack_streamlit_server
+from pygwalker.communications.streamlit_comm import hack_streamlit_server, BASE_URL_PATH
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
@@ -40,59 +40,7 @@ def init_streamlit_comm():
     hack_streamlit_server()
 
 
-def get_streamlit_html(
-    dataset: Union[DataFrame, Connector],
-    gid: Union[int, str] = None,
-    *,
-    fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
-    hideDataSourceConfig: bool = True,
-    themeKey: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
-    spec: str = "",
-    use_kernel_calc: bool = False,
-    debug: bool = False,
-    **kwargs
-):
-    """Get pygwalker html render to streamlit
-
-    Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
-        - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
-
-    Kargs:
-        - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-        - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
-        - themeKey ('vega' | 'g2'): theme type.
-        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
-        - spec (str): chart config data. config id, json, remote file url
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
-        - debug (bool): Whether to use debug mode, Default to False.
-    """
-    if fieldSpecs is None:
-        fieldSpecs = {}
-
-    walker = PygWalker(
-        gid=gid,
-        dataset=dataset,
-        field_specs=fieldSpecs,
-        spec=spec,
-        source_invoke_code="",
-        hidedata_source_config=hideDataSourceConfig,
-        theme_key=themeKey,
-        dark=dark,
-        show_cloud_tool=False,
-        use_preview=False,
-        store_chart_data=False,
-        use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
-        use_save_tool=debug,
-        **kwargs
-    )
-
-    walker.init_streamlit_comm()
-
-    return walker.get_html_on_streamlit_v2()
-
-
+# pylint: disable=protected-access
 class StreamlitRenderer:
     """Streamlit Renderer"""
     def __init__(
@@ -142,6 +90,29 @@ class StreamlitRenderer:
         self.walker.init_streamlit_comm()
         self.global_pre_filters = None
 
+    def _get_html(
+        self,
+        *,
+        mode: Literal["explore", "renderer"] = "explore",
+        vis_spec: Optional[str] = None,
+        **params: Dict[str, Any]
+    ) -> str:
+        """
+        Get the html for streamlit.
+        Params will update origin props.
+        """
+        props = self.walker._get_props("streamlit")
+
+        props["communicationUrl"] = BASE_URL_PATH
+        props["gwMode"] = mode
+        if vis_spec is not None:
+            props["visSpec"] = vis_spec
+
+        props.update(params)
+
+        html = self.walker._get_render_iframe(props, False)
+        return html
+
     def _convert_pre_filters_to_gw_config(
         self,
         pre_filters: List[PreFilter],
@@ -183,7 +154,7 @@ class StreamlitRenderer:
         scrolling: bool = False,
     ) -> "DeltaGenerator":
         """Render explore UI(it can drag and drop fields)"""
-        html = self.walker.get_html_on_streamlit_v2()
+        html = self._get_html()
         return components.html(html, height=height, width=width, scrolling=scrolling)
 
     def render_pure_chart(
@@ -223,12 +194,12 @@ class StreamlitRenderer:
         else:
             cur_spec_obj["config"]["size"]["height"] = height
 
-        html = self.walker.get_html_on_streamlit_v2(
+        html = self._get_html(
             mode="renderer",
             vis_spec=json.dumps([cur_spec_obj])
         )
 
-        explore_html = self.walker.get_html_on_streamlit_v2(
+        explore_html = self._get_html(
             vis_spec=json.dumps([cur_spec_obj]),
             needLoadLastSpec=False,
             useSaveTool=False
@@ -236,3 +207,48 @@ class StreamlitRenderer:
         render_explore_modal_button(explore_html, left, explore_button_size)
 
         return components.html(html, height=height, width=width, scrolling=scrolling)
+
+
+def get_streamlit_html(
+    dataset: Union[DataFrame, Connector],
+    gid: Union[int, str] = None,
+    *,
+    fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
+    themeKey: Literal['vega', 'g2'] = 'g2',
+    dark: Literal['media', 'light', 'dark'] = 'media',
+    spec: str = "",
+    use_kernel_calc: bool = False,
+    debug: bool = False,
+    **kwargs
+) -> str:
+    """Get pygwalker html render to streamlit
+
+    Args:
+        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+
+    Kargs:
+        - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - themeKey ('vega' | 'g2'): theme type.
+        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - spec (str): chart config data. config id, json, remote file url
+        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
+        - debug (bool): Whether to use debug mode, Default to False.
+    """
+    if fieldSpecs is None:
+        fieldSpecs = {}
+
+    renderer = StreamlitRenderer(
+        gid=gid,
+        dataset=dataset,
+        field_specs=fieldSpecs,
+        spec=spec,
+        source_invoke_code="",
+        theme_key=themeKey,
+        dark=dark,
+        debug=debug,
+        use_kernel_calc=use_kernel_calc,
+        **kwargs
+    )
+
+    return renderer._get_html()

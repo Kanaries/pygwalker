@@ -127,35 +127,6 @@ class PygWalker:
         comm = GradioCommunication(str(self.gid))
         self._init_callback(comm)
 
-    def get_html_on_streamlit_v2(
-        self,
-        *,
-        mode: Literal["explore", "renderer"] = "explore",
-        vis_spec: Optional[str] = None,
-        **params: Dict[str, Any]
-    ) -> str:
-        """
-        Get the html for streamlit v2.
-        Params will update origin props.
-        """
-        from pygwalker.communications.streamlit_comm import BASE_URL_PATH
-
-        if self.use_kernel_calc:
-            data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
-            props = self._get_props("streamlit", data_source)
-        else:
-            props = self._get_props("streamlit")
-
-        props["communicationUrl"] = BASE_URL_PATH
-        props["gwMode"] = mode
-        if vis_spec is not None:
-            props["visSpec"] = vis_spec
-
-        props.update(params)
-
-        html = self._get_render_iframe(props, False)
-        return html
-
     def display_on_convert_html(self):
         """
         Display on jupyter-nbconvert html.
