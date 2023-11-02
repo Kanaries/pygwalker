@@ -6,11 +6,6 @@ import ipywidgets
 DISPLAY_HANDLER = {}
 
 
-def display_on_streamlit(html: str):
-    import streamlit.components.v1 as components
-    components.html(html, height=1000, scrolling=True)
-
-
 def display_html(
     html: Union[str, HTML, ipywidgets.Widget],
     *,

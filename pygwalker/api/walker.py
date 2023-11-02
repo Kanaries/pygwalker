@@ -16,7 +16,7 @@ def walk(
     dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
-    env: Literal['Jupyter', 'Streamlit', 'JupyterWidget'] = 'JupyterWidget',
+    env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
     hideDataSourceConfig: bool = True,
     themeKey: Literal['vega', 'g2'] = 'g2',
@@ -36,7 +36,7 @@ def walk(
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
-        - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
+        - env: (Literal['Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterWidget'
         - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         - themeKey ('vega' | 'g2'): theme type.
@@ -79,7 +79,6 @@ def walk(
         env = "JupyterConvert"
 
     env_display_map = {
-        "Streamlit": walker.display_on_streamlit,
         "JupyterWidget": walker.display_on_jupyter_use_widgets,
         "Jupyter": walker.display_on_jupyter,
         "JupyterConvert": walker.display_on_convert_html,
