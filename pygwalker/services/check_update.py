@@ -2,7 +2,6 @@ from typing import Dict, Any, Coroutine
 from urllib import request
 from threading import Thread
 import asyncio
-import traceback
 import logging
 import sys
 import json
@@ -53,7 +52,7 @@ def _check_update() -> Dict[str, Any]:
             result = _sync_get_async_result(result)
         return result
     except:
-        logger.warning(traceback.format_exc())
+        pass
 
 
 def check_update() -> None:
