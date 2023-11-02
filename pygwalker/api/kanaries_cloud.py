@@ -4,25 +4,28 @@ from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
 from pygwalker.utils.display import display_html
-from pygwalker.services.cloud_service import create_cloud_graphic_walker
+from pygwalker.services.cloud_service import create_cloud_graphic_walker, get_cloud_graphic_walker
 
 
-def walk_on_cloud(
+def create_cloud_walker(
     dataset: DataFrame,
     *,
-    name: str,
+    chart_name: str,
     workspace_name: str,
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
-):
-    """Walk through pandas.DataFrame df with Graphic Walker
+) -> str:
+    """Create a pygwalker in kanaries cloud
 
     Args:
         - dataset (pl.DataFrame | pd.DataFrame, optional): dataframe.
 
     Kargs:
-        - name (str): pygwalker name in kanaries cloud.
+        - chart_name (str): pygwalker chart name in kanaries cloud.
         - workspace_name (str): kanaries workspace name.
         - fieldSpecs (Dict[str, FieldSpec]): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+
+    Returns:
+        str: pygwalker url in kanaries cloud
     """
     if fieldSpecs is None:
         fieldSpecs = {}
@@ -44,14 +47,25 @@ def walk_on_cloud(
         gw_mode="explore",
     )
 
-    cloud_url = create_cloud_graphic_walker(
-        chart_name=name,
+    create_cloud_graphic_walker(
+        chart_name=chart_name,
         workspace_name=workspace_name,
         dataset_content=walker.data_parser.to_csv(),
         field_specs=walker.field_specs
     )
 
-    ifame_html = f"""
+
+def walk_on_cloud(workspace_name: str, chart_name: str):
+    """render a pygwalker in kanaries cloud
+
+    Args:
+        - chart_name (str): pygwalker chart name in kanaries cloud.
+        - workspace_name (str): kanaries workspace name.
+    """
+
+    cloud_url = get_cloud_graphic_walker(workspace_name, chart_name)
+
+    iframe_html = f"""
         <iframe
             width="100%"
             height="900px"
@@ -62,4 +76,4 @@ def walk_on_cloud(
         </iframe>
     """
 
-    display_html(ifame_html)
+    display_html(iframe_html)
