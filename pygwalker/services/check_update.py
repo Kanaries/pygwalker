@@ -9,6 +9,7 @@ import json
 
 from .config import get_local_user_id
 from pygwalker import __version__
+from pygwalker.services.global_var import GlobalVarManager
 
 
 _UPDATE_URL = 'https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates'
@@ -56,4 +57,5 @@ def _check_update() -> Dict[str, Any]:
 
 
 def check_update() -> None:
-    Thread(target=_check_update).start()
+    if GlobalVarManager.privacy != "offline":
+        Thread(target=_check_update).start()

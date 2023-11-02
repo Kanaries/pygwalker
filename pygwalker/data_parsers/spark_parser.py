@@ -62,3 +62,7 @@ class SparkDataFrameDataParser(BaseDataParser):
 
     def _preprocess_dataframe(self, df: DataFrame) -> DataFrame:
         return df
+
+    @property
+    def dataset_tpye(self) -> str:
+        return "spark_dataframe"
