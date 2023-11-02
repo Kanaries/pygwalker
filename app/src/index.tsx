@@ -131,6 +131,9 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     }
     if (checkUploadPrivacy() && commonStore.showCloudTool) {
         tools.push(uploadTool);
+        communicationStore.comm?.sendMsg("get_kanaries_token", {}).then(resp => {
+            commonStore.setKanariesToken(resp["data"]["kanariesToken"]);
+        })
     }
 
     const toolbarConfig = {
@@ -143,7 +146,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     if (props.showCloudTool) {
         enhanceAPI = {
             header: {
-                "kanaries-api-key": props.kanariesToken
+                "kanaries-api-key": commonStore.kanariesToken
             },
             features: {
                 "askviz": "https://api.kanaries.net/vis/text2gw"
