@@ -8,7 +8,7 @@ import ipywidgets
 
 from pygwalker._typing import DataFrame
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker.utils.display import display_html, display_on_streamlit
+from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.render import (
@@ -108,9 +108,6 @@ class PygWalker:
         props = self._get_props()
         html = render_gwalker_html(self.gid, props)
         return html
-
-    def display_on_streamlit(self):
-        display_on_streamlit(self.to_html())
 
     def init_streamlit_comm(self):
         """
