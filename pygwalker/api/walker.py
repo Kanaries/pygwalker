@@ -9,7 +9,6 @@ from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.utils.execute_env_check import check_convert
-from pygwalker.services.global_var import GlobalVarManager
 
 
 def walk(

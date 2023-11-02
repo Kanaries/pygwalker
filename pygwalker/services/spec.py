@@ -53,7 +53,10 @@ def _is_config_id(config_id: str) -> bool:
 
 
 def _get_spec_json_from_diff_source(spec: str) -> Tuple[str, str]:
-    if not spec or _is_json(spec):
+    if not spec:
+        return "", "empty_string"
+
+    if _is_json(spec):
         return spec, "json_string"
 
     if spec.startswith("ksf://"):

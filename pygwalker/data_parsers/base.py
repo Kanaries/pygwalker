@@ -58,6 +58,12 @@ class BaseDataParser(abc.ABC):
         """get records"""
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def dataset_tpye(self) -> str:
+        """get dataset type"""
+        raise NotImplementedError
+
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
@@ -109,6 +115,10 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         raise NotImplementedError
+    
+    @property
+    def dataset_tpye(self) -> str:
+        return "dataframe_default"
 
 
 def is_temporal_field(value: str) -> bool:

@@ -26,6 +26,7 @@ from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import create_shared_chart, write_config_to_cloud
 from pygwalker.services.check_update import check_update
+from pygwalker.services.track import track_event
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker.errors import CloudFunctionError, CsvFileTooLargeError, ErrorCode
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
@@ -78,8 +79,8 @@ class PygWalker:
         self.use_save_tool = use_save_tool
         self.parse_dsl_type = "server" if isinstance(dataset, Connector) else "client"
         self.gw_mode = "explore"
-        if GlobalVarManager.privacy != "offline":
-            check_update()
+        self.dataset_type = self.data_parser.dataset_tpye
+        check_update()
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
@@ -354,6 +355,17 @@ class PygWalker:
             comm.register("get_datas", _get_datas)
             comm.register("get_datas_by_payload", _get_datas_by_payload)
 
+    def _send_props_track(self, props: Dict[str, Any]):
+        needed_fields = {
+            "id", "version", "hashcode", "hideDataSourceConfig", "themeKey",
+            "dark", "env", "specType", "needLoadDatas", "showCloudTool",
+            "useKernelCalc", "useSaveTool", "parseDslType", "gwMode", "datasetType"
+        }
+        event_info = {key: value for key, value in props.items() if key in needed_fields}
+        event_info["hasKanariesToken"] = bool(GlobalVarManager.kanaries_api_key)
+
+        track_event("invoke_props", event_info)
+
     def _get_props(
         self,
         env: str = "",
@@ -362,7 +374,7 @@ class PygWalker:
     ) -> Dict[str, Any]:
         if data_source is None:
             data_source = self.origin_data_source
-        return {
+        props = {
             "id": self.gid,
             "dataSource": data_source,
             "len": len(data_source),
@@ -393,8 +405,13 @@ class PygWalker:
             "gwMode": self.gw_mode,
             "needLoadLastSpec": True,
             "kanariesToken": GlobalVarManager.kanaries_api_key,
+            "datasetType": self.dataset_type,
             **self.other_props,
         }
+
+        self._send_props_track(props)
+
+        return props
 
     def _get_render_iframe(self, props: Dict[str, Any], return_iframe: bool = True) -> str:
         html = render_gwalker_html(self.gid, props)

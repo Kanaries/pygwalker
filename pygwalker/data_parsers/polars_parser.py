@@ -74,3 +74,7 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         fname = fname_decode(s.name).rsplit('_', 1)[0]
         fname = json.dumps(fname, ensure_ascii=False)[1:-1]
         return fname
+
+    @property
+    def dataset_tpye(self) -> str:
+        return "polars_dataframe"
