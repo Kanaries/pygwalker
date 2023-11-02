@@ -18,8 +18,6 @@ export interface IAppProps extends IGWProps {
     communicationUrl: string;
     gwMode: "explore" | "renderer";
     needLoadLastSpec: boolean;
-    // temporary solution of saving token
-    kanariesToken: string;
 }
 
 export interface IDataSourceProps {

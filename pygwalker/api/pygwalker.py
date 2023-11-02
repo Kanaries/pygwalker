@@ -330,6 +330,9 @@ class PygWalker:
             )
             return {"shareUrl": share_url}
 
+        def get_kanaries_token(_):
+            return {"kanariesToken": GlobalVarManager.kanaries_api_key}
+
         def _get_datas(data: Dict[str, Any]):
             sql = data["sql"].encode('utf-8').decode('unicode_escape')
             return {
@@ -350,6 +353,7 @@ class PygWalker:
 
         if self.show_cloud_tool:
             comm.register("upload_charts", upload_charts)
+            comm.register("get_kanaries_token", get_kanaries_token)
 
         if self.use_kernel_calc:
             comm.register("get_datas", _get_datas)
@@ -404,7 +408,6 @@ class PygWalker:
             "parseDslType": self.parse_dsl_type,
             "gwMode": self.gw_mode,
             "needLoadLastSpec": True,
-            "kanariesToken": GlobalVarManager.kanaries_api_key,
             "datasetType": self.dataset_type,
             **self.other_props,
         }

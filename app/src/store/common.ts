@@ -25,6 +25,7 @@ class CommonStore {
     showCloudTool: boolean = false;
     version: string = "";
     notification: INotification | null = null;
+    kanariesToken: string = "";
 
     setInitModalOpen(value: boolean) {
         this.initModalOpen = value;
@@ -50,6 +51,10 @@ class CommonStore {
         }, timeout);
     }
 
+    setKanariesToken(value: string) {
+        this.kanariesToken = value;
+    }
+
     constructor() {
         makeObservable(this, {
             initModalOpen: observable,
@@ -57,11 +62,13 @@ class CommonStore {
             showCloudTool: observable,
             version: observable,
             notification: observable,
+            kanariesToken: observable,
             setInitModalOpen: action,
             setInitModalInfo: action,
             setShowCloudTool: action,
             setVersion: action,
             setNotification: action,
+            setKanariesToken: action,
         });
     }
 }
