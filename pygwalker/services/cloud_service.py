@@ -176,6 +176,22 @@ def create_shared_chart(
     return chart_info["shareUrl"]
 
 
+def get_cloud_graphic_walker(workspace_name: str, chart_name: str) -> str:
+    chart_data = _get_chart_by_name(chart_name, workspace_name)
+
+    if chart_data is None:
+        raise CloudFunctionError("chart not exists", code=ErrorCode.CLOUD_CHART_NOT_FOUND)
+
+    try:
+        auto_code_info = _get_auth_code_info()
+    except CloudFunctionError:
+        auto_code_info = {}
+
+    pre_redirect_uri = _generate_chart_pre_redirect_uri(chart_data["chartId"], auto_code_info)
+
+    return pre_redirect_uri
+
+
 def create_cloud_graphic_walker(
     *,
     chart_name: str,
@@ -202,10 +218,9 @@ def create_cloud_graphic_walker(
     })
 
     chart_data = _get_chart_by_name(chart_name, workspace_name)
-    auto_code_info = _get_auth_code_info()
 
     if chart_data is not None:
-        return _generate_chart_pre_redirect_uri(chart_data["chartId"], auto_code_info)
+        raise CloudFunctionError("chart name already exists", code=ErrorCode.UNKNOWN_ERROR)
 
     dataset_name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
     dataset_info = _upload_dataset_meta(dataset_name)
@@ -214,11 +229,10 @@ def create_cloud_graphic_walker(
     _upload_file_to_s3(upload_url, dataset_content)
     _upload_dataset_callback(dataset_id, fid_list)
 
-    chart_info = _create_chart(
+    _create_chart(
         dataset_id=dataset_id,
         name=chart_name,
         meta=meta,
         workflow={},
         thumbnail="",
     )
-    return _generate_chart_pre_redirect_uri(chart_info["chartId"], auto_code_info)
