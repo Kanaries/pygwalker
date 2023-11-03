@@ -60,7 +60,6 @@ const raiseRequestError = (message: string, code: number) => {
             </>)
             break;
     }
-    console.log(code)
     commonStore.setNotification({
         type: "error",
         title: "Error",
@@ -102,10 +101,12 @@ const initJupyterCommunication = (gid: string) => {
             setTimeout(() => {
                 sendMsgAsync(action, data, rid);
             }, 0);
-            setTimeout(() => {
-                reject(new Error("get result timeout"))
+            const timer = setTimeout(() => {
+                raiseRequestError("communication timeout", 0);
+                reject(new Error("get result timeout"));
             }, timeout);
             document.addEventListener(getSignalName(rid), (_) => {
+                clearTimeout(timer);
                 const resp = bufferMap.get(rid);
                 if (resp.code !== 0) {
                     raiseRequestError(resp.message, resp.code);
@@ -180,7 +181,8 @@ const initHttpCommunication = (gid: string, baseUrl: string) => {
 
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
         const timer = setTimeout(() => {
-            throw new Error("timeout");
+            raiseRequestError("communication timeout", 0);
+            throw(new Error("get result timeout"));
         }, timeout);
         try {
             const resp = await (await sendMsgAsync(action, data)).json();

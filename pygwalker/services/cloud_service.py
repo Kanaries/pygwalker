@@ -236,3 +236,9 @@ def create_cloud_graphic_walker(
         workflow={},
         thumbnail="",
     )
+
+
+def get_kanaries_user_info() -> Dict[str, Any]:
+    url = f"{GlobalVarManager.kanaries_api_host}/user/info"
+    resp = session.get(url, timeout=15)
+    return resp.json()["data"]

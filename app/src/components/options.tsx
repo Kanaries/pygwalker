@@ -67,7 +67,7 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
     const HASH = window.localStorage.getItem("HASH");
     useEffect(() => {
         if (props.userConfig?.privacy !== "offline") {
-            const req = `${UPDATE_URL}?pkg=pygwalker-app&v=${VERSION}&hashcode=${HASH}&env=${process.env.NODE_ENV}`;
+            const req = `${UPDATE_URL}?pkg=pygwalker-app&v=${VERSION}&hashcode=${HASH}&env=${process.env.NODE_ENV}&kernelHashcode=${props.hashcode}`;
             fetch(req, {
                 headers: {
                     "Content-Type": "application/json",

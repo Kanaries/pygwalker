@@ -26,6 +26,7 @@ class CommonStore {
     version: string = "";
     notification: INotification | null = null;
     kanariesToken: string = "";
+    uploadSpecModalOpen: boolean = false;
 
     setInitModalOpen(value: boolean) {
         this.initModalOpen = value;
@@ -55,6 +56,10 @@ class CommonStore {
         this.kanariesToken = value;
     }
 
+    setUploadSpecModalOpen(value: boolean) {
+        this.uploadSpecModalOpen = value;
+    }
+
     constructor() {
         makeObservable(this, {
             initModalOpen: observable,
@@ -63,12 +68,14 @@ class CommonStore {
             version: observable,
             notification: observable,
             kanariesToken: observable,
+            uploadSpecModalOpen: observable,
             setInitModalOpen: action,
             setInitModalInfo: action,
             setShowCloudTool: action,
             setVersion: action,
             setNotification: action,
             setKanariesToken: action,
+            setUploadSpecModalOpen: action,
         });
     }
 }

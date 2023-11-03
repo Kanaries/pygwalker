@@ -43,14 +43,6 @@ export function getSaveTool(
     }
 
     const onClick = async () => {
-        if (["json_file", "json_ksf"].indexOf(props.specType) === -1) {
-            commonStore.setNotification({
-                type: "warning",
-                title: "Tips",
-                message: "spec params is not 'json_file', save is not supported.",
-            }, 4_000)
-            return
-        }
         if (saving) return;
         setSaving(true);
 
@@ -65,11 +57,16 @@ export function getSaveTool(
                 "visSpec": JSON.stringify(storeRef.current?.vizStore.exportViewSpec()!),
                 "chartData": await formatExportedChartDatas(chartData),
             });
-            saveSuccess();
             saveJupyterNotebook();
         } finally {
             setSaving(false);
             hidePreview(props.id);
+        }
+        
+        if (["json_file", "json_ksf"].indexOf(props.specType) === -1) {
+            commonStore.setUploadSpecModalOpen(true);
+        } else {
+            saveSuccess();
         }
     }
 
