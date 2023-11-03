@@ -213,69 +213,37 @@ Type:      function
 - [x] DataCamp Workspace (最低版本:  `0.1.4a0`)
 - [ ] 需要其他环境支持？请给我们提Issue！
 
-## 配置
-
-自 `pygwalker>=0.1.7a0` 以降，你可以使用命令行配置PyGWalker
+## 配置和隐私政策(pygwlaker >= 0.3.10)
 
 ```bash
-$ pygwalker config   
+$ pygwalker config --help
+
 usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
 
-Modify configuration file.
+Modify configuration file. (default: /Users/douding/Library/Application Support/pygwalker/config.json) 
+Available configurations:
 
-optional arguments:
+- privacy  ['offline', 'update-only', 'events'] (default: events).
+    "offline": fully offline, no data is send or api is requested
+    "update-only": only check whether this is a new version of pygwalker to update
+    "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.
+    
+- kanaries_token  ['your kanaries token'] (default: empty string).
+    your kanaries token, you can get it from https://kanaries.net.
+    refer: https://space.kanaries.net/t/how-to-get-api-key-of-kanaries.
+    by kanaries token, you can use kanaries service in pygwalker, such as share chart, share config.
+    
+
+options:
   -h, --help            show this help message and exit
   --set [key=value ...]
-                        Set configuration. e.g. "pygwalker config --set privacy=get-only"
+                        Set configuration. e.g. "pygwalker config --set privacy=update-only"
   --reset [key ...]     Reset user configuration and use default values instead. e.g. "pygwalker config --reset privacy"
   --reset-all           Reset all user configuration and use default values instead. e.g. "pygwalker config --reset-all"
   --list                List current used configuration.
 ```
 
-或使用 Python API
-
-```python
->>> import pygwalker as pyg, pygwalker_utils.config as pyg_conf
->>> help(pyg_conf.set_config)
-
-Help on function set_config in module pygwalker_utils.config:
-
-set_config(config: dict, save=False)
-    Set configuration.
-    
-    Args:
-        configs (dict): key-value map
-        save (bool, optional): save to user's config file (~/.config/pygwalker/config.json). Defaults to False.
-(END)
-```
-
-### 隐私配置
-
-```bash
-$ pygwalker config --set
-usage: pygwalker config [--set [key=value ...]] | [--reset [key ...]].
-
-Available configurations:
-- privacy        ['offline', 'get-only', 'meta', 'any'] (default: meta).
-    "offline"   : no data will be transfered other than the front-end and back-end of the notebook.
-    "get-only"  : the data will not be uploaded but only fetched from external servers.
-    "meta"      : only the desensitized data will be processed by external servers. There might be some server-side processing tasks performed on the metadata in future versions.
-    "any"       : the data can be processed by external services.
-```
-
-如：
-
-```bash
-pygwalker config --set privacy=meta
-```
-也可以使用：
-
-```python
-import pygwalker as pyg, pygwalker.utils.config as pyg_conf
-pyg_conf.set_config( { 'privacy': 'meta' }, save=True)
-```
-
-两种方法效果相同。
+更多详情，请参考: [How to set your privacy configuration?](https://github.com/Kanaries/pygwalker/wiki/How-to-set-your-privacy-configuration%3F)
 
 # License
 
