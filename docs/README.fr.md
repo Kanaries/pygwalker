@@ -149,61 +149,37 @@ Pour des instructions plus détaillées, visitez la page [GitHub de Graphic Walk
 - [x] DataCamp Workspace (Depuis la version `0.1.4a0`)
 - [ ] ...n'hésitez pas à soulever un problème pour plus d'environnements.
 
-## Configuration
+## Politique de configuration et de confidentialité(pygwlaker >= 0.3.10)
 
-Depuis `pygwalker>=0.1.7a0`, nous offrons la possibilité de modifier la configuration à l'échelle de l'utilisateur soit via l'interface en ligne de commande
 ```bash
-$ pygwalker config   
+$ pygwalker config --help
+
 usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
 
-Modifier le fichier de configuration.
+Modify configuration file. (default: /Users/douding/Library/Application Support/pygwalker/config.json) 
+Available configurations:
 
-arguments facultatifs:
-  -h, --help            Affiche ce message d'aide et quitte
-  --set [key=value ...] Définir la configuration. Ex. "pygwalker config --set privacy=get-only"
-  --reset [key ...]     Réinitialiser la configuration de l'utilisateur et utiliser les valeurs par défaut à la place. Ex. "pygwalker config --reset privacy"
-  --reset-all           Réinitialiser la configuration de l'utilisateur et utiliser les valeurs par défaut à la place. Ex. "pygwalker config --reset-all"
-  --list                Affiche la configuration actuelle utilisée.
-```
-ou via l'API Python
-```python
->>> import pygwalker as pyg, pygwalker_utils.config as pyg_conf
->>> help(pyg_conf.set_config)
-
-Aide pour la fonction set_config dans le module pygwalker_utils.config :
-
-set_config(config: dict, save=False)
-    Définir la configuration.
+- privacy  ['offline', 'update-only', 'events'] (default: events).
+    "offline": fully offline, no data is send or api is requested
+    "update-only": only check whether this is a new version of pygwalker to update
+    "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.
     
-    Args :
-        config (dict) : carte clé-valeur
-        save (bool, optionnel) : enregistrer dans le fichier de configuration de l'utilisateur (~/.config/pygwalker/config.json). Par défaut, False.
-(FIN)
+- kanaries_token  ['your kanaries token'] (default: empty string).
+    your kanaries token, you can get it from https://kanaries.net.
+    refer: https://space.kanaries.net/t/how-to-get-api-key-of-kanaries.
+    by kanaries token, you can use kanaries service in pygwalker, such as share chart, share config.
+    
+
+options:
+  -h, --help            show this help message and exit
+  --set [key=value ...]
+                        Set configuration. e.g. "pygwalker config --set privacy=update-only"
+  --reset [key ...]     Reset user configuration and use default values instead. e.g. "pygwalker config --reset privacy"
+  --reset-all           Reset all user configuration and use default values instead. e.g. "pygwalker config --reset-all"
+  --list                List current used configuration.
 ```
 
-### Politique de confidentialité
-```bash
-$ pygwalker config --set
-usage: pygwalker config [--set [key=value ...]] | [--reset [key ...]].
-
-Configurations disponibles :
-- privacy        ['offline', 'get-only', 'meta', 'any'] (par défaut : meta).
-    "offline"   : aucune donnée ne sera transférée autre que l'interface utilisateur et le backend du notebook.
-    "get-only"  : les données ne seront pas téléchargées mais uniquement récupérées depuis les serveurs externes.
-    "meta"      : seules les données désensibilisées seront traitées par les serveurs externes. Il peut y avoir des tâches de traitement côté serveur effectuées sur les métadonnées dans les futures versions.
-    "any"       : les données peuvent être traitées par des services externes.
-```
-
-Par exemple,
-```bash
-pygwalker config --set privacy=meta
-```
-en ligne de commande et
-```python
-import pygwalker as pyg, pygwalker.utils_config as pyg_conf
-pyg_conf.set_config( { 'privacy': 'meta' }, save=True)
-```
-ont le même effet.
+Plus de détails, référez-le: [How to set your privacy configuration?](https://github.com/Kanaries/pygwalker/wiki/How-to-set-your-privacy-configuration%3F)
 
 # Licence
 

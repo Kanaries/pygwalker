@@ -150,59 +150,37 @@ Graphic Walker로 수행할 수 있는 멋진 작업:
 - [x] DataCamp Workspace (버전 `0.1.4a0`부터)
 - [ ] ...더 많은 환경에 대한 이슈를 제기하십시오.
 
-## 설정
+## 구성 및 개인 정보 보호 정책(pygwlaker >= 0.3.10)
 
-`pygwalker>=0.1.7a0`부터 사용자 전체 설정을 수정할 수 있는 능력을 제공합니다. 이를 위해 명령 줄 인터페이스를 통해 다음을 수행할 수 있습니다.
 ```bash
-$ pygwalker config   
-사용법: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
+$ pygwalker config --help
 
-설정 파일 수정.
+usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--reset-all] [--list]
 
-옵션:
-  -h, --help            도움말 메시지 표시 및 종료
-  --set [key=value ...]  설정 지정. 예: "pygwalker config --set privacy=get-only"
-  --reset [key ...]     사용자 설정을 재설정하고 기본값을 사용합니다. 예: "pygwalker config --reset privacy"
-  --reset-all           모든 사용자 설정을 재설정하고 기본값을 사용합니다. 예: "pygwalker config --reset-all"
-  --list                현재 사용 중인 설정 목록 표시
-```
-또는 Python API를 통해 다음을 수행할 수 있습니다.
-```python
->>> import pygwalker as pyg, pygwalker_utils.config as pyg_conf
->>> help(pyg_conf.set_config)
+Modify configuration file. (default: /Users/douding/Library/Application Support/pygwalker/config.json) 
+Available configurations:
 
-pygwalker_utils.config 모듈 내의 set_config 함수에 대한 도움말:
-
-set_config(config: dict, save=False)
-    설정을 지정합니다.
+- privacy  ['offline', 'update-only', 'events'] (default: events).
+    "offline": fully offline, no data is send or api is requested
+    "update-only": only check whether this is a new version of pygwalker to update
+    "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.
     
-    Args:
-        configs (dict): 키-값 맵
-        save (bool, optional): 사용자의 설정 파일 (~/.config/pygwalker/config.json)에 저장합니다. 기본값은 False입니다.
-(END)
+- kanaries_token  ['your kanaries token'] (default: empty string).
+    your kanaries token, you can get it from https://kanaries.net.
+    refer: https://space.kanaries.net/t/how-to-get-api-key-of-kanaries.
+    by kanaries token, you can use kanaries service in pygwalker, such as share chart, share config.
+    
+
+options:
+  -h, --help            show this help message and exit
+  --set [key=value ...]
+                        Set configuration. e.g. "pygwalker config --set privacy=update-only"
+  --reset [key ...]     Reset user configuration and use default values instead. e.g. "pygwalker config --reset privacy"
+  --reset-all           Reset all user configuration and use default values instead. e.g. "pygwalker config --reset-all"
+  --list                List current used configuration.
 ```
 
-### 개인 정보 보호 정책
-```bash
-$ pygwalker config --set
-사용 가능한 구성:
-- privacy        ['offline', 'get-only', 'meta', 'any'] (기본값: meta).
-    "offline"   : 프론트엔드 및 백엔드 외에는 데이터가 전송되지 않습니다.
-    "get-only"  : 데이터가 업로드되지 않고 외부 서버에서만 가져옵니다.
-    "meta"      : 미래 버전에서 메타데이터에 대한 서버 측 처리 작업이 수행될 수 있지만, 현재는 비식별화된 데이터만 처리됩니다.
-    "any"       : 데이터는 외부 서비스에서 처리될 수 있습니다.
-```
-
-예를 들어,
-명령 줄에서 다음과 같이 실행합니다.
-```bash
-pygwalker config --set privacy=meta
-```
-또는 Python에서 다음과 같이 실행합니다.
-```python
-import pygwalker as pyg, pygwalker.utils_config as pyg_conf
-pyg_conf.set_config( { 'privacy': 'meta' }, save=True)
-```
+자세한 내용은 참조하세요: [How to set your privacy configuration?](https://github.com/Kanaries/pygwalker/wiki/How-to-set-your-privacy-configuration%3F)
 
 # 라이선스
 
