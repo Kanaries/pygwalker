@@ -16,6 +16,7 @@ from pygwalker.services.render import (
     render_gwalker_iframe,
     get_max_limited_datas
 )
+from pygwalker.services.config import set_config
 from pygwalker.services.preview_image import PreviewImageTool, render_preview_html, ChartData
 from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnWidgets,
@@ -24,7 +25,7 @@ from pygwalker.services.upload_data import (
 from pygwalker.services.config import get_local_user_id
 from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.services.cloud_service import create_shared_chart, write_config_to_cloud
+from pygwalker.services.cloud_service import create_shared_chart, write_config_to_cloud, get_kanaries_user_info
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
@@ -330,6 +331,17 @@ class PygWalker:
             )
             return {"shareUrl": share_url}
 
+        def upload_spec_to_cloud(data: Dict[str, Any]):
+            if data["newToken"]:
+                set_config({"kanaries_token": data["newToken"]})
+                GlobalVarManager.kanaries_api_key = data["newToken"]
+            spec_obj = {"config": self.vis_spec, "chart_map": {}, "version": __version__}
+            file_name = data["fileName"]
+            workspace_name = get_kanaries_user_info()["workspaceName"]
+            path = f"{workspace_name}/{file_name}"
+            write_config_to_cloud(path, json.dumps(spec_obj))
+            return {"specFilePath": path}
+
         def get_kanaries_token(_):
             return {"kanariesToken": GlobalVarManager.kanaries_api_key}
 
@@ -347,6 +359,7 @@ class PygWalker:
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
 
         if self.use_save_tool:
+            comm.register("upload_spec_to_cloud", upload_spec_to_cloud)
             comm.register("update_spec", update_spec)
             comm.register("save_chart", save_chart_endpoint)
             comm.register("request_data", reuqest_data_callback)

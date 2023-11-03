@@ -17,6 +17,7 @@ import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
 import ShareModal from './components/shareModal';
+import UploadSpecModal from "./components/uploadSpecModal"
 import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
@@ -121,6 +122,14 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         }
     }, []);
 
+    useEffect(() => {
+        if (checkUploadPrivacy() && commonStore.showCloudTool) {
+            communicationStore.comm?.sendMsg("get_kanaries_token", {}).then(resp => {
+                commonStore.setKanariesToken(resp["data"]["kanariesToken"]);
+            });
+        }
+    }, []);
+
     const exportTool = getExportTool(setExportOpen);
     const saveTool = getSaveTool(props, gwRef, storeRef);
     const uploadTool = getShareTool(setShareModalOpen);
@@ -131,9 +140,6 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     }
     if (checkUploadPrivacy() && commonStore.showCloudTool) {
         tools.push(uploadTool);
-        communicationStore.comm?.sendMsg("get_kanaries_token", {}).then(resp => {
-            commonStore.setKanariesToken(resp["data"]["kanariesToken"]);
-        })
     }
 
     const toolbarConfig = {
@@ -158,6 +164,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
         <React.StrictMode>
             <style>{style}</style>
             <Notification />
+            <UploadSpecModal />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
             <ShareModal gwRef={gwRef} storeRef={storeRef} open={shareModalOpen} setOpen={setShareModalOpen} />
             <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={computationCallback} enhanceAPI={enhanceAPI} />
