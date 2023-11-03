@@ -135,7 +135,7 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     const uploadTool = getShareTool(setShareModalOpen);
 
     const tools = [exportTool];
-    if ((props.env === "jupyter_widgets" || props.env === "streamlit") && props.useSaveTool) {
+    if ((props.env === "jupyter_widgets" || props.env === "streamlit" || props.env === "gradio") && props.useSaveTool) {
         tools.push(saveTool);
     }
     if (checkUploadPrivacy() && commonStore.showCloudTool) {
