@@ -82,6 +82,12 @@ class PygWalker:
         self.gw_mode = "explore"
         self.dataset_type = self.data_parser.dataset_tpye
         check_update()
+        # Temporarily adapt to pandas import module bug
+        if self.use_kernel_calc:
+            try:
+                self.data_parser.get_datas_by_sql("SELECT 1 FROM pygwalker_mid_table LIMIT 1")
+            except Exception:
+                pass
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)

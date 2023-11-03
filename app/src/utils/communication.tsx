@@ -41,7 +41,7 @@ const raiseRequestError = (message: string, code: number) => {
                     </a>
                 </p>
                 <p className="py-1">Then refer
-                    <a className="font-semibold px-1" href="https://space.kanaries.net/t/how-to-get-api-key-of-kanaries" target='_blank'>
+                    <a className="font-semibold px-1" href="https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F" target='_blank'>
                         document
                     </a>
                     to set kanaries_api_key.</p>
