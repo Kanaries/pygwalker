@@ -241,10 +241,9 @@ def get_streamlit_html(
     renderer = StreamlitRenderer(
         gid=gid,
         dataset=dataset,
-        field_specs=fieldSpecs,
+        fieldSpecs=fieldSpecs,
         spec=spec,
-        source_invoke_code="",
-        theme_key=themeKey,
+        themeKey=themeKey,
         dark=dark,
         debug=debug,
         use_kernel_calc=use_kernel_calc,
