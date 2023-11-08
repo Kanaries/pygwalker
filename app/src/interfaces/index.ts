@@ -1,6 +1,14 @@
-import type { IGWProps } from '@kanaries/graphic-walker/dist/App'
+import type { IRow, IMutField } from '@kanaries/graphic-walker/dist/interfaces'
 
-export interface IAppProps extends IGWProps {
+export interface IAppProps {
+    // graphic-walker props
+    hideDataSourceConfig: boolean;
+    fieldkeyGuard: boolean;
+    themeKey: string;
+    dark: string;
+    // pygwalker props
+    dataSource: IRow[];
+    rawFields: IMutField[];
     id: string;
     dataSourceProps: IDataSourceProps;
     version?: string;
@@ -18,6 +26,7 @@ export interface IAppProps extends IGWProps {
     communicationUrl: string;
     gwMode: "explore" | "renderer";
     needLoadLastSpec: boolean;
+    extraConfig?: any;
 }
 
 export interface IDataSourceProps {

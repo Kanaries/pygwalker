@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer } from '@kanaries/graphic-walker'
-import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
-import type { IStoInfo } from '@kanaries/graphic-walker/dist/utils/save';
-import { IDataSetInfo, IMutField, IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
+import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
+import { IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
@@ -60,47 +59,19 @@ const getComputationCallback = (props: IAppProps) => {
     }
 }
 
-const App: React.FC<IAppProps> = observer((propsIn) => {
-    const storeRef = React.useRef<IGlobalStore|null>(null);
+const App: React.FC<IAppProps> = observer((props) => {
+    const storeRef = React.useRef<VizSpecStore|null>(null);
     const gwRef = React.useRef<IGWHandler|null>(null);
-    const {dataSource, ...props} = propsIn;
-    const { dataSourceProps, rawFields, userConfig } = props;
+    const { dataSourceProps, userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
+    const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
     commonStore.setVersion(props.version!);
-
-    const setData = (data?: IRow[], rawFields?: IMutField[]) => {
-        if (specList.length !== 0) {
-            setTimeout(() => {
-                storeRef?.current?.vizStore?.importStoInfo({
-                    dataSources: [{
-                        id: 'dataSource-0',
-                        data: data,
-                    }],
-                    datasets: [{
-                        id: 'dataset-0',
-                        name: 'DataSet', rawFields: rawFields, dsId: 'dataSource-0',
-                    }],
-                    specList,
-                } as IStoInfo);
-            }, 0);
-        } else {
-            storeRef?.current?.commonStore?.updateTempSTDDS({
-                name: 'Dataset',
-                rawFields: rawFields,
-                dataSource: data,
-            } as IDataSetInfo);
-            storeRef?.current?.commonStore?.commitTempDS();
-        }
-        if (!props.needLoadDatas) {
-            setTimeout(() => { initChart(gwRef, specList.length, props) }, 0);
-        }
-    }
 
     const updateDataSource = () => {
         loadDataSource(dataSourceProps).then((data) => {
-            setData(data, rawFields);
+            setDataSource(data);
             initChart(gwRef, specList.length, props);
         }).catch(e => {
             console.error('Load DataSource Error', e);
@@ -108,8 +79,15 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
     }
 
     useEffect(() => {
-        setData(dataSource, rawFields);
         commonStore.setShowCloudTool(props.showCloudTool);
+        if (specList.length !== 0) {
+            setTimeout(() => { storeRef.current?.importCode(specList); }, 0);
+        }
+        if (props.needLoadDatas) {
+            updateDataSource()
+        } else {
+            setTimeout(() => { initChart(gwRef, specList.length, props) }, 0);
+        }
         updateDataSource();
         if (userConfig) setConfig(userConfig);
         // temporary notifcation
@@ -167,22 +145,35 @@ const App: React.FC<IAppProps> = observer((propsIn) => {
             <UploadSpecModal />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
             <ShareModal gwRef={gwRef} storeRef={storeRef} open={shareModalOpen} setOpen={setShareModalOpen} />
-            <GraphicWalker {...props} storeRef={storeRef} ref={gwRef} toolbar={toolbarConfig} computation={computationCallback} enhanceAPI={enhanceAPI} />
+            <GraphicWalker
+                {...props.extraConfig}
+                dark={props.dark}
+                themeKey={props.themeKey}
+                hideDataSourceConfig={props.hideDataSourceConfig}
+                fieldkeyGuard={props.fieldkeyGuard}
+                rawFields={props.rawFields}
+                dataSource={props.useKernelCalc ? undefined : dataSource}
+                storeRef={storeRef}
+                ref={gwRef}
+                toolbar={toolbarConfig}
+                computation={computationCallback}
+                enhanceAPI={enhanceAPI}
+            />
             <InitModal />
-            <Options {...props} toolbar={toolbarConfig} />
+            <Options {...props} />
         </React.StrictMode>
     );
 })
 
-const PureRednererApp: React.FC<IAppProps> = observer((propsIn) => {
-    const computationCallback = getComputationCallback(propsIn);
-    const spec = propsIn.visSpec ? JSON.parse(propsIn.visSpec)[0] : {};
+const PureRednererApp: React.FC<IAppProps> = observer((props) => {
+    const computationCallback = getComputationCallback(props);
+    const spec = props.visSpec ? JSON.parse(props.visSpec)[0] : {};
 
     return (
         <React.StrictMode>
             <style>{style}</style>
             <PureRenderer
-                {...propsIn}
+                {...props.extraConfig}
                 name={spec.name}
                 visualConfig={spec.config}
                 visualState={spec.encodings}

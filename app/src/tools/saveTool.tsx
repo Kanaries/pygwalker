@@ -9,7 +9,7 @@ import LoadingIcon from '../components/loadingIcon';
 import type { IAppProps } from '../interfaces';
 import type { IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
 import type { ToolbarButtonItem } from "@kanaries/graphic-walker/dist/components/toolbar/toolbar-button"
-import type { IGlobalStore } from '@kanaries/graphic-walker/dist/store'
+import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
 
 function saveJupyterNotebook() {
     const rootDocument = window.parent.document;
@@ -26,7 +26,7 @@ export function hidePreview(id: string) {
 export function getSaveTool(
     props: IAppProps,
     gwRef: React.MutableRefObject<IGWHandler | null>,
-    storeRef: React.MutableRefObject<IGlobalStore | null>
+    storeRef: React.MutableRefObject<VizSpecStore | null>
 ) : ToolbarButtonItem {
     const [saving, setSaving] = useState(false);
 
@@ -54,7 +54,7 @@ export function getSaveTool(
         let chartData = await gwRef.current?.exportChart!("data-url");
         try {
             await communicationStore.comm?.sendMsg("update_spec", {
-                "visSpec": JSON.stringify(storeRef.current?.vizStore.exportViewSpec()!),
+                "visSpec": JSON.stringify(storeRef.current?.exportCode()!),
                 "chartData": await formatExportedChartDatas(chartData),
             });
             saveJupyterNotebook();
