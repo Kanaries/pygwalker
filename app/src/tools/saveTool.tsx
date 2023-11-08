@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import communicationStore from "../store/communication"
 import commonStore from '../store/common';
 import { formatExportedChartDatas } from "../utils/save"
+import { checkUploadPrivacy } from '../utils/userConfig';
 
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import LoadingIcon from '../components/loadingIcon';
@@ -64,7 +65,15 @@ export function getSaveTool(
         }
         
         if (["json_file", "json_ksf"].indexOf(props.specType) === -1) {
-            commonStore.setUploadSpecModalOpen(true);
+            if (checkUploadPrivacy() && commonStore.showCloudTool) {
+                commonStore.setUploadSpecModalOpen(true);
+            } else {
+                commonStore.setNotification({
+                    type: "warning",
+                    title: "Tips",
+                    message: "spec params is not 'json_file', save is not supported.",
+                }, 4_000);
+            }
         } else {
             saveSuccess();
         }
