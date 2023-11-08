@@ -428,7 +428,7 @@ class PygWalker:
             "gwMode": self.gw_mode,
             "needLoadLastSpec": True,
             "datasetType": self.dataset_type,
-            **self.other_props,
+            "extraConfig": self.other_props,
         }
 
         self._send_props_track(props)
