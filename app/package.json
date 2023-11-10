@@ -16,7 +16,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.8",
-    "@kanaries-temp/gw-dsl-parser": "0.1.14",
+    "@kanaries-temp/gw-dsl-parser": "0.1.30-rc.1",
     "@kanaries/graphic-walker": "0.4.25",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-icons": "^1.3.0",

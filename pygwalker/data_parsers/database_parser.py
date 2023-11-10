@@ -10,7 +10,7 @@ import pandas as pd
 import sqlglot.expressions as exp
 import sqlglot
 
-from .base import BaseDataParser
+from .base import BaseDataParser, get_data_meta_type
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.utils.custom_sqlglot import DuckdbDialect
@@ -83,6 +83,12 @@ class DatabaseDataParser(BaseDataParser):
 
     @property
     @lru_cache()
+    def field_metas(self) -> List[Dict[str, str]]:
+        data = self._get_datas_by_sql(f"SELECT * FROM {self.placeholder_table_name} LIMIT 1")
+        return get_data_meta_type(data[0]) if data else []
+
+    @property
+    @lru_cache()
     def raw_fields(self) -> List[Dict[str, str]]:
         pandas_parser = PandasDataFrameDataParser(self.example_pandas_df, False, self.field_specs)
         return [
@@ -102,13 +108,19 @@ class DatabaseDataParser(BaseDataParser):
         # temporary solution: wasmtime is not supported in conda
         # pylint: disable=import-outside-toplevel
         from gw_dsl_parser import get_sql_from_payload
-        sql = get_sql_from_payload(self.placeholder_table_name, payload)
+        sql = get_sql_from_payload(self.placeholder_table_name, payload, self.field_metas)
         sql = self._format_sql(sql)
         result = self.conn.query_datas(sql)
         return result
 
     def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
-        return []
+        pass
+
+    def _get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
+        """a private method for get_datas_by_sql"""
+        sql = self._format_sql(sql)
+        result = self.conn.query_datas(sql)
+        return result
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
