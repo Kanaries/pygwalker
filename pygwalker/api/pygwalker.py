@@ -429,6 +429,7 @@ class PygWalker:
             "needLoadLastSpec": True,
             "datasetType": self.dataset_type,
             "extraConfig": self.other_props,
+            "fieldMetas": self.data_parser.field_metas,
         }
 
         self._send_props_track(props)

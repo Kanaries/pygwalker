@@ -1,8 +1,10 @@
 import json
 import io
 from typing import Any, Dict, List, Optional
+from functools import lru_cache
 
 from modin import pandas as mpd
+import pandas as pd
 import duckdb
 
 from .base import (
@@ -18,9 +20,6 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
     """prop parser for modin.pandas.DataFrame"""
     def __init__(self, df: mpd.DataFrame, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]):
         super().__init__(df, use_kernel_calc, field_specs)
-        if use_kernel_calc:
-            # Temporarily use to_pandas to execute sql
-            self._pandas_df = self.df._to_pandas()
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         df = self.df[:limit] if limit is not None else self.df
@@ -39,6 +38,11 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         content = io.BytesIO()
         self.origin_df.to_csv(content, index=False)
         return content
+
+    @property
+    @lru_cache()
+    def _pandas_df(self) -> pd.DataFrame:
+        return self.df._to_pandas()
 
     def _rename_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         df = df.reset_index(drop=True)

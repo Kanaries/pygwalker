@@ -1,6 +1,7 @@
 from typing import NamedTuple, Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
 from functools import lru_cache
+from datetime import datetime
 import abc
 import io
 
@@ -64,6 +65,12 @@ class BaseDataParser(abc.ABC):
         """get dataset type"""
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def field_metas(self) -> List[Dict[str, str]]:
+        """get field metas"""
+        raise NotImplementedError
+
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
@@ -75,6 +82,12 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         self.field_specs = field_specs
         if self.use_kernel_calc:
             self.df = self._preprocess_dataframe(self.df)
+
+    @property
+    @lru_cache()
+    def field_metas(self) -> List[Dict[str, str]]:
+        data = self.get_datas_by_sql("SELECT * FROM pygwalker_mid_table LIMIT 1")
+        return get_data_meta_type(data[0]) if data else []
 
     @property
     @lru_cache()
@@ -142,3 +155,20 @@ def is_geo_field(field_name: str) -> bool:
 def format_temporal_string(value: str) -> str:
     """Convert temporal fields to a fixed format"""
     return arrow.get(value).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def get_data_meta_type(data: Dict[str, Any]) -> List[Dict[str, str]]:
+    meta_types = []
+    for key, value in data.items():
+        if isinstance(value, datetime):
+            data[key] = format_temporal_string(value)
+            field_meta_type = "datetime"
+        elif isinstance(value, (int, float)):
+            field_meta_type = "number"
+        else:
+            field_meta_type = "string"
+        meta_types.append({
+            "key": key,
+            "type": field_meta_type
+        })
+    return meta_types

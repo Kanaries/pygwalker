@@ -27,6 +27,7 @@ export interface IAppProps {
     gwMode: "explore" | "renderer";
     needLoadLastSpec: boolean;
     extraConfig?: any;
+    fieldMetas: any;
 }
 
 export interface IDataSourceProps {

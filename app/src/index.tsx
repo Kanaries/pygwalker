@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
-import { IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
+import { IRow, IGWHandler, IDataQueryPayload } from '@kanaries/graphic-walker/dist/interfaces';
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
@@ -52,7 +52,7 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
 
 const getComputationCallback = (props: IAppProps) => {
     if (props.useKernelCalc && props.parseDslType === "client") {
-        return getDatasFromKernelBySql;
+        return getDatasFromKernelBySql(props.fieldMetas);
     }
     if (props.useKernelCalc && props.parseDslType === "server") {
         return getDatasFromKernelByPayload;

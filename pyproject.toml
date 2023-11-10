@@ -25,7 +25,7 @@ dependencies = [
     "requests",
     "arrow",
     "sqlalchemy",
-    "gw_dsl_parser==0.1.6a6",
+    "gw_dsl_parser==0.1.7a5",
     "appdirs",
     "segment-analytics-python==2.2.3"
 ]

@@ -6,7 +6,7 @@ import io
 from pyspark.sql import DataFrame
 import sqlglot
 
-from .base import BaseDataParser
+from .base import BaseDataParser, get_data_meta_type
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.services.fname_encodings import fname_encode, rename_columns
 from pygwalker.data_parsers.base import FieldSpec
@@ -37,6 +37,12 @@ class SparkDataFrameDataParser(BaseDataParser):
     def raw_fields(self) -> List[Dict[str, str]]:
         pandas_parser = PandasDataFrameDataParser(self.example_pandas_df, False, self.field_specs)
         return pandas_parser.raw_fields
+
+    @property
+    @lru_cache()
+    def field_metas(self) -> List[Dict[str, str]]:
+        data = self.get_datas_by_sql("SELECT * FROM pygwalker_mid_table LIMIT 1")
+        return get_data_meta_type(data[0]) if data else []
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         df = self.df.limit(limit) if limit is not None else self.df
