@@ -21,7 +21,7 @@ dependencies = [
     "psutil",
     "duckdb<=0.8.1",
     "pyarrow",
-    "sqlglot>=18.8.0",
+    "sqlglot>=19.0.0",
     "requests",
     "arrow",
     "sqlalchemy",
