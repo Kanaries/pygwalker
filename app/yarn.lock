@@ -997,22 +997,23 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries-temp/gw-dsl-parser@0.1.30-rc.1":
-  version "0.1.30-rc.1"
-  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.30-rc.1.tgz#7e61dcf19602d765de3211cfe16fa1f51f70d0a9"
-  integrity sha512-SYGeaRx4GlZfCkY2sWRTyLo7d/7wtlH+kbzC5ReEQ0/3NBEMnpXSi0oQrG3jwlzjJEJiB//Nexj+iOicfXNjsw==
+"@kanaries-temp/gw-dsl-parser@0.1.35":
+  version "0.1.35"
+  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.35.tgz#216e9362f7f771943c1019a4dc7e678d5d37994a"
+  integrity sha512-SCWjUYW6zKWNc+C04dUPnVYl5mwBPym8Ln5HfflkN8wNPIr4UshKce3mb5jPDwpwMndW9hqAqOGMkovkRZfNPw==
 
-"@kanaries/graphic-walker@0.4.25":
-  version "0.4.25"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.25.tgz#db3378c614d11ca1cfbdfcf8a3f7bf7dc371d0f1"
-  integrity sha512-2mfyAdiR8wQciRBrWC9dG3Eh/CP92bWySlYZDDmtwfeCjMFzSWCQuv4k3YKfAmz3UdZbReIR1x2UVDww6Ro6aA==
+"@kanaries/graphic-walker@0.4.27":
+  version "0.4.27"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.27.tgz#1f95ddb77b7589f0237f022a810d278d4ee8f71f"
+  integrity sha512-BR0MaxZnvT23UVx+78OQk1VtZ9c4v2VgDK4+Md6nKj5nurdLOIbtf9KMk1j76BNYZFMC2c07qtMoyIP7zCENhw==
   dependencies:
     "@headlessui-float/react" "^0.11.4"
     "@headlessui/react" "^1.7.12"
     "@heroicons/react" "^2.0.8"
-    "@kanaries/react-beautiful-dnd" "^0.0.3"
+    "@kanaries/react-beautiful-dnd" "^0.1.0"
     "@kanaries/web-data-loader" "^0.1.7"
     "@tailwindcss/forms" "^0.5.4"
+    "@tanstack/react-virtual" "^3.0.0-beta.68"
     "@types/jest" "^29.5.3"
     autoprefixer "^10.3.5"
     canvas-size "^1.2.6"
@@ -1044,10 +1045,10 @@
     vega-embed "^6.21.0"
     vega-lite "^5.6.0"
 
-"@kanaries/react-beautiful-dnd@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@kanaries/react-beautiful-dnd/-/react-beautiful-dnd-0.0.3.tgz#fce3972ed34a55223866b259b0adbabe003c7ba4"
-  integrity sha512-QKwQmmRDuYstNVvWJrdzCOs2FQAJSZFLdTe6iFZbqIlnGmZCGbRuajFJ2t+IFTV/vOelFKS9FOCJLVvRgB3Mmg==
+"@kanaries/react-beautiful-dnd@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@kanaries/react-beautiful-dnd/-/react-beautiful-dnd-0.1.0.tgz#6ee065918b9e93fa7d1dd6e5f73f51ae0c5b5ea0"
+  integrity sha512-L7O8SpztNDeD3ZL7BUjjwBBz45uhVoY9gFbp8a3UOsN1djbhnmynny/6M1LwhtNEQhaOTcIBIaLFOYKCUzgVlA==
   dependencies:
     "@babel/runtime" "^7.9.2"
     css-box-model "^1.2.0"
@@ -1358,6 +1359,18 @@
   integrity sha512-YAm12D3R7/9Mh4jFbYSMnsd6jG++8KxogWgqs7hbdo/86aWjjlIEvL7+QYdVELmAI0InXTpZqFIg5e7aDVWI2Q==
   dependencies:
     mini-svg-data-uri "^1.2.3"
+
+"@tanstack/react-virtual@^3.0.0-beta.68":
+  version "3.0.0-beta.68"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.0.0-beta.68.tgz#225532329d74d7c0f82564d36ad8bf461e320ab5"
+  integrity sha512-YEFNCf+N3ZlNou2r4qnh+GscMe24foYEjTL05RS0ZHvah2RoUDPGuhnuedTv0z66dO2vIq6+Bl4TXatht5T7GQ==
+  dependencies:
+    "@tanstack/virtual-core" "3.0.0-beta.68"
+
+"@tanstack/virtual-core@3.0.0-beta.68":
+  version "3.0.0-beta.68"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.0.0-beta.68.tgz#e6c478b393df57861e0a98fd0fea9982b79b6e7d"
+  integrity sha512-CnvsEJWK7cugigckt13AeY80FMzH+OMdEP0j0bS3/zjs44NiRe49x8FZC6R9suRXGMVMXtUHet0zbTp/Ec9Wfg==
 
 "@types/babel__core@^7.1.14":
   version "7.20.4"
