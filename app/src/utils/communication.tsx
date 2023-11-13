@@ -68,7 +68,7 @@ const raiseRequestError = (message: string, code: number) => {
 }
 
 const initJupyterCommunication = (gid: string) => {
-    const kernelTextCount = 3;
+    const kernelTextCount = 7;
     let curKernelTextIndex = 0;
     const jupyterEnv = getCurrentJupyterEnv();
     const document = window.parent.document;
