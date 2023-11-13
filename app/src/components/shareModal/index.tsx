@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import type { IGWHandler } from "@kanaries/graphic-walker/dist/interfaces";
-import type { IGlobalStore } from "@kanaries/graphic-walker/dist/store";
+import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
 
 import communicationStore from "../../store/communication";
 import commonStore from "../../store/common";
 import { formatExportedChartDatas } from "../../utils/save";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface IShareModal {
     gwRef: React.MutableRefObject<IGWHandler | null>;
-    storeRef: React.MutableRefObject<IGlobalStore | null>;
+    storeRef: React.MutableRefObject<VizSpecStore | null>;
     open: boolean;
     setOpen: (open: boolean) => void;
 }
@@ -22,9 +22,8 @@ const ShareModal: React.FC<IShareModal> = observer((props) => {
     const [isNewNotebook, setIsNewNotebook] = useState(true);
 
     useEffect(() => {
-        if (props.open) {
-            const curIndex = props.storeRef.current?.vizStore.visIndex!;
-            setName(props.storeRef.current?.vizStore.exportViewSpec()![curIndex].name!);
+        if (props.open && props.storeRef.current?.currentVis) {
+            setName(props.storeRef.current.currentVis.name!);
         }
     }, [props.open]);
 
@@ -56,7 +55,7 @@ const ShareModal: React.FC<IShareModal> = observer((props) => {
                 {
                     chartName: name,
                     newNotebook: isNewNotebook,
-                    visSpec: JSON.stringify(props.storeRef.current?.vizStore.exportViewSpec()!),
+                    visSpec: JSON.stringify(props.storeRef.current?.exportCode()),
                     chartData: await formatExportedChartDatas(chartData!),
                 },
                 120_000

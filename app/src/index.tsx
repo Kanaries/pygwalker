@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
-import { IRow, IGWHandler, IDataQueryPayload } from '@kanaries/graphic-walker/dist/interfaces';
+import { IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
