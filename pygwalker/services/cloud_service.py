@@ -158,6 +158,11 @@ def create_shared_chart(
 ) -> str:
     if not GlobalVarManager.kanaries_api_key:
         raise CloudFunctionError("no kanaries api key", code=ErrorCode.TOKEN_ERROR)
+    workspace_name = get_kanaries_user_info()["workspaceName"]
+    chart_data = _get_chart_by_name(chart_name, workspace_name)
+    if chart_data is not None:
+        raise CloudFunctionError("chart name already exists", code=ErrorCode.UNKNOWN_ERROR)
+
     dataset_name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
     dataset_info = _upload_dataset_meta(dataset_name)
     dataset_id = dataset_info["datasetId"]
