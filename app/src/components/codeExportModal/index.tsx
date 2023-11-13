@@ -4,8 +4,8 @@ import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import py from "react-syntax-highlighter/dist/esm/languages/hljs/python";
 import atomOneLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
-import type { IGlobalStore } from "@kanaries/graphic-walker/dist/store";
-import type { IVisSpec } from "@kanaries/graphic-walker/dist/interfaces";
+import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
+import { IChartForExport } from "@kanaries/graphic-walker/dist/interfaces";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import commonStore from "@/store/common";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ SyntaxHighlighter.registerLanguage("json", json);
 SyntaxHighlighter.registerLanguage("python", py);
 
 interface ICodeExport {
-    globalStore: React.MutableRefObject<IGlobalStore | null>;
+    globalStore: React.MutableRefObject<VizSpecStore | null>;
     sourceCode: string;
     open: boolean;
     setOpen: (open: boolean) => void;
@@ -25,7 +25,7 @@ interface ICodeExport {
 
 const CodeExport: React.FC<ICodeExport> = observer((props) => {
     const { globalStore, sourceCode, open, setOpen } = props;
-    const [specList, setSpecList] = useState<IVisSpec[]>([]);
+    const [specList, setSpecList] = useState<IChartForExport[]>([]);
     const [tips, setTips] = useState<string>("");
 
     const { pyCode } = usePythonCode({
@@ -54,8 +54,8 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     };
 
     useEffect(() => {
-        if (open) {
-            const res = globalStore.current?.vizStore.exportViewSpec()! as IVisSpec[];
+        if (open && globalStore.current) {
+            const res = globalStore.current.exportCode();
             setSpecList(res);
         }
     }, [open]);

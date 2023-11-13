@@ -1,9 +1,9 @@
-import { IVisSpec } from "@kanaries/graphic-walker/dist/interfaces";
+import { IChartForExport } from "@kanaries/graphic-walker/dist/interfaces";
 import { useMemo } from "react"
 
 export function usePythonCode (props: {
     sourceCode: string;
-    specList: IVisSpec[];
+    specList: IChartForExport[];
     version: string;
 }) {
     const { sourceCode, specList, version } = props;
