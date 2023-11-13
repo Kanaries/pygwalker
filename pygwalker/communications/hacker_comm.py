@@ -94,7 +94,7 @@ class HackerCommunication(BaseCommunication):
 
     def _get_kernel_widget(self) -> List[Text]:
         text_list = []
-        for index in range(3):
+        for index in range(7):
             text = Text(value="", placeholder="")
             text.add_class(f"hacker-comm-pyg-kernel-store-{self.gid}-{index}")
             text.observe(self._on_mesage, "value")
