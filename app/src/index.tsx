@@ -168,6 +168,7 @@ const PureRednererApp: React.FC<IAppProps> = observer((props) => {
                 {...props.extraConfig}
                 name={spec.name}
                 visualConfig={spec.config}
+                visualLayout={spec.layout}
                 visualState={spec.encodings}
                 type='remote'
                 computation={computationCallback!}
