@@ -320,6 +320,7 @@ class PygWalker:
         def update_spec(data: Dict[str, Any]):
             spec_obj = {"config": data["visSpec"], "chart_map": {}, "version": __version__}
             self.vis_spec = data["visSpec"]
+            self.spec_version = __version__
             save_chart_endpoint(data["chartData"])
             if self.store_chart_data:
                 spec_obj["chart_map"] = self._get_chart_map_dict(self._chart_map)
@@ -334,6 +335,7 @@ class PygWalker:
             if not GlobalVarManager.kanaries_api_key:
                 raise CloudFunctionError("no_kanaries_api_key", code=ErrorCode.TOKEN_ERROR)
             self.vis_spec = data["visSpec"]
+            self.spec_version = __version__
             chart_data = ChartData.parse_obj(data["chartData"])
             share_url = self._upload_charts_to_could(
                 data["chartName"],

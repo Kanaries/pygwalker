@@ -26,7 +26,10 @@ export function download(data: string, filename: string, type: string) {
 export async function formatExportedChartDatas(chartData: IChartExportResult) {
     const chartDom = chartData.container();
     if (chartDom === null) {
-        return chartData
+        return {
+            ...chartData,
+            singleChart: ""
+        };
     }
     if (chartData.charts.length === 0) {
         const singleChart = await htmlToImage.toPng(

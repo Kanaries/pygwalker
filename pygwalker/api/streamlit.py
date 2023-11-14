@@ -1,4 +1,5 @@
 from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any
+from distutils.version import StrictVersion
 import json
 
 from typing_extensions import Literal
@@ -170,7 +171,13 @@ class StreamlitRenderer:
         If you set `pre_filters`, it will overwritre global_pre_filters.
         """
         cur_spec_obj = json.loads(self.walker.vis_spec)[index]
-        cur_spec_obj["config"]["size"]["mode"] = "fixed"
+
+        if StrictVersion(self.walker.spec_version) > StrictVersion("0.3.11"):
+            chart_size_config = cur_spec_obj["layout"]["size"]
+        else:
+            chart_size_config = cur_spec_obj["config"]["size"]
+
+        chart_size_config["mode"] = "fixed"
         explore_button_size = 20
         if pre_filters is None:
             pre_filters = self.global_pre_filters
@@ -182,17 +189,17 @@ class StreamlitRenderer:
             cur_spec_obj["encodings"]["filters"].extend(pre_filters_json)
 
         if width is None:
-            width = cur_spec_obj["config"]["size"]["width"]
+            width = chart_size_config["width"]
             left = width + 6
         else:
             width = width - explore_button_size - 6
-            cur_spec_obj["config"]["size"]["width"] = width
+            chart_size_config["width"] = width
             left = width + 6
 
         if height is None:
-            height = cur_spec_obj["config"]["size"]["height"]
+            height = chart_size_config["height"]
         else:
-            cur_spec_obj["config"]["size"]["height"] = height
+            chart_size_config["height"] = height
 
         html = self._get_html(
             mode="renderer",
