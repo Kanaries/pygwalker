@@ -25,7 +25,12 @@ from pygwalker.services.upload_data import (
 from pygwalker.services.config import get_local_user_id
 from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.services.cloud_service import create_shared_chart, write_config_to_cloud, get_kanaries_user_info
+from pygwalker.services.cloud_service import (
+    create_shared_chart,
+    write_config_to_cloud,
+    get_kanaries_user_info,
+    get_spec_by_text
+)
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
@@ -348,9 +353,6 @@ class PygWalker:
             write_config_to_cloud(path, json.dumps(spec_obj))
             return {"specFilePath": path}
 
-        def get_kanaries_token(_):
-            return {"kanariesToken": GlobalVarManager.kanaries_api_key}
-
         def _get_datas(data: Dict[str, Any]):
             sql = data["sql"].encode('utf-8').decode('unicode_escape')
             return {
@@ -360,6 +362,11 @@ class PygWalker:
         def _get_datas_by_payload(data: Dict[str, Any]):
             return {
                 "datas": self.data_parser.get_datas_by_payload(data["payload"])
+            }
+
+        def _get_spec_by_text(data: Dict[str, Any]):
+            return {
+                "data": get_spec_by_text(data["metas"], data["query"])
             }
 
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
@@ -372,7 +379,7 @@ class PygWalker:
 
         if self.show_cloud_tool:
             comm.register("upload_charts", upload_charts)
-            comm.register("get_kanaries_token", get_kanaries_token)
+            comm.register("get_spec_by_text", _get_spec_by_text)
 
         if self.use_kernel_calc:
             comm.register("get_datas", _get_datas)
