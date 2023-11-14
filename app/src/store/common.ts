@@ -25,7 +25,6 @@ class CommonStore {
     showCloudTool: boolean = false;
     version: string = "";
     notification: INotification | null = null;
-    kanariesToken: string = "";
     uploadSpecModalOpen: boolean = false;
 
     setInitModalOpen(value: boolean) {
@@ -52,10 +51,6 @@ class CommonStore {
         }, timeout);
     }
 
-    setKanariesToken(value: string) {
-        this.kanariesToken = value;
-    }
-
     setUploadSpecModalOpen(value: boolean) {
         this.uploadSpecModalOpen = value;
     }
@@ -67,14 +62,12 @@ class CommonStore {
             showCloudTool: observable,
             version: observable,
             notification: observable,
-            kanariesToken: observable,
             uploadSpecModalOpen: observable,
             setInitModalOpen: action,
             setInitModalInfo: action,
             setShowCloudTool: action,
             setVersion: action,
             setNotification: action,
-            setKanariesToken: action,
             setUploadSpecModalOpen: action,
         });
     }

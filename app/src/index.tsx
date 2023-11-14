@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
-import { IRow, IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
+import { IRow, IGWHandler, IViewField } from '@kanaries/graphic-walker/dist/interfaces';
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
@@ -100,14 +100,6 @@ const App: React.FC<IAppProps> = observer((props) => {
         }
     }, []);
 
-    useEffect(() => {
-        if (checkUploadPrivacy() && commonStore.showCloudTool) {
-            communicationStore.comm?.sendMsg("get_kanaries_token", {}).then(resp => {
-                commonStore.setKanariesToken(resp["data"]["kanariesToken"]);
-            });
-        }
-    }, []);
-
     const exportTool = getExportTool(setExportOpen);
     const saveTool = getSaveTool(props, gwRef, storeRef);
     const uploadTool = getShareTool(setShareModalOpen);
@@ -129,11 +121,11 @@ const App: React.FC<IAppProps> = observer((props) => {
     let enhanceAPI;
     if (props.showCloudTool) {
         enhanceAPI = {
-            header: {
-                "kanaries-api-key": commonStore.kanariesToken
-            },
             features: {
-                "askviz": "https://api.kanaries.net/vis/text2gw"
+                "askviz": async (metas: IViewField[], query: string) => {
+                    const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", { metas, query });
+                    return resp?.data.data;
+                }
             }
         }
     }

@@ -18,6 +18,8 @@ class PrivateSession(requests.Session):
         return req
 
     def send(self, request: requests.Request, **kwargs) -> requests.Response:
+        if not GlobalVarManager.kanaries_api_key:
+            raise CloudFunctionError("no kanaries api key", code=ErrorCode.TOKEN_ERROR)
         resp = super().send(request, **kwargs)
         try:
             resp_json = resp.json()
@@ -204,9 +206,6 @@ def create_cloud_graphic_walker(
     dataset_content: io.BytesIO,
     field_specs: List[Dict[str, Any]],
 ) -> str:
-    if not GlobalVarManager.kanaries_api_key:
-        raise CloudFunctionError("no kanaries api key", code=ErrorCode.TOKEN_ERROR)
-
     fid_list = [field["fid"] for field in field_specs]
     meta = json.dumps({
         "dataSources": [{
@@ -246,4 +245,14 @@ def create_cloud_graphic_walker(
 def get_kanaries_user_info() -> Dict[str, Any]:
     url = f"{GlobalVarManager.kanaries_api_host}/user/info"
     resp = session.get(url, timeout=15)
+    return resp.json()["data"]
+
+
+def get_spec_by_text(metas: List[Dict[str, Any]], text: str) -> Dict[str, Any]:
+    url = f"{GlobalVarManager.kanaries_api_host}/vis/text2gw"
+    resp = session.post(
+        url,
+        json={"metas": metas, "messages": [{"role": "user", "content": text}]},
+        timeout=15
+    )
     return resp.json()["data"]
