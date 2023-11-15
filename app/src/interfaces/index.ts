@@ -28,6 +28,7 @@ export interface IAppProps {
     needLoadLastSpec: boolean;
     extraConfig?: any;
     fieldMetas: any;
+    isExportDataFrame: boolean;
 }
 
 export interface IDataSourceProps {

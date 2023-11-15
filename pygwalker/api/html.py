@@ -58,6 +58,7 @@ def to_html(
         use_kernel_calc=False,
         use_save_tool=False,
         gw_mode="explore",
+        is_export_dataframe=False,
         **kwargs
     )
 

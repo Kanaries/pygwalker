@@ -45,6 +45,7 @@ def create_cloud_walker(
         use_kernel_calc=False,
         use_save_tool=False,
         gw_mode="explore",
+        is_export_dataframe=False,
     )
 
     create_cloud_graphic_walker(

@@ -68,6 +68,7 @@ def walk(
         use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
         use_save_tool=True,
         gw_mode="explore",
+        is_export_dataframe=True,
         **kwargs
     )
 

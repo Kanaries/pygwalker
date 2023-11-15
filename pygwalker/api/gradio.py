@@ -50,6 +50,7 @@ def get_html_on_gradio(
         store_chart_data=False,
         use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
         use_save_tool=debug,
+        is_export_dataframe=False,
         **kwargs
     )
 

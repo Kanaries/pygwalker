@@ -86,11 +86,11 @@ export function getDatasFromKernelBySql(fieldMetas: any) {
             JSON.stringify(fieldMetas)
         );
         const result = await communicationStore.comm?.sendMsg("get_datas", {"sql": sql});
-        return result["data"]["datas"] as IRow[];
+        return result && result["data"]["datas"] as IRow[];
     }
 }
 
 export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
     const result = await communicationStore.comm?.sendMsg("get_datas_by_payload", {payload});
-    return result["data"]["datas"] as IRow[];
+    return result && result["data"]["datas"] as IRow[];
 }
