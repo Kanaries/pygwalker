@@ -35,7 +35,7 @@ const Notification: React.FC = observer(() => {
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
                         >
-                            <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-zinc-700 shadow-lg ring-1 ring-black ring-opacity-5">
+                            <div className="pointer-events-auto w-full max-w-md overflow-hidden rounded-lg bg-zinc-700 shadow-lg ring-1 ring-black ring-opacity-5">
                                 <div className="p-4">
                                     <div className="flex items-start">
                                         <div className="flex-shrink-0">

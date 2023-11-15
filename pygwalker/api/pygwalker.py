@@ -5,6 +5,7 @@ import json
 
 from typing_extensions import Literal
 import ipywidgets
+import pandas as pd
 
 from pygwalker._typing import DataFrame
 from pygwalker.data_parsers.database_parser import Connector
@@ -23,7 +24,7 @@ from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnJupyter
 )
 from pygwalker.services.config import get_local_user_id
-from pygwalker.services.spec import get_spec_json, fill_new_fields
+from pygwalker.services.spec import get_spec_json, fill_new_fields, get_fid_fname_map_from_encodings
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import (
     create_shared_chart,
@@ -57,6 +58,7 @@ class PygWalker:
         store_chart_data: bool,
         use_kernel_calc: bool,
         use_save_tool: bool,
+        is_export_dataframe: bool,
         **kwargs
     ):
         if gid is None:
@@ -86,6 +88,8 @@ class PygWalker:
         self.parse_dsl_type = "server" if isinstance(dataset, Connector) else "client"
         self.gw_mode = "explore"
         self.dataset_type = self.data_parser.dataset_tpye
+        self.is_export_dataframe = is_export_dataframe
+        self._last_exported_dataframe = None
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.use_kernel_calc:
@@ -93,6 +97,10 @@ class PygWalker:
                 self.data_parser.get_datas_by_sql("SELECT 1 FROM pygwalker_mid_table LIMIT 1")
             except Exception:
                 pass
+
+    @property
+    def last_exported_dataframe(self) -> Optional[pd.DataFrame]:
+        return self._last_exported_dataframe
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
@@ -371,6 +379,21 @@ class PygWalker:
                 "data": get_spec_by_text(data["metas"], data["query"])
             }
 
+        def _export_dataframe_by_payload(data: Dict[str, Any]):
+            fid_map = get_fid_fname_map_from_encodings(data["encodings"])
+            df = pd.DataFrame(self.data_parser.get_datas_by_payload(data["payload"]))
+            df.columns = [fid_map.get(col, col) for col in df.columns]
+            GlobalVarManager.set_last_exported_dataframe(df)
+            self._last_exported_dataframe = df
+
+        def _export_dataframe_by_sql(data: Dict[str, Any]):
+            fid_map = get_fid_fname_map_from_encodings(data["encodings"])
+            sql = data["sql"].encode('utf-8').decode('unicode_escape')
+            df = pd.DataFrame(self.data_parser.get_datas_by_sql(sql))
+            df.columns = [fid_map.get(col, col) for col in df.columns]
+            GlobalVarManager.set_last_exported_dataframe(df)
+            self._last_exported_dataframe = df
+
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
 
         if self.use_save_tool:
@@ -386,6 +409,10 @@ class PygWalker:
         if self.use_kernel_calc:
             comm.register("get_datas", _get_datas)
             comm.register("get_datas_by_payload", _get_datas_by_payload)
+
+        if self.is_export_dataframe:
+            comm.register("export_dataframe_by_payload", _export_dataframe_by_payload)
+            comm.register("export_dataframe_by_sql", _export_dataframe_by_sql)
 
     def _send_props_track(self, props: Dict[str, Any]):
         needed_fields = {
@@ -439,6 +466,7 @@ class PygWalker:
             "datasetType": self.dataset_type,
             "extraConfig": self.other_props,
             "fieldMetas": self.data_parser.field_metas,
+            "isExportDataFrame": self.is_export_dataframe,
         }
 
         self._send_props_track(props)

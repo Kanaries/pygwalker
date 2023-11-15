@@ -108,6 +108,13 @@ def _config_adapter(config: str) -> str:
     return json.dumps(config_obj)
 
 
+def get_fid_fname_map_from_encodings(encodings: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        field["fid"]: field["name"]
+        for field in encodings["dimensions"] + encodings["measures"]
+    }
+
+
 def fill_new_fields(config: str, all_fields: List[Dict[str, str]]) -> str:
     """when df schema changed, fill new fields to every chart config"""
     config_obj = json.loads(config)

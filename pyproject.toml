@@ -27,7 +27,8 @@ dependencies = [
     "sqlalchemy",
     "gw_dsl_parser==0.1.7a11",
     "appdirs",
-    "segment-analytics-python==2.2.3"
+    "segment-analytics-python==2.2.3",
+    "pandas"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"

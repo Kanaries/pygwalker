@@ -21,6 +21,7 @@ import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getShareTool } from './tools/shareTool';
+import { getExportDataframeTool } from './tools/exportDataframe';
 import { formatExportedChartDatas } from "./utils/save";
 import Notification from "./notify"
 import initDslParser from "@kanaries-temp/gw-dsl-parser";
@@ -101,15 +102,19 @@ const App: React.FC<IAppProps> = observer((props) => {
     }, []);
 
     const exportTool = getExportTool(setExportOpen);
-    const saveTool = getSaveTool(props, gwRef, storeRef);
-    const uploadTool = getShareTool(setShareModalOpen);
 
     const tools = [exportTool];
     if ((props.env === "jupyter_widgets" || props.env === "streamlit" || props.env === "gradio") && props.useSaveTool) {
+        const saveTool = getSaveTool(props, gwRef, storeRef);
         tools.push(saveTool);
     }
     if (checkUploadPrivacy() && commonStore.showCloudTool) {
+        const uploadTool = getShareTool(setShareModalOpen);
         tools.push(uploadTool);
+    }
+    if (props.isExportDataFrame) {
+        const exportDataFrameTool = getExportDataframeTool(props, storeRef);
+        tools.push(exportDataFrameTool);
     }
 
     const toolbarConfig = {
@@ -189,9 +194,7 @@ const initOnJupyter = async(props: IAppProps) => {
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
     }
-    if (props.useKernelCalc) {
-        await initDslParser();
-    }
+    await initDslParser();
     hidePreview(props.id);
 }
 
@@ -202,9 +205,7 @@ const initOnHttpCommunication = async(props: IAppProps) => {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
         props.visSpec = visSpecResp["data"]["visSpec"];
     }
-    if (props.useKernelCalc) {
-        await initDslParser();
-    }
+    await initDslParser();
 }
 
 const defaultInit = async(props: IAppProps) => {}

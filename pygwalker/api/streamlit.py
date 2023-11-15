@@ -86,6 +86,7 @@ class StreamlitRenderer:
             store_chart_data=False,
             use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
             use_save_tool=debug,
+            is_export_dataframe=False,
             **kwargs
         )
         self.walker.init_streamlit_comm()

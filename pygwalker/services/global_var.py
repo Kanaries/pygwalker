@@ -1,5 +1,6 @@
 import os
 
+from pandas import DataFrame
 from typing_extensions import Literal
 
 from .config import get_config
@@ -13,6 +14,7 @@ class GlobalVarManager:
     kanaries_api_key = get_config("kanaries_token") or os.getenv("KANARIES_API_KEY", "")
     kanaries_api_host = "https://api.kanaries.net"
     kanaries_main_host = "https://kanaries.net"
+    last_exported_dataframe = None
 
     @classmethod
     def get_global_gid(cls) -> int:
@@ -43,3 +45,7 @@ class GlobalVarManager:
     @classmethod
     def set_privacy(cls, privacy: Literal['offline', 'update-only', 'events']):
         cls.privacy = privacy
+
+    @classmethod
+    def set_last_exported_dataframe(cls, df: DataFrame):
+        cls.last_exported_dataframe = df
