@@ -109,10 +109,19 @@ def _config_adapter(config: str) -> str:
 
 
 def get_fid_fname_map_from_encodings(encodings: Dict[str, Any]) -> Dict[str, str]:
-    return {
-        field["fid"]: field["name"]
-        for field in encodings["dimensions"] + encodings["measures"]
-    }
+    """
+    temporary function, it will be removed when graphic walker support fid map.
+    """
+    fid_fanme_map = {}
+    for field in encodings["dimensions"] + encodings["measures"]:
+        fid_fanme_map[field["fid"]] = field["name"]
+
+    for field in (encodings["rows"] + encodings["columns"] + encodings["size"] + encodings["shape"]
+                  + encodings["color"] + encodings["details"] + encodings["opacity"]):
+        if field.get("aggName"):
+            fid_fanme_map[field["fid"] + "_" + field["aggName"]] = field["name"] + "_" + field["aggName"]
+
+    return fid_fanme_map
 
 
 def fill_new_fields(config: str, all_fields: List[Dict[str, str]]) -> str:
