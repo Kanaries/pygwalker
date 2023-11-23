@@ -3,7 +3,6 @@ import json
 import io
 
 import pandas as pd
-import duckdb
 
 from .base import (
     BaseDataFrameDataParser,
@@ -21,13 +20,8 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         df = df.replace({float('nan'): None})
         return df.to_dict(orient='records')
 
-    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
-        duckdb.register("pygwalker_mid_table", self.df)
-        result = duckdb.query(sql)
-        return [
-            dict(zip(result.columns, row))
-            for row in result.fetchall()
-        ]
+    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+        return self._get_datas_by_sql(sql, self.df, timezone_offset_seconds)
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()

@@ -11,7 +11,8 @@ from .base import (
     BaseDataFrameDataParser,
     FieldSpec,
     is_temporal_field,
-    is_geo_field
+    is_geo_field,
+    get_data_meta_type
 )
 from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
 
@@ -26,18 +27,21 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         df = df.replace({float('nan'): None})
         return df.to_dict(orient='records')
 
-    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
-        duckdb.register("pygwalker_mid_table", self._pandas_df)
-        result = duckdb.query(sql)
-        return [
-            dict(zip(result.columns, row))
-            for row in result.fetchall()
-        ]
+    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+        return self._get_datas_by_sql(sql, self._pandas_df, timezone_offset_seconds)
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
         self.origin_df.to_csv(content, index=False)
         return content
+
+    @property
+    @lru_cache()
+    def field_metas(self) -> List[Dict[str, str]]:
+        duckdb.register("pygwalker_mid_table", self._pandas_df)
+        result = duckdb.query("SELECT * FROM pygwalker_mid_table LIMIT 1")
+        data = result.fetchone()
+        return get_data_meta_type(dict(zip(result.columns, data))) if data else []
 
     @property
     @lru_cache()

@@ -49,11 +49,12 @@ export function getExportDataframeTool(
                 const sql = parser_dsl_with_meta(
                     "pygwalker_mid_table",
                     JSON.stringify({workflow: storeRef.current?.workflow}),
-                    JSON.stringify(props.fieldMetas)
+                    JSON.stringify({"pygwalker_mid_table": props.fieldMetas})
                 );
                 await communicationStore.comm?.sendMsg("export_dataframe_by_sql", {
                     sql: sql,
                     encodings: storeRef.current?.currentVis.encodings,
+                    timezoneOffsetSeconds: -new Date().getTimezoneOffset() * 60,
                 });
             }
             exportSuccess();
