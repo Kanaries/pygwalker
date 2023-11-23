@@ -19,16 +19,17 @@ dependencies = [
     "ipywidgets",
     "pydantic",
     "psutil",
-    "duckdb<=0.8.1",
+    "duckdb==0.9.2",
     "pyarrow",
     "sqlglot>=19.0.0",
     "requests",
     "arrow",
     "sqlalchemy",
-    "gw_dsl_parser==0.1.7a11",
+    "gw_dsl_parser==0.1.8a0",
     "appdirs",
     "segment-analytics-python==2.2.3",
-    "pandas"
+    "pandas",
+    "pytz"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"

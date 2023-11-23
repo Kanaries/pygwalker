@@ -108,12 +108,16 @@ class DatabaseDataParser(BaseDataParser):
         # temporary solution: wasmtime is not supported in conda
         # pylint: disable=import-outside-toplevel
         from gw_dsl_parser import get_sql_from_payload
-        sql = get_sql_from_payload(self.placeholder_table_name, payload, self.field_metas)
+        sql = get_sql_from_payload(
+            self.placeholder_table_name,
+            payload,
+            {self.placeholder_table_name: self.field_metas}
+        )
         sql = self._format_sql(sql)
         result = self.conn.query_datas(sql)
         return result
 
-    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
+    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
         pass
 
     def _get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:

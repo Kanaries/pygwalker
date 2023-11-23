@@ -2,14 +2,18 @@ from typing import NamedTuple, Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
 from functools import lru_cache
 from datetime import datetime
+from datetime import timedelta
 import abc
 import io
 
+import duckdb
 import arrow
+import pytz
 
 from pygwalker._typing import DataFrame
 
 
+# pylint: disable=broad-except
 class FieldSpec(NamedTuple):
     """Field specification.
 
@@ -45,7 +49,7 @@ class BaseDataParser(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
+    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
         """get records"""
         raise NotImplementedError
 
@@ -86,8 +90,10 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     @property
     @lru_cache()
     def field_metas(self) -> List[Dict[str, str]]:
-        data = self.get_datas_by_sql("SELECT * FROM pygwalker_mid_table LIMIT 1")
-        return get_data_meta_type(data[0]) if data else []
+        duckdb.register("pygwalker_mid_table", self.df)
+        result = duckdb.query("SELECT * FROM pygwalker_mid_table LIMIT 1")
+        data = result.fetchone()
+        return get_data_meta_type(dict(zip(result.columns, data))) if data else []
 
     @property
     @lru_cache()
@@ -118,6 +124,40 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             'analyticType': analytic_type,
         }
 
+    def _get_datas_by_sql(self, sql: str, df: Any, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+        """
+        Due to duckdb don't support use 'EPOCH FROM' timestamp_s, timestamp_ms.
+        So we need to convert timestamp_s, timestamp_ms to timestamp temporarily.
+        """
+        if timezone_offset_seconds is not None:
+            timezone = get_timezone_base_offset(timezone_offset_seconds)
+            if timezone:
+                try:
+                    duckdb.query(f"SET TimeZone = '{timezone}'")
+                    print("set timezone success", timezone, timezone_offset_seconds)
+                except Exception:
+                    pass
+
+        duckdb.register("__pygwalker_mid_table", df)
+        select_expr = ",".join([
+            f'"{field["key"]}"' if field["type"] != "datetime" else f'"{field["key"]}"::timestamp "{field["key"]}"'
+            for field in self.field_metas
+        ])
+        sql = f"""
+            WITH pygwalker_mid_table AS (
+                SELECT
+                    {select_expr}
+                FROM
+                    __pygwalker_mid_table
+            )
+            {sql}
+        """
+        result = duckdb.query(sql)
+        return [
+            dict(zip(result.columns, row))
+            for row in result.fetchall()
+        ]
+
     def _rename_dataframe(self, df: DataFrame) -> DataFrame:
         """rename dataframe"""
         raise NotImplementedError
@@ -128,7 +168,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         raise NotImplementedError
-    
+
     @property
     def dataset_tpye(self) -> str:
         return "dataframe_default"
@@ -138,7 +178,7 @@ def is_temporal_field(value: str) -> bool:
     """check if field is temporal"""
     try:
         arrow.get(value)
-    except:
+    except Exception:
         return False
     return True
 
@@ -161,8 +201,9 @@ def get_data_meta_type(data: Dict[str, Any]) -> List[Dict[str, str]]:
     meta_types = []
     for key, value in data.items():
         if isinstance(value, datetime):
-            data[key] = format_temporal_string(value)
             field_meta_type = "datetime"
+            if value.tzinfo:
+                field_meta_type = "datetime_tz"
         elif isinstance(value, (int, float)):
             field_meta_type = "number"
         else:
@@ -172,3 +213,12 @@ def get_data_meta_type(data: Dict[str, Any]) -> List[Dict[str, str]]:
             "type": field_meta_type
         })
     return meta_types
+
+
+@lru_cache()
+def get_timezone_base_offset(offset_seconds: int) -> Optional[str]:
+    utc_offset = timedelta(seconds=offset_seconds)
+    now = datetime.now(pytz.utc)
+    for tz in map(pytz.timezone, pytz.all_timezones_set):
+        if now.astimezone(tz).utcoffset() == utc_offset:
+            return tz.zone

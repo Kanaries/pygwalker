@@ -48,7 +48,7 @@ class SparkDataFrameDataParser(BaseDataParser):
         df = self.df.limit(limit) if limit is not None else self.df
         return [row.asDict() for row in df.collect()]
 
-    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
+    def get_datas_by_sql(self, sql: str, _: Optional[int] = None) -> List[Dict[str, Any]]:
         self.df.createOrReplaceTempView("pygwalker_mid_table")
         sql = sqlglot.transpile(sql, read="duckdb", write="spark")[0]
         result_df = self.spark.sql(sql)

@@ -3,7 +3,6 @@ import json
 import io
 
 import polars as pl
-import duckdb
 
 from .base import (
     BaseDataFrameDataParser,
@@ -21,13 +20,8 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         df = df.fill_nan(None)
         return df.to_dicts()
 
-    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
-        duckdb.register("pygwalker_mid_table", self.df)
-        result = duckdb.query(sql)
-        return [
-            dict(zip(result.columns, row))
-            for row in result.fetchall()
-        ]
+    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+        return self._get_datas_by_sql(sql, self.df, timezone_offset_seconds)
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()

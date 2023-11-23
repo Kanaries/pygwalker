@@ -83,9 +83,12 @@ export function getDatasFromKernelBySql(fieldMetas: any) {
         const sql = parser_dsl_with_meta(
             "pygwalker_mid_table",
             JSON.stringify(payload),
-            JSON.stringify(fieldMetas)
+            JSON.stringify({"pygwalker_mid_table": fieldMetas})
         );
-        const result = await communicationStore.comm?.sendMsg("get_datas", {"sql": sql});
+        const result = await communicationStore.comm?.sendMsg(
+            "get_datas",
+            {"sql": sql, "timezoneOffsetSeconds": -new Date().getTimezoneOffset() * 60}
+        );
         return result && result["data"]["datas"] as IRow[];
     }
 }

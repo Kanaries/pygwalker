@@ -366,7 +366,10 @@ class PygWalker:
         def _get_datas(data: Dict[str, Any]):
             sql = data["sql"].encode('utf-8').decode('unicode_escape')
             return {
-                "datas": self.data_parser.get_datas_by_sql(sql)
+                "datas": self.data_parser.get_datas_by_sql(
+                    sql,
+                    data.get("timezoneOffsetSeconds", None)
+                )
             }
 
         def _get_datas_by_payload(data: Dict[str, Any]):
@@ -389,7 +392,10 @@ class PygWalker:
         def _export_dataframe_by_sql(data: Dict[str, Any]):
             fid_map = get_fid_fname_map_from_encodings(data["encodings"])
             sql = data["sql"].encode('utf-8').decode('unicode_escape')
-            df = pd.DataFrame(self.data_parser.get_datas_by_sql(sql))
+            df = pd.DataFrame(self.data_parser.get_datas_by_sql(
+                sql,
+                data.get("timezoneOffsetSeconds", None)
+            ))
             df.columns = [fid_map.get(col, col) for col in df.columns]
             GlobalVarManager.set_last_exported_dataframe(df)
             self._last_exported_dataframe = df
