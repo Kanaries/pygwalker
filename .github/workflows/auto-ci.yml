@@ -75,6 +75,7 @@ jobs:
       - name: Try Install Modin In Linux Os
         if: ${{ matrix.os-version == 'ubuntu-latest' && matrix.python-version == '3.11' }}
         run: |
+          pip install aiohttp==3.8.6
           pip install "modin==0.23.1" "modin[ray]==0.23.1"
           pip install pydantic==1.10.9
       - name: Try Running
