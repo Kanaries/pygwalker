@@ -134,7 +134,6 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             if timezone:
                 try:
                     duckdb.query(f"SET TimeZone = '{timezone}'")
-                    print("set timezone success", timezone, timezone_offset_seconds)
                 except Exception:
                     pass
 

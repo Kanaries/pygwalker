@@ -17,9 +17,10 @@ class PrivateSession(requests.Session):
         req.headers["kanaries-api-key"] = GlobalVarManager.kanaries_api_key
         return req
 
-    def send(self, request: requests.Request, **kwargs) -> requests.Response:
-        if not GlobalVarManager.kanaries_api_key:
+    def send(self, request: requests.PreparedRequest, **kwargs) -> requests.Response:
+        if not GlobalVarManager.kanaries_api_key and request.headers.get("__need_kanaries_api_key", "true") == "true":
             raise CloudFunctionError("no kanaries api key", code=ErrorCode.TOKEN_ERROR)
+        request.headers.pop("__need_kanaries_api_key", None)
         resp = super().send(request, **kwargs)
         try:
             resp_json = resp.json()
@@ -145,7 +146,7 @@ def write_config_to_cloud(path: str, config: str):
 def read_config_from_cloud(path: str) -> str:
     """Return config, if not exist, return empty string"""
     url = f"{GlobalVarManager.kanaries_api_host}/pygConfig"
-    resp = session.get(url, params={"path": path}, timeout=15)
+    resp = session.get(url, params={"path": path}, headers={"__need_kanaries_api_key": "false"}, timeout=15)
     return resp.json()["data"]["config"]
 
 
