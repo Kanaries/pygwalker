@@ -36,3 +36,8 @@ class CloudFunctionError(BaseError):
 class CsvFileTooLargeError(BaseError):
     """Raised when the csv file is too large."""
     pass
+
+
+class ViewSqlSameColumnError(BaseError):
+    """Raised when the view sql is invalid."""
+    pass
