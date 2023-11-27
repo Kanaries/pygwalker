@@ -1,7 +1,10 @@
 import pandas as pd
 import polars as pl
+import pytest
 
 from pygwalker.services.data_parsers import get_parser
+from pygwalker.data_parsers.database_parser import _check_view_sql
+from pygwalker.errors import ViewSqlSameColumnError
 
 datas = [
     {"name": "padnas", "count": 3, "date": "2022-01-01"},
@@ -54,3 +57,18 @@ try:
         assert dataset_parser.to_records(1) == to_records_no_kernrl_result
 except ImportError:
     pass
+
+
+def test_check_view_sql():
+    _check_view_sql("SELECT * FROM table_name")
+    _check_view_sql("SELECT a.f1, b.f2 FROM a LEFT JOIN b ON a.id = b.id")
+    _check_view_sql("SELECT f1, f2 FROM table_name")
+
+    with pytest.raises(ViewSqlSameColumnError):
+        _check_view_sql("SELECT f1, f1 FROM table_name")
+    with pytest.raises(ViewSqlSameColumnError):
+        _check_view_sql("SELECT *, f1 FROM table_name")
+    with pytest.raises(ViewSqlSameColumnError):
+        _check_view_sql("SELECT * FROM a left join b on a.id = b.id")
+    with pytest.raises(ViewSqlSameColumnError):
+        _check_view_sql("SELECT a.* FROM a left join b on a.id = b.id")

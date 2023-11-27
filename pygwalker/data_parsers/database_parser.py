@@ -14,13 +14,35 @@ from .base import BaseDataParser, get_data_meta_type
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.utils.custom_sqlglot import DuckdbDialect
+from pygwalker.errors import ViewSqlSameColumnError
 
 logger = logging.getLogger(__name__)
+
+
+def _check_view_sql(sql: str) -> None:
+    """check view sql, it will raise ViewSqlSameColumnError if view sql contain same column"""
+    select_columns = [
+        select.alias_or_name
+        for select in sqlglot.parse_one(sql).find(exp.Select)
+    ]
+
+    has_join = sqlglot.parse_one(sql).find(exp.Join) is not None
+    has_select_all = any(column == "*" for column in select_columns)
+    select_expr_count = len(select_columns)
+    hash_same_column = len(set(select_columns)) != select_expr_count
+
+    if has_select_all and select_expr_count > 1:
+        raise ViewSqlSameColumnError("fields with the same name may appear when use select * and select other fields")
+    if has_join and has_select_all:
+        raise ViewSqlSameColumnError("fields with the same name may appear when multi table join and use select *")
+    if hash_same_column:
+        raise ViewSqlSameColumnError("view sql can not contain same column")
 
 
 class Connector:
     """database connector"""
     def __init__(self, url: str, view_sql: str) -> "Connector":
+        _check_view_sql(view_sql)
         self.url = url
         self.engine = self._get_engine()
         self.view_sql = view_sql
