@@ -20,9 +20,6 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         df = df.replace({float('nan'): None})
         return df.to_dict(orient='records')
 
-    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
-        return self._get_datas_by_sql(sql, self.df, timezone_offset_seconds)
-
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
         self.origin_df.to_csv(content, index=False)

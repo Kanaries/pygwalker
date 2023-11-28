@@ -54,8 +54,15 @@ class SparkDataFrameDataParser(BaseDataParser):
         result_df = self.spark.sql(sql)
         return [row.asDict() for row in result_df.collect()]
 
-    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return []
+    def get_datas_by_payload(self, payload: Dict[str, Any], _: Optional[int] = None) -> List[Dict[str, Any]]:
+        # pylint: disable=import-outside-toplevel
+        from gw_dsl_parser import get_sql_from_payload
+        sql = get_sql_from_payload(
+            "pygwalker_mid_table",
+            payload,
+            {"pygwalker_mid_table": self.field_metas}
+        )
+        return self.get_datas_by_sql(sql)
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()

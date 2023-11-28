@@ -20,9 +20,6 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         df = df.fill_nan(None)
         return df.to_dicts()
 
-    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
-        return self._get_datas_by_sql(sql, self.df, timezone_offset_seconds)
-
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
         self.origin_df.write_csv(content)

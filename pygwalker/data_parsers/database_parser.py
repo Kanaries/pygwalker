@@ -126,7 +126,7 @@ class DatabaseDataParser(BaseDataParser):
         df = df.replace({float('nan'): None})
         return df.to_dict(orient='records')
 
-    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def get_datas_by_payload(self, payload: Dict[str, Any], _: Optional[int] = None) -> List[Dict[str, Any]]:
         # temporary solution: wasmtime is not supported in conda
         # pylint: disable=import-outside-toplevel
         from gw_dsl_parser import get_sql_from_payload

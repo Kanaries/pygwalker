@@ -54,7 +54,7 @@ class BaseDataParser(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def get_datas_by_payload(self, payload: Dict[str, Any], timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
         """get records"""
         raise NotImplementedError
 
@@ -86,11 +86,12 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         self.field_specs = field_specs
         if self.use_kernel_calc:
             self.df = self._preprocess_dataframe(self.df)
+        self._duckdb_df = self.df
 
     @property
     @lru_cache()
     def field_metas(self) -> List[Dict[str, str]]:
-        duckdb.register("pygwalker_mid_table", self.df)
+        duckdb.register("pygwalker_mid_table", self._duckdb_df)
         result = duckdb.query("SELECT * FROM pygwalker_mid_table LIMIT 1")
         data = result.fetchone()
         return get_data_meta_type(dict(zip(result.columns, data))) if data else []
@@ -124,7 +125,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             'analyticType': analytic_type,
         }
 
-    def _get_datas_by_sql(self, sql: str, df: Any, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Due to duckdb don't support use 'EPOCH FROM' timestamp_s, timestamp_ms.
         So we need to convert timestamp_s, timestamp_ms to timestamp temporarily.
@@ -137,7 +138,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
                 except Exception:
                     pass
 
-        duckdb.register("__pygwalker_mid_table", df)
+        duckdb.register("__pygwalker_mid_table", self._duckdb_df)
         select_expr = ",".join([
             f'"{field["key"]}"' if field["type"] != "datetime" else f'"{field["key"]}"::timestamp "{field["key"]}"'
             for field in self.field_metas
@@ -165,8 +166,15 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         """preprocess dataframe"""
         raise NotImplementedError
 
-    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-        raise NotImplementedError
+    def get_datas_by_payload(self, payload: Dict[str, Any], timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+        # pylint: disable=import-outside-toplevel
+        from gw_dsl_parser import get_sql_from_payload
+        sql = get_sql_from_payload(
+            "pygwalker_mid_table",
+            payload,
+            {"pygwalker_mid_table": self.field_metas}
+        )
+        return self.get_datas_by_sql(sql, timezone_offset_seconds)
 
     @property
     def dataset_tpye(self) -> str:

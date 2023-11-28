@@ -3,6 +3,7 @@ import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/dist/inte
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
 import { parser_dsl_with_meta } from "@kanaries-temp/gw-dsl-parser";
+import { getTimezoneOffsetSeconds } from "@/utils/save";
 
 interface MessagePayload extends IDataSourceProps {
     action: "requestData" | "postData" | "finishData";
@@ -87,13 +88,16 @@ export function getDatasFromKernelBySql(fieldMetas: any) {
         );
         const result = await communicationStore.comm?.sendMsg(
             "get_datas",
-            {"sql": sql, "timezoneOffsetSeconds": -new Date().getTimezoneOffset() * 60}
+            {"sql": sql, "timezoneOffsetSeconds": getTimezoneOffsetSeconds()}
         );
         return result && result["data"]["datas"] as IRow[];
     }
 }
 
 export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
-    const result = await communicationStore.comm?.sendMsg("get_datas_by_payload", {payload});
+    const result = await communicationStore.comm?.sendMsg(
+        "get_datas_by_payload",
+        {payload, "timezoneOffsetSeconds": getTimezoneOffsetSeconds()}
+    );
     return result && result["data"]["datas"] as IRow[];
 }
