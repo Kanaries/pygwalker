@@ -38,14 +38,29 @@ def render_gwalker_iframe(gid: int, srcdoc: str) -> str:
     )
 
 
-def render_gwalker_html(gid: int, props: Dict) -> str:
+def render_gwalker_html(gid: int, props: Dict[str, Any]) -> str:
     walker_template = jinja_env.get_template("walk.js")
+    container_id = f"gwalker-div-{gid}"
     js_list = [
         "var exports={}, module={};",
         gwalker_script(),
-        walker_template.render(gwalker={'id': gid, 'props': json.dumps(props, cls=DataFrameEncoder)})
+        walker_template.render(gwalker={'id': container_id, 'props': json.dumps(props, cls=DataFrameEncoder)})
     ]
     js = "\n".join(js_list)
     template = jinja_env.get_template("index.html")
-    html = f"{template.render(gwalker={'id': gid, 'script': js})}"
+    html = f"{template.render(gwalker={'id': container_id, 'script': js})}"
+    return html
+
+
+def render_gw_preview_html(gid: int, props: Dict[str, Any]) -> str:
+    """Render html for previewing gwalker(use purerenderer mode of graphic-wlaker, not png preview)"""
+    preview_template = jinja_env.get_template("gw_preview.js")
+    container_id = f"pygwalker-preview-{gid}"
+    js_list = [
+        gwalker_script(),
+        preview_template.render(gwalker={'id': container_id, 'props': json.dumps(props)})
+    ]
+    js = "\n".join(js_list)
+    template = jinja_env.get_template("index.html")
+    html = f"{template.render(gwalker={'id': container_id, 'script': js})}"
     return html

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import communicationStore from "../store/communication"
 import commonStore from '../store/common';
-import { formatExportedChartDatas } from "../utils/save"
+import { formatExportedChartDatas, getTimezoneOffsetSeconds } from "../utils/save"
 import { checkUploadPrivacy } from '../utils/userConfig';
 
+import { chartToWorkflow } from "@kanaries/graphic-walker"
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import LoadingIcon from '../components/loadingIcon';
 
@@ -54,9 +55,15 @@ export function getSaveTool(
         }
         let chartData = await gwRef.current?.exportChart!("data-url");
         try {
+            const visSpec = storeRef.current?.exportCode();
+            if (visSpec === undefined) {
+                throw new Error("visSpec is undefined");
+            }
             await communicationStore.comm?.sendMsg("update_spec", {
-                "visSpec": JSON.stringify(storeRef.current?.exportCode()!),
+                "visSpec": JSON.stringify(visSpec),
                 "chartData": await formatExportedChartDatas(chartData),
+                "workflowList": visSpec.map((spec) => chartToWorkflow(spec)),
+                "timezoneOffsetSeconds": getTimezoneOffsetSeconds(),
             });
             saveJupyterNotebook();
         } finally {

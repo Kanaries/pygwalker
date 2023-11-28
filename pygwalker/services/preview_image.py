@@ -84,3 +84,6 @@ class PreviewImageTool:
     def render(self, charts_map: Dict[str, ChartData]):
         html = render_preview_html_for_multi_charts(charts_map, self.gid, self.image_slot_id)
         display_html(html, slot_id=self.image_slot_id)
+
+    def render_gw_review(self, html: str):
+        display_html(html, slot_id=self.image_slot_id)

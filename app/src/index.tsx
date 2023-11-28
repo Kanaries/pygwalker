@@ -6,7 +6,7 @@ import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpe
 import { IRow, IGWHandler, IViewField } from '@kanaries/graphic-walker/dist/interfaces';
 
 import Options from './components/options';
-import { IAppProps } from './interfaces';
+import { IAppProps, PreviewAppProps } from './interfaces';
 
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
@@ -15,6 +15,7 @@ import { initJupyterCommunication, initHttpCommunication } from "./utils/communi
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
+import Preview from './components/preview';
 import ShareModal from './components/shareModal';
 import UploadSpecModal from "./components/uploadSpecModal"
 import InitModal from './components/initModal';
@@ -235,4 +236,11 @@ function GWalker(props: IAppProps, id: string) {
     })
 }
 
-export default { GWalker }
+function PreviewApp(props: PreviewAppProps, id: string) {
+    ReactDOM.render(
+        <Preview {...props} />,
+        document.getElementById(id)
+    );
+}
+
+export default { GWalker, PreviewApp }

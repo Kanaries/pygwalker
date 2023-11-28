@@ -31,11 +31,8 @@ export async function formatExportedChartDatas(chartData: IChartExportResult) {
             singleChart: ""
         };
     }
+    // export png don't support geo chart
     if (chartData.charts.length === 0) {
-        const singleChart = await htmlToImage.toPng(
-            chartDom!,
-            {width: chartDom?.clientWidth, height: chartDom?.clientHeight}
-        )
         return {
             ...chartData,
             nCols: 1,
@@ -47,10 +44,10 @@ export async function formatExportedChartDatas(chartData: IChartExportResult) {
                 height: chartDom?.clientHeight,
                 canvasWidth: chartDom?.clientWidth,
                 canvasHeight: chartDom?.clientHeight,
-                data: singleChart,
+                data: "",
                 canvas: () => null
             }],
-            singleChart
+            singleChart: ""
         }
     } else {
         const singleChart = await htmlToImage.toPng(
@@ -62,4 +59,8 @@ export async function formatExportedChartDatas(chartData: IChartExportResult) {
             singleChart
         }
     }
+}
+
+export function getTimezoneOffsetSeconds(): number {
+    return -new Date().getTimezoneOffset() * 60;
 }

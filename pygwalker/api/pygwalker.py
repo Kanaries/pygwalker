@@ -2,8 +2,11 @@ from typing import List, Dict, Any, Optional, Union
 import html as m_html
 import urllib
 import json
+import zlib
+import base64
 
 from typing_extensions import Literal
+from duckdb import ParserException
 import ipywidgets
 import pandas as pd
 
@@ -15,7 +18,8 @@ from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.render import (
     render_gwalker_html,
     render_gwalker_iframe,
-    get_max_limited_datas
+    get_max_limited_datas,
+    render_gw_preview_html
 )
 from pygwalker.services.config import set_config
 from pygwalker.services.preview_image import PreviewImageTool, render_preview_html, ChartData
@@ -108,6 +112,8 @@ class PygWalker:
         self.spec_type = spec_type
         self._chart_map = self._parse_chart_map_dict(spec_obj["chart_map"])
         self.spec_version = spec_obj.get("version", None)
+        self.workflow_list = spec_obj.get("workflow_list", [])
+        self.timezone_offset_seconds = spec_obj.get("timezoneOffsetSeconds", None)
 
     def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
         return {
@@ -208,7 +214,7 @@ class PygWalker:
 
         display_html(html_widgets)
         preview_tool.init_display()
-        preview_tool.render(self._chart_map)
+        preview_tool.render_gw_review(self._get_gw_preview_html())
 
     @property
     def chart_list(self) -> List[str]:
@@ -322,13 +328,23 @@ class PygWalker:
         def save_chart_endpoint(data: Dict[str, Any]):
             chart_data = ChartData.parse_obj(data)
             self._chart_map[data["title"]] = chart_data
-            if self.use_preview:
-                preview_tool.render(self._chart_map)
 
         def update_spec(data: Dict[str, Any]):
-            spec_obj = {"config": data["visSpec"], "chart_map": {}, "version": __version__}
+            spec_obj = {
+                "config": data["visSpec"],
+                "chart_map": {},
+                "version": __version__,
+                "workflow_list": data.get("workflowList", []),
+                "timezoneOffsetSeconds": data.get("timezoneOffsetSeconds", None)
+            }
             self.vis_spec = data["visSpec"]
             self.spec_version = __version__
+            self.workflow_list = data.get("workflowList", [])
+            self.timezone_offset_seconds = data.get("timezoneOffsetSeconds", None)
+
+            if self.use_preview:
+                preview_tool.render_gw_review(self._get_gw_preview_html())
+
             save_chart_endpoint(data["chartData"])
             if self.store_chart_data:
                 spec_obj["chart_map"] = self._get_chart_map_dict(self._chart_map)
@@ -374,7 +390,10 @@ class PygWalker:
 
         def _get_datas_by_payload(data: Dict[str, Any]):
             return {
-                "datas": self.data_parser.get_datas_by_payload(data["payload"])
+                "datas": self.data_parser.get_datas_by_payload(
+                    data["payload"],
+                    data.get("timezoneOffsetSeconds", None)
+                )
             }
 
         def _get_spec_by_text(data: Dict[str, Any]):
@@ -384,7 +403,10 @@ class PygWalker:
 
         def _export_dataframe_by_payload(data: Dict[str, Any]):
             fid_map = get_fid_fname_map_from_encodings(data["encodings"])
-            df = pd.DataFrame(self.data_parser.get_datas_by_payload(data["payload"]))
+            df = pd.DataFrame(self.data_parser.get_datas_by_payload(
+                data["payload"]),
+                data.get("timezoneOffsetSeconds", None)
+            )
             df.columns = [fid_map.get(col, col) for col in df.columns]
             GlobalVarManager.set_last_exported_dataframe(df)
             self._last_exported_dataframe = df
@@ -486,3 +508,39 @@ class PygWalker:
             return render_gwalker_iframe(self.gid, srcdoc)
         else:
             return html
+
+    def _get_gw_preview_html(self) -> str:
+        if not self.workflow_list:
+            return ""
+
+        charts = []
+
+        vis_spec_obj = json.loads(self.vis_spec)
+        for vis_spec_item, workflow in zip(
+            vis_spec_obj,
+            self.workflow_list
+        ):
+            try:
+                data = self.data_parser.get_datas_by_payload(workflow, self.timezone_offset_seconds)
+            except ParserException:
+                data = []
+            formated_data = {}
+            if data:
+                keys = list(data[0].keys())
+                formated_data = {key: [] for key in keys}
+                for item in data:
+                    for key in keys:
+                        formated_data[key].append(item[key])
+            else:
+                formated_data = {}
+
+            data_base64_str = base64.b64encode(zlib.compress(json.dumps(formated_data).encode())).decode()
+            charts.append({
+                "visSpec": vis_spec_item,
+                "data": data_base64_str
+            })
+
+        props = {"charts": charts, "themeKey": self.theme_key}
+        html = render_gw_preview_html(self.gid, props)
+
+        return html
