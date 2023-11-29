@@ -2,8 +2,6 @@ from typing import List, Dict, Any, Optional, Union
 import html as m_html
 import urllib
 import json
-import zlib
-import base64
 
 from typing_extensions import Literal
 from duckdb import ParserException
@@ -19,10 +17,14 @@ from pygwalker.services.render import (
     render_gwalker_html,
     render_gwalker_iframe,
     get_max_limited_datas,
-    render_gw_preview_html
 )
 from pygwalker.services.config import set_config
-from pygwalker.services.preview_image import PreviewImageTool, render_preview_html, ChartData
+from pygwalker.services.preview_image import (
+    PreviewImageTool,
+    ChartData,
+    render_gw_preview_html,
+    render_gw_chart_preview_html
+)
 from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnWidgets,
     BatchUploadDatasToolOnJupyter
@@ -108,12 +110,22 @@ class PygWalker:
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
-        self.vis_spec = spec_obj["config"] and fill_new_fields(spec_obj["config"], field_specs)
+        self._update_vis_spec(spec_obj["config"] and fill_new_fields(spec_obj["config"], field_specs))
         self.spec_type = spec_type
         self._chart_map = self._parse_chart_map_dict(spec_obj["chart_map"])
         self.spec_version = spec_obj.get("version", None)
         self.workflow_list = spec_obj.get("workflow_list", [])
         self.timezone_offset_seconds = spec_obj.get("timezoneOffsetSeconds", None)
+
+    def _update_vis_spec(self, vis_spec_str: str):
+        if not vis_spec_str:
+            vis_spec_str = "{}"
+        self.vis_spec = vis_spec_str
+        self._vis_spec_obj = json.loads(vis_spec_str)
+        self._chart_name_index_map = {
+            item["name"]: index
+            for index, item in enumerate(self._vis_spec_obj)
+        }
 
     def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
         return {
@@ -251,12 +263,9 @@ class PygWalker:
         """
         Export the chart as a html string.
         """
-        chart_data = self._get_chart_by_name(chart_name)
-
-        return render_preview_html(
-            chart_data,
-            f"{self.gid}-{chart_name}",
-            custom_title="",
+        return self._get_gw_chart_preview_html(
+            chart_name,
+            title="",
             desc=""
         )
 
@@ -273,11 +282,12 @@ class PygWalker:
         """
         Display the chart in the notebook.
         """
-        chart_data = self._get_chart_by_name(chart_name)
-        html = render_preview_html(
-            chart_data,
-            f"{self.gid}-{chart_name}",
-            custom_title=title,
+        if title is None:
+            title = chart_name
+
+        html = self._get_gw_chart_preview_html(
+            chart_name,
+            title=title,
             desc=desc
         )
         display_html(html)
@@ -296,7 +306,7 @@ class PygWalker:
                 "rawFields": self.field_specs,
                 "dsId": 'dataSource-0',
             }],
-            "specList": json.loads(self.vis_spec)
+            "specList": self._vis_spec_obj
         }
 
         chart_base64 = chart.single_chart.split(",")[1]
@@ -343,7 +353,7 @@ class PygWalker:
                 "workflow_list": data.get("workflowList", []),
                 "timezoneOffsetSeconds": data.get("timezoneOffsetSeconds", None)
             }
-            self.vis_spec = data["visSpec"]
+            self._update_vis_spec(data["visSpec"])
             self.spec_version = __version__
             self.workflow_list = data.get("workflowList", [])
             self.timezone_offset_seconds = data.get("timezoneOffsetSeconds", None)
@@ -364,7 +374,7 @@ class PygWalker:
         def upload_charts(data: Dict[str, Any]):
             if not GlobalVarManager.kanaries_api_key:
                 raise CloudFunctionError("no_kanaries_api_key", code=ErrorCode.TOKEN_ERROR)
-            self.vis_spec = data["visSpec"]
+            self._update_vis_spec(data["visSpec"])
             self.spec_version = __version__
             chart_data = ChartData.parse_obj(data["chartData"])
             share_url = self._upload_charts_to_could(
@@ -518,35 +528,33 @@ class PygWalker:
     def _get_gw_preview_html(self) -> str:
         if not self.workflow_list:
             return ""
-
-        charts = []
-
-        vis_spec_obj = json.loads(self.vis_spec)
-        for vis_spec_item, workflow in zip(
-            vis_spec_obj,
-            self.workflow_list
-        ):
+        datas = []
+        for workflow in self.workflow_list:
             try:
-                data = self.data_parser.get_datas_by_payload(workflow, self.timezone_offset_seconds)
+                datas.append(self.data_parser.get_datas_by_payload(workflow, self.timezone_offset_seconds))
             except ParserException:
-                data = []
-            formated_data = {}
-            if data:
-                keys = list(data[0].keys())
-                formated_data = {key: [] for key in keys}
-                for item in data:
-                    for key in keys:
-                        formated_data[key].append(item[key])
-            else:
-                formated_data = {}
-
-            data_base64_str = base64.b64encode(zlib.compress(json.dumps(formated_data).encode())).decode()
-            charts.append({
-                "visSpec": vis_spec_item,
-                "data": data_base64_str
-            })
-
-        props = {"charts": charts, "themeKey": self.theme_key}
-        html = render_gw_preview_html(self.gid, props)
+                datas.append([])
+        html = render_gw_preview_html(
+            self._vis_spec_obj,
+            datas,
+            self.theme_key,
+            self.gid
+        )
 
         return html
+
+    def _get_gw_chart_preview_html(self, chart_name: int, title: str, desc: str) -> str:
+        if chart_name not in self._chart_name_index_map:
+            raise ValueError(f"chart_name: {chart_name} not found.")
+        chart_index = self._chart_name_index_map[chart_name]
+
+        if not self.workflow_list:
+            return ""
+        data = self.data_parser.get_datas_by_payload(self.workflow_list[chart_index], self.timezone_offset_seconds)
+        return render_gw_chart_preview_html(
+            single_vis_spec=self._vis_spec_obj[chart_index],
+            data=data,
+            theme_key=self.theme_key,
+            title=title,
+            desc=desc,
+        )

@@ -31,14 +31,6 @@ export interface IAppProps {
     isExportDataFrame: boolean;
 }
 
-export interface PreviewAppProps {
-    themeKey: string;
-    charts: {
-        visSpec: any;
-        data: string;
-    }[];
-}
-
 export interface IDataSourceProps {
     tunnelId: string;
     dataSourceId: string;

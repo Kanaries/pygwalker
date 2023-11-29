@@ -7,9 +7,13 @@ import type { IThemeKey } from '@kanaries/graphic-walker/dist/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // @ts-ignore
 import style from '@/index.css?inline'
-import { PreviewAppProps } from "@/interfaces";
 
-interface IPreview extends PreviewAppProps {
+interface IPreviewProps {
+    themeKey: string;
+    charts: {
+        visSpec: any;
+        data: string;
+    }[];
 }
 
 const getInflateData = (dataStr: string) => {
@@ -38,7 +42,7 @@ const getInflateData = (dataStr: string) => {
     return result;
 }
 
-const Preview: React.FC<IPreview> = observer((props) => {
+const Preview: React.FC<IPreviewProps> = observer((props) => {
     const { charts, themeKey } = props;
     const formatedCharts = charts.map((chart) => {
         return {
@@ -76,4 +80,43 @@ const Preview: React.FC<IPreview> = observer((props) => {
     );
 });
 
-export default Preview;
+interface IChartPreviewProps {
+    themeKey: string;
+    visSpec: any;
+    data: string;
+    title: string;
+    desc: string;
+}
+
+const ChartPreview: React.FC<IChartPreviewProps> = observer((props) => {
+    const formatedData = getInflateData(props.data);
+
+    return (
+        <React.StrictMode>
+            <div>
+                <h1 style={{marginTop: "1rem", color: "#333", fontSize: "1.1rem", marginBottom: "0.5rem", paddingInlineStart: "1rem"}}>{ props.title }</h1>
+                <p style={{color: "#666", fontWeight: 300, paddingInlineStart: "1rem"}}>{ props.desc }</p>
+                <PureRenderer
+                    themeKey={props.themeKey as IThemeKey}
+                    name={props.visSpec.name}
+                    visualConfig={props.visSpec.config}
+                    visualLayout={props.visSpec.layout}
+                    visualState={props.visSpec.encodings}
+                    type='remote'
+                    computation={async(_) => { return formatedData }}
+                />
+            </div>
+        </React.StrictMode>
+    );
+});
+
+
+export {
+    Preview,
+    ChartPreview,
+};
+
+export type {
+    IPreviewProps,
+    IChartPreviewProps
+}
