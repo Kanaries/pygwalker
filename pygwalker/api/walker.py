@@ -8,7 +8,7 @@ from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
-from pygwalker.utils.execute_env_check import check_convert
+from pygwalker.utils.execute_env_check import check_convert, get_kaggle_run_type
 
 
 def walk(
@@ -75,13 +75,16 @@ def walk(
     if return_html:
         return walker.to_html()
 
-    if check_convert():
+    if get_kaggle_run_type() == "batch":
+        env = "JupyterPreview"
+    elif check_convert():
         env = "JupyterConvert"
 
     env_display_map = {
         "JupyterWidget": walker.display_on_jupyter_use_widgets,
         "Jupyter": walker.display_on_jupyter,
         "JupyterConvert": walker.display_on_convert_html,
+        "JupyterPreview": walker.display_preview_on_jupyter
     }
 
     display_func = env_display_map.get(env, lambda: None)
