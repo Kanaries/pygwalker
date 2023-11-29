@@ -1,15 +1,14 @@
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
+import base64
+import zlib
+import json
 
-from jinja2 import Environment, PackageLoader
 from pydantic import BaseModel, Field
 
+from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.display import display_html
-
-
-jinja_env = Environment(
-    loader=PackageLoader("pygwalker"),
-    autoescape=(()),  # select_autoescape()
-)
+from pygwalker.utils.randoms import generate_hash_code
+from pygwalker.services.render import jinja_env, gwalker_script
 
 
 class ImgData(BaseModel):
@@ -28,6 +27,20 @@ class ChartData(BaseModel):
     n_rows: int = Field(..., alias="nRows")
     n_cols: int = Field(..., alias="nCols")
     title: str
+
+
+def _compress_data(data: List[List[Dict[str, Any]]]) -> str:
+    formated_data = {}
+    if data:
+        keys = list(data[0].keys())
+        formated_data = {key: [] for key in keys}
+        for item in data:
+            for key in keys:
+                formated_data[key].append(item[key])
+
+    data_json_str = json.dumps(formated_data, cls=DataFrameEncoder)
+    data_base64_str = base64.b64encode(zlib.compress(data_json_str.encode())).decode()
+    return data_base64_str
 
 
 def render_preview_html(
@@ -69,6 +82,72 @@ def render_preview_html_for_multi_charts(charts_map: Dict[str, ChartData], gid: 
         items=items
     )
 
+    return html
+
+
+def render_gw_preview_html(
+    vis_spec_obj: List[Dict[str, Any]],
+    datas: List[List[Dict[str, Any]]],
+    theme_key: str,
+    gid: str
+) -> str:
+    """
+    Render html for previewing gwalker(use purerenderer mode of graphic-wlaker, not png preview)
+    """
+    charts = []
+    for vis_spec_item, data in zip(
+        vis_spec_obj,
+        datas
+    ):
+        data_base64_str = _compress_data(data)
+        charts.append({
+            "visSpec": vis_spec_item,
+            "data": data_base64_str
+        })
+
+    props = {"charts": charts, "themeKey": theme_key}
+
+    preview_template = jinja_env.get_template("gw_preview.js")
+    container_id = f"pygwalker-preview-{gid}"
+    js_list = [
+        gwalker_script(),
+        preview_template.render(gwalker={'id': container_id, 'props': json.dumps(props)})
+    ]
+    js = "\n".join(js_list)
+    template = jinja_env.get_template("index.html")
+    html = f"{template.render(gwalker={'id': container_id, 'script': js})}"
+    return html
+
+
+def render_gw_chart_preview_html(
+    *,
+    single_vis_spec: Dict[str, Any],
+    data: List[Dict[str, Any]],
+    theme_key: str,
+    title: str,
+    desc: str,
+) -> str:
+    """
+    Render html for single chart(use purerenderer mode of graphic-wlaker, not png preview)
+    """
+
+    props = {
+        "visSpec": single_vis_spec,
+        "data": _compress_data(data),
+        "themeKey": theme_key,
+        "title": title,
+        "desc": desc,
+    }
+
+    chart_preview_template = jinja_env.get_template("gw_chart_preview.js")
+    container_id = f"pygwalker-chart-preview-{generate_hash_code()[:20]}"
+    js_list = [
+        gwalker_script(),
+        chart_preview_template.render(gwalker={'id': container_id, 'props': json.dumps(props)})
+    ]
+    js = "\n".join(js_list)
+    template = jinja_env.get_template("index.html")
+    html = f"{template.render(gwalker={'id': container_id, 'script': js})}"
     return html
 
 
