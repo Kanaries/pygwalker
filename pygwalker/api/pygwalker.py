@@ -216,6 +216,12 @@ class PygWalker:
         preview_tool.init_display()
         preview_tool.render_gw_review(self._get_gw_preview_html())
 
+    def display_preview_on_jupyter(self):
+        """
+        Display preview on jupyter notebook/lab.
+        """
+        display_html(self._get_gw_preview_html())
+
     @property
     def chart_list(self) -> List[str]:
         """
