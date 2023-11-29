@@ -1,5 +1,4 @@
 from typing import Union, Dict, Optional
-from functools import lru_cache
 import inspect
 
 from typing_extensions import Literal
@@ -9,8 +8,8 @@ from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
-from pygwalker.utils.execute_env_check import check_convert, get_kaggle_run_type
-from pygwalker.utils.display import display_html
+from pygwalker.services.kaggle import auto_set_kanaries_api_key_on_kaggle, adjust_kaggle_default_font_size
+from pygwalker.utils.execute_env_check import check_convert, get_kaggle_run_type, check_kaggle
 
 
 def walk(
@@ -77,8 +76,11 @@ def walk(
     if return_html:
         return walker.to_html()
 
+    if check_kaggle():
+        auto_set_kanaries_api_key_on_kaggle()
+
     if get_kaggle_run_type() == "batch":
-        _adjust_kaggle_default_font_size()
+        adjust_kaggle_default_font_size()
         env = "JupyterPreview"
     elif check_convert():
         env = "JupyterConvert"
@@ -94,8 +96,3 @@ def walk(
     display_func()
 
     return walker
-
-
-@lru_cache()
-def _adjust_kaggle_default_font_size():
-    display_html("""<style>html {font-size: 16px;}</style>""")
