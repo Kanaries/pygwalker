@@ -1,3 +1,5 @@
+import { getTimezoneOffsetSeconds } from "@/utils/save";
+import { chartToWorkflow } from "@kanaries/graphic-walker";
 import { IChartForExport } from "@kanaries/graphic-walker/dist/interfaces";
 import { useMemo } from "react"
 
@@ -11,6 +13,8 @@ export function usePythonCode (props: {
         return JSON.stringify({
             "config": JSON.stringify(specList),
             "chart_map": {},
+            "workflow_list": specList.map((spec) => chartToWorkflow(spec)),
+            "timezoneOffsetSeconds": getTimezoneOffsetSeconds(),
             version
         })
     }, [specList])
