@@ -33,7 +33,6 @@ from pygwalker.services.config import get_local_user_id
 from pygwalker.services.spec import get_spec_json, fill_new_fields, get_fid_fname_map_from_encodings
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import (
-    create_shared_chart,
     write_config_to_cloud,
     get_kanaries_user_info,
     get_spec_by_text
@@ -41,7 +40,6 @@ from pygwalker.services.cloud_service import (
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
-from pygwalker.errors import CloudFunctionError, CsvFileTooLargeError, ErrorCode
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__
 
@@ -292,36 +290,6 @@ class PygWalker:
         )
         display_html(html)
 
-    def _upload_charts_to_could(self, name: str, new_notebook: bool, chart: ChartData) -> str:
-        """upload charts config and datas to kanaries cloud"""
-        fid_list = [field["fid"] for field in self.field_specs]
-        meta = {
-            "dataSources": [{
-                "id": "dataSource-0",
-                "data": []
-            }],
-            "datasets": [{
-                "id": 'dataset-0',
-                "name": 'DataSet',
-                "rawFields": self.field_specs,
-                "dsId": 'dataSource-0',
-            }],
-            "specList": self._vis_spec_obj
-        }
-
-        chart_base64 = chart.single_chart.split(",")[1]
-        dataset_content = self.data_parser.to_csv()
-        if dataset_content.__sizeof__() > 100 * 1024 * 1024:
-            raise CsvFileTooLargeError("dataset too large(>100MB), currently unable to upload, the next version will optimize it.")
-        return create_shared_chart(
-            chart_name=name,
-            dataset_content=dataset_content,
-            fid_list=fid_list,
-            meta=json.dumps(meta),
-            new_notebook=new_notebook,
-            thumbnail=chart_base64
-        )
-
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
         if chart_name not in self._chart_map:
             raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
@@ -370,19 +338,6 @@ class PygWalker:
                     f.write(json.dumps(spec_obj))
             if self.spec_type == "json_ksf":
                 write_config_to_cloud(self.spec[6:], json.dumps(spec_obj))
-
-        def upload_charts(data: Dict[str, Any]):
-            if not GlobalVarManager.kanaries_api_key:
-                raise CloudFunctionError("no_kanaries_api_key", code=ErrorCode.TOKEN_ERROR)
-            self._update_vis_spec(data["visSpec"])
-            self.spec_version = __version__
-            chart_data = ChartData.parse_obj(data["chartData"])
-            share_url = self._upload_charts_to_could(
-                data["chartName"],
-                data["newNotebook"],
-                chart_data
-            )
-            return {"shareUrl": share_url}
 
         def upload_spec_to_cloud(data: Dict[str, Any]):
             if data["newToken"]:
@@ -453,7 +408,6 @@ class PygWalker:
             comm.register("request_data", reuqest_data_callback)
 
         if self.show_cloud_tool:
-            comm.register("upload_charts", upload_charts)
             comm.register("get_spec_by_text", _get_spec_by_text)
 
         if self.use_kernel_calc:

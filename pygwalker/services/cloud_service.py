@@ -150,40 +150,6 @@ def read_config_from_cloud(path: str) -> str:
     return resp.json()["data"]["config"]
 
 
-def create_shared_chart(
-    *,
-    chart_name: str,
-    dataset_content: io.BytesIO,
-    fid_list: List[str],
-    meta: str,
-    new_notebook: bool,
-    thumbnail: str,
-) -> str:
-    if not GlobalVarManager.kanaries_api_key:
-        raise CloudFunctionError("no kanaries api key", code=ErrorCode.TOKEN_ERROR)
-    workspace_name = get_kanaries_user_info()["workspaceName"]
-    chart_data = _get_chart_by_name(chart_name, workspace_name)
-    if chart_data is not None:
-        raise CloudFunctionError("chart name already exists", code=ErrorCode.UNKNOWN_ERROR)
-
-    dataset_name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
-    dataset_info = _upload_file_dataset_meta(dataset_name)
-    dataset_id = dataset_info["datasetId"]
-    upload_url = dataset_info["uploadUrl"]
-    _upload_file_to_s3(upload_url, dataset_content)
-    _upload_dataset_callback(dataset_id, fid_list)
-    chart_info = _create_chart(
-        dataset_id=dataset_id,
-        name=chart_name,
-        meta=meta,
-        workflow={},
-        thumbnail=thumbnail,
-    )
-    if new_notebook:
-        _create_notebook(chart_name, chart_info["chartId"])
-    return chart_info["shareUrl"]
-
-
 def get_cloud_graphic_walker(workspace_name: str, chart_name: str) -> str:
     chart_data = _get_chart_by_name(chart_name, workspace_name)
 

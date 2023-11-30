@@ -13,16 +13,14 @@ import { loadDataSource, postDataService, finishDataService, getDatasFromKernelB
 import commonStore from "./store/common";
 import { initJupyterCommunication, initHttpCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
-import { setConfig, checkUploadPrivacy } from './utils/userConfig';
+import { setConfig } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
 import type { IPreviewProps, IChartPreviewProps } from './components/preview';
 import { Preview, ChartPreview } from './components/preview';
-import ShareModal from './components/shareModal';
 import UploadSpecModal from "./components/uploadSpecModal"
 import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
-import { getShareTool } from './tools/shareTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
 import { formatExportedChartDatas } from "./utils/save";
 import Notification from "./notify"
@@ -67,7 +65,6 @@ const App: React.FC<IAppProps> = observer((props) => {
     const gwRef = React.useRef<IGWHandler|null>(null);
     const { dataSourceProps, userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
-    const [shareModalOpen, setShareModalOpen] = useState(false);
     const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
     const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
     commonStore.setVersion(props.version!);
@@ -110,10 +107,6 @@ const App: React.FC<IAppProps> = observer((props) => {
         const saveTool = getSaveTool(props, gwRef, storeRef);
         tools.push(saveTool);
     }
-    if (checkUploadPrivacy() && commonStore.showCloudTool) {
-        const uploadTool = getShareTool(setShareModalOpen);
-        tools.push(uploadTool);
-    }
     if (props.isExportDataFrame) {
         const exportDataFrameTool = getExportDataframeTool(props, storeRef);
         tools.push(exportDataFrameTool);
@@ -143,7 +136,6 @@ const App: React.FC<IAppProps> = observer((props) => {
             <Notification />
             <UploadSpecModal />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-            <ShareModal gwRef={gwRef} storeRef={storeRef} open={shareModalOpen} setOpen={setShareModalOpen} />
             <GraphicWalker
                 {...props.extraConfig}
                 dark={props.dark}
