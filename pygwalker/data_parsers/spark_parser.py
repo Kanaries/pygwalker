@@ -10,6 +10,7 @@ from .base import BaseDataParser, get_data_meta_type
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.services.fname_encodings import fname_encode, rename_columns
 from pygwalker.data_parsers.base import FieldSpec
+from pygwalker.utils.payload_to_sql import get_sql_from_payload
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +56,6 @@ class SparkDataFrameDataParser(BaseDataParser):
         return [row.asDict() for row in result_df.collect()]
 
     def get_datas_by_payload(self, payload: Dict[str, Any], _: Optional[int] = None) -> List[Dict[str, Any]]:
-        # pylint: disable=import-outside-toplevel
-        from gw_dsl_parser import get_sql_from_payload
         sql = get_sql_from_payload(
             "pygwalker_mid_table",
             payload,

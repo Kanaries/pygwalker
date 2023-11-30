@@ -52,7 +52,7 @@ class PygWalker:
         self,
         *,
         gid: Optional[Union[int, str]],
-        dataset: Union[DataFrame, Connector],
+        dataset: Union[DataFrame, Connector, str],
         field_specs: Dict[str, Any],
         spec: str,
         source_invoke_code: str,
@@ -91,7 +91,7 @@ class PygWalker:
         self._init_spec(spec, self.field_specs)
         self.use_kernel_calc = use_kernel_calc
         self.use_save_tool = use_save_tool
-        self.parse_dsl_type = "server" if isinstance(dataset, Connector) else "client"
+        self.parse_dsl_type = "server" if isinstance(dataset, (Connector, str)) else "client"
         self.gw_mode = "explore"
         self.dataset_type = self.data_parser.dataset_tpye
         self.is_export_dataframe = is_export_dataframe

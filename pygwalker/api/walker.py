@@ -13,7 +13,7 @@ from pygwalker.utils.execute_env_check import check_convert, get_kaggle_run_type
 
 
 def walk(
-    dataset: Union[DataFrame, Connector],
+    dataset: Union[DataFrame, Connector, str],
     gid: Union[int, str] = None,
     *,
     env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
@@ -66,7 +66,7 @@ def walk(
         show_cloud_tool=show_cloud_tool,
         use_preview=use_preview,
         store_chart_data=store_chart_data,
-        use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
+        use_kernel_calc=isinstance(dataset, (Connector, str)) or use_kernel_calc,
         use_save_tool=True,
         gw_mode="explore",
         is_export_dataframe=True,

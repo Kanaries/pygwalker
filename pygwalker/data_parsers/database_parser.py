@@ -14,6 +14,7 @@ from .base import BaseDataParser, get_data_meta_type
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.utils.custom_sqlglot import DuckdbDialect
+from pygwalker.utils.payload_to_sql import get_sql_from_payload
 from pygwalker.errors import ViewSqlSameColumnError
 
 logger = logging.getLogger(__name__)
@@ -127,9 +128,6 @@ class DatabaseDataParser(BaseDataParser):
         return df.to_dict(orient='records')
 
     def get_datas_by_payload(self, payload: Dict[str, Any], _: Optional[int] = None) -> List[Dict[str, Any]]:
-        # temporary solution: wasmtime is not supported in conda
-        # pylint: disable=import-outside-toplevel
-        from gw_dsl_parser import get_sql_from_payload
         sql = get_sql_from_payload(
             self.placeholder_table_name,
             payload,
