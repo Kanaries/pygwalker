@@ -1,10 +1,64 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
+from datetime import datetime
+import hashlib
 
-from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
 from pygwalker.utils.display import display_html
+from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.services.cloud_service import create_cloud_graphic_walker, get_cloud_graphic_walker
+from pygwalker.services.data_parsers import get_parser
+from pygwalker.services.cloud_service import create_file_dataset, create_datasource, create_database_dataset, get_datasource_by_name
+
+
+def create_cloud_dataset(
+    dataset: Union[DataFrame, Connector],
+    *,
+    name: Optional[str] = None,
+    is_public: bool = False,
+) -> str:
+    """
+    Create a dataset in kanaries cloud
+
+    Args:
+        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataset.
+
+    Kargs:
+        - name (str): dataset name in kanaries cloud.
+        - is_public (bool): whether to make this dataset public.
+
+    Returns:
+        str: dataset id in kanaries cloud
+    """
+    data_parser = get_parser(dataset, False, None)
+    if name is None:
+        name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
+
+    if data_parser.dataset_tpye == "cloud_dataset":
+        raise ValueError("dataset is already a cloud dataset")
+
+    if data_parser.dataset_tpye.startswith("connector"):
+        datasource_name = "pygwalker_" + hashlib.md5(dataset.url.encode()).hexdigest()
+        datasource_id = get_datasource_by_name(datasource_name)
+        if datasource_id is None:
+            # TODO: modify dialect_name
+            datasource_id = create_datasource(datasource_name, dataset.url, dataset.dialect_name)
+        dataset_id = create_database_dataset(
+            name,
+            datasource_id,
+            is_public,
+            dataset.view_sql
+        )
+        return dataset_id
+    else:
+        dataset_id = create_file_dataset(
+            name,
+            data_parser.to_csv(),
+            [field["name"] for field in data_parser.raw_fields],
+            is_public
+        )
+
+    return dataset_id
 
 
 def create_cloud_walker(
@@ -14,7 +68,9 @@ def create_cloud_walker(
     workspace_name: str,
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
 ) -> str:
-    """Create a pygwalker in kanaries cloud
+    """
+    (deprecated)
+    Create a pygwalker in kanaries cloud
 
     Args:
         - dataset (pl.DataFrame | pd.DataFrame, optional): dataframe.
@@ -30,34 +86,20 @@ def create_cloud_walker(
     if fieldSpecs is None:
         fieldSpecs = {}
 
-    walker = PygWalker(
-        gid=None,
-        dataset=dataset,
-        field_specs=fieldSpecs,
-        spec="",
-        source_invoke_code="",
-        hidedata_source_config=True,
-        theme_key="vega",
-        dark="media",
-        show_cloud_tool=False,
-        use_preview=False,
-        store_chart_data=False,
-        use_kernel_calc=False,
-        use_save_tool=False,
-        gw_mode="explore",
-        is_export_dataframe=False,
-    )
+    data_parser = get_parser(dataset, False, fieldSpecs)
 
     create_cloud_graphic_walker(
         chart_name=chart_name,
         workspace_name=workspace_name,
-        dataset_content=walker.data_parser.to_csv(),
-        field_specs=walker.field_specs
+        dataset_content=data_parser.to_csv(),
+        field_specs=data_parser.raw_fields
     )
 
 
 def walk_on_cloud(workspace_name: str, chart_name: str):
-    """render a pygwalker in kanaries cloud
+    """
+    (deprecated)
+    render a pygwalker in kanaries cloud
 
     Args:
         - chart_name (str): pygwalker chart name in kanaries cloud.

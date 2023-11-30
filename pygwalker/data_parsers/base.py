@@ -11,6 +11,7 @@ import arrow
 import pytz
 
 from pygwalker._typing import DataFrame
+from pygwalker.utils.payload_to_sql import get_sql_from_payload
 
 
 # pylint: disable=broad-except
@@ -167,8 +168,6 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         raise NotImplementedError
 
     def get_datas_by_payload(self, payload: Dict[str, Any], timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
-        # pylint: disable=import-outside-toplevel
-        from gw_dsl_parser import get_sql_from_payload
         sql = get_sql_from_payload(
             "pygwalker_mid_table",
             payload,

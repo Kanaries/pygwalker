@@ -34,12 +34,12 @@ class PrivateSession(requests.Session):
 session = PrivateSession()
 
 
-def _upload_dataset_meta(name: str) -> Dict[str, Any]:
+def _upload_file_dataset_meta(name: str, is_public: bool = True) -> Dict[str, Any]:
     url = f"{GlobalVarManager.kanaries_api_host}/dataset/upload"
     params = {
         "name": name,
         "fileName": name + ".csv",
-        "isPublic": True,
+        "isPublic": is_public,
         "desc": "",
         "meta": {
             "extractHeader": True,
@@ -167,7 +167,7 @@ def create_shared_chart(
         raise CloudFunctionError("chart name already exists", code=ErrorCode.UNKNOWN_ERROR)
 
     dataset_name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
-    dataset_info = _upload_dataset_meta(dataset_name)
+    dataset_info = _upload_file_dataset_meta(dataset_name)
     dataset_id = dataset_info["datasetId"]
     upload_url = dataset_info["uploadUrl"]
     _upload_file_to_s3(upload_url, dataset_content)
@@ -228,7 +228,7 @@ def create_cloud_graphic_walker(
         raise CloudFunctionError("chart name already exists", code=ErrorCode.UNKNOWN_ERROR)
 
     dataset_name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
-    dataset_info = _upload_dataset_meta(dataset_name)
+    dataset_info = _upload_file_dataset_meta(dataset_name)
     dataset_id = dataset_info["datasetId"]
     upload_url = dataset_info["uploadUrl"]
     _upload_file_to_s3(upload_url, dataset_content)
@@ -256,4 +256,74 @@ def get_spec_by_text(metas: List[Dict[str, Any]], text: str) -> Dict[str, Any]:
         json={"metas": metas, "messages": [{"role": "user", "content": text}]},
         timeout=15
     )
+    return resp.json()["data"]
+
+
+def create_file_dataset(
+    dataset_name: str,
+    dataset_content: io.BytesIO,
+    fid_list: List[str],
+    is_public: bool,
+) -> str:
+    dataset_info = _upload_file_dataset_meta(dataset_name, is_public)
+    dataset_id = dataset_info["datasetId"]
+    upload_url = dataset_info["uploadUrl"]
+    _upload_file_to_s3(upload_url, dataset_content)
+    _upload_dataset_callback(dataset_id, fid_list)
+    return dataset_id
+
+
+def create_datasource(
+    name: str,
+    database_url: str,
+    database_type: str,
+) -> str:
+    url = f"{GlobalVarManager.kanaries_api_host}/datasource"
+    params = {
+        "name": name,
+        "connectionconfiguration": {
+            "url": database_url,
+        },
+        "datasourceType": database_type,
+        "desc": ""
+    }
+    resp = session.post(url, json=params, timeout=15)
+    return resp.json()["data"]["datasourceId"]
+
+
+def get_datasource_by_name(name: str) -> Optional[str]:
+    url = f"{GlobalVarManager.kanaries_api_host}/datasource/search"
+    resp = session.post(url, params={"fullName": name}, timeout=15)
+    datasources = resp.json()["data"]["datasourceList"]
+    return datasources[0]["id"] if datasources else None
+
+
+def create_database_dataset(
+    name: str,
+    datasource_id: str,
+    is_public: bool,
+    view_sql: str,
+) -> str:
+    url = f"{GlobalVarManager.kanaries_api_host}/dataset"
+    params = {
+        "name": name,
+        "desc": "",
+        "datasourceId": datasource_id,
+        "isPublic": is_public,
+        "type": "DATABASE",
+        "meta": {
+            "viewSql": view_sql,
+        }
+    }
+    resp = session.post(url, json=params, timeout=60)
+    return resp.json()["data"]["datasetId"]
+
+
+def query_from_dataset(dataset_id: str, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    url = f"{GlobalVarManager.kanaries_api_host}/public/query"
+    params = {
+        "datasetId": dataset_id,
+        "query": payload,
+    }
+    resp = session.post(url, json=params, timeout=15)
     return resp.json()["data"]

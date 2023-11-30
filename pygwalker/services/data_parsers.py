@@ -9,7 +9,7 @@ __classname2method = {}
 
 
 # pylint: disable=import-outside-toplevel
-def _get_data_parser(dataset: Union[DataFrame, Connector]) -> BaseDataParser:
+def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> BaseDataParser:
     """
     Get DataFrameDataParser for dataset
     TODO: Maybe you can find a better way to handle the following code
@@ -50,11 +50,16 @@ def _get_data_parser(dataset: Union[DataFrame, Connector]) -> BaseDataParser:
         __classname2method[DatabaseDataParser] = DatabaseDataParser
         return __classname2method[DatabaseDataParser]
 
+    if isinstance(dataset, str):
+        from pygwalker.data_parsers.cloud_dataset_parser import CloudDatasetParser
+        __classname2method[CloudDatasetParser] = CloudDatasetParser
+        return __classname2method[CloudDatasetParser]
+
     raise TypeError(f"Unsupported data type: {type(dataset)}")
 
 
 def get_parser(
-    dataset: Union[DataFrame, Connector],
+    dataset: Union[DataFrame, Connector, str],
     use_kernel_calc: bool = False,
     field_specs: Optional[Dict[str, FieldSpec]] = None,
 ) -> BaseDataParser:
