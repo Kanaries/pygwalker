@@ -388,7 +388,13 @@ class PygWalker:
             if data["newToken"]:
                 set_config({"kanaries_token": data["newToken"]})
                 GlobalVarManager.kanaries_api_key = data["newToken"]
-            spec_obj = {"config": self.vis_spec, "chart_map": {}, "version": __version__}
+            spec_obj = {
+                "config": self.vis_spec,
+                "chart_map": {},
+                "version": __version__,
+                "workflow_list": self.workflow_list,
+                "timezoneOffsetSeconds": self.timezone_offset_seconds
+            }
             file_name = data["fileName"]
             workspace_name = get_kanaries_user_info()["workspaceName"]
             path = f"{workspace_name}/{file_name}"

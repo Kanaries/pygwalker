@@ -16,7 +16,6 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
     const [token, setToken] = useState("");
 
     const uploadSuccess = (path: string) => {
-        console.log(path);
         commonStore.setNotification(
             {
                 type: "success",
