@@ -9,7 +9,7 @@ from .base import (
     is_temporal_field,
     is_geo_field
 )
-from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
+from pygwalker.services.fname_encodings import rename_columns
 
 
 class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
@@ -27,7 +27,7 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
 
     def _rename_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
         df = df.rename({
-            old_col: fname_encode(new_col)
+            old_col: new_col
             for old_col, new_col in zip(df.columns, rename_columns(df.columns))
         })
         return df
@@ -60,11 +60,6 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
             return "measure"
 
         return "dimension"
-
-    def _decode_fname(self, s: pl.Series):
-        fname = fname_decode(s.name).rsplit('_', 1)[0]
-        fname = json.dumps(fname, ensure_ascii=False)[1:-1]
-        return fname
 
     @property
     def dataset_tpye(self) -> str:

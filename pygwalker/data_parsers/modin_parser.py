@@ -10,7 +10,7 @@ from .base import (
     is_temporal_field,
     is_geo_field
 )
-from pygwalker.services.fname_encodings import fname_decode, fname_encode, rename_columns
+from pygwalker.services.fname_encodings import rename_columns
 
 
 class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
@@ -31,7 +31,7 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
 
     def _rename_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         df = df.reset_index(drop=True)
-        df.columns = [fname_encode(col) for col in rename_columns(list(df.columns))]
+        df.columns = rename_columns(list(df.columns))
         return df
 
     def _preprocess_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
@@ -59,11 +59,6 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
             return "measure"
 
         return "dimension"
-
-    def _decode_fname(self, s: mpd.Series):
-        fname = fname_decode(s.name).rsplit('_', 1)[0]
-        fname = json.dumps(fname, ensure_ascii=False)[1:-1]
-        return fname
 
     @property
     def dataset_tpye(self) -> str:

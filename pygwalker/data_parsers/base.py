@@ -114,7 +114,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             (IMutField, Dict)
         """
         s = self._example_df[col]
-        orig_fname = self._decode_fname(s)
+        orig_fname = col
         field_spec = field_specs.get(orig_fname, default_field_spec)
         semantic_type = self._infer_semantic(s, orig_fname) if field_spec.semanticType == '?' else field_spec.semanticType
         analytic_type = self._infer_analytic(s, orig_fname) if field_spec.analyticType == '?' else field_spec.analyticType
