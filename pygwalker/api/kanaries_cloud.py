@@ -11,6 +11,14 @@ from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import create_file_dataset, create_datasource, create_database_dataset, get_datasource_by_name
 
 
+def _get_database_type_from_dialect_name(dialect_name: str) -> str:
+    type_map = {
+        "postgresql": "postgres",
+    }
+    type_name = type_map.get(dialect_name, dialect_name)
+    return type_name[0].upper() + type_name[1:]
+
+
 def create_cloud_dataset(
     dataset: Union[DataFrame, Connector],
     *,
@@ -41,8 +49,11 @@ def create_cloud_dataset(
         datasource_name = "pygwalker_" + hashlib.md5(dataset.url.encode()).hexdigest()
         datasource_id = get_datasource_by_name(datasource_name)
         if datasource_id is None:
-            # TODO: modify dialect_name
-            datasource_id = create_datasource(datasource_name, dataset.url, dataset.dialect_name)
+            datasource_id = create_datasource(
+                datasource_name,
+                dataset.url,
+                _get_database_type_from_dialect_name(dataset.dialect_name)
+            )
         dataset_id = create_database_dataset(
             name,
             datasource_id,
