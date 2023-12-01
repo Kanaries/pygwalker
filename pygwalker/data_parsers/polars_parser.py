@@ -22,7 +22,12 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
-        self.origin_df.write_csv(content)
+        self.df.write_csv(content)
+        return content
+
+    def to_parquet(self) -> io.BytesIO:
+        content = io.BytesIO()
+        self.df.write_parquet(content, compression="snappy")
         return content
 
     def _rename_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:

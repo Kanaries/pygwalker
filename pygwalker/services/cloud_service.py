@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from urllib.parse import urlencode
+from typing_extensions import Literal
 import io
 import json
 
@@ -34,17 +35,26 @@ class PrivateSession(requests.Session):
 session = PrivateSession()
 
 
-def _upload_file_dataset_meta(name: str, is_public: bool = True) -> Dict[str, Any]:
+def _upload_file_dataset_meta(
+    name: str,
+    file_type: str = Literal["parquet", "csv"],
+    is_public: bool = True
+) -> Dict[str, Any]:
+    param_file_type_map = {
+        "csv": "TEXT_FILE",
+        "parquet": "PARQUET"
+    }
+
     url = f"{GlobalVarManager.kanaries_api_host}/dataset/upload"
     params = {
         "name": name,
-        "fileName": name + ".csv",
+        "fileName": name + "." + file_type,
         "isPublic": is_public,
         "desc": "",
         "meta": {
             "extractHeader": True,
             "encoding": "utf-8",
-            "type": "TEXT_FILE",
+            "type": param_file_type_map.get(file_type, "TEXT_FILE"),
             "separator": ",",
         }
     }
@@ -194,7 +204,7 @@ def create_cloud_graphic_walker(
         raise CloudFunctionError("chart name already exists", code=ErrorCode.UNKNOWN_ERROR)
 
     dataset_name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
-    dataset_info = _upload_file_dataset_meta(dataset_name)
+    dataset_info = _upload_file_dataset_meta(dataset_name, "parquet")
     dataset_id = dataset_info["datasetId"]
     upload_url = dataset_info["uploadUrl"]
     _upload_file_to_s3(upload_url, dataset_content)
@@ -231,7 +241,7 @@ def create_file_dataset(
     fid_list: List[str],
     is_public: bool,
 ) -> str:
-    dataset_info = _upload_file_dataset_meta(dataset_name, is_public)
+    dataset_info = _upload_file_dataset_meta(dataset_name, "parquet", is_public)
     dataset_id = dataset_info["datasetId"]
     upload_url = dataset_info["uploadUrl"]
     _upload_file_to_s3(upload_url, dataset_content)
