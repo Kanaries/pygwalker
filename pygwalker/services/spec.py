@@ -9,7 +9,6 @@ from pygwalker.utils.randoms import rand_str
 from pygwalker.services.fname_encodings import rename_columns
 from pygwalker.services.cloud_service import read_config_from_cloud
 from pygwalker.errors import InvalidConfigIdError, PrivacyError
-from .fname_encodings import fname_encode
 
 
 def _is_json(s: str) -> bool:
@@ -92,20 +91,19 @@ def _config_adapter(config: str) -> str:
         old_fid_fname_map = {
             field["fid"]: field["name"]
             for field in chart_item["encodings"]["dimensions"] + chart_item["encodings"]["measures"]
-            if not field.get("computed", False)
+            if not field.get("computed", False) and field.get("fid") not in ["gw_mea_val_fid", "gw_mea_key_fid"]
         }
-        new_fid_list = [fname_encode(fname) for fname in rename_columns(old_fid_fname_map.values())]
-        old_new_fid_map = dict(zip(old_fid_fname_map.keys(), new_fid_list))
+        old_fid_list = []
+        fname_list = []
+        for old_fid, fname in old_fid_fname_map.items():
+            old_fid_list.append(old_fid)
+            fname_list.append(fname)
 
-        for fields in chart_item["encodings"].values():
-            for field in fields:
-                if field.get("computed", False):
-                    for param in field["expression"]["params"]:
-                        if param["type"] == "field":
-                            param["value"] = old_new_fid_map[param["value"]]
-                else:
-                    field["fid"] = old_new_fid_map[field["fid"]]
-    return json.dumps(config_obj)
+        new_fid_list = rename_columns(fname_list)
+        for old_fid, new_fid in zip(old_fid_list, new_fid_list):
+            config = config.replace(old_fid, new_fid)
+
+    return config
 
 
 def get_fid_fname_map_from_encodings(encodings: Dict[str, Any]) -> Dict[str, str]:
@@ -165,7 +163,7 @@ def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
     if isinstance(spec_obj, list):
         spec_obj = {"chart_map": {}, "config": spec}
 
-    if StrictVersion(spec_obj.get("version", "0.1.0")) < StrictVersion("0.3.4"):
+    if StrictVersion(spec_obj.get("version", "0.1.0")) <= StrictVersion("0.3.17a4"):
         spec_obj["config"] = _config_adapter(spec_obj["config"])
 
     return spec_obj, spec_type

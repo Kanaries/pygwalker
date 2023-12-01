@@ -51,6 +51,9 @@ def rename_columns(columns: List[str]) -> List[str]:
     column_map = defaultdict(lambda: 0)
     renamed_columns = []
     for col in columns:
-        renamed_columns.append(f"{col}_{column_map[col]}")
+        if column_map[col] == 0:
+            renamed_columns.append(col)
+        else:
+            renamed_columns.append(f"{col}_{column_map[col]}")
         column_map[col] += 1
     return renamed_columns
