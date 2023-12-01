@@ -1,4 +1,3 @@
-import json
 import io
 from typing import Any, Dict, List, Optional
 
@@ -26,7 +25,12 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
-        self.origin_df.to_csv(content, index=False)
+        self.df.to_csv(content, index=False)
+        return content
+
+    def to_parquet(self) -> io.BytesIO:
+        content = io.BytesIO()
+        self.df.to_parquet(content, index=False, compression="snappy")
         return content
 
     def _rename_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:

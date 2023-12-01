@@ -64,6 +64,11 @@ class BaseDataParser(abc.ABC):
         """get records"""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def to_parquet(self) -> io.BytesIO:
+        """get records"""
+        raise NotImplementedError
+
     @property
     @abc.abstractmethod
     def dataset_tpye(self) -> str:

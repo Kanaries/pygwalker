@@ -64,7 +64,7 @@ def create_cloud_dataset(
     else:
         dataset_id = create_file_dataset(
             name,
-            data_parser.to_csv(),
+            data_parser.to_parquet(),
             [field["name"] for field in data_parser.raw_fields],
             is_public
         )
@@ -102,7 +102,7 @@ def create_cloud_walker(
     create_cloud_graphic_walker(
         chart_name=chart_name,
         workspace_name=workspace_name,
-        dataset_content=data_parser.to_csv(),
+        dataset_content=data_parser.to_parquet(),
         field_specs=data_parser.raw_fields
     )
 

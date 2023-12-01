@@ -151,6 +151,11 @@ class DatabaseDataParser(BaseDataParser):
         self.example_pandas_df.toPandas().to_csv(content, index=False)
         return content
 
+    def to_parquet(self) -> io.BytesIO:
+        content = io.BytesIO()
+        self.example_pandas_df.toPandas().to_parquet(content, index=False, compression="snappy")
+        return content
+
     @property
     def dataset_tpye(self) -> str:
         return f"connector_{self.conn.dialect_name}"

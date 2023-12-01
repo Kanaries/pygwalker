@@ -64,6 +64,11 @@ class CloudDatasetParser(BaseDataParser):
         self.example_pandas_df.toPandas().to_csv(content, index=False)
         return content
 
+    def to_parquet(self) -> io.BytesIO:
+        content = io.BytesIO()
+        self.example_pandas_df.toPandas().to_parquet(content, index=False, compression="snappy")
+        return content
+
     def _get_all_datas(self, limit: int) -> List[Dict[str, Any]]:
         payload = {"workflow": [{"type": "view", "query": [{"op": "raw", "fields": ["*"]}]}], "limit": limit, "offset": 0}
         return self.get_datas_by_payload(payload)
