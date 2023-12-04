@@ -30,7 +30,7 @@ from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnJupyter
 )
 from pygwalker.services.config import get_local_user_id
-from pygwalker.services.spec import get_spec_json, fill_new_fields, get_fid_fname_map_from_encodings
+from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import (
     write_config_to_cloud,
@@ -357,7 +357,7 @@ class PygWalker:
             return {"specFilePath": path}
 
         def _get_datas(data: Dict[str, Any]):
-            sql = data["sql"].encode('utf-8').decode('unicode_escape')
+            sql = data["sql"]
             return {
                 "datas": self.data_parser.get_datas_by_sql(
                     sql,
@@ -379,23 +379,19 @@ class PygWalker:
             }
 
         def _export_dataframe_by_payload(data: Dict[str, Any]):
-            fid_map = get_fid_fname_map_from_encodings(data["encodings"])
             df = pd.DataFrame(self.data_parser.get_datas_by_payload(
                 data["payload"]),
                 data.get("timezoneOffsetSeconds", None)
             )
-            df.columns = [fid_map.get(col, col) for col in df.columns]
             GlobalVarManager.set_last_exported_dataframe(df)
             self._last_exported_dataframe = df
 
         def _export_dataframe_by_sql(data: Dict[str, Any]):
-            fid_map = get_fid_fname_map_from_encodings(data["encodings"])
-            sql = data["sql"].encode('utf-8').decode('unicode_escape')
+            sql = data["sql"]
             df = pd.DataFrame(self.data_parser.get_datas_by_sql(
                 sql,
                 data.get("timezoneOffsetSeconds", None)
             ))
-            df.columns = [fid_map.get(col, col) for col in df.columns]
             GlobalVarManager.set_last_exported_dataframe(df)
             self._last_exported_dataframe = df
 
