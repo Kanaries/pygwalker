@@ -51,6 +51,7 @@ def rename_columns(columns: List[str]) -> List[str]:
     column_map = defaultdict(lambda: 0)
     renamed_columns = []
     for col in columns:
+        col = col.replace("\\", "-")
         if column_map[col] == 0:
             renamed_columns.append(col)
         else:

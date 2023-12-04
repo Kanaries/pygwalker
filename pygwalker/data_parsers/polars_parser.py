@@ -1,5 +1,4 @@
 from typing import List, Any, Dict, Optional
-import json
 import io
 
 import polars as pl
