@@ -115,14 +115,11 @@ class PygWalker:
         self.workflow_list = spec_obj.get("workflow_list", [])
         self.timezone_offset_seconds = spec_obj.get("timezoneOffsetSeconds", None)
 
-    def _update_vis_spec(self, vis_spec_str: str):
-        if not vis_spec_str:
-            vis_spec_str = "{}"
-        self.vis_spec = vis_spec_str
-        self._vis_spec_obj = json.loads(vis_spec_str)
+    def _update_vis_spec(self, vis_spec: List[Dict[str, Any]]):
+        self.vis_spec = vis_spec
         self._chart_name_index_map = {
             item["name"]: index
-            for index, item in enumerate(self._vis_spec_obj)
+            for index, item in enumerate(vis_spec)
         }
 
     def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
@@ -491,7 +488,7 @@ class PygWalker:
             except ParserException:
                 datas.append([])
         html = render_gw_preview_html(
-            self._vis_spec_obj,
+            self.vis_spec,
             datas,
             self.theme_key,
             self.gid
@@ -508,7 +505,7 @@ class PygWalker:
             return ""
         data = self.data_parser.get_datas_by_payload(self.workflow_list[chart_index], self.timezone_offset_seconds)
         return render_gw_chart_preview_html(
-            single_vis_spec=self._vis_spec_obj[chart_index],
+            single_vis_spec=self.vis_spec[chart_index],
             data=data,
             theme_key=self.theme_key,
             title=title,

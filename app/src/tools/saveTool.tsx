@@ -60,7 +60,7 @@ export function getSaveTool(
                 throw new Error("visSpec is undefined");
             }
             await communicationStore.comm?.sendMsg("update_spec", {
-                "visSpec": JSON.stringify(visSpec),
+                "visSpec": visSpec,
                 "chartData": await formatExportedChartDatas(chartData),
                 "workflowList": visSpec.map((spec) => chartToWorkflow(spec)),
                 "timezoneOffsetSeconds": getTimezoneOffsetSeconds(),

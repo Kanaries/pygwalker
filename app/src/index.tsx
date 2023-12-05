@@ -65,14 +65,14 @@ const App: React.FC<IAppProps> = observer((props) => {
     const gwRef = React.useRef<IGWHandler|null>(null);
     const { dataSourceProps, userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
-    const specList = props.visSpec ? JSON.parse(props.visSpec) : [];
+    const visSpec = props.visSpec;
     const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
     commonStore.setVersion(props.version!);
 
     const updateDataSource = () => {
         loadDataSource(dataSourceProps).then((data) => {
             setDataSource(data);
-            initChart(gwRef, specList.length, props);
+            initChart(gwRef, visSpec.length, props);
         }).catch(e => {
             console.error('Load DataSource Error', e);
         });
@@ -80,13 +80,13 @@ const App: React.FC<IAppProps> = observer((props) => {
 
     useEffect(() => {
         commonStore.setShowCloudTool(props.showCloudTool);
-        if (specList.length !== 0) {
-            setTimeout(() => { storeRef.current?.importCode(specList); }, 0);
+        if (visSpec.length !== 0) {
+            setTimeout(() => { storeRef.current?.importCode(visSpec); }, 0);
         }
         if (props.needLoadDatas) {
             updateDataSource()
         } else {
-            setTimeout(() => { initChart(gwRef, specList.length, props) }, 0);
+            setTimeout(() => { initChart(gwRef, visSpec.length, props) }, 0);
         }
         updateDataSource();
         if (userConfig) setConfig(userConfig);
@@ -158,7 +158,7 @@ const App: React.FC<IAppProps> = observer((props) => {
 
 const PureRednererApp: React.FC<IAppProps> = observer((props) => {
     const computationCallback = getComputationCallback(props);
-    const spec = props.visSpec ? JSON.parse(props.visSpec)[0] : {};
+    const spec = props.visSpec[0];
 
     return (
         <React.StrictMode>

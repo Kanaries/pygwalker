@@ -13,7 +13,7 @@ export interface IAppProps {
     dataSourceProps: IDataSourceProps;
     version?: string;
     hashcode?: string;
-    visSpec?: string;
+    visSpec: any;
     userConfig?: IUserConfig;
     env?: string;
     needLoadDatas?: boolean;
