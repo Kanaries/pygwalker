@@ -1,6 +1,7 @@
 from urllib import request
 from typing import Tuple, Dict, Any, List
 from distutils.version import StrictVersion
+from copy import deepcopy
 import json
 import os
 
@@ -106,10 +107,10 @@ def _config_adapter(config: str) -> str:
     return config
 
 
-def fill_new_fields(config: str, all_fields: List[Dict[str, str]]) -> str:
+def fill_new_fields(config: List[Dict[str, Any]], all_fields: List[Dict[str, str]]) -> str:
     """when df schema changed, fill new fields to every chart config"""
-    config_obj = json.loads(config)
-    for chart_item in config_obj:
+    config = deepcopy(config)
+    for chart_item in config:
         field_set = {
             field["fid"]
             for field in chart_item["encodings"]["dimensions"] + chart_item["encodings"]["measures"]
@@ -130,14 +131,14 @@ def fill_new_fields(config: str, all_fields: List[Dict[str, str]]) -> str:
 
         chart_item["encodings"]["dimensions"].extend(new_dimension_fields)
         chart_item["encodings"]["measures"].extend(new_measure_fields)
-    return json.dumps(config_obj)
+    return config
 
 
 def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
     spec, spec_type = _get_spec_json_from_diff_source(spec)
 
     if not spec:
-        return {"chart_map": {}, "config": ""}, spec_type
+        return {"chart_map": {}, "config": [], "workflow_list": []}, spec_type
 
     try:
         spec_obj = json.loads(spec)
@@ -145,9 +146,12 @@ def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
         raise ValueError("spec is not a valid json") from e
 
     if isinstance(spec_obj, list):
-        spec_obj = {"chart_map": {}, "config": spec}
+        spec_obj = {"chart_map": {}, "config": spec_obj, "workflow_list": []}
 
     if StrictVersion(spec_obj.get("version", "0.1.0")) <= StrictVersion("0.3.17a4"):
         spec_obj["config"] = _config_adapter(spec_obj["config"])
+
+    if isinstance(spec_obj["config"], str):
+        spec_obj["config"] = json.loads(spec_obj["config"])
 
     return spec_obj, spec_type

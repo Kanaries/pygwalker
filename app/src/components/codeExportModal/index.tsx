@@ -25,12 +25,12 @@ interface ICodeExport {
 
 const CodeExport: React.FC<ICodeExport> = observer((props) => {
     const { globalStore, sourceCode, open, setOpen } = props;
-    const [specList, setSpecList] = useState<IChartForExport[]>([]);
+    const [visSpec, setVisSpec] = useState<IChartForExport[]>([]);
     const [tips, setTips] = useState<string>("");
 
     const { pyCode } = usePythonCode({
         sourceCode,
-        specList,
+        visSpec,
         version: commonStore.version,
     });
 
@@ -56,7 +56,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     useEffect(() => {
         if (open && globalStore.current) {
             const res = globalStore.current.exportCode();
-            setSpecList(res);
+            setVisSpec(res);
         }
     }, [open]);
 
@@ -105,12 +105,12 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         <TabsContent value="json">
                             <h3 className="text-sm font-medium mb-2">Graphic Walker Specification</h3>
                             <SyntaxHighlighter showLineNumbers language="json" style={atomOneLight}>
-                                {JSON.stringify(specList, null, 2)}
+                                {JSON.stringify(visSpec, null, 2)}
                             </SyntaxHighlighter>
                             <div className="mt-4 flex justify-start gap-2">
                                 <Button
                                     onClick={() => {
-                                        copyToCliboard(JSON.stringify(specList, null, 2));
+                                        copyToCliboard(JSON.stringify(visSpec, null, 2));
                                     }}
                                 >
                                     Copy to Clipboard
