@@ -96,7 +96,7 @@ class StreamlitRenderer:
         self,
         *,
         mode: Literal["explore", "renderer"] = "explore",
-        vis_spec: Optional[str] = None,
+        vis_spec: Optional[List[Dict[str, Any]]] = None,
         **params: Dict[str, Any]
     ) -> str:
         """
@@ -171,7 +171,7 @@ class StreamlitRenderer:
         Render pure chart, index is the order of chart, starting from 0.
         If you set `pre_filters`, it will overwritre global_pre_filters.
         """
-        cur_spec_obj = json.loads(self.walker.vis_spec)[index]
+        cur_spec_obj = self.walker.vis_spec[index]
 
         if StrictVersion(self.walker.spec_version) > StrictVersion("0.3.11"):
             chart_size_config = cur_spec_obj["layout"]["size"]
@@ -204,11 +204,11 @@ class StreamlitRenderer:
 
         html = self._get_html(
             mode="renderer",
-            vis_spec=json.dumps([cur_spec_obj])
+            vis_spec=[cur_spec_obj]
         )
 
         explore_html = self._get_html(
-            vis_spec=json.dumps([cur_spec_obj]),
+            vis_spec=[cur_spec_obj],
             needLoadLastSpec=False,
             useSaveTool=False
         )
