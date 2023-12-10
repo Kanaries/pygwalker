@@ -4,10 +4,12 @@ from urllib.parse import urlencode
 from typing_extensions import Literal
 import io
 import json
+import hashlib
 
 import requests
 
 from .global_var import GlobalVarManager
+from pygwalker.services.data_parsers import BaseDataParser
 from pygwalker.errors import CloudFunctionError, ErrorCode
 
 
@@ -33,6 +35,14 @@ class PrivateSession(requests.Session):
 
 
 session = PrivateSession()
+
+
+def _get_database_type_from_dialect_name(dialect_name: str) -> str:
+    type_map = {
+        "postgresql": "postgres",
+    }
+    type_name = type_map.get(dialect_name, dialect_name)
+    return type_name[0].upper() + type_name[1:]
 
 
 def _upload_file_dataset_meta(
@@ -78,7 +88,8 @@ def _create_chart(
     name: str,
     meta: str,
     workflow: List[Dict[str, Any]],
-    thumbnail: str
+    thumbnail: str,
+    is_public: bool,
 ) -> Dict[str, Any]:
     url = f"{GlobalVarManager.kanaries_api_host}/chart"
     params = {
@@ -88,7 +99,7 @@ def _create_chart(
         "config": "{}",
         "name": name,
         "desc": "",
-        "isPublic": True,
+        "isPublic": is_public,
         "chartType": "",
         "thumbnail": thumbnail,
     }
@@ -216,6 +227,7 @@ def create_cloud_graphic_walker(
         meta=meta,
         workflow={},
         thumbnail="",
+        is_public=True
     )
 
 
@@ -303,3 +315,83 @@ def query_from_dataset(dataset_id: str, payload: Dict[str, Any]) -> List[Dict[st
     }
     resp = session.post(url, json=params, timeout=15)
     return resp.json()["data"]
+
+
+def create_cloud_dataset(
+    data_parser: BaseDataParser,
+    name: str,
+    is_public: bool
+) -> str:
+    if name is None:
+        name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
+
+    if data_parser.dataset_tpye == "cloud_dataset":
+        raise ValueError("dataset is already a cloud dataset")
+
+    if data_parser.dataset_tpye.startswith("connector"):
+        connector = data_parser.conn
+        datasource_name = "pygwalker_" + hashlib.md5(connector.url.encode()).hexdigest()
+        datasource_id = get_datasource_by_name(datasource_name)
+        if datasource_id is None:
+            datasource_id = create_datasource(
+                datasource_name,
+                connector.url,
+                _get_database_type_from_dialect_name(connector.dialect_name)
+            )
+        dataset_id = create_database_dataset(
+            name,
+            datasource_id,
+            is_public,
+            connector.view_sql
+        )
+        return dataset_id
+    else:
+        dataset_id = create_file_dataset(
+            name,
+            data_parser.to_parquet(),
+            [field["name"] for field in data_parser.raw_fields],
+            is_public
+        )
+
+    return dataset_id
+
+
+def upload_cloud_chart(
+    *,
+    chart_name: str,
+    dataset_name: str,
+    data_parser: BaseDataParser,
+    workflow_list: List[Dict[str, Any]],
+    spec_list: List[Dict[str, Any]],
+    is_public: bool,
+) -> str:
+    workspace_name = get_kanaries_user_info()["workspaceName"]
+
+    chart_data = _get_chart_by_name(chart_name, workspace_name)
+
+    if chart_data is not None:
+        raise CloudFunctionError("chart name already exists", code=ErrorCode.UNKNOWN_ERROR)
+
+    dataset_id = create_cloud_dataset(data_parser, dataset_name, False)
+    chart_info = _create_chart(
+        dataset_id=dataset_id,
+        name=chart_name,
+        meta=json.dumps({
+            "dataSources": [{
+                "id": "dataSource-0",
+                "data": []
+            }],
+            "datasets": [{
+                "id": 'dataset-0',
+                "name": 'DataSet',
+                "rawFields": data_parser.raw_fields,
+                "dsId": 'dataSource-0',
+            }],
+            "specList": spec_list
+        }),
+        workflow=workflow_list,
+        thumbnail="",
+        is_public=is_public
+    )
+
+    return chart_info["chartId"]

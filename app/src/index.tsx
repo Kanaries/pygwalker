@@ -13,15 +13,17 @@ import { loadDataSource, postDataService, finishDataService, getDatasFromKernelB
 import commonStore from "./store/common";
 import { initJupyterCommunication, initHttpCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
-import { setConfig } from './utils/userConfig';
+import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
 import type { IPreviewProps, IChartPreviewProps } from './components/preview';
 import { Preview, ChartPreview } from './components/preview';
 import UploadSpecModal from "./components/uploadSpecModal"
+import UploadChartModal from './components/uploadChartModal';
 import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
+import { getUploadChartTool } from './tools/uploadChartTool';
 import { formatExportedChartDatas } from "./utils/save";
 import Notification from "./notify"
 import initDslParser from "@kanaries-temp/gw-dsl-parser";
@@ -65,6 +67,7 @@ const App: React.FC<IAppProps> = observer((props) => {
     const gwRef = React.useRef<IGWHandler|null>(null);
     const { dataSourceProps, userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
+    const [uploadChartModalOpen, setUploadChartModalOpen] = useState(false);
     const visSpec = props.visSpec;
     const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
     commonStore.setVersion(props.version!);
@@ -111,6 +114,10 @@ const App: React.FC<IAppProps> = observer((props) => {
         const exportDataFrameTool = getExportDataframeTool(props, storeRef);
         tools.push(exportDataFrameTool);
     }
+    if (checkUploadPrivacy() && commonStore.showCloudTool) {
+        const uploadTool = getUploadChartTool(setUploadChartModalOpen);
+        tools.push(uploadTool);
+    }
 
     const toolbarConfig = {
         exclude: ["export_code"],
@@ -135,6 +142,7 @@ const App: React.FC<IAppProps> = observer((props) => {
             <style>{style}</style>
             <Notification />
             <UploadSpecModal />
+            <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
             <GraphicWalker
                 {...props.extraConfig}
