@@ -32,16 +32,24 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
 
     const uploadSuccess = (chartId: string) => {
         const chartUrl = `https://kanaries.net/app/data-infra/c/${chartId}`
+        const shareUrl = `https://kanaries.net/app/data-infra/chart/${chartId}/share`
         commonStore.setNotification(
             {
                 type: "success",
                 title: "Success",
                 message: (
                     <>
-                        upload success, you can view it at:
-                        <a className="font-semibold" href={chartUrl} target="_blank">
-                            {chartUrl}
-                        </a>
+                        <p>Upload success, you can view and manager it at:
+                            <a className="font-semibold" href={chartUrl} target="_blank">
+                                {chartUrl}
+                            </a>
+                        </p>
+                        <br />
+                        {isPublic && <p>Since you set the chart to public, you can also share it with others by:
+                            <a className="font-semibold" href={shareUrl} target="_blank">
+                                {shareUrl}
+                            </a>
+                        </p>}
                     </>
                 ),
             },
