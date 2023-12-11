@@ -13,6 +13,8 @@ class DataFrameEncoder(json.JSONEncoder):
                 o = pytz.utc.localize(o)
             return int(o.timestamp() * 1000)
         if isinstance(o, Decimal):
+            if o.is_nan():
+                return None
             return float(o)
 
         try:
