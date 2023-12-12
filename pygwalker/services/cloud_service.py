@@ -30,7 +30,10 @@ class PrivateSession(requests.Session):
         except Exception as e:
             raise CloudFunctionError(f"Request failed: {resp.text}") from e
         if resp_json["success"] is False:
-            raise CloudFunctionError(f"Request failed: {resp_json['message']}", code=resp_json["code"])
+            raise CloudFunctionError(
+                f"Request failed: {resp_json['message']}",
+                code=resp_json["code"] if resp_json["code"] != 0 else ErrorCode.UNKNOWN_ERROR
+            )
         return resp
 
 
