@@ -25,6 +25,10 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         return content
 
     def to_parquet(self) -> io.BytesIO:
+        # temproray fix: cloud dataset can't parse object type
+        for col in self.df.select_dtypes(include='object').columns:
+            self.df[col] = self.df[col].astype(str)
+
         content = io.BytesIO()
         self.df.to_parquet(content, index=False, compression="snappy")
         return content
