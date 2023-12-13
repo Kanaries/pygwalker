@@ -29,7 +29,8 @@ dependencies = [
     "appdirs",
     "segment-analytics-python==2.2.3",
     "pandas",
-    "pytz"
+    "pytz",
+    "kanaries_track==0.0.3"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
