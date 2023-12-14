@@ -2,7 +2,7 @@ import React from "react";
 import { observer } from "mobx-react-lite";
 import pako from "pako";
 import { PureRenderer } from '@kanaries/graphic-walker';
-import type { IThemeKey } from '@kanaries/graphic-walker/dist/interfaces';
+import type { IDarkMode, IThemeKey } from '@kanaries/graphic-walker/dist/interfaces';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // @ts-ignore
@@ -10,6 +10,7 @@ import style from '@/index.css?inline'
 
 interface IPreviewProps {
     themeKey: string;
+    dark: string;
     charts: {
         visSpec: any;
         data: string;
@@ -72,6 +73,7 @@ const Preview: React.FC<IPreviewProps> = observer((props) => {
                             visualState={chart.visSpec.encodings}
                             type='remote'
                             computation={async(_) => { return chart.data }}
+                            dark={props.dark as IDarkMode}
                         />
                     </TabsContent>
                 })}
@@ -82,6 +84,7 @@ const Preview: React.FC<IPreviewProps> = observer((props) => {
 
 interface IChartPreviewProps {
     themeKey: string;
+    dark: string;
     visSpec: any;
     data: string;
     title: string;
@@ -104,6 +107,7 @@ const ChartPreview: React.FC<IChartPreviewProps> = observer((props) => {
                     visualState={props.visSpec.encodings}
                     type='remote'
                     computation={async(_) => { return formatedData }}
+                    dark={props.dark as IDarkMode}
                 />
             </div>
         </React.StrictMode>

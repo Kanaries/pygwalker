@@ -504,7 +504,8 @@ class PygWalker:
             self.vis_spec,
             datas,
             self.theme_key,
-            self.gid
+            self.gid,
+            self.dark
         )
 
         return html
@@ -523,4 +524,5 @@ class PygWalker:
             theme_key=self.theme_key,
             title=title,
             desc=desc,
+            dark=self.dark
         )

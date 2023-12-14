@@ -89,7 +89,8 @@ def render_gw_preview_html(
     vis_spec_obj: List[Dict[str, Any]],
     datas: List[List[Dict[str, Any]]],
     theme_key: str,
-    gid: str
+    gid: str,
+    dark: str,
 ) -> str:
     """
     Render html for previewing gwalker(use purerenderer mode of graphic-wlaker, not png preview)
@@ -105,7 +106,7 @@ def render_gw_preview_html(
             "data": data_base64_str
         })
 
-    props = {"charts": charts, "themeKey": theme_key}
+    props = {"charts": charts, "themeKey": theme_key, "dark": dark}
 
     preview_template = jinja_env.get_template("gw_preview.js")
     container_id = f"pygwalker-preview-{gid}"
@@ -126,6 +127,7 @@ def render_gw_chart_preview_html(
     theme_key: str,
     title: str,
     desc: str,
+    dark: str,
 ) -> str:
     """
     Render html for single chart(use purerenderer mode of graphic-wlaker, not png preview)
@@ -137,6 +139,7 @@ def render_gw_chart_preview_html(
         "themeKey": theme_key,
         "title": title,
         "desc": desc,
+        "dark": dark,
     }
 
     chart_preview_template = jinja_env.get_template("gw_chart_preview.js")
