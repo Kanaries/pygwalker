@@ -146,7 +146,7 @@ def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
         raise ValueError("spec is not a valid json") from e
 
     if isinstance(spec_obj, list):
-        spec_obj = {"chart_map": {}, "config": spec_obj, "workflow_list": []}
+        spec_obj = {"chart_map": {}, "config": json.dumps(spec_obj), "workflow_list": []}
 
     if StrictVersion(spec_obj.get("version", "0.1.0")) <= StrictVersion("0.3.17a4"):
         spec_obj["config"] = _config_adapter(spec_obj["config"])
