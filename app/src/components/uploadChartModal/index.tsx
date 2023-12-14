@@ -13,6 +13,7 @@ interface IUploadChartModal {
     gwRef: React.MutableRefObject<IGWHandler | null>;
     storeRef: React.MutableRefObject<VizSpecStore | null>;
     open: boolean;
+    dark: string;
     setOpen: (open: boolean) => void;
 }
 
@@ -32,7 +33,7 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
 
     const uploadSuccess = (chartId: string) => {
         const chartUrl = `https://kanaries.net/app/data-infra/c/${chartId}`
-        const shareUrl = `https://kanaries.net/app/data-infra/chart/${chartId}/share`
+        const shareUrl = `https://kanaries.net/app/data-infra/chart/${chartId}/share?theme=${props.dark}`
         commonStore.setNotification(
             {
                 type: "success",

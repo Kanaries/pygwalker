@@ -142,7 +142,7 @@ const App: React.FC<IAppProps> = observer((props) => {
             <style>{style}</style>
             <Notification />
             <UploadSpecModal />
-            <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} />
+            <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={props.dark} />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
             <GraphicWalker
                 {...props.extraConfig}
