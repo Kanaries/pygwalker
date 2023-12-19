@@ -38,7 +38,7 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         return df
 
     def _infer_semantic(self, s: pd.Series, field_name: str):
-        v_cnt = len(s.value_counts())
+        v_cnt = len(s.unique())
         example_value = s[0]
         kind = s.dtype.kind
         if (kind in "fcmiu" and v_cnt > 2) or is_geo_field(field_name):
@@ -54,7 +54,7 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
 
         if is_geo_field(field_name):
             return "dimension"
-        if kind in "fcm" or (kind in "iu" and len(s.value_counts()) > 16):
+        if kind in "fcm" or (kind in "iu" and len(s.unique()) > 16):
             return "measure"
 
         return "dimension"

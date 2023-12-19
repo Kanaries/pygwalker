@@ -40,7 +40,7 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return df
 
     def _infer_semantic(self, s: pl.Series, field_name: str):
-        v_cnt = len(s.value_counts())
+        v_cnt = len(s.unique())
         example_value = s[0]
         kind = s.dtype
 
@@ -59,7 +59,7 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
             return "dimension"
         if (
             kind in (pl.FLOAT_DTYPES | pl.DURATION_DTYPES)
-            or (kind in pl.INTEGER_DTYPES and len(s.value_counts()) > 16)
+            or (kind in pl.INTEGER_DTYPES and len(s.unique()) > 16)
         ):
             return "measure"
 

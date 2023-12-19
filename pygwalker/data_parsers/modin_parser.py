@@ -42,7 +42,7 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         return df
 
     def _infer_semantic(self, s: mpd.Series, field_name: str):
-        v_cnt = len(s.value_counts())
+        v_cnt = len(s.unique())
         example_value = s[0]
         kind = s.dtype.kind
 
@@ -59,7 +59,7 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
 
         if is_geo_field(field_name):
             return "dimension"
-        if kind in "fcm" or (kind in "iu" and len(s.value_counts()) > 16):
+        if kind in "fcm" or (kind in "iu" and len(s.unique()) > 16):
             return "measure"
 
         return "dimension"
