@@ -1,6 +1,5 @@
 from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any
 from distutils.version import StrictVersion
-import json
 
 from typing_extensions import Literal
 from pydantic import BaseModel
@@ -55,6 +54,7 @@ class StreamlitRenderer:
         spec: str = "",
         debug: bool = False,
         use_kernel_calc: bool = True,
+        show_cloud_tool: bool = False,
         **kwargs
     ):
         """Get pygwalker html render to streamlit
@@ -81,7 +81,7 @@ class StreamlitRenderer:
             hidedata_source_config=True,
             theme_key=themeKey,
             dark=dark,
-            show_cloud_tool=False,
+            show_cloud_tool=show_cloud_tool,
             use_preview=False,
             store_chart_data=False,
             use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
