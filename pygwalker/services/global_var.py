@@ -8,19 +8,12 @@ from .config import get_config
 
 class GlobalVarManager:
     """A class to manage global variables."""
-    global_gid = 0
     env = None
     privacy = get_config("privacy") or "events"
     kanaries_api_key = get_config("kanaries_token") or os.getenv("KANARIES_API_KEY", "")
     kanaries_api_host = "https://api.kanaries.net"
     kanaries_main_host = "https://kanaries.net"
     last_exported_dataframe = None
-
-    @classmethod
-    def get_global_gid(cls) -> int:
-        return_gid = cls.global_gid
-        cls.global_gid += 1
-        return return_gid
 
     @classmethod
     def set_env(cls, env: Literal['Jupyter', 'Streamlit']):

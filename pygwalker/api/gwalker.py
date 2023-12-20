@@ -1,5 +1,4 @@
-from pygwalker.services.global_var import GlobalVarManager
-
+from pygwalker.utils.randoms import generate_hash_code
 from pygwalker._typing import DataFrame
 from .html import to_html
 from .walker import walk
@@ -7,7 +6,7 @@ from .walker import walk
 
 class GWalker:
     def __init__(self, df: DataFrame = None):
-        self.gid = GlobalVarManager.get_global_gid()
+        self.gid = generate_hash_code()
         self.df = df
 
     def to_html(self, **kwargs):

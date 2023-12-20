@@ -7,7 +7,7 @@ from typing_extensions import Literal
 from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
-from pygwalker.services.global_var import GlobalVarManager
+from pygwalker.utils.randoms import generate_hash_code
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def to_html(
         - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     if gid is None:
-        gid = GlobalVarManager.get_global_gid()
+        gid = generate_hash_code()
 
     if fieldSpecs is None:
         fieldSpecs = {}
