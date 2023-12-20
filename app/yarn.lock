@@ -1016,10 +1016,10 @@
   resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.38.tgz#f7adf6bae63c6c8bdc5022b608ad3f3b62be377f"
   integrity sha512-e5+6wzRIKcUyUIDgDMCMiahOE/OdnH14Jeh8R0Jd4rJFqTzI6ahIth9LsToEWq7FuGPYK1vV4MKy8buzFZX3VA==
 
-"@kanaries/graphic-walker@0.4.36":
-  version "0.4.36"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.36.tgz#d80fbe7d1e51694ddbb10ff2d29f99fc306b4d0c"
-  integrity sha512-bOW4XHFyBVq0c/7w0VFUsmtKW9dE8fHSgvzcYecza254DeJydb06psRHEWlslVgaYp/KVHQplLBdFzvb09+NEQ==
+"@kanaries/graphic-walker@0.4.37":
+  version "0.4.37"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.37.tgz#1e979a56ecd096e188a3b6326ad749c9e6eaf7d7"
+  integrity sha512-mpC4nRzD1/5FPIcY0yOMvjvlFCKtT+fJ16OVkfAuxXo+CYxVgR3tbWnkQKmh05mFhfb2OhRLEXsO+xF9yvgHgw==
   dependencies:
     "@headlessui-float/react" "^0.11.4"
     "@headlessui/react" "1.7.12"
