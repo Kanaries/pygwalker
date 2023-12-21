@@ -43,7 +43,7 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         kind = s.dtype.kind
         if (kind in "fcmiu" and v_cnt > 2) or is_geo_field(field_name):
             return "quantitative"
-        if kind in "M" or (kind in "bOSUV" and is_temporal_field(str(example_value))):
+        if kind in "M" or (kind in "bOSUV" and is_temporal_field(example_value, self.infer_string_to_date)):
             return 'temporal'
         if kind in "iu":
             return "ordinal"

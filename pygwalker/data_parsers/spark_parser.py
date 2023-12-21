@@ -17,7 +17,13 @@ logger = logging.getLogger(__name__)
 
 class SparkDataFrameDataParser(BaseDataParser):
     """prop parser for DataFrame of spark"""
-    def __init__(self, df: DataFrame, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]):
+    def __init__(
+        self,
+        df: DataFrame,
+        use_kernel_calc: bool,
+        field_specs: Dict[str, FieldSpec],
+        infer_string_to_date: bool
+    ):
         if not df.is_cached:
             logger.warning(
                 "The input dataframe is not cached, which may cause performance issues.\n"
@@ -30,13 +36,19 @@ class SparkDataFrameDataParser(BaseDataParser):
         self.example_pandas_df = df.limit(1000).toPandas()
         self.use_kernel_calc = use_kernel_calc
         self.field_specs = field_specs
+        self.infer_string_to_date = infer_string_to_date
         if self.use_kernel_calc:
             self.df = self._preprocess_dataframe(self.df)
 
     @property
     @lru_cache()
     def raw_fields(self) -> List[Dict[str, str]]:
-        pandas_parser = PandasDataFrameDataParser(self.example_pandas_df, False, self.field_specs)
+        pandas_parser = PandasDataFrameDataParser(
+            self.example_pandas_df,
+            False,
+            self.field_specs,
+            self.infer_string_to_date
+        )
         return pandas_parser.raw_fields
 
     @property

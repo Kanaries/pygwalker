@@ -46,7 +46,7 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
 
         if (kind in pl.NUMERIC_DTYPES and v_cnt > 2) or is_geo_field(field_name):
             return "quantitative"
-        if kind in pl.TEMPORAL_DTYPES or is_temporal_field(str(example_value)):
+        if kind in pl.TEMPORAL_DTYPES or is_temporal_field(example_value, self.infer_string_to_date):
             return "temporal"
         if kind in [pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64]:
             return "ordinal"

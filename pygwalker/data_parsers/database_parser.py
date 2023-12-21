@@ -71,10 +71,17 @@ class DatabaseDataParser(BaseDataParser):
         "postgresql": "postgres"
     }
 
-    def __init__(self, conn: Connector, _: bool, field_specs: Dict[str, FieldSpec]):
+    def __init__(
+        self,
+        conn: Connector,
+        _: bool,
+        field_specs: Dict[str, FieldSpec],
+        infer_string_to_date: bool
+    ):
         self.conn = conn
         self.example_pandas_df = self._get_example_pandas_df()
         self.field_specs = field_specs
+        self.infer_string_to_date = infer_string_to_date
 
     def _get_example_pandas_df(self) -> pd.DataFrame:
         sql = self._format_sql(f"SELECT * FROM {self.placeholder_table_name} LIMIT 1000")
@@ -113,7 +120,12 @@ class DatabaseDataParser(BaseDataParser):
     @property
     @lru_cache()
     def raw_fields(self) -> List[Dict[str, str]]:
-        pandas_parser = PandasDataFrameDataParser(self.example_pandas_df, False, self.field_specs)
+        pandas_parser = PandasDataFrameDataParser(
+            self.example_pandas_df,
+            False,
+            self.field_specs,
+            self.infer_string_to_date
+        )
         return [
             {**field, "fid": field["name"]}
             for field in pandas_parser.raw_fields

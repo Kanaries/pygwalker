@@ -14,8 +14,14 @@ from pygwalker.services.fname_encodings import rename_columns
 
 class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
     """prop parser for modin.pandas.DataFrame"""
-    def __init__(self, df: mpd.DataFrame, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]):
-        super().__init__(df, use_kernel_calc, field_specs)
+    def __init__(
+        self,
+        df: mpd.DataFrame,
+        use_kernel_calc: bool,
+        field_specs: Dict[str, FieldSpec],
+        infer_string_to_date: bool
+    ):
+        super().__init__(df, use_kernel_calc, field_specs, infer_string_to_date)
         self._duckdb_df = self.df._to_pandas()
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -48,7 +54,7 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
 
         if (kind in "fcmiu" and v_cnt > 2) or is_geo_field(field_name):
             return "quantitative"
-        if kind in "M" or (kind in "bOSUV" and is_temporal_field(str(example_value))):
+        if kind in "M" or (kind in "bOSUV" and is_temporal_field(example_value, self.infer_string_to_date)):
             return 'temporal'
         if kind in "iu":
             return "ordinal"

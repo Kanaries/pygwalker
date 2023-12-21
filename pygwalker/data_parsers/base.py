@@ -1,7 +1,7 @@
 from typing import NamedTuple, Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
 from functools import lru_cache
-from datetime import datetime
+from datetime import datetime, date
 from datetime import timedelta
 import abc
 import io
@@ -36,7 +36,13 @@ class BaseDataParser(abc.ABC):
     """Base class for data parser"""
 
     @abc.abstractmethod
-    def __init__(self, data: Any, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]) -> None:
+    def __init__(
+        self,
+        data: Any,
+        use_kernel_calc: bool,
+        field_specs: Dict[str, FieldSpec],
+        infer_string_to_date: bool
+    ) -> None:
         raise NotImplementedError
 
     @property
@@ -85,7 +91,12 @@ class BaseDataParser(abc.ABC):
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
-    def __init__(self, df: DataFrame, use_kernel_calc: bool, field_specs: Dict[str, FieldSpec]):
+    def __init__(
+        self, df: DataFrame,
+        use_kernel_calc: bool,
+        field_specs: Dict[str, FieldSpec],
+        infer_string_to_date: bool
+    ):
         self.origin_df = df
         self.df = self._rename_dataframe(df)
         self._example_df = self.df[:1000]
@@ -94,6 +105,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         if self.use_kernel_calc:
             self.df = self._preprocess_dataframe(self.df)
         self._duckdb_df = self.df
+        self.infer_string_to_date = infer_string_to_date
 
     @property
     @lru_cache()
@@ -192,13 +204,16 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         return "dataframe_default"
 
 
-def is_temporal_field(value: str) -> bool:
+def is_temporal_field(value: Any, infer_string_to_date: bool) -> bool:
     """check if field is temporal"""
-    try:
-        arrow.get(value)
-    except Exception:
-        return False
-    return True
+    if infer_string_to_date:
+        try:
+            arrow.get(str(value))
+        except Exception:
+            return False
+        return True
+
+    return isinstance(value, (datetime, date))
 
 
 def is_geo_field(field_name: str) -> bool:
