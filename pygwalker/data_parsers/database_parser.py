@@ -41,17 +41,31 @@ def _check_view_sql(sql: str) -> None:
 
 
 class Connector:
-    """database connector"""
-    def __init__(self, url: str, view_sql: str) -> "Connector":
+    """
+    database connector, it will cache engine by url.
+
+    - url: database url, refer to sqlalchemy doc for url. example: mysql+pymysql://user:password@host:port/database
+    - view_sql: view sql, example: SELECT * FROM table_name
+    - engine_params: engine params, refer to sqlalchemy doc for params. example: {"pool_size": 10}
+    """
+    engine_map = {}
+
+    def __init__(self, url: str, view_sql: str, engine_params: Optional[Dict[str, Any]] = None) -> "Connector":
         _check_view_sql(view_sql)
+        if engine_params is None:
+            engine_params = {}
+
         self.url = url
-        self.engine = self._get_engine()
+        self.engine = self._get_engine(engine_params)
         self.view_sql = view_sql
 
-    def _get_engine(self) -> Engine:
-        engine = create_engine(self.url)
-        engine.dialect.requires_name_normalize = False
-        return engine
+    def _get_engine(self, engine_params: Dict[str, Any]) -> Engine:
+        if self.url not in self.engine_map:
+            engine = create_engine(self.url, **engine_params)
+            engine.dialect.requires_name_normalize = False
+            self.engine_map[self.url] = engine
+
+        return self.engine_map[self.url]
 
     def query_datas(self, sql: str) -> List[Dict[str, Any]]:
         with self.engine.connect() as connection:
