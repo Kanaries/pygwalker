@@ -16,10 +16,17 @@ logger = logging.getLogger(__name__)
 
 class CloudDatasetParser(BaseDataParser):
     """data parser for database"""
-    def __init__(self, dataset_id: str, _: bool, field_specs: Dict[str, FieldSpec]):
+    def __init__(
+        self,
+        dataset_id: str,
+        _: bool,
+        field_specs: Dict[str, FieldSpec],
+        infer_string_to_date: bool
+    ):
         self.dataset_id = dataset_id
         self.example_pandas_df = self._get_example_pandas_df()
         self.field_specs = field_specs
+        self.infer_string_to_date = infer_string_to_date
 
     def _get_example_pandas_df(self) -> pd.DataFrame:
         datas = self._get_all_datas(1000)
@@ -38,7 +45,12 @@ class CloudDatasetParser(BaseDataParser):
     @property
     @lru_cache()
     def raw_fields(self) -> List[Dict[str, str]]:
-        pandas_parser = PandasDataFrameDataParser(self.example_pandas_df, False, self.field_specs)
+        pandas_parser = PandasDataFrameDataParser(
+            self.example_pandas_df,
+            False,
+            self.field_specs,
+            self.infer_string_to_date
+        )
         return [
             {**field, "fid": field["name"]}
             for field in pandas_parser.raw_fields
