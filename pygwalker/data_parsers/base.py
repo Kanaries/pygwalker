@@ -88,6 +88,12 @@ class BaseDataParser(abc.ABC):
         """get field metas"""
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def placeholder_table_name(self) -> str:
+        """get placeholder table name"""
+        raise NotImplementedError
+
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
@@ -202,6 +208,10 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     @property
     def dataset_tpye(self) -> str:
         return "dataframe_default"
+
+    @property
+    def placeholder_table_name(self) -> str:
+        return "pygwalker_mid_table"
 
 
 def is_temporal_field(value: Any, infer_string_to_date: bool) -> bool:
