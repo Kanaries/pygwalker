@@ -88,3 +88,7 @@ class CloudDatasetParser(BaseDataParser):
     @property
     def dataset_tpye(self) -> str:
         return "cloud_dataset"
+
+    @property
+    def placeholder_table_name(self) -> str:
+        return "pygwalker_mid_table"
