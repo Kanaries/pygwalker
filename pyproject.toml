@@ -30,7 +30,8 @@ dependencies = [
     "segment-analytics-python==2.2.3",
     "pandas",
     "pytz",
-    "kanaries_track==0.0.3"
+    "kanaries_track==0.0.3",
+    "altair>=5.0.0"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
@@ -75,6 +76,7 @@ version = { path = "pygwalker/__init__.py" }
 [tool.hatch.build]
 include = [
     "pygwalker",
+    "pygwalker_tools",
     "bin",
     "pygwalker/templates/**",
     "pygwalker/templates/**/*",
@@ -108,6 +110,7 @@ include = [
     "README.md", "LICENSE",
     "app",
     "pygwalker",
+    "pygwalker_tools",
     "bin",
     "pygwalker/templates/**",
     "pygwalker/templates/**/*",
