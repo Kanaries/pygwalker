@@ -15,6 +15,17 @@ kanaries_track.config.max_retries = 2
 
 # pylint: disable=broad-exception-caught
 def track_event(event: str, properties: Optional[Dict[str, Any]] = None):
+    """
+    Track an event in Segment and Kanaries.
+    When privacy config of user is 'events',
+    PygWalker will collect certain user behavioral data (excluding analyzed data by the user, configuration information of data charts and config file name).
+    We only use these datas to improve the user experience of pygwalker.
+
+    - privacy  ['offline', 'update-only', 'events'] (default: events).
+        "offline": fully offline, no data is send or api is requested
+        "update-only": only check whether this is a new version of pygwalker to update
+        "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.
+    """
     if GlobalVarManager.privacy == "events":
         try:
             analytics.track(
