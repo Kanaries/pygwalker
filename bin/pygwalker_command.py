@@ -9,6 +9,7 @@ from pygwalker.services.config import (
     get_all_config_str,
     CONFIG_PATH
 )
+from pygwalker.services.kanaries_cli_login import kanaries_login
 
 parser = argparse.ArgumentParser(
     prog="pygwalker",
@@ -45,6 +46,15 @@ config_parser.add_argument(
     '--list',
     action='store_true',
     help='List current used configuration.'
+)
+
+# login command
+login_parser = subparsers.add_parser(
+    'login',
+    help="set up your kanaries token via kanaries website authorization.",
+    add_help=True,
+    description="set up your kanaries token via kanaries website authorization.",
+    formatter_class=argparse.RawTextHelpFormatter
 )
 
 
@@ -91,6 +101,10 @@ def main():
                 action_func(value)
                 return
         config_parser.print_help()
+        return
+
+    if args.command == 'login':
+        kanaries_login()
         return
 
     parser.print_help()
