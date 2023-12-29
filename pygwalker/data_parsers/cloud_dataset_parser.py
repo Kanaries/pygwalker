@@ -21,12 +21,14 @@ class CloudDatasetParser(BaseDataParser):
         dataset_id: str,
         _: bool,
         field_specs: Dict[str, FieldSpec],
-        infer_string_to_date: bool
+        infer_string_to_date: bool,
+        infer_number_to_dimension: bool
     ):
         self.dataset_id = dataset_id
         self.example_pandas_df = self._get_example_pandas_df()
         self.field_specs = field_specs
         self.infer_string_to_date = infer_string_to_date
+        self.infer_number_to_dimension = infer_number_to_dimension
 
     def _get_example_pandas_df(self) -> pd.DataFrame:
         datas = self._get_all_datas(1000)
@@ -49,7 +51,8 @@ class CloudDatasetParser(BaseDataParser):
             self.example_pandas_df,
             False,
             self.field_specs,
-            self.infer_string_to_date
+            self.infer_string_to_date,
+            self.infer_number_to_dimension
         )
         return [
             {**field, "fid": field["name"]}

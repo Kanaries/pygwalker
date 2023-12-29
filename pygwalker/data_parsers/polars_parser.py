@@ -40,16 +40,14 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return df
 
     def _infer_semantic(self, s: pl.Series, field_name: str):
-        v_cnt = len(s.unique())
         example_value = s[0]
         kind = s.dtype
 
-        if (kind in pl.NUMERIC_DTYPES and v_cnt > 2) or is_geo_field(field_name):
+        if kind in pl.NUMERIC_DTYPES or is_geo_field(field_name):
             return "quantitative"
         if kind in pl.TEMPORAL_DTYPES or is_temporal_field(example_value, self.infer_string_to_date):
             return "temporal"
-        if kind in [pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64]:
-            return "ordinal"
+
         return "nominal"
 
     def _infer_analytic(self, s: pl.Series, field_name: str):
@@ -57,10 +55,11 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
 
         if is_geo_field(field_name):
             return "dimension"
-        if (
-            kind in (pl.FLOAT_DTYPES | pl.DURATION_DTYPES)
-            or (kind in pl.INTEGER_DTYPES and len(s.unique()) > 16)
-        ):
+
+        if self.infer_number_to_dimension and kind in pl.INTEGER_DTYPES and len(s.unique()) <= 16:
+            return "dimension"
+
+        if kind in pl.NUMERIC_DTYPES:
             return "measure"
 
         return "dimension"

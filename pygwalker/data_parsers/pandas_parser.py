@@ -38,15 +38,14 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         return df
 
     def _infer_semantic(self, s: pd.Series, field_name: str):
-        v_cnt = len(s.unique())
         example_value = s[0]
         kind = s.dtype.kind
-        if (kind in "fcmiu" and v_cnt > 2) or is_geo_field(field_name):
+
+        if kind in "fcmiu" or is_geo_field(field_name):
             return "quantitative"
         if kind in "M" or (kind in "bOSUV" and is_temporal_field(example_value, self.infer_string_to_date)):
             return 'temporal'
-        if kind in "iu":
-            return "ordinal"
+
         return "nominal"
 
     def _infer_analytic(self, s: pd.Series, field_name: str):
@@ -54,7 +53,11 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
 
         if is_geo_field(field_name):
             return "dimension"
-        if kind in "fcm" or (kind in "iu" and len(s.unique()) > 16):
+
+        if self.infer_number_to_dimension and kind in "iu" and len(s.unique()) <= 16:
+            return "dimension"
+
+        if kind in "fcmiu":
             return "measure"
 
         return "dimension"

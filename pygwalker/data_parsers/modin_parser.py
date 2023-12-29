@@ -19,9 +19,10 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         df: mpd.DataFrame,
         use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
-        infer_string_to_date: bool
+        infer_string_to_date: bool,
+        infer_number_to_dimension: bool
     ):
-        super().__init__(df, use_kernel_calc, field_specs, infer_string_to_date)
+        super().__init__(df, use_kernel_calc, field_specs, infer_string_to_date, infer_number_to_dimension)
         self._duckdb_df = self.df._to_pandas()
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -48,16 +49,14 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         return df
 
     def _infer_semantic(self, s: mpd.Series, field_name: str):
-        v_cnt = len(s.unique())
         example_value = s[0]
         kind = s.dtype.kind
 
-        if (kind in "fcmiu" and v_cnt > 2) or is_geo_field(field_name):
+        if kind in "fcmiu" or is_geo_field(field_name):
             return "quantitative"
         if kind in "M" or (kind in "bOSUV" and is_temporal_field(example_value, self.infer_string_to_date)):
             return 'temporal'
-        if kind in "iu":
-            return "ordinal"
+
         return "nominal"
 
     def _infer_analytic(self, s: mpd.Series, field_name: str):
@@ -65,7 +64,11 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
 
         if is_geo_field(field_name):
             return "dimension"
-        if kind in "fcm" or (kind in "iu" and len(s.unique()) > 16):
+
+        if self.infer_number_to_dimension and kind in "iu" and len(s.unique()) <= 16:
+            return "dimension"
+
+        if kind in "fcmiu":
             return "measure"
 
         return "dimension"
