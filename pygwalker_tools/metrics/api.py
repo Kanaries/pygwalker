@@ -67,6 +67,18 @@ def get_metrics_datas(
         - fields: ['date', 'user_id', 'user_signup_date']
         - dimensions: ['date']
         - params: []
+    - active_user: Active User
+        - fields: ['date', 'user_id']
+        - dimensions: ['date']
+        - params: ['within_active_days']
+    - active_user_count: Active User Count
+        - fields: ['date', 'user_id']
+        - dimensions: ['date']
+        - params: ['within_active_days']
+    - user_churn_rate_base_active: User Churn Rate Base Active
+        - fields: ['date', 'user_id']
+        - dimensions: ['date']
+        - params: ['within_active_days']
     """
     if isinstance(dataset, str):
         raise TypeError("Unsupported cloud dataset type")
@@ -75,6 +87,7 @@ def get_metrics_datas(
         params = {}
 
     parser = get_parser(dataset)
+
     sql = get_metrics_sql(
         name=metrics_name,
         field_map=field_map,
@@ -124,6 +137,14 @@ class MetricsChart:
         - fields: ['date', 'user_id', 'user_signup_date']
         - dimensions: ['date', 'time_size']
         - params: []
+    - active_user_count: Active User Count
+        - fields: ['date', 'user_id']
+        - dimensions: ['date']
+        - params: ['within_active_days']
+    - user_churn_rate_base_active: User Churn Rate Base Active
+        - fields: ['date', 'user_id']
+        - dimensions: ['date']
+        - params: ['within_active_days']
     """
     def __init__(
         self,
@@ -224,5 +245,27 @@ class MetricsChart:
             "tooltip": ["date", "time_size", "retention"]
         }
         return alt.Chart(datas).mark_rect().encode(
+            **self._format_encode(encode_params)
+        )
+
+    def active_user_count(self) -> alt.Chart:
+        datas = self._get_datas("active_user_count")
+        encode_params = {
+            "x": "date",
+            "y": "active_user_count",
+            "tooltip": ["date", "active_user_count"],
+        }
+        return alt.Chart(datas).mark_bar().encode(
+            **self._format_encode(encode_params)
+        )
+
+    def user_churn_rate_base_active(self) -> alt.Chart:
+        datas = self._get_datas("user_churn_rate_base_active")
+        encode_params = {
+            "x": "date",
+            "y": "user_churn_rate",
+            "tooltip": ["date", "user_churn_rate"],
+        }
+        return alt.Chart(datas).mark_line().encode(
             **self._format_encode(encode_params)
         )

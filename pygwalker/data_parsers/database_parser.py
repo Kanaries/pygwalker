@@ -109,13 +109,12 @@ class DatabaseDataParser(BaseDataParser):
 
     def _format_sql(self, sql: str) -> str:
         sqlglot_dialect_name = self.sqlglot_dialect_map.get(self.conn.dialect_name, self.conn.dialect_name)
-        sql = sqlglot.transpile(sql, read=DuckdbDialect, write=sqlglot_dialect_name)[0]
 
         sub_query = exp.Subquery(
             this=sqlglot.parse(self.conn.view_sql, read=sqlglot_dialect_name)[0],
             alias="temp_view_name"
         )
-        ast = sqlglot.parse(sql, read=sqlglot_dialect_name)[0]
+        ast = sqlglot.parse(sql, read=DuckdbDialect)[0]
         for from_exp in ast.find_all(exp.From):
             if str(from_exp.this).strip('"') == self.placeholder_table_name:
                 from_exp.this.replace(sub_query)
