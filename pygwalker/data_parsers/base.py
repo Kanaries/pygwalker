@@ -41,7 +41,8 @@ class BaseDataParser(abc.ABC):
         data: Any,
         use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
-        infer_string_to_date: bool
+        infer_string_to_date: bool,
+        infer_number_to_dimension: bool
     ) -> None:
         raise NotImplementedError
 
@@ -101,7 +102,8 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         self, df: DataFrame,
         use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
-        infer_string_to_date: bool
+        infer_string_to_date: bool,
+        infer_number_to_dimension: bool
     ):
         self.origin_df = df
         self.df = self._rename_dataframe(df)
@@ -112,6 +114,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             self.df = self._preprocess_dataframe(self.df)
         self._duckdb_df = self.df
         self.infer_string_to_date = infer_string_to_date
+        self.infer_number_to_dimension = infer_number_to_dimension
 
     @property
     @lru_cache()
