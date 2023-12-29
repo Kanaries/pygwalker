@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Tuple, List
 
 import sqlglot.expressions as exp
 import sqlglot
@@ -10,6 +10,7 @@ METRICS_DEFINITIONS = {
         "fields": ["date"],
         "dimensions": ["date"],
         "params": [],
+        "depends": [],
         "sql": """
             SELECT
                 strftime("date", '%Y-%m-%d') "date",
@@ -26,6 +27,7 @@ METRICS_DEFINITIONS = {
         "fields": ["date", "user_id"],
         "dimensions": ["date"],
         "params": [],
+        "depends": [],
         "sql": """
             SELECT
                 strftime("date", '%Y-%m-%d') "date",
@@ -42,6 +44,7 @@ METRICS_DEFINITIONS = {
         "fields": ["date", "user_id"],
         "dimensions": ["date"],
         "params": [],
+        "depends": [],
         "sql": """
             SELECT
                 strftime("date", '%Y-%m') "date",
@@ -58,6 +61,7 @@ METRICS_DEFINITIONS = {
         "fields": ["date", "user_id", "user_signup_date"],
         "dimensions": ["date"],
         "params": ["time_unit", "time_size"],
+        "depends": [],
         "sql": """
             SELECT
                 strftime(t0."date", '%Y-%m-%d') "date",
@@ -90,6 +94,7 @@ METRICS_DEFINITIONS = {
         "fields": ["date", "user_id", "user_signup_date"],
         "dimensions": ["date"],
         "params": [],
+        "depends": [],
         "sql": """
             SELECT
                 strftime("___default_table___"."date", '%Y-%m-%d') "date",
@@ -101,8 +106,103 @@ METRICS_DEFINITIONS = {
             GROUP BY
                 strftime("___default_table___"."date", '%Y-%m-%d')
         """
+    },
+    "active_user": {
+        "name": "active_user",
+        "description": "Active User",
+        "fields": ["date", "user_id"],
+        "dimensions": ["date"],
+        "params": ["within_active_days"],
+        "depends": [],
+        "sql": """
+            SELECT
+                DISTINCT strftime(t0."date", '%Y-%m-%d') "date", t1."user_id" "user_id"
+            FROM (
+                SELECT DISTINCT "___default_table___"."date" FROM "___default_table___"
+            ) t0
+            LEFT JOIN (
+                SELECT
+                    DISTINCT "date"::date "date", "user_id"
+                FROM
+                    "___default_table___"
+            ) t1
+            ON
+                datediff('day', t1."date", t0."date") BETWEEN 0 AND {within_active_days}
+        """
+    },
+    "active_user_count": {
+        "name": "active_user_count",
+        "description": "Active User Count",
+        "fields": ["date", "user_id"],
+        "dimensions": ["date"],
+        "params": ["within_active_days"],
+        "depends": ["active_user"],
+        "sql": """
+            SELECT
+                "active_user"."date" "date",
+                COUNT(DISTINCT "active_user"."user_id") "active_user_count"
+            FROM
+                "active_user"
+            GROUP BY
+                "active_user"."date"
+        """
+    },
+    "user_churn_rate_base_active": {
+        "name": "user_churn_rate_base_active",
+        "description": "User Churn Rate Base Active",
+        "fields": ["date", "user_id"],
+        "dimensions": ["date"],
+        "params": ["within_active_days"],
+        "depends": ["active_user"],
+        "sql": """
+            SELECT
+                "t0"."date" "date",
+                -(COUNT("t1"."user_id") - COUNT("t0"."user_id")) / COUNT("t0"."user_id") "user_churn_rate"
+            FROM
+                "active_user" "t0"
+            LEFT JOIN
+                "active_user" "t1"
+            ON
+                datediff('day', "t0"."date"::date, "t1"."date"::date) = 1 AND
+                "t0"."user_id" = "t1"."user_id"
+            GROUP BY
+                "t0"."date"
+            HAVING
+                COUNT("t1"."user_id") > 0
+        """
     }
 }
+
+
+def _replace_table_name_to_subquery(
+    origin_sql: str,
+    table_query_map: List[Tuple[str, str]]
+) -> str:
+    """
+    replace table name to subquery
+    example:
+    _replace_table_name_to_subquery(
+        "SELECT * FROM table_name",
+        [("table_name", "SELECT * FROM table_name")]
+    )
+    """
+    origin_sql_ast = sqlglot.parse(origin_sql, read="duckdb")[0]
+
+    for table_name, sub_query in table_query_map:
+        sub_query_sql_ast = sqlglot.parse(sub_query, read="duckdb")[0]
+        for from_exp in origin_sql_ast.find_all(exp.From, exp.Join):
+            if str(from_exp.this.this).strip('"') == table_name:
+                if str(from_exp.this.alias):
+                    alias_name = from_exp.this.alias
+                else:
+                    alias_name = table_name
+                sub_query_node = exp.Subquery(
+                    this=sub_query_sql_ast,
+                    alias=f'"{alias_name}"'
+                )
+                from_exp.this.replace(sub_query_node)
+
+    return origin_sql_ast.sql("duckdb")
 
 
 def get_metrics_sql(
@@ -117,11 +217,15 @@ def get_metrics_sql(
         raise ValueError(f"Unknown metrics name: {name}")
     metrics_definition = METRICS_DEFINITIONS[name]
 
-    if set(metrics_definition["fields"]) != set(field_map.keys()):
-        raise ValueError(f"Fields not match: {metrics_definition['fields']}")
+    for field in metrics_definition["fields"]:
+        if field not in field_map:
+            raise ValueError(f"Field not found: {field}, all fields: {metrics_definition['fields']}")
 
-    if set(metrics_definition["params"]) != set(params.keys()):
-        raise ValueError(f"Params not match: {metrics_definition['params']}")
+    used_params = {}
+    for param in metrics_definition["params"]:
+        if param not in params:
+            raise ValueError(f"Param not found: {param}, all params: {metrics_definition['params']}")
+        used_params[param] = params[param]
 
     timestamp_field = {"date"}
 
@@ -136,27 +240,18 @@ def get_metrics_sql(
             "{origin_table_name}"
     """
 
-    origin_sql_ast = sqlglot.parse(sub_query, read="duckdb")[0]
-    sub_query_node = exp.Subquery(
-        this=origin_sql_ast,
-        alias="___default_table___"
-    )
+    sql = metrics_definition["sql"].format(**used_params)
+    table_query_map = [
+        ("___default_table___", sub_query)
+    ]
 
-    sql_str = metrics_definition["sql"].format(**params)
-    sql_ast = sqlglot.parse(sql_str, read="duckdb")[0]
-    for from_exp in sql_ast.find_all(exp.From, exp.Join):
-        if str(from_exp.this.this).strip('"') == "___default_table___":
-            if str(from_exp.this.alias):
-                alias_name = from_exp.this.alias
-            else:
-                alias_name = "___default_table___"
-            sub_query_node = exp.Subquery(
-                this=origin_sql_ast,
-                alias=f'"{alias_name}"'
-            )
-            from_exp.this.replace(sub_query_node)
+    for depend in metrics_definition["depends"]:
+        table_query_map.append((
+            depend,
+            get_metrics_sql(name=depend, field_map=field_map, params=params, origin_table_name=origin_table_name)
+        ))
 
-    sql = sql_ast.sql("duckdb")
+    sql = _replace_table_name_to_subquery(sql, table_query_map)
 
     return sql
 
