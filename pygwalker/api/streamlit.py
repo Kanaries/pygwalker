@@ -1,5 +1,7 @@
 from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any
 from distutils.version import StrictVersion
+from functools import lru_cache
+import json
 
 from typing_extensions import Literal
 from pydantic import BaseModel
@@ -92,6 +94,10 @@ class StreamlitRenderer:
         self.walker.init_streamlit_comm()
         self.global_pre_filters = None
 
+    @lru_cache()
+    def _get_render_html(self, props_str: str) -> str:
+        return self.walker._get_render_iframe(dict(json.loads(props_str)), False)
+
     def _get_html(
         self,
         *,
@@ -112,7 +118,7 @@ class StreamlitRenderer:
 
         props.update(params)
 
-        html = self.walker._get_render_iframe(props, False)
+        html = self._get_render_html(json.dumps(sorted(props.items())))
         return html
 
     def _convert_pre_filters_to_gw_config(
