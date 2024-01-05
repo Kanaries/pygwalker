@@ -16,6 +16,7 @@ def to_html(
     df: DataFrame,
     gid: Union[int, str] = None,
     *,
+    spec: str = "",
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
     hideDataSourceConfig: bool = True,
     themeKey: Literal['vega', 'g2'] = 'g2',
@@ -23,7 +24,6 @@ def to_html(
     **kwargs
 ):
     """
-    (deprecated) please use `pygwalker.walk(df, return_html=True)` instead.
     Generate embeddable HTML code of Graphic Walker with data of `df`.
 
     Args:
@@ -32,7 +32,7 @@ def to_html(
 
     Kargs:
         - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-
+        - spec (str): chart config data. config id, json, remote file url
         - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         - themeKey ('vega' | 'g2'): theme type.
         - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
@@ -47,7 +47,7 @@ def to_html(
         gid=gid,
         dataset=df,
         field_specs=fieldSpecs,
-        spec="",
+        spec=spec,
         source_invoke_code="",
         hidedata_source_config=hideDataSourceConfig,
         theme_key=themeKey,
