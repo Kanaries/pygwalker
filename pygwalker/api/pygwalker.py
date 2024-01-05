@@ -36,7 +36,8 @@ from pygwalker.services.cloud_service import (
     write_config_to_cloud,
     get_kanaries_user_info,
     get_spec_by_text,
-    upload_cloud_chart
+    upload_cloud_chart,
+    upload_cloud_dashboard
 )
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
@@ -399,11 +400,23 @@ class PygWalker:
                 data_parser=self.data_parser,
                 chart_name=data["chartName"],
                 dataset_name=data["datasetName"],
-                workflow_list=data["workflowList"],
+                workflow=data["workflow"],
                 spec_list=data["visSpec"],
                 is_public=data["isPublic"],
             )
             return {"chartId": chart_id}
+
+        def _upload_to_cloud_dashboard(data: Dict[str, Any]):
+            dashboard_id = upload_cloud_dashboard(
+                data_parser=self.data_parser,
+                dashboard_name=data["chartName"],
+                dataset_name=data["datasetName"],
+                workflow_list=data["workflowList"],
+                spec_list=data["visSpec"],
+                is_public=data["isPublic"],
+                dark=self.dark
+            )
+            return {"dashboardId": dashboard_id}
 
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
 
@@ -415,6 +428,7 @@ class PygWalker:
 
         if self.show_cloud_tool:
             comm.register("upload_to_cloud_charts", _upload_to_cloud_charts)
+            comm.register("upload_to_cloud_dashboard", _upload_to_cloud_dashboard)
             comm.register("get_spec_by_text", _get_spec_by_text)
 
         if self.use_kernel_calc:
