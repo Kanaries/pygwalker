@@ -359,12 +359,33 @@ def create_cloud_dataset(
     return dataset_id
 
 
+def create_dashboard(
+    *,
+    name: str,
+    layout: List[Any],
+    config: Dict[str, Any],
+    is_public: bool
+) -> str:
+    url = f"{GlobalVarManager.kanaries_api_host}/report"
+    params = {
+        "title": name,
+        "version": "0.0.1",
+        "desc": "",
+        "size": {},
+        "config": config,
+        "layout": layout,
+        "public": is_public
+    }
+    resp = session.post(url, json=params, timeout=60)
+    return resp.json()["data"]["id"]
+
+
 def upload_cloud_chart(
     *,
     chart_name: str,
     dataset_name: str,
     data_parser: BaseDataParser,
-    workflow_list: List[Dict[str, Any]],
+    workflow: List[Dict[str, Any]],
     spec_list: List[Dict[str, Any]],
     is_public: bool,
 ) -> str:
@@ -392,9 +413,74 @@ def upload_cloud_chart(
             }],
             "specList": spec_list
         }),
-        workflow=workflow_list,
+        workflow=workflow,
         thumbnail="",
         is_public=is_public
     )
 
     return chart_info["chartId"]
+
+
+def upload_cloud_dashboard(
+    *,
+    dashboard_name: str,
+    dataset_name: str,
+    data_parser: BaseDataParser,
+    workflow_list: List[List[Dict[str, Any]]],
+    spec_list: List[Dict[str, Any]],
+    is_public: bool,
+    dark: str,
+) -> str:
+    dataset_id = create_cloud_dataset(data_parser, dataset_name, False)
+
+    chart_info_list = []
+    for spec, workflow in zip(spec_list, workflow_list):    
+        chart_info = _create_chart(
+            dataset_id=dataset_id,
+            name=f"{dashboard_name}-{spec['name']}",
+            meta=json.dumps({
+                "dataSources": [{
+                    "id": "dataSource-0",
+                    "data": []
+                }],
+                "datasets": [{
+                    "id": 'dataset-0',
+                    "name": 'DataSet',
+                    "rawFields": data_parser.raw_fields,
+                    "dsId": 'dataSource-0',
+                }],
+                "specList": [spec]
+            }),
+            workflow=workflow,
+            thumbnail="",
+            is_public=is_public
+        )
+
+        chart_info_list.append(chart_info)
+
+    dashboard_id = create_dashboard(
+        name=dashboard_name,
+        is_public=is_public,
+        config={
+            "items": [
+                {"id": "dashboard_title", "content": f"# {dashboard_name}", "type": "text", "name": "Text"},
+                {
+                    "id": "chart_tab",
+                    "dark": dark,
+                    "name": "Charts",
+                    "type": "data",
+                    "tabs": [
+                        {"chartId": chart_info["chartId"], "title": spec["name"]}
+                        for spec, chart_info in zip(spec_list, chart_info_list)
+                    ],
+                    "mode": "gwtabs",
+                }
+            ],
+        },
+        layout=[
+            {"i": "dashboard_title", "h": 2, "w": 4, "x": 0, "y": 0},
+            {"i": "chart_tab", "h": 20, "w": 4, "x": 0, "y": 2},
+        ]
+    )
+
+    return dashboard_id

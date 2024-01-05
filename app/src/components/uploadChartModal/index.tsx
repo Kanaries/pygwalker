@@ -25,15 +25,15 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
 
     useEffect(() => {
         if (props.open) {
-            setChartName(`chart-${new Date().getTime().toString(16).padStart(16, "0")}`);
+            setChartName(`dashboard-${new Date().getTime().toString(16).padStart(16, "0")}`);
             setDatasetName(`dataset-${new Date().getTime().toString(16).padStart(16, "0")}`);
             setIsPublic(true);
         }
     }, [props.open])
 
-    const uploadSuccess = (chartId: string) => {
-        const chartUrl = `https://kanaries.net/app/data-infra/c/${chartId}`
-        const shareUrl = `https://kanaries.net/app/data-infra/chart/${chartId}/share?theme=${props.dark}`
+    const uploadSuccess = (dashboardId: string) => {
+        const dashboardUrl = `https://kanaries.net/app/data-infra/d/${dashboardId}`
+        const shareUrl = `https://kanaries.net/app/data-infra/dashboard/${dashboardId}/share?theme=${props.dark}`
         commonStore.setNotification(
             {
                 type: "success",
@@ -41,12 +41,12 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
                 message: (
                     <>
                         <p>Upload success, you can view and manager it at:
-                            <a className="font-semibold" href={chartUrl} target="_blank">
-                                {chartUrl}
+                            <a className="font-semibold" href={dashboardUrl} target="_blank">
+                                {dashboardUrl}
                             </a>
                         </p>
                         <br />
-                        {isPublic && <p>Since you set the chart to public, you can also share it with others by:
+                        {isPublic && <p>Since you set the dashboard to public, you can also share it with others by:
                             <a className="font-semibold" href={shareUrl} target="_blank">
                                 {shareUrl}
                             </a>
@@ -65,18 +65,18 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
         const visSpec = props.storeRef.current?.exportCode()!;
         try {
             const resp = await communicationStore.comm?.sendMsg(
-                "upload_to_cloud_charts",
+                "upload_to_cloud_dashboard",
                 {
                     chartName: chartName,
                     datasetName: datasetName,
                     isPublic: isPublic,
                     visSpec: visSpec,
-                    workflowList: chartToWorkflow(visSpec[0]).workflow,
+                    workflowList: visSpec.map(spec => chartToWorkflow(spec).workflow),
                 },
                 120_000
             );
             props.setOpen(false);
-            uploadSuccess(resp?.data.chartId);
+            uploadSuccess(resp?.data.dashboardId);
         } finally {
             setUploading(false);
         }
@@ -94,13 +94,13 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
                 <DialogHeader>
                     <DialogTitle>Upload Chart</DialogTitle>
                     <DialogDescription>
-                        upload your charts to kanaries cloud.
+                        upload your charts to dashboard of kanaries cloud.
                     </DialogDescription>
                 </DialogHeader>
                 <div>
                     <div className="text-sm max-h-64 overflow-auto">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
-                            Chart Name
+                            Dashboard Name
                         </label>
                         <input
                             value={chartName}
