@@ -44,6 +44,7 @@ from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
+from pygwalker.errors import DataCountLimitError
 from pygwalker import __version__
 
 
@@ -340,19 +341,25 @@ class PygWalker:
 
         def _get_datas(data: Dict[str, Any]):
             sql = data["sql"]
+            datas = self.data_parser.get_datas_by_sql(
+                sql,
+                data.get("timezoneOffsetSeconds", None)
+            )
+            if len(datas) > 1 * 1000 * 1000:
+                raise DataCountLimitError()
             return {
-                "datas": self.data_parser.get_datas_by_sql(
-                    sql,
-                    data.get("timezoneOffsetSeconds", None)
-                )
+                "datas": datas
             }
 
         def _get_datas_by_payload(data: Dict[str, Any]):
+            datas = self.data_parser.get_datas_by_payload(
+                data["payload"],
+                data.get("timezoneOffsetSeconds", None)
+            )
+            if len(datas) > 1 * 1000 * 1000:
+                raise DataCountLimitError()
             return {
-                "datas": self.data_parser.get_datas_by_payload(
-                    data["payload"],
-                    data.get("timezoneOffsetSeconds", None)
-                )
+                "datas": datas
             }
 
         def _get_spec_by_text(data: Dict[str, Any]):
