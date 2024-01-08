@@ -146,24 +146,6 @@ class PygWalker:
         html = render_gwalker_html(self.gid, props)
         return html
 
-    def init_streamlit_comm(self):
-        """
-        Initialize the communication of streamlit.
-        """
-        from pygwalker.communications.streamlit_comm import StreamlitCommunication
-
-        comm = StreamlitCommunication(str(self.gid))
-        self._init_callback(comm)
-
-    def init_gradio_comm(self):
-        """
-        Initialize the communication of gradio.
-        """
-        from pygwalker.communications.gradio_comm import GradioCommunication
-
-        comm = GradioCommunication(str(self.gid))
-        self._init_callback(comm)
-
     def display_on_convert_html(self):
         """
         Display on jupyter-nbconvert html.
