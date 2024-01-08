@@ -2,7 +2,11 @@ from typing import Union, Dict, Optional
 from typing_extensions import Literal
 
 from .pygwalker import PygWalker
-from pygwalker.communications.gradio_comm import BASE_URL_PATH, PYGWALKER_ROUTE
+from pygwalker.communications.gradio_comm import (
+    BASE_URL_PATH,
+    GradioCommunication,
+    PYGWALKER_ROUTE
+)
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
@@ -56,7 +60,8 @@ def get_html_on_gradio(
 
     props = walker._get_props("gradio")
     props["communicationUrl"] = BASE_URL_PATH
-    walker.init_gradio_comm()
+    comm = GradioCommunication(str(walker.gid))
+    walker._init_callback(comm)
 
     html = walker._get_render_iframe(props, True)
     return html
