@@ -9,7 +9,11 @@ import arrow
 import streamlit.components.v1 as components
 
 from .pygwalker import PygWalker
-from pygwalker.communications.streamlit_comm import hack_streamlit_server, BASE_URL_PATH
+from pygwalker.communications.streamlit_comm import (
+    hack_streamlit_server,
+    BASE_URL_PATH,
+    StreamlitCommunication
+)
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
@@ -91,7 +95,8 @@ class StreamlitRenderer:
             is_export_dataframe=False,
             **kwargs
         )
-        self.walker.init_streamlit_comm()
+        comm = StreamlitCommunication(str(self.walker.gid))
+        self.walker._init_callback(comm)
         self.global_pre_filters = None
 
     @lru_cache()
