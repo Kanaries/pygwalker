@@ -41,3 +41,12 @@ class CsvFileTooLargeError(BaseError):
 class ViewSqlSameColumnError(BaseError):
     """Raised when the view sql is invalid."""
     pass
+
+
+class DataCountLimitError(BaseError):
+    """Raised when the data count is too large."""
+    def __init__(self) -> None:
+        super().__init__(
+            "The query returned too many data entries, making it difficult for the frontend to render. Please adjust your chart configuration and try again.",
+            code=ErrorCode.UNKNOWN_ERROR
+        )
