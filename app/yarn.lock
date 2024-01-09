@@ -1011,15 +1011,15 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries-temp/gw-dsl-parser@0.1.38":
-  version "0.1.38"
-  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.38.tgz#f7adf6bae63c6c8bdc5022b608ad3f3b62be377f"
-  integrity sha512-e5+6wzRIKcUyUIDgDMCMiahOE/OdnH14Jeh8R0Jd4rJFqTzI6ahIth9LsToEWq7FuGPYK1vV4MKy8buzFZX3VA==
+"@kanaries-temp/gw-dsl-parser@0.1.39-rc9":
+  version "0.1.39-rc9"
+  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.39-rc9.tgz#dbc5d6676be33943bca2c53b76a241b585d3a197"
+  integrity sha512-ZHwzHYkJpn1b+EjvCKN+8MBCvY9XJBEpV+pwYDQqYhqBvD1JYGOF5MHxVifs2e5KLqyDTT4cyxjtBJOzYd5khg==
 
-"@kanaries/graphic-walker@0.4.39":
-  version "0.4.39"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.39.tgz#cdc37cecd394a73831d8d24308c6dac3615a275f"
-  integrity sha512-JKJQGNJlEC6gi9RTAeco45/WeH9SrCRieZY6FJl2vr4kBkRu72QzGx6jFPLX8ANM80gruuzk8XOQ2wIFFMGXrw==
+"@kanaries/graphic-walker@0.4.40":
+  version "0.4.40"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.40.tgz#964cfeb5ce3bd602c0a110aa0f6a4d8856d01ba9"
+  integrity sha512-xsddIF74FKYLD0vAcwYd9ymjPVqteFjukNfAif4+a+iwx1162u/SuLLMZZovGdmbKILawIe05bUcKGHrHBVl+w==
   dependencies:
     "@headlessui-float/react" "^0.11.4"
     "@headlessui/react" "1.7.12"
@@ -1042,6 +1042,7 @@
     mobx "^6.3.3"
     mobx-react-lite "^3.2.1"
     nanoid "^4.0.2"
+    pgsql-ast-parser "^11.1.0"
     postcss "^8.3.7"
     postinstall-postinstall "^2.1.0"
     re-resizable "^6.9.8"
@@ -1050,6 +1051,7 @@
     react-error-boundary "^4.0.11"
     react-i18next "^11.18.6"
     react-leaflet "^4.2.1"
+    react-resize-detector "^9.1.1"
     react-shadow "^20.0.0"
     rxjs "^7.3.0"
     tailwindcss "^3.2.4"
@@ -2024,7 +2026,7 @@ comma-separated-tokens@^1.0.0:
   resolved "https://registry.npmmirror.com/comma-separated-tokens/-/comma-separated-tokens-1.0.8.tgz#632b80b6117867a158f1080ad498b2fbe7e3f5ea"
   integrity sha512-GHuDRO12Sypu2cV70d1dkA2EUmXHgntrzbpvOB+Qy+49ypNfGgFQIC2fhhXbnyrJRynDCAARsT7Ou0M6hirpfw==
 
-commander@2, commander@^2.20.0:
+commander@2, commander@^2.19.0, commander@^2.20.0:
   version "2.20.3"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
   integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
@@ -2306,6 +2308,11 @@ diff-sequences@^29.6.3:
   version "29.6.3"
   resolved "https://registry.yarnpkg.com/diff-sequences/-/diff-sequences-29.6.3.tgz#4deaf894d11407c51efc8418012f9e70b84ea921"
   integrity sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==
+
+discontinuous-range@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/discontinuous-range/-/discontinuous-range-1.0.0.tgz#e38331f0844bba49b9a9cb71c771585aab1bc65a"
+  integrity sha512-c68LpLbO+7kP/b1Hr1qs8/BJ09F5khZGTxqxZuhzxpmwJKOgRFHJWIb9/KmqnqHhLdO55aOxFH/EGBvUQbL/RQ==
 
 dlv@^1.1.3:
   version "1.1.3"
@@ -3510,6 +3517,11 @@ mobx@^6.3.3, mobx@^6.9.0:
   resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.9.0.tgz#8a894c26417c05bed2cf7499322e589ee9787397"
   integrity sha512-HdKewQEREEJgsWnErClfbFoVebze6rGazxFLU/XUyrII8dORfVszN1V0BMRnQSzcgsNNtkX8DHj3nC6cdWE9YQ==
 
+moo@^0.5.0, moo@^0.5.1:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/moo/-/moo-0.5.2.tgz#f9fe82473bc7c184b0d32e2215d3f6e67278733c"
+  integrity sha512-iSAJLHYKnX41mKcJKjqvnAN9sf0LMDTXDEvFv+ffuRR9a1MIuXLjMNL6EsnDHSkKLTWNqQQ5uo61P4EbU4NU+Q==
+
 ms@2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
@@ -3552,6 +3564,16 @@ natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
+
+nearley@^2.19.5:
+  version "2.20.1"
+  resolved "https://registry.yarnpkg.com/nearley/-/nearley-2.20.1.tgz#246cd33eff0d012faf197ff6774d7ac78acdd474"
+  integrity sha512-+Mc8UaAebFzgV+KpI5n7DasuuQCHA89dmwm7JXw3TV43ukfNQ9DnBH3Mdb2g/I4Fdxc26pwimBWvjIw0UAILSQ==
+  dependencies:
+    commander "^2.19.0"
+    moo "^0.5.0"
+    railroad-diagrams "^1.0.0"
+    randexp "0.4.6"
 
 node-fetch@^2.6.7:
   version "2.6.11"
@@ -3693,6 +3715,14 @@ path-parse@^1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
   integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
+
+pgsql-ast-parser@^11.1.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/pgsql-ast-parser/-/pgsql-ast-parser-11.1.0.tgz#b3015171fd844e93f37368a50fdb3c06ab9e5b01"
+  integrity sha512-c0XnjHzUyg2Z/3iB2Akk6+jDtsza4Jqw4bC5SSt9pQ3b+K4aQC75gJQDvsNYvFqQNaPHLCUunDLPc5SZsQQLIA==
+  dependencies:
+    moo "^0.5.1"
+    nearley "^2.19.5"
 
 picocolors@^1.0.0:
   version "1.0.0"
@@ -3842,6 +3872,19 @@ raf-schd@^4.0.2:
   resolved "https://registry.yarnpkg.com/raf-schd/-/raf-schd-4.0.3.tgz#5d6c34ef46f8b2a0e880a8fcdb743efc5bfdbc1a"
   integrity sha512-tQkJl2GRWh83ui2DiPTJz9wEiMN20syf+5oKfB03yYP7ioZcJwsIK8FjrtLwH1m7C7e+Tt2yYBlrOpdT+dyeIQ==
 
+railroad-diagrams@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/railroad-diagrams/-/railroad-diagrams-1.0.0.tgz#eb7e6267548ddedfb899c1b90e57374559cddb7e"
+  integrity sha512-cz93DjNeLY0idrCNOH6PviZGRN9GJhsdm9hpn1YCS879fj4W+x5IFJhhkRZcwVgMmFF7R82UA/7Oh+R8lLZg6A==
+
+randexp@0.4.6:
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/randexp/-/randexp-0.4.6.tgz#e986ad5e5e31dae13ddd6f7b3019aa7c87f60ca3"
+  integrity sha512-80WNmd9DA0tmZrw9qQa62GPPWfuXJknrmVmLcxvq4uZBdYqb1wYoKTmnlGUchvVWe0XiLupYkBoXVOxz3C8DYQ==
+  dependencies:
+    discontinuous-range "1.0.0"
+    ret "~0.1.10"
+
 randombytes@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/randombytes/-/randombytes-2.1.0.tgz#df6f84372f0270dc65cdf6291349ab7a473d4f2a"
@@ -3952,6 +3995,13 @@ react-remove-scroll@2.5.5:
     tslib "^2.1.0"
     use-callback-ref "^1.3.0"
     use-sidecar "^1.1.2"
+
+react-resize-detector@^9.1.1:
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/react-resize-detector/-/react-resize-detector-9.1.1.tgz#ce13cf55b9b09d9978fc51e0c87bb3639704921e"
+  integrity sha512-siLzop7i4xIvZIACE/PHTvRegA8QRCEt0TfmvJ/qCIFQJ4U+3NuYcF8tNDmDWxfIn+X1eNCyY2rauH4KRxge8w==
+  dependencies:
+    lodash "^4.17.21"
 
 react-shadow@^20.0.0:
   version "20.0.0"
@@ -4105,6 +4155,11 @@ resolve@^1.20.0:
     is-core-module "^2.13.0"
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
+
+ret@~0.1.10:
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/ret/-/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"
+  integrity sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==
 
 reusify@^1.0.4:
   version "1.0.4"

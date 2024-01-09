@@ -157,6 +157,7 @@ const App: React.FC<IAppProps> = observer((props) => {
                 toolbar={toolbarConfig}
                 computation={computationCallback}
                 enhanceAPI={enhanceAPI}
+                experimentalFeatures={{ computedField: props.useKernelCalc }}
             />
             <InitModal />
             <Options {...props} />
