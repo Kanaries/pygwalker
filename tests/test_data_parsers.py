@@ -19,7 +19,7 @@ sql_result = [{"total": 5}]
 raw_fields_result = [
     {'fid': 'name', 'name': 'name', 'semanticType': 'nominal', 'analyticType': 'dimension'},
     {'fid': 'count', 'name': 'count', 'semanticType': 'quantitative', 'analyticType': 'dimension'},
-    {'fid': 'date', 'name': 'date', 'semanticType': 'temporal', 'analyticType': 'dimension'}
+    {'fid': 'date', 'name': 'date', 'semanticType': 'nominal', 'analyticType': 'dimension'}
 ]
 to_records_result = [{'name': 'padnas', 'count': 3, 'date': '2022-01-01'}]
 to_records_no_kernrl_result = [{'name': 'padnas', 'count': 3, 'date': '2022-01-01'}]
