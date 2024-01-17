@@ -38,5 +38,7 @@ def track_event(event: str, properties: Optional[Dict[str, Any]] = None):
                 properties=properties
             )
             kanaries_track.track({**properties, "user_id": get_local_user_id()})
-        except Exception:
+        except Exception as e:
+        # Consider logging the exception here
+            print(f"Error tracking event: {e}")
             pass
