@@ -1011,10 +1011,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries-temp/gw-dsl-parser@0.1.39-rc9":
-  version "0.1.39-rc9"
-  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.39-rc9.tgz#dbc5d6676be33943bca2c53b76a241b585d3a197"
-  integrity sha512-ZHwzHYkJpn1b+EjvCKN+8MBCvY9XJBEpV+pwYDQqYhqBvD1JYGOF5MHxVifs2e5KLqyDTT4cyxjtBJOzYd5khg==
+"@kanaries-temp/gw-dsl-parser@0.1.41":
+  version "0.1.41"
+  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.41.tgz#d58a9097ce22ba087f71ecd058265c3439765498"
+  integrity sha512-bafYUPmfYiOFNLyLUuJXDWWs0wDNw832hUps9PCAV5KthvihmbQhCVhhRPsvNN54H+ytFXysg1vBsRKsM1gJyg==
 
 "@kanaries/graphic-walker@0.4.41":
   version "0.4.41"
