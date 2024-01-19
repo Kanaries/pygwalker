@@ -26,8 +26,7 @@ def get_metrics_datas(
     dataset: Union[DataFrame, Connector],
     metrics_name: str,
     field_map: Dict[str, str],
-    params: Optional[Dict[str, Any]] = None,
-    timezone_offset_seconds: Optional[int] = None,
+    params: Optional[Dict[str, Any]] = None
 ) -> List[Dict[str, Any]]:
     """
     Example: get 1 day retention datas
@@ -98,7 +97,7 @@ def get_metrics_datas(
     if isinstance(dataset, Connector):
         return parser._get_datas_by_sql(sql)
     else:
-        return parser.get_datas_by_sql(sql, timezone_offset_seconds)
+        return parser.get_datas_by_sql(sql)
 
 
 class MetricsChart:
@@ -151,13 +150,11 @@ class MetricsChart:
         dataset: Union[DataFrame, Connector],
         field_map: Dict[str, str],
         params: Optional[Dict[str, Any]] = None,
-        timezone_offset_seconds: Optional[int] = None,
         reverse_axis: bool = False
     ):
         self.dataset = dataset
         self.field_map = field_map
         self.params = params
-        self.timezone_offset_seconds = timezone_offset_seconds
         self.reverse_axis = reverse_axis
 
     def _get_datas(self, metrics_name: str, params: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
@@ -165,8 +162,7 @@ class MetricsChart:
             dataset=self.dataset,
             metrics_name=metrics_name,
             field_map=self.field_map,
-            params=params or self.params,
-            timezone_offset_seconds=self.timezone_offset_seconds
+            params=params or self.params
         )
         return pd.DataFrame(json.loads(json.dumps(datas, cls=_JSONEncoder)))
 

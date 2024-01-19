@@ -53,8 +53,7 @@ export function getExportDataframeTool(
                 );
                 await communicationStore.comm?.sendMsg("export_dataframe_by_sql", {
                     sql: sql,
-                    encodings: storeRef.current?.currentVis.encodings,
-                    timezoneOffsetSeconds: -new Date().getTimezoneOffset() * 60,
+                    encodings: storeRef.current?.currentVis.encodings
                 });
             }
             exportSuccess();

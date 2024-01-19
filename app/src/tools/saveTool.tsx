@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import communicationStore from "../store/communication"
 import commonStore from '../store/common';
-import { formatExportedChartDatas, getTimezoneOffsetSeconds } from "../utils/save"
+import { formatExportedChartDatas } from "../utils/save"
 import { checkUploadPrivacy } from '../utils/userConfig';
 
 import { chartToWorkflow } from "@kanaries/graphic-walker"
@@ -62,8 +62,7 @@ export function getSaveTool(
             await communicationStore.comm?.sendMsg("update_spec", {
                 "visSpec": visSpec,
                 "chartData": await formatExportedChartDatas(chartData),
-                "workflowList": visSpec.map((spec) => chartToWorkflow(spec)),
-                "timezoneOffsetSeconds": getTimezoneOffsetSeconds(),
+                "workflowList": visSpec.map((spec) => chartToWorkflow(spec))
             });
             saveJupyterNotebook();
         } finally {

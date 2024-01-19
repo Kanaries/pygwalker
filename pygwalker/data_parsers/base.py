@@ -58,12 +58,12 @@ class BaseDataParser(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
         """get records"""
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_datas_by_payload(self, payload: Dict[str, Any], timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         """get records"""
         raise NotImplementedError
 
@@ -153,18 +153,15 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             'analyticType': analytic_type,
         }
 
-    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
         """
         Due to duckdb don't support use 'EPOCH FROM' timestamp_s, timestamp_ms.
         So we need to convert timestamp_s, timestamp_ms to timestamp temporarily.
         """
-        if timezone_offset_seconds is not None:
-            timezone = get_timezone_base_offset(timezone_offset_seconds)
-            if timezone:
-                try:
-                    duckdb.query(f"SET TimeZone = '{timezone}'")
-                except Exception:
-                    pass
+        try:
+            duckdb.query("SET TimeZone = 'UTC'")
+        except Exception:
+            pass
 
         duckdb.register("__pygwalker_mid_table", self._duckdb_df)
 
@@ -200,13 +197,13 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         """preprocess dataframe"""
         raise NotImplementedError
 
-    def get_datas_by_payload(self, payload: Dict[str, Any], timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         sql = get_sql_from_payload(
             "pygwalker_mid_table",
             payload,
             {"pygwalker_mid_table": self.field_metas}
         )
-        return self.get_datas_by_sql(sql, timezone_offset_seconds)
+        return self.get_datas_by_sql(sql)
 
     @property
     def dataset_tpye(self) -> str:

@@ -67,11 +67,11 @@ class CloudDatasetParser(BaseDataParser):
         df = df.replace({float('nan'): None})
         return df.to_dict(orient='records')
 
-    def get_datas_by_payload(self, payload: Dict[str, Any], _: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         result = query_from_dataset(self.dataset_id, payload)
         return result
 
-    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
         pass
 
     def to_csv(self) -> io.BytesIO:

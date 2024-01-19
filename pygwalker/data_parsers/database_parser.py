@@ -155,7 +155,7 @@ class DatabaseDataParser(BaseDataParser):
         df = df.replace({float('nan'): None})
         return df.to_dict(orient='records')
 
-    def get_datas_by_payload(self, payload: Dict[str, Any], _: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         sql = get_sql_from_payload(
             self.placeholder_table_name,
             payload,
@@ -165,7 +165,7 @@ class DatabaseDataParser(BaseDataParser):
         result = self.conn.query_datas(sql)
         return result
 
-    def get_datas_by_sql(self, sql: str, timezone_offset_seconds: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
         pass
 
     def _get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
