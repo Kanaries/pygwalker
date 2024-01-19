@@ -117,7 +117,6 @@ class PygWalker:
         self._chart_map = self._parse_chart_map_dict(spec_obj["chart_map"])
         self.spec_version = spec_obj.get("version", None)
         self.workflow_list = spec_obj.get("workflow_list", [])
-        self.timezone_offset_seconds = spec_obj.get("timezoneOffsetSeconds", None)
 
     def _update_vis_spec(self, vis_spec: List[Dict[str, Any]]):
         self.vis_spec = vis_spec
@@ -301,13 +300,11 @@ class PygWalker:
                 "config": data["visSpec"],
                 "chart_map": {},
                 "version": __version__,
-                "workflow_list": data.get("workflowList", []),
-                "timezoneOffsetSeconds": data.get("timezoneOffsetSeconds", None)
+                "workflow_list": data.get("workflowList", [])
             }
             self._update_vis_spec(data["visSpec"])
             self.spec_version = __version__
             self.workflow_list = data.get("workflowList", [])
-            self.timezone_offset_seconds = data.get("timezoneOffsetSeconds", None)
 
             if self.use_preview:
                 preview_tool.render_gw_review(self._get_gw_preview_html())
@@ -331,7 +328,6 @@ class PygWalker:
                 "chart_map": {},
                 "version": __version__,
                 "workflow_list": self.workflow_list,
-                "timezoneOffsetSeconds": self.timezone_offset_seconds
             }
             file_name = data["fileName"]
             workspace_name = get_kanaries_user_info()["workspaceName"]
@@ -341,10 +337,7 @@ class PygWalker:
 
         def _get_datas(data: Dict[str, Any]):
             sql = data["sql"]
-            datas = self.data_parser.get_datas_by_sql(
-                sql,
-                data.get("timezoneOffsetSeconds", None)
-            )
+            datas = self.data_parser.get_datas_by_sql(sql)
             if len(datas) > 1 * 1000 * 1000:
                 raise DataCountLimitError()
             return {
@@ -352,10 +345,7 @@ class PygWalker:
             }
 
         def _get_datas_by_payload(data: Dict[str, Any]):
-            datas = self.data_parser.get_datas_by_payload(
-                data["payload"],
-                data.get("timezoneOffsetSeconds", None)
-            )
+            datas = self.data_parser.get_datas_by_payload(data["payload"])
             if len(datas) > 1 * 1000 * 1000:
                 raise DataCountLimitError()
             return {
@@ -368,19 +358,13 @@ class PygWalker:
             }
 
         def _export_dataframe_by_payload(data: Dict[str, Any]):
-            df = pd.DataFrame(self.data_parser.get_datas_by_payload(
-                data["payload"]),
-                data.get("timezoneOffsetSeconds", None)
-            )
+            df = pd.DataFrame(self.data_parser.get_datas_by_payload(data["payload"]))
             GlobalVarManager.set_last_exported_dataframe(df)
             self._last_exported_dataframe = df
 
         def _export_dataframe_by_sql(data: Dict[str, Any]):
             sql = data["sql"]
-            df = pd.DataFrame(self.data_parser.get_datas_by_sql(
-                sql,
-                data.get("timezoneOffsetSeconds", None)
-            ))
+            df = pd.DataFrame(self.data_parser.get_datas_by_sql(sql))
             GlobalVarManager.set_last_exported_dataframe(df)
             self._last_exported_dataframe = df
 
@@ -501,7 +485,7 @@ class PygWalker:
         datas = []
         for workflow in self.workflow_list:
             try:
-                datas.append(self.data_parser.get_datas_by_payload(workflow, self.timezone_offset_seconds))
+                datas.append(self.data_parser.get_datas_by_payload(workflow))
             except ParserException:
                 datas.append([])
         html = render_gw_preview_html(
@@ -521,7 +505,7 @@ class PygWalker:
 
         if not self.workflow_list:
             return ""
-        data = self.data_parser.get_datas_by_payload(self.workflow_list[chart_index], self.timezone_offset_seconds)
+        data = self.data_parser.get_datas_by_payload(self.workflow_list[chart_index])
         return render_gw_chart_preview_html(
             single_vis_spec=self.vis_spec[chart_index],
             data=data,
