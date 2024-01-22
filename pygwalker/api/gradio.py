@@ -17,7 +17,7 @@ def get_html_on_gradio(
     dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
-    fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Dict[str, FieldSpec] = {},  # Use default empty dict directly
     themeKey: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
