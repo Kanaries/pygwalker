@@ -158,6 +158,7 @@ const App: React.FC<IAppProps> = observer((props) => {
                 computation={computationCallback}
                 enhanceAPI={enhanceAPI}
                 experimentalFeatures={{ computedField: props.useKernelCalc }}
+                defaultConfig={ props.useKernelCalc ? { config: { timezoneDisplayOffset: 0 } } : undefined}
             />
             <InitModal />
             <Options {...props} />
