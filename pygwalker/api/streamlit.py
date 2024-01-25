@@ -1,10 +1,10 @@
 from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any
 from distutils.version import StrictVersion
-from functools import lru_cache
 import json
 
 from typing_extensions import Literal
 from pydantic import BaseModel
+from cachetools import cached, TTLCache
 import arrow
 import streamlit.components.v1 as components
 
@@ -99,21 +99,13 @@ class StreamlitRenderer:
         self.walker._init_callback(comm)
         self.global_pre_filters = None
 
-    @lru_cache()
-    def _get_render_html(self, props_str: str) -> str:
-        return self.walker._get_render_iframe(dict(json.loads(props_str)), False)
+    @cached(cache=TTLCache(maxsize=256, ttl=1800))
+    def _get_html_with_params_str_cache(self, params_str: str) -> str:
+        params = dict(json.loads(params_str))
+        mode = params.pop("mode")
+        vis_spec = params.pop("vis_spec")
+        kwargs = params
 
-    def _get_html(
-        self,
-        *,
-        mode: Literal["explore", "renderer"] = "explore",
-        vis_spec: Optional[List[Dict[str, Any]]] = None,
-        **params: Dict[str, Any]
-    ) -> str:
-        """
-        Get the html for streamlit.
-        Params will update origin props.
-        """
         props = self.walker._get_props("streamlit")
 
         props["communicationUrl"] = BASE_URL_PATH
@@ -121,10 +113,28 @@ class StreamlitRenderer:
         if vis_spec is not None:
             props["visSpec"] = vis_spec
 
-        props.update(params)
+        props.update(kwargs)
 
-        html = self._get_render_html(json.dumps(sorted(props.items())))
-        return html
+        return self.walker._get_render_iframe(props, False)
+
+    def _get_html(
+        self,
+        *,
+        mode: Literal["explore", "renderer"] = "explore",
+        vis_spec: Optional[List[Dict[str, Any]]] = None,
+        **kwargs: Dict[str, Any]
+    ) -> str:
+        """
+        Get the html for streamlit.
+        Kwargs will update origin props.
+        """
+        params_str = json.dumps(sorted({
+            "mode": mode,
+            "vis_spec": vis_spec,
+            **kwargs
+        }.items()))
+
+        return self._get_html_with_params_str_cache(params_str)
 
     def _convert_pre_filters_to_gw_config(
         self,
