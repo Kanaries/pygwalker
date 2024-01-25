@@ -59,6 +59,7 @@ def to_html(
         use_save_tool=False,
         gw_mode="explore",
         is_export_dataframe=False,
+        kanaries_api_key="",
         **kwargs
     )
 

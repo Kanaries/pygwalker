@@ -32,13 +32,7 @@ from pygwalker.services.upload_data import (
 from pygwalker.services.config import get_local_user_id
 from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.services.cloud_service import (
-    write_config_to_cloud,
-    get_kanaries_user_info,
-    get_spec_by_text,
-    upload_cloud_chart,
-    upload_cloud_dashboard
-)
+from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
@@ -61,19 +55,26 @@ class PygWalker:
         hidedata_source_config: bool,
         theme_key: Literal['vega', 'g2'],
         dark: Literal['media', 'light', 'dark'],
-        show_cloud_tool: bool,
+        show_cloud_tool: Optional[bool],
         use_preview: bool,
         store_chart_data: bool,
         use_kernel_calc: bool,
         use_save_tool: bool,
         is_export_dataframe: bool,
+        kanaries_api_key: str,
         **kwargs
     ):
+        self.kanaries_api_key = kanaries_api_key or GlobalVarManager.kanaries_api_key
         if gid is None:
             self.gid = generate_hash_code()
         else:
             self.gid = gid
-        self.data_parser = get_parser(dataset, use_kernel_calc, field_specs)
+        self.data_parser = get_parser(
+            dataset,
+            use_kernel_calc,
+            field_specs,
+            other_params={"kanaries_api_key": self.kanaries_api_key}
+        )
         self.origin_data_source = self.data_parser.to_records(500 if use_kernel_calc else None)
         self.field_specs = self.data_parser.raw_fields
         self.spec = spec
@@ -84,10 +85,7 @@ class PygWalker:
         self.data_source_id = rand_str()
         self.other_props = kwargs
         self.tunnel_id = "tunnel!"
-        if GlobalVarManager.privacy == "offline":
-            self.show_cloud_tool = False
-        else:
-            self.show_cloud_tool = show_cloud_tool
+        self.show_cloud_tool = bool(self.kanaries_api_key) if show_cloud_tool is None else show_cloud_tool
         self.use_preview = use_preview
         self.store_chart_data = store_chart_data
         self._init_spec(spec, self.field_specs)
@@ -98,6 +96,7 @@ class PygWalker:
         self.dataset_type = self.data_parser.dataset_tpye
         self.is_export_dataframe = is_export_dataframe
         self._last_exported_dataframe = None
+        self.cloud_service = CloudService(self.kanaries_api_key)
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.use_kernel_calc:
@@ -105,6 +104,8 @@ class PygWalker:
                 self.data_parser.get_datas_by_sql("SELECT 1 FROM pygwalker_mid_table LIMIT 1")
             except Exception:
                 pass
+        if GlobalVarManager.privacy == "offline":
+            self.show_cloud_tool = False
 
     @property
     def last_exported_dataframe(self) -> Optional[pd.DataFrame]:
@@ -317,7 +318,7 @@ class PygWalker:
                 with open(self.spec, "w", encoding="utf-8") as f:
                     f.write(json.dumps(spec_obj))
             if self.spec_type == "json_ksf":
-                write_config_to_cloud(self.spec[6:], json.dumps(spec_obj))
+                self.cloud_service.write_config_to_cloud(self.spec[6:], json.dumps(spec_obj))
 
         def upload_spec_to_cloud(data: Dict[str, Any]):
             if data["newToken"]:
@@ -330,9 +331,9 @@ class PygWalker:
                 "workflow_list": self.workflow_list,
             }
             file_name = data["fileName"]
-            workspace_name = get_kanaries_user_info()["workspaceName"]
+            workspace_name = self.cloud_service.get_kanaries_user_info()["workspaceName"]
             path = f"{workspace_name}/{file_name}"
-            write_config_to_cloud(path, json.dumps(spec_obj))
+            self.cloud_service.write_config_to_cloud(path, json.dumps(spec_obj))
             return {"specFilePath": path}
 
         def _get_datas(data: Dict[str, Any]):
@@ -354,7 +355,7 @@ class PygWalker:
 
         def _get_spec_by_text(data: Dict[str, Any]):
             return {
-                "data": get_spec_by_text(data["metas"], data["query"])
+                "data": self.cloud_service.get_spec_by_text(data["metas"], data["query"])
             }
 
         def _export_dataframe_by_payload(data: Dict[str, Any]):
@@ -369,7 +370,7 @@ class PygWalker:
             self._last_exported_dataframe = df
 
         def _upload_to_cloud_charts(data: Dict[str, Any]):
-            chart_id = upload_cloud_chart(
+            chart_id = self.cloud_service.upload_cloud_chart(
                 data_parser=self.data_parser,
                 chart_name=data["chartName"],
                 dataset_name=data["datasetName"],
@@ -380,7 +381,7 @@ class PygWalker:
             return {"chartId": chart_id}
 
         def _upload_to_cloud_dashboard(data: Dict[str, Any]):
-            dashboard_id = upload_cloud_dashboard(
+            dashboard_id = self.cloud_service.upload_cloud_dashboard(
                 data_parser=self.data_parser,
                 dashboard_name=data["chartName"],
                 dataset_name=data["datasetName"],
@@ -419,7 +420,7 @@ class PygWalker:
             "useKernelCalc", "useSaveTool", "parseDslType", "gwMode", "datasetType"
         }
         event_info = {key: value for key, value in props.items() if key in needed_fields}
-        event_info["hasKanariesToken"] = bool(GlobalVarManager.kanaries_api_key)
+        event_info["hasKanariesToken"] = bool(self.kanaries_api_key)
 
         track_event("invoke_props", event_info)
 

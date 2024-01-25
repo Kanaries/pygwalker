@@ -20,9 +20,10 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
-        infer_number_to_dimension: bool
+        infer_number_to_dimension: bool,
+        other_params: Dict[str, Any]
     ):
-        super().__init__(df, use_kernel_calc, field_specs, infer_string_to_date, infer_number_to_dimension)
+        super().__init__(df, use_kernel_calc, field_specs, infer_string_to_date, infer_number_to_dimension, other_params)
         self._duckdb_df = self.df._to_pandas()
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:

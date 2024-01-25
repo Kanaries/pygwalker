@@ -91,13 +91,15 @@ class DatabaseDataParser(BaseDataParser):
         _: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
-        infer_number_to_dimension: bool
+        infer_number_to_dimension: bool,
+        other_params: Dict[str, Any]
     ):
         self.conn = conn
         self.example_pandas_df = self._get_example_pandas_df()
         self.field_specs = field_specs
         self.infer_string_to_date = infer_string_to_date
         self.infer_number_to_dimension = infer_number_to_dimension
+        self.other_params = other_params
 
     def _get_example_pandas_df(self) -> pd.DataFrame:
         sql = self._format_sql(f"SELECT * FROM {self.placeholder_table_name} LIMIT 1000")
@@ -140,7 +142,8 @@ class DatabaseDataParser(BaseDataParser):
             False,
             self.field_specs,
             self.infer_string_to_date,
-            self.infer_number_to_dimension
+            self.infer_number_to_dimension,
+            self.other_params
         )
         return [
             {**field, "fid": field["name"]}

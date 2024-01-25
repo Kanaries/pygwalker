@@ -23,7 +23,8 @@ class SparkDataFrameDataParser(BaseDataParser):
         use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
-        infer_number_to_dimension: bool
+        infer_number_to_dimension: bool,
+        other_params: Dict[str, Any]
     ):
         if not df.is_cached:
             logger.warning(
@@ -39,6 +40,7 @@ class SparkDataFrameDataParser(BaseDataParser):
         self.field_specs = field_specs
         self.infer_string_to_date = infer_string_to_date
         self.infer_number_to_dimension = infer_number_to_dimension
+        self.other_params = other_params
         if self.use_kernel_calc:
             self.df = self._preprocess_dataframe(self.df)
 
@@ -50,7 +52,8 @@ class SparkDataFrameDataParser(BaseDataParser):
             False,
             self.field_specs,
             self.infer_string_to_date,
-            self.infer_number_to_dimension
+            self.infer_number_to_dimension,
+            self.other_params
         )
         return pandas_parser.raw_fields
 

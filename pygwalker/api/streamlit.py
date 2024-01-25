@@ -62,6 +62,7 @@ class StreamlitRenderer:
         debug: bool = False,
         use_kernel_calc: bool = True,
         show_cloud_tool: Optional[bool] = None,
+        kanaries_api_key: str = "",
         **kwargs
     ):
         """Get pygwalker html render to streamlit
@@ -78,6 +79,7 @@ class StreamlitRenderer:
             - spec (str): chart config data. config id, json, remote file url
             - debug (bool): Whether to use debug mode, Default to False.
             - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
+            - kanaries_api_key (str): kanaries api key, Default to "".
         """
         self.walker = PygWalker(
             gid=gid,
@@ -88,12 +90,13 @@ class StreamlitRenderer:
             hidedata_source_config=True,
             theme_key=themeKey,
             dark=dark,
-            show_cloud_tool=bool(GlobalVarManager.kanaries_api_key) if show_cloud_tool is None else show_cloud_tool,
+            show_cloud_tool=show_cloud_tool,
             use_preview=False,
             store_chart_data=False,
             use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
             use_save_tool=debug,
             is_export_dataframe=False,
+            kanaries_api_key=kanaries_api_key,
             **kwargs
         )
         comm = StreamlitCommunication(str(self.walker.gid))
@@ -250,6 +253,7 @@ def get_streamlit_html(
     use_kernel_calc: bool = False,
     show_cloud_tool: Optional[bool] = None,
     debug: bool = False,
+    kanaries_api_key: str = "",
     **kwargs
 ) -> str:
     """Get pygwalker html render to streamlit
@@ -265,6 +269,7 @@ def get_streamlit_html(
         - spec (str): chart config data. config id, json, remote file url
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
         - debug (bool): Whether to use debug mode, Default to False.
+        - kanaries_api_key (str): kanaries api key, Default to "".
     """
     if fieldSpecs is None:
         fieldSpecs = {}
@@ -278,7 +283,8 @@ def get_streamlit_html(
         dark=dark,
         debug=debug,
         use_kernel_calc=use_kernel_calc,
-        show_cloud_tool=bool(GlobalVarManager.kanaries_api_key) if show_cloud_tool is None else show_cloud_tool,
+        show_cloud_tool=show_cloud_tool,
+        kanaries_api_key=kanaries_api_key,
         **kwargs
     )
 

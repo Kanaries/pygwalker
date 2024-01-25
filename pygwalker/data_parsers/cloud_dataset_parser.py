@@ -9,7 +9,7 @@ import pandas as pd
 from .base import BaseDataParser, get_data_meta_type
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
-from pygwalker.services.cloud_service import query_from_dataset
+from pygwalker.services.cloud_service import CloudService
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +22,16 @@ class CloudDatasetParser(BaseDataParser):
         _: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
-        infer_number_to_dimension: bool
+        infer_number_to_dimension: bool,
+        other_params: Dict[str, Any]
     ):
         self.dataset_id = dataset_id
         self.example_pandas_df = self._get_example_pandas_df()
         self.field_specs = field_specs
         self.infer_string_to_date = infer_string_to_date
         self.infer_number_to_dimension = infer_number_to_dimension
+        self.other_params = other_params
+        self._cloud_service = CloudService(other_params.get("kanaries_api_key", ""))
 
     def _get_example_pandas_df(self) -> pd.DataFrame:
         datas = self._get_all_datas(1000)
@@ -52,7 +55,8 @@ class CloudDatasetParser(BaseDataParser):
             False,
             self.field_specs,
             self.infer_string_to_date,
-            self.infer_number_to_dimension
+            self.infer_number_to_dimension,
+            self.other_params
         )
         return [
             {**field, "fid": field["name"]}
@@ -68,7 +72,7 @@ class CloudDatasetParser(BaseDataParser):
         return df.to_dict(orient='records')
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-        result = query_from_dataset(self.dataset_id, payload)
+        result = self._cloud_service.query_from_dataset(self.dataset_id, payload)
         return result
 
     def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:

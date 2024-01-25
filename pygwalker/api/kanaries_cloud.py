@@ -5,12 +5,9 @@ from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
 from pygwalker.utils.display import display_html
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker.services.cloud_service import (
-    create_cloud_graphic_walker,
-    get_cloud_graphic_walker,
-    create_cloud_dataset as _create_cloud_dataset
-)
+from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.data_parsers import get_parser
+from pygwalker.services.global_var import GlobalVarManager
 
 
 def create_cloud_dataset(
@@ -18,6 +15,7 @@ def create_cloud_dataset(
     *,
     name: Optional[str] = None,
     is_public: bool = False,
+    kanaries_api_key: str = ""
 ) -> str:
     """
     Create a dataset in kanaries cloud
@@ -32,11 +30,12 @@ def create_cloud_dataset(
     Returns:
         str: dataset id in kanaries cloud
     """
+    cloud_service = CloudService(kanaries_api_key)
     data_parser = get_parser(dataset, False, None)
     if name is None:
         name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
 
-    dataset_id = _create_cloud_dataset(data_parser, name, is_public)
+    dataset_id = cloud_service.create_cloud_dataset(data_parser, name, is_public)
     return dataset_id
 
 
@@ -46,6 +45,7 @@ def create_cloud_walker(
     chart_name: str,
     workspace_name: str,
     fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
+    kanaries_api_key: str = ""
 ) -> str:
     """
     (deprecated)
@@ -65,9 +65,10 @@ def create_cloud_walker(
     if fieldSpecs is None:
         fieldSpecs = {}
 
+    cloud_service = CloudService(kanaries_api_key)
     data_parser = get_parser(dataset, False, fieldSpecs)
 
-    create_cloud_graphic_walker(
+    cloud_service.create_cloud_graphic_walker(
         chart_name=chart_name,
         workspace_name=workspace_name,
         dataset_content=data_parser.to_parquet(),
@@ -75,7 +76,7 @@ def create_cloud_walker(
     )
 
 
-def walk_on_cloud(workspace_name: str, chart_name: str):
+def walk_on_cloud(workspace_name: str, chart_name: str, kanaries_api_key: str = ""):
     """
     (deprecated)
     render a pygwalker in kanaries cloud
@@ -84,8 +85,8 @@ def walk_on_cloud(workspace_name: str, chart_name: str):
         - chart_name (str): pygwalker chart name in kanaries cloud.
         - workspace_name (str): kanaries workspace name.
     """
-
-    cloud_url = get_cloud_graphic_walker(workspace_name, chart_name)
+    cloud_service = CloudService(kanaries_api_key)
+    cloud_url = cloud_service.get_cloud_graphic_walker(workspace_name, chart_name)
 
     iframe_html = f"""
         <iframe
