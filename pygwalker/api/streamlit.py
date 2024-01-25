@@ -247,6 +247,7 @@ def get_streamlit_html(
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
     use_kernel_calc: bool = False,
+    show_cloud_tool: bool = False,
     debug: bool = False,
     **kwargs
 ) -> str:
@@ -276,6 +277,7 @@ def get_streamlit_html(
         dark=dark,
         debug=debug,
         use_kernel_calc=use_kernel_calc,
+        show_cloud_tool=show_cloud_tool,
         **kwargs
     )
 
