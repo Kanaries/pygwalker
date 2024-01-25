@@ -19,6 +19,7 @@ from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.streamlit_components import render_explore_modal_button
+from pygwalker.services.global_var import GlobalVarManager
 
 if TYPE_CHECKING:
     from streamlit.delta_generator import DeltaGenerator
@@ -60,7 +61,7 @@ class StreamlitRenderer:
         spec: str = "",
         debug: bool = False,
         use_kernel_calc: bool = True,
-        show_cloud_tool: bool = False,
+        show_cloud_tool: Optional[bool] = None,
         **kwargs
     ):
         """Get pygwalker html render to streamlit
@@ -87,7 +88,7 @@ class StreamlitRenderer:
             hidedata_source_config=True,
             theme_key=themeKey,
             dark=dark,
-            show_cloud_tool=show_cloud_tool,
+            show_cloud_tool=bool(GlobalVarManager.kanaries_api_key) if show_cloud_tool is None else show_cloud_tool,
             use_preview=False,
             store_chart_data=False,
             use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
@@ -247,7 +248,7 @@ def get_streamlit_html(
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
     use_kernel_calc: bool = False,
-    show_cloud_tool: bool = False,
+    show_cloud_tool: Optional[bool] = None,
     debug: bool = False,
     **kwargs
 ) -> str:
@@ -277,7 +278,7 @@ def get_streamlit_html(
         dark=dark,
         debug=debug,
         use_kernel_calc=use_kernel_calc,
-        show_cloud_tool=show_cloud_tool,
+        show_cloud_tool=bool(GlobalVarManager.kanaries_api_key) if show_cloud_tool is None else show_cloud_tool,
         **kwargs
     )
 
