@@ -23,6 +23,7 @@ def get_html_on_gradio(
     spec: str = "",
     debug: bool = False,
     use_kernel_calc: bool = True,
+    kanaries_api_key: str = "",
     **kwargs
 ) -> str:
     """Get pygwalker html render to gradio
@@ -39,6 +40,7 @@ def get_html_on_gradio(
         - spec (str): chart config data. config id, json, remote file url
         - debug (bool): Whether to use debug mode, Default to False.
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
+        - kanaries_api_key (str): kanaries api key, Default to "".
     """
     walker = PygWalker(
         gid=gid,
@@ -55,6 +57,7 @@ def get_html_on_gradio(
         use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
         use_save_tool=debug,
         is_export_dataframe=False,
+        kanaries_api_key=kanaries_api_key,
         **kwargs
     )
 
