@@ -19,9 +19,6 @@ class BaseCommunication:
     def send_msg_async(self, action: str, data: Dict[str, Any]):
         raise NotImplementedError
 
-    def send_msg(self, action: str, data: Dict[str, Any]):
-        raise NotImplementedError
-
     def _receive_msg(self, action: str, data: Dict[str, Any]) -> Dict[str, Any]:
         handler_func = self._endpoint_map.get(action, None)
         if handler_func is None:
