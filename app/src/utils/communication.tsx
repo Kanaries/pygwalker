@@ -68,7 +68,7 @@ const raiseRequestError = (message: string, code: number) => {
 }
 
 const initJupyterCommunication = (gid: string) => {
-    const kernelTextCount = 7;
+    const kernelTextCount = 5;
     let curKernelTextIndex = 0;
     const jupyterEnv = getCurrentJupyterEnv();
     const document = window.parent.document;
@@ -77,6 +77,7 @@ const initJupyterCommunication = (gid: string) => {
         return document.getElementsByClassName(`hacker-comm-pyg-kernel-store-${gid}-${index}`)[0].childNodes[1] as HTMLInputElement;
     })
 
+    const requestTask = [] as any[];
     const endpoints = new Map<string, (data: any) => any>();
     const bufferMap = new Map<string, any>();
 
@@ -86,6 +87,13 @@ const initJupyterCommunication = (gid: string) => {
         if (action === "finish_request") {
             bufferMap.set(data.rid, data.data);
             document.dispatchEvent(new CustomEvent(getSignalName(data.rid)));
+            return
+        }
+        if (action === "finish_batch_request") {
+            data.data.forEach((resp: any) => {
+                bufferMap.set(resp.rid, resp.data);
+                document.dispatchEvent(new CustomEvent(getSignalName(resp.rid)));
+            })
             return
         }
         const callback = endpoints.get(action);
@@ -121,9 +129,19 @@ const initJupyterCommunication = (gid: string) => {
 
     const sendMsgAsync = (action: string, data: any, rid: string | null) => {
         rid = rid ?? uuidv4();
+        requestTask.push({ action, data, rid });
+        if (requestTask.length === 1) {
+            setTimeout(() => {
+                batchSendMsgAsync(requestTask.splice(0, requestTask.length));
+            }, 300);
+        }
+    }
+
+    const batchSendMsgAsync = (data: any) => {
+        const rid = uuidv4();
         const event = new Event("input", { bubbles: true })
         const kernelText = kernelTextList[curKernelTextIndex];
-        kernelText.value = JSON.stringify({ gid: gid, rid: rid, action, data });
+        kernelText.value = JSON.stringify({ gid: gid, rid: rid, action: "batch_request", data });
         kernelText.dispatchEvent(event);
         curKernelTextIndex = (curKernelTextIndex + 1) % kernelTextCount;
     }
