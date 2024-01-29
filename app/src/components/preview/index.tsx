@@ -7,10 +7,11 @@ import type { IDarkMode, IThemeKey } from '@kanaries/graphic-walker/dist/interfa
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // @ts-ignore
 import style from '@/index.css?inline'
+import { currentMediaTheme } from "@/utils/media";
 
 interface IPreviewProps {
     themeKey: string;
-    dark: string;
+    dark: IDarkMode;
     charts: {
         visSpec: any;
         data: string;
@@ -45,6 +46,7 @@ const getInflateData = (dataStr: string) => {
 
 const Preview: React.FC<IPreviewProps> = observer((props) => {
     const { charts, themeKey } = props;
+    const isDark = currentMediaTheme(props.dark) === "dark";
     const formatedCharts = charts.map((chart) => {
         return {
             ...chart,
@@ -54,30 +56,32 @@ const Preview: React.FC<IPreviewProps> = observer((props) => {
 
     return (
         <React.StrictMode>
-            <style>{style}</style>
-            <Tabs defaultValue="0" className="w-full">
-                <div className="overflow-x-auto max-w-full">
-                    <TabsList>
-                        {formatedCharts.map((chart, index) => {
-                            return <TabsTrigger key={index} value={index.toString()}>{chart.visSpec.name}</TabsTrigger>
-                        })}
-                    </TabsList>
-                </div>
-                {formatedCharts.map((chart, index) => {
-                    return <TabsContent key={index} value={index.toString()}>
-                        <PureRenderer
-                            themeKey={themeKey as IThemeKey}
-                            name={chart.visSpec.name}
-                            visualConfig={chart.visSpec.config}
-                            visualLayout={chart.visSpec.layout}
-                            visualState={chart.visSpec.encodings}
-                            type='remote'
-                            computation={async(_) => { return chart.data }}
-                            dark={props.dark as IDarkMode}
-                        />
-                    </TabsContent>
-                })}
-            </Tabs>
+            <div className={`${isDark ? "dark": ""} bg-background text-foreground`}>
+                <style>{style}</style>
+                <Tabs defaultValue="0" className="w-full">
+                    <div className="overflow-x-auto max-w-full">
+                        <TabsList>
+                            {formatedCharts.map((chart, index) => {
+                                return <TabsTrigger key={index} value={index.toString()}>{chart.visSpec.name}</TabsTrigger>
+                            })}
+                        </TabsList>
+                    </div>
+                    {formatedCharts.map((chart, index) => {
+                        return <TabsContent key={index} value={index.toString()}>
+                            <PureRenderer
+                                themeKey={themeKey as IThemeKey}
+                                name={chart.visSpec.name}
+                                visualConfig={chart.visSpec.config}
+                                visualLayout={chart.visSpec.layout}
+                                visualState={chart.visSpec.encodings}
+                                type='remote'
+                                computation={async(_) => { return chart.data }}
+                                dark={props.dark as IDarkMode}
+                            />
+                        </TabsContent>
+                    })}
+                </Tabs>
+            </div>
         </React.StrictMode>
     );
 });

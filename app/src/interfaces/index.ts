@@ -1,11 +1,12 @@
 import type { IRow, IMutField } from '@kanaries/graphic-walker/dist/interfaces'
+import type { IDarkMode, IThemeKey, IComputationFunction } from '@kanaries/graphic-walker/dist/interfaces';
 
 export interface IAppProps {
     // graphic-walker props
     hideDataSourceConfig: boolean;
     fieldkeyGuard: boolean;
-    themeKey: string;
-    dark: string;
+    themeKey: IThemeKey;
+    dark: IDarkMode;
     // pygwalker props
     dataSource: IRow[];
     rawFields: IMutField[];
@@ -39,4 +40,15 @@ export interface IDataSourceProps {
 export interface IUserConfig {
     [key: string]: any;
     privacy: 'events' | 'update-only' | 'offline';
+}
+
+
+export interface IGraphicRendererProps {
+    themeKey: IThemeKey;
+    dark: IDarkMode;
+    dataSource?: IRow[];
+    rawFields: IMutField[];
+    charts: any;
+    useKernelCalc: boolean;
+    computation?: IComputationFunction;
 }

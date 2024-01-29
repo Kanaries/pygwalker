@@ -89,7 +89,7 @@ export function getDatasFromKernelBySql(fieldMetas: any) {
             "get_datas",
             {"sql": sql}
         );
-        return result && result["data"]["datas"] as IRow[];
+        return (result ? result["data"]["datas"] : []) as IRow[];
     }
 }
 
@@ -98,5 +98,5 @@ export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
         "get_datas_by_payload",
         {payload}
     );
-    return result && result["data"]["datas"] as IRow[];
+    return (result ? result["data"]["datas"] : []) as IRow[];
 }
