@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
-import { GraphicWalker, PureRenderer } from '@kanaries/graphic-walker'
+import { GraphicWalker, PureRenderer, GraphicRenderer } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
 import { IRow, IGWHandler, IViewField } from '@kanaries/graphic-walker/dist/interfaces';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import Options from './components/options';
-import { IAppProps } from './interfaces';
+import { IAppProps, IGraphicRendererProps } from './interfaces';
 
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
@@ -27,9 +28,17 @@ import { getUploadChartTool } from './tools/uploadChartTool';
 import { formatExportedChartDatas } from "./utils/save";
 import Notification from "./notify"
 import initDslParser from "@kanaries-temp/gw-dsl-parser";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 // @ts-ignore
 import style from './index.css?inline'
+import { currentMediaTheme } from './utils/media';
 
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
@@ -68,8 +77,10 @@ const App: React.FC<IAppProps> = observer((props) => {
     const { dataSourceProps, userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
     const [uploadChartModalOpen, setUploadChartModalOpen] = useState(false);
-    const visSpec = props.visSpec;
     const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
+    const [mode, setMode] = useState<string>("walker");
+    const [visSpec, setVisSpec] = useState(props.visSpec);
+    const isDark = currentMediaTheme(props.dark) === "dark";
     commonStore.setVersion(props.version!);
 
     const updateDataSource = () => {
@@ -83,9 +94,6 @@ const App: React.FC<IAppProps> = observer((props) => {
 
     useEffect(() => {
         commonStore.setShowCloudTool(props.showCloudTool);
-        if (visSpec.length !== 0) {
-            setTimeout(() => { storeRef.current?.importCode(visSpec); }, 0);
-        }
         if (props.needLoadDatas) {
             updateDataSource()
         } else {
@@ -136,32 +144,64 @@ const App: React.FC<IAppProps> = observer((props) => {
             }
         }
     }
+
+    const modeChange = (value: string) => {
+        if (mode === "walker") {
+            setVisSpec(storeRef.current?.exportCode());
+        }
+        setMode(value);
+    }
   
     return (
         <React.StrictMode>
-            <style>{style}</style>
-            <Notification />
-            <UploadSpecModal />
-            <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={props.dark} />
-            <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-            <GraphicWalker
-                {...props.extraConfig}
-                dark={props.dark}
-                themeKey={props.themeKey}
-                hideDataSourceConfig={props.hideDataSourceConfig}
-                fieldkeyGuard={props.fieldkeyGuard}
-                rawFields={props.rawFields}
-                dataSource={props.useKernelCalc ? undefined : dataSource}
-                storeRef={storeRef}
-                ref={gwRef}
-                toolbar={toolbarConfig}
-                computation={computationCallback}
-                enhanceAPI={enhanceAPI}
-                experimentalFeatures={{ computedField: props.useKernelCalc }}
-                defaultConfig={ props.useKernelCalc ? { config: { timezoneDisplayOffset: 0 } } : undefined}
-            />
-            <InitModal />
-            <Options {...props} />
+            <div className={`${isDark ? "dark": ""} bg-background text-foreground`}>
+                <style>{style}</style>
+                <Notification />
+                <UploadSpecModal />
+                <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={props.dark} />
+                <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
+                <Select onValueChange={modeChange} defaultValue='walker' >
+                    <SelectTrigger className="w-[140px] h-[30px] mb-[20px] text-xs">
+                        <span className='text-muted-foreground'>Mode: </span>
+                        <SelectValue className='' placeholder="Mode" />
+                    </SelectTrigger>
+                    <SelectContent className={isDark ? "dark": ""}>
+                        <SelectItem value="walker">Walker</SelectItem>
+                        <SelectItem value="renderer">Renderer</SelectItem>
+                    </SelectContent>
+                </Select>
+                {
+                    mode === "walker" ? 
+                    <GraphicWalker
+                        {...props.extraConfig}
+                        dark={props.dark}
+                        themeKey={props.themeKey}
+                        hideDataSourceConfig={props.hideDataSourceConfig}
+                        fieldkeyGuard={props.fieldkeyGuard}
+                        rawFields={props.rawFields}
+                        dataSource={props.useKernelCalc ? undefined : dataSource}
+                        storeRef={storeRef}
+                        ref={gwRef}
+                        toolbar={toolbarConfig}
+                        computation={computationCallback}
+                        enhanceAPI={enhanceAPI}
+                        chart={visSpec.length === 0 ? undefined : visSpec}
+                        experimentalFeatures={{ computedField: props.useKernelCalc }}
+                        defaultConfig={ props.useKernelCalc ? { config: { timezoneDisplayOffset: 0 } } : undefined}
+                    /> :
+                    <GraphicRendererApp
+                        rawFields={props.rawFields}
+                        themeKey={props.themeKey}
+                        dark={props.dark}
+                        dataSource={props.useKernelCalc ? undefined : dataSource as any}
+                        computation={computationCallback}
+                        useKernelCalc={props.useKernelCalc}
+                        charts={visSpec}
+                    />
+                }
+                <InitModal />
+                <Options {...props} />
+            </div>
         </React.StrictMode>
     );
 })
@@ -251,6 +291,45 @@ function ChartPreviewApp(props: IChartPreviewProps, id: string) {
         <ChartPreview {...props} />,
         document.getElementById(id)
     );
+}
+
+function GraphicRendererApp(props: IGraphicRendererProps) {
+    return (
+        <React.StrictMode>
+            <Tabs defaultValue="0" className="w-full">
+                <div className="overflow-x-auto max-w-full">
+                    <TabsList>
+                        {props.charts.map((chart, index) => {
+                            return <TabsTrigger key={index} value={index.toString()}>{chart.name}</TabsTrigger>
+                        })}
+                    </TabsList>
+                </div>
+                {props.charts.map((chart, index) => {
+                    return <TabsContent key={index} value={index.toString()}>
+                        {
+                            props.useKernelCalc ? 
+                            <GraphicRenderer
+                                rawFields={props.rawFields}
+                                containerStyle={{ height: "600px", width: "60%" }}
+                                themeKey={props.themeKey}
+                                dark={props.dark}
+                                computation={props.computation!}
+                                chart={[chart]}
+                            /> :
+                            <GraphicRenderer
+                                rawFields={props.rawFields}
+                                containerStyle={{ height: "600px", width: "60%" }}
+                                themeKey={props.themeKey}
+                                dark={props.dark}
+                                dataSource={props.dataSource!}
+                                chart={[chart]}
+                            />
+                        }
+                    </TabsContent>
+                })}
+            </Tabs>
+        </React.StrictMode>
+    )
 }
 
 export default { GWalker, PreviewApp, ChartPreviewApp }
