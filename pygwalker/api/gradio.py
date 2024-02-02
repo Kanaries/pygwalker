@@ -24,6 +24,7 @@ def get_html_on_gradio(
     debug: bool = False,
     use_kernel_calc: bool = True,
     kanaries_api_key: str = "",
+    default_tab: Literal["data", "vis"] = "vis",
     **kwargs
 ) -> str:
     """Get pygwalker html render to gradio
@@ -41,6 +42,7 @@ def get_html_on_gradio(
         - debug (bool): Whether to use debug mode, Default to False.
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
         - kanaries_api_key (str): kanaries api key, Default to "".
+        - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
     walker = PygWalker(
         gid=gid,
@@ -58,6 +60,7 @@ def get_html_on_gradio(
         use_save_tool=debug,
         is_export_dataframe=False,
         kanaries_api_key=kanaries_api_key,
+        default_tab=default_tab,
         **kwargs
     )
 

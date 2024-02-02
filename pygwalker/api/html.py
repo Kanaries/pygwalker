@@ -21,6 +21,7 @@ def to_html(
     hideDataSourceConfig: bool = True,
     themeKey: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
+    default_tab: Literal["data", "vis"] = "vis",
     **kwargs
 ):
     """
@@ -60,6 +61,7 @@ def to_html(
         gw_mode="explore",
         is_export_dataframe=False,
         kanaries_api_key="",
+        default_tab=default_tab,
         **kwargs
     )
 

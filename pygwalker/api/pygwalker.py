@@ -62,6 +62,7 @@ class PygWalker:
         use_save_tool: bool,
         is_export_dataframe: bool,
         kanaries_api_key: str,
+        default_tab: Literal["data", "vis"],
         **kwargs
     ):
         self.kanaries_api_key = kanaries_api_key or GlobalVarManager.kanaries_api_key
@@ -97,6 +98,7 @@ class PygWalker:
         self.is_export_dataframe = is_export_dataframe
         self._last_exported_dataframe = None
         self.cloud_service = CloudService(self.kanaries_api_key)
+        self.default_tab = default_tab
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.use_kernel_calc:
@@ -417,7 +419,8 @@ class PygWalker:
         needed_fields = {
             "id", "version", "hashcode", "hideDataSourceConfig", "themeKey",
             "dark", "env", "specType", "needLoadDatas", "showCloudTool",
-            "useKernelCalc", "useSaveTool", "parseDslType", "gwMode", "datasetType"
+            "useKernelCalc", "useSaveTool", "parseDslType", "gwMode", "datasetType",
+            "defaultTab"
         }
         event_info = {key: value for key, value in props.items() if key in needed_fields}
         event_info["hasKanariesToken"] = bool(self.kanaries_api_key)
@@ -466,6 +469,7 @@ class PygWalker:
             "extraConfig": self.other_props,
             "fieldMetas": self.data_parser.field_metas,
             "isExportDataFrame": self.is_export_dataframe,
+            "defaultTab": self.default_tab
         }
 
         self._send_props_track(props)

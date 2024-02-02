@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer, GraphicRenderer } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
-import { IRow, IGWHandler, IViewField } from '@kanaries/graphic-walker/dist/interfaces';
+import { IRow, IGWHandler, IViewField, ISegmentKey } from '@kanaries/graphic-walker/dist/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import Options from './components/options';
@@ -110,6 +110,12 @@ const App: React.FC<IAppProps> = observer((props) => {
             }, 6_000);   
         }
     }, []);
+
+    useEffect(() => {
+        setTimeout(() => {
+            storeRef.current?.setSegmentKey(props.defaultTab as ISegmentKey);
+        }, 0);
+    }, [mode]);
 
     const exportTool = getExportTool(setExportOpen);
 

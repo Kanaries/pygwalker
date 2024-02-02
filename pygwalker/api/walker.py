@@ -28,6 +28,7 @@ def walk(
     use_kernel_calc: bool = False,
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
+    default_tab: Literal["data", "vis"] = "vis",
     **kwargs
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
@@ -48,6 +49,7 @@ def walk(
         - store_chart_data(bool): Whether to save chart to disk, only work when spec is json file, Default to False.
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
         - kanaries_api_key (str): kanaries api key, Default to "".
+        - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
     if fieldSpecs is None:
         fieldSpecs = {}
@@ -73,6 +75,7 @@ def walk(
         gw_mode="explore",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
+        default_tab=default_tab,
         **kwargs
     )
 
