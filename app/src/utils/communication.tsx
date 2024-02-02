@@ -133,7 +133,7 @@ const initJupyterCommunication = (gid: string) => {
         if (requestTask.length === 1) {
             setTimeout(() => {
                 batchSendMsgAsync(requestTask.splice(0, requestTask.length));
-            }, 300);
+            }, 100);
         }
     }
 
@@ -187,6 +187,17 @@ const initJupyterCommunication = (gid: string) => {
     }
 }
 
+interface IHttpRequestTask {
+    data: {
+        action: string;
+        data: any;
+        rid: string;
+        gid: string;
+    };
+    resolve: (resp: any) => void;
+    reject: (err: any) => void;
+}
+
 const initHttpCommunication = (gid: string, baseUrl: string) => {
     // temporary solution in streamlit could
     const domain = window.parent.document.location.host.split(".").slice(-2).join('.');
@@ -197,13 +208,15 @@ const initHttpCommunication = (gid: string, baseUrl: string) => {
         url = `/${baseUrl}/${gid}`
     }
 
+    const requestTask = [] as IHttpRequestTask[];
+
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
         const timer = setTimeout(() => {
             raiseRequestError("communication timeout", 0);
             throw(new Error("get result timeout"));
         }, timeout);
         try {
-            const resp = await (await sendMsgAsync(action, data)).json();
+            const resp = await sendMsgAsync(action, data);
             if (resp.code !== 0) {
                 raiseRequestError(resp.message, resp.code);
                 throw new Error(resp.message);
@@ -216,14 +229,46 @@ const initHttpCommunication = (gid: string, baseUrl: string) => {
 
     const sendMsgAsync = (action: string, data: any) => {
         const rid = uuidv4();
-        return fetch(
-            url,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ gid, rid, action, data }),
+        const promise = new Promise<any>((resolve, reject) => {
+            requestTask.push({
+                data: { action, data, rid, gid },
+                resolve,
+                reject,
+            });
+            if (requestTask.length === 1) {
+                setTimeout(() => {
+                    batchSendMsgAsync(requestTask.splice(0, requestTask.length));
+                }, 100);
             }
-        )
+        });
+        return promise;
+    }
+
+    const batchSendMsgAsync = async(taskList: IHttpRequestTask[]) => {
+        try {
+            const resp = await fetch(
+                url,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        gid: gid,
+                        rid: uuidv4(),
+                        action: "batch_request",
+                        data: taskList.map(task => task.data)
+                    }),
+                }
+            )
+            const respJson = await resp.json();
+            taskList.forEach((task, index) => {
+                const taskResp = respJson[index];
+                task.resolve(taskResp);
+            })
+        } catch (err) {
+            taskList.forEach(task => {
+                task.reject(err);
+            })
+        }
     }
 
     const registerEndpoint = (_: string, __: (data: any) => any) => {}
