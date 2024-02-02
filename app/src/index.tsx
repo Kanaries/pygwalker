@@ -280,7 +280,7 @@ function GWalker(props: IAppProps, id: string) {
         const isDark = currentMediaTheme(props.dark) === "dark";
 
         ReactDOM.render(
-            <div className={`${isDark ? "dark": ""} bg-background text-foreground`}>
+            <div className={`${isDark ? "dark": ""} bg-background text-foreground p-2`}>
                 <style>{style}</style>
                 {component}
             </div>,
