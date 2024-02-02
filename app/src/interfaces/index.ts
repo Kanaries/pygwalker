@@ -30,6 +30,7 @@ export interface IAppProps {
     extraConfig?: any;
     fieldMetas: any;
     isExportDataFrame: boolean;
+    defaultTab: "data" | "vis";
 }
 
 export interface IDataSourceProps {

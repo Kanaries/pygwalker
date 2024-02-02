@@ -62,6 +62,7 @@ class StreamlitRenderer:
         use_kernel_calc: bool = True,
         show_cloud_tool: Optional[bool] = None,
         kanaries_api_key: str = "",
+        default_tab: Literal["data", "vis"] = "vis",
         **kwargs
     ):
         """Get pygwalker html render to streamlit
@@ -79,6 +80,7 @@ class StreamlitRenderer:
             - debug (bool): Whether to use debug mode, Default to False.
             - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
             - kanaries_api_key (str): kanaries api key, Default to "".
+            - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         """
         self.walker = PygWalker(
             gid=gid,
@@ -96,6 +98,7 @@ class StreamlitRenderer:
             use_save_tool=debug,
             is_export_dataframe=False,
             kanaries_api_key=kanaries_api_key,
+            default_tab=default_tab,
             **kwargs
         )
         comm = StreamlitCommunication(str(self.walker.gid))
@@ -188,9 +191,10 @@ class StreamlitRenderer:
         width: int = 1300,
         height: int = 1000,
         scrolling: bool = False,
+        default_tab: Literal["data", "vis"] = "vis"
     ) -> "DeltaGenerator":
         """Render explore UI(it can drag and drop fields)"""
-        html = self._get_html()
+        html = self._get_html(**{"defaultTab": default_tab})
         return components.html(html, height=height, width=width, scrolling=scrolling)
 
     def render_pure_chart(
@@ -264,6 +268,7 @@ def get_streamlit_html(
     debug: bool = False,
     kanaries_api_key: str = "",
     mode: Literal["explore", "filter_renderer"] = "explore",
+    default_tab: Literal["data", "vis"] = "vis",
     **kwargs
 ) -> str:
     """Get pygwalker html render to streamlit
@@ -280,6 +285,7 @@ def get_streamlit_html(
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
         - debug (bool): Whether to use debug mode, Default to False.
         - kanaries_api_key (str): kanaries api key, Default to "".
+        - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
     if fieldSpecs is None:
         fieldSpecs = {}
@@ -295,6 +301,7 @@ def get_streamlit_html(
         use_kernel_calc=use_kernel_calc,
         show_cloud_tool=show_cloud_tool,
         kanaries_api_key=kanaries_api_key,
+        default_tab=default_tab,
         **kwargs
     )
 
