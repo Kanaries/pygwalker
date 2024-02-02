@@ -7,7 +7,7 @@ import { IRow, IGWHandler, IViewField } from '@kanaries/graphic-walker/dist/inte
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import Options from './components/options';
-import { IAppProps, IGraphicRendererProps } from './interfaces';
+import { IAppProps } from './interfaces';
 
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
@@ -154,54 +154,46 @@ const App: React.FC<IAppProps> = observer((props) => {
   
     return (
         <React.StrictMode>
-            <div className={`${isDark ? "dark": ""} bg-background text-foreground`}>
-                <style>{style}</style>
-                <Notification />
-                <UploadSpecModal />
-                <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={props.dark} />
-                <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-                <Select onValueChange={modeChange} defaultValue='walker' >
-                    <SelectTrigger className="w-[140px] h-[30px] mb-[20px] text-xs">
-                        <span className='text-muted-foreground'>Mode: </span>
-                        <SelectValue className='' placeholder="Mode" />
-                    </SelectTrigger>
-                    <SelectContent className={isDark ? "dark": ""}>
-                        <SelectItem value="walker">Walker</SelectItem>
-                        <SelectItem value="renderer">Renderer</SelectItem>
-                    </SelectContent>
-                </Select>
-                {
-                    mode === "walker" ? 
-                    <GraphicWalker
-                        {...props.extraConfig}
-                        dark={props.dark}
-                        themeKey={props.themeKey}
-                        hideDataSourceConfig={props.hideDataSourceConfig}
-                        fieldkeyGuard={props.fieldkeyGuard}
-                        rawFields={props.rawFields}
-                        dataSource={props.useKernelCalc ? undefined : dataSource}
-                        storeRef={storeRef}
-                        ref={gwRef}
-                        toolbar={toolbarConfig}
-                        computation={computationCallback}
-                        enhanceAPI={enhanceAPI}
-                        chart={visSpec.length === 0 ? undefined : visSpec}
-                        experimentalFeatures={{ computedField: props.useKernelCalc }}
-                        defaultConfig={ props.useKernelCalc ? { config: { timezoneDisplayOffset: 0 } } : undefined}
-                    /> :
-                    <GraphicRendererApp
-                        rawFields={props.rawFields}
-                        themeKey={props.themeKey}
-                        dark={props.dark}
-                        dataSource={props.useKernelCalc ? undefined : dataSource as any}
-                        computation={computationCallback}
-                        useKernelCalc={props.useKernelCalc}
-                        charts={visSpec}
-                    />
-                }
-                <InitModal />
-                <Options {...props} />
-            </div>
+            <Notification />
+            <UploadSpecModal />
+            <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={props.dark} />
+            <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
+            <Select onValueChange={modeChange} defaultValue='walker' >
+                <SelectTrigger className="w-[140px] h-[30px] mb-[20px] text-xs">
+                    <span className='text-muted-foreground'>Mode: </span>
+                    <SelectValue className='' placeholder="Mode" />
+                </SelectTrigger>
+                <SelectContent className={isDark ? "dark": ""}>
+                    <SelectItem value="walker">Walker</SelectItem>
+                    <SelectItem value="renderer">Renderer</SelectItem>
+                </SelectContent>
+            </Select>
+            {
+                mode === "walker" ? 
+                <GraphicWalker
+                    {...props.extraConfig}
+                    dark={props.dark}
+                    themeKey={props.themeKey}
+                    hideDataSourceConfig={props.hideDataSourceConfig}
+                    fieldkeyGuard={props.fieldkeyGuard}
+                    rawFields={props.rawFields}
+                    dataSource={props.useKernelCalc ? undefined : dataSource}
+                    storeRef={storeRef}
+                    ref={gwRef}
+                    toolbar={toolbarConfig}
+                    computation={computationCallback}
+                    enhanceAPI={enhanceAPI}
+                    chart={visSpec.length === 0 ? undefined : visSpec}
+                    experimentalFeatures={{ computedField: props.useKernelCalc }}
+                    defaultConfig={ props.useKernelCalc ? { config: { timezoneDisplayOffset: 0 } } : undefined}
+                /> :
+                <GraphicRendererApp
+                    {...props}
+                    visSpec={visSpec}
+                />
+            }
+            <InitModal />
+            <Options {...props} />
         </React.StrictMode>
     );
 })
@@ -212,7 +204,6 @@ const PureRednererApp: React.FC<IAppProps> = observer((props) => {
 
     return (
         <React.StrictMode>
-            <style>{style}</style>
             <PureRenderer
                 {...props.extraConfig}
                 name={spec.name}
@@ -245,7 +236,7 @@ const initOnJupyter = async(props: IAppProps) => {
 const initOnHttpCommunication = async(props: IAppProps) => {
     const comm = initHttpCommunication(props.id, props.communicationUrl);
     communicationStore.setComm(comm);
-    if (props.gwMode === "explore" && props.needLoadLastSpec) {
+    if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
         props.visSpec = visSpecResp["data"]["visSpec"];
     }
@@ -272,8 +263,27 @@ function GWalker(props: IAppProps, id: string) {
     }
 
     preRender(props).then(() => {
+        let component = <App {...props} />;
+        switch(props.gwMode) {
+            case "explore":
+                component = <App {...props} />;
+                break;
+            case "renderer":
+                component = <PureRednererApp {...props} />;
+                break;
+            case "filter_renderer":
+                component = <GraphicRendererApp {...props} />;
+                break;
+            default:
+                component = <App {...props} />
+        }
+        const isDark = currentMediaTheme(props.dark) === "dark";
+
         ReactDOM.render(
-            props.gwMode === "explore" ? <App {...props} /> : <PureRednererApp {...props} />,
+            <div className={`${isDark ? "dark": ""} bg-background text-foreground`}>
+                <style>{style}</style>
+                {component}
+            </div>,
             document.getElementById(id)
         );
     })
@@ -293,18 +303,20 @@ function ChartPreviewApp(props: IChartPreviewProps, id: string) {
     );
 }
 
-function GraphicRendererApp(props: IGraphicRendererProps) {
+function GraphicRendererApp(props: IAppProps) {
+    const computationCallback = getComputationCallback(props);
+
     return (
         <React.StrictMode>
             <Tabs defaultValue="0" className="w-full">
                 <div className="overflow-x-auto max-w-full">
                     <TabsList>
-                        {props.charts.map((chart, index) => {
+                        {props.visSpec.map((chart, index) => {
                             return <TabsTrigger key={index} value={index.toString()}>{chart.name}</TabsTrigger>
                         })}
                     </TabsList>
                 </div>
-                {props.charts.map((chart, index) => {
+                {props.visSpec.map((chart, index) => {
                     return <TabsContent key={index} value={index.toString()}>
                         {
                             props.useKernelCalc ? 
@@ -313,7 +325,7 @@ function GraphicRendererApp(props: IGraphicRendererProps) {
                                 containerStyle={{ height: "600px", width: "60%" }}
                                 themeKey={props.themeKey}
                                 dark={props.dark}
-                                computation={props.computation!}
+                                computation={computationCallback!}
                                 chart={[chart]}
                             /> :
                             <GraphicRenderer

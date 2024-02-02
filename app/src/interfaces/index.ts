@@ -25,7 +25,7 @@ export interface IAppProps {
     useSaveTool: boolean;
     parseDslType: "server" | "client";
     communicationUrl: string;
-    gwMode: "explore" | "renderer";
+    gwMode: "explore" | "renderer" | "filter_renderer";
     needLoadLastSpec: boolean;
     extraConfig?: any;
     fieldMetas: any;
@@ -40,15 +40,4 @@ export interface IDataSourceProps {
 export interface IUserConfig {
     [key: string]: any;
     privacy: 'events' | 'update-only' | 'offline';
-}
-
-
-export interface IGraphicRendererProps {
-    themeKey: IThemeKey;
-    dark: IDarkMode;
-    dataSource?: IRow[];
-    rawFields: IMutField[];
-    charts: any;
-    useKernelCalc: boolean;
-    computation?: IComputationFunction;
 }

@@ -19,7 +19,6 @@ from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.streamlit_components import render_explore_modal_button
-from pygwalker.services.global_var import GlobalVarManager
 
 if TYPE_CHECKING:
     from streamlit.delta_generator import DeltaGenerator
@@ -124,7 +123,7 @@ class StreamlitRenderer:
     def _get_html(
         self,
         *,
-        mode: Literal["explore", "renderer"] = "explore",
+        mode: Literal["explore", "renderer", "filter_renderer"] = "explore",
         vis_spec: Optional[List[Dict[str, Any]]] = None,
         **kwargs: Dict[str, Any]
     ) -> str:
@@ -173,6 +172,16 @@ class StreamlitRenderer:
     def set_global_pre_filters(self, pre_filters: List[PreFilter]):
         """It will append new filters to exists charts."""
         self.global_pre_filters = pre_filters
+
+    def render_filter_renderer(
+        self,
+        width: int = 1300,
+        height: int = 1000,
+        scrolling: bool = False,
+    ) -> "DeltaGenerator":
+        """Render filter renderer UI"""
+        html = self._get_html(mode="filter_renderer")
+        return components.html(html, height=height, width=width, scrolling=scrolling)
 
     def render_explore(
         self,
@@ -254,6 +263,7 @@ def get_streamlit_html(
     show_cloud_tool: Optional[bool] = None,
     debug: bool = False,
     kanaries_api_key: str = "",
+    mode: Literal["explore", "filter_renderer"] = "explore",
     **kwargs
 ) -> str:
     """Get pygwalker html render to streamlit
@@ -288,4 +298,4 @@ def get_streamlit_html(
         **kwargs
     )
 
-    return renderer._get_html()
+    return renderer._get_html(mode=mode)
