@@ -195,6 +195,7 @@ const App: React.FC<IAppProps> = observer((props) => {
                 /> :
                 <GraphicRendererApp
                     {...props}
+                    dataSource={dataSource}
                     visSpec={visSpec}
                 />
             }
