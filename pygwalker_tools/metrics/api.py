@@ -12,14 +12,10 @@ from .core import get_metrics_sql
 
 
 class _JSONEncoder(json.JSONEncoder):
-    """JSON encoder"""
     def default(self, o):
         if isinstance(o, Decimal):
-            if o.is_nan():
-                return None
             return float(o)
-
-        return json.JSONEncoder.default(self, o)
+        return super().default(o)
 
 
 def get_metrics_datas(
