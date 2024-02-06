@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import generate_hash_code
-from pygwalker.services.render import jinja_env, gwalker_script
+from pygwalker.services.render import jinja_env, GWALKER_SCRIPT_BASE64
 
 
 class ImgData(BaseModel):
@@ -108,15 +108,16 @@ def render_gw_preview_html(
 
     props = {"charts": charts, "themeKey": theme_key, "dark": dark}
 
-    preview_template = jinja_env.get_template("gw_preview.js")
     container_id = f"pygwalker-preview-{gid}"
-    js_list = [
-        gwalker_script(),
-        preview_template.render(gwalker={'id': container_id, 'props': json.dumps(props)})
-    ]
-    js = "\n".join(js_list)
     template = jinja_env.get_template("index.html")
-    html = f"{template.render(gwalker={'id': container_id, 'script': js})}"
+    html = template.render(
+        gwalker={
+            'id': container_id,
+            'gw_script': GWALKER_SCRIPT_BASE64,
+            "component_script": "PyGWalkerApp.PreviewApp(props, gw_id);",
+            "props": json.dumps(props, cls=DataFrameEncoder)
+        }
+    )
     return html
 
 
@@ -142,15 +143,16 @@ def render_gw_chart_preview_html(
         "dark": dark,
     }
 
-    chart_preview_template = jinja_env.get_template("gw_chart_preview.js")
     container_id = f"pygwalker-chart-preview-{generate_hash_code()[:20]}"
-    js_list = [
-        gwalker_script(),
-        chart_preview_template.render(gwalker={'id': container_id, 'props': json.dumps(props)})
-    ]
-    js = "\n".join(js_list)
     template = jinja_env.get_template("index.html")
-    html = f"{template.render(gwalker={'id': container_id, 'script': js})}"
+    html = template.render(
+        gwalker={
+            'id': container_id,
+            'gw_script': GWALKER_SCRIPT_BASE64,
+            "component_script": "PyGWalkerApp.ChartPreviewApp(props, gw_id);",
+            "props": json.dumps(props, cls=DataFrameEncoder)
+        }
+    )
     return html
 
 
