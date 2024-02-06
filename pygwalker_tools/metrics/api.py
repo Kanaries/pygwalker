@@ -227,22 +227,16 @@ class MetricsChart:
         )
 
     def cohort_matrix(self) -> alt.Chart:
-        all_df = []
-        for i in range(1, 31):
-            df = self._get_datas("retention", {"time_unit": "day", "time_size": i})
-            df["time_size"] = i
-            all_df.append(df)
+    all_df = [self._get_datas("retention", {"time_unit": "day", "time_size": i}).assign(time_size=i) for i in range(1, 31)]
+    datas = pd.concat(all_df)
+    encode_params = {
+        "x": "time_size:O",
+        "y": "date:O",
+        "color": "retention",
+        "tooltip": ["date", "time_size", "retention"]
+    }
+    return alt.Chart(datas).mark_rect().encode(**self._format_encode(encode_params))
 
-        datas = pd.concat(all_df)
-        encode_params = {
-            "x": "time_size:O",
-            "y": "date:O",
-            "color": "retention",
-            "tooltip": ["date", "time_size", "retention"]
-        }
-        return alt.Chart(datas).mark_rect().encode(
-            **self._format_encode(encode_params)
-        )
 
     def active_user_count(self) -> alt.Chart:
         datas = self._get_datas("active_user_count")
