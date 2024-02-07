@@ -82,6 +82,8 @@ class StreamlitRenderer:
             - kanaries_api_key (str): kanaries api key, Default to "".
             - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         """
+        init_streamlit_comm()
+
         self.walker = PygWalker(
             gid=gid,
             dataset=dataset,
