@@ -10,6 +10,7 @@ from pygwalker.communications.gradio_comm import (
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
+from pygwalker.utils.check_walker_params import check_expired_params
 
 
 # pylint: disable=protected-access
@@ -17,8 +18,8 @@ def get_html_on_gradio(
     dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
-    fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
-    themeKey: Literal['vega', 'g2'] = 'g2',
+    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
     debug: bool = False,
@@ -35,8 +36,8 @@ def get_html_on_gradio(
 
     Kargs:
         - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
-        - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-        - themeKey ('vega' | 'g2'): theme type.
+        - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - debug (bool): Whether to use debug mode, Default to False.
@@ -44,14 +45,16 @@ def get_html_on_gradio(
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
+    check_expired_params(kwargs)
+
     walker = PygWalker(
         gid=gid,
         dataset=dataset,
-        field_specs=fieldSpecs if fieldSpecs is not None else {},
+        field_specs=field_specs if field_specs is not None else {},
         spec=spec,
         source_invoke_code="",
         hidedata_source_config=True,
-        theme_key=themeKey,
+        theme_key=theme_key,
         dark=dark,
         show_cloud_tool=False,
         use_preview=False,

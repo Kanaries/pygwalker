@@ -8,6 +8,7 @@ from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker._typing import DataFrame
 from pygwalker.utils.randoms import generate_hash_code
+from pygwalker.utils.check_walker_params import check_expired_params
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +18,9 @@ def to_html(
     gid: Union[int, str] = None,
     *,
     spec: str = "",
-    fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
-    hideDataSourceConfig: bool = True,
-    themeKey: Literal['vega', 'g2'] = 'g2',
+    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    hide_data_source_config: bool = True,
+    theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     default_tab: Literal["data", "vis"] = "vis",
     **kwargs
@@ -32,26 +33,28 @@ def to_html(
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
-        - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - spec (str): chart config data. config id, json, remote file url
-        - hideDataSourceConfig (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
-        - themeKey ('vega' | 'g2'): theme type.
+        - hide_data_source_config (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
+        - theme_key ('vega' | 'g2'): theme type.
         - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
+    check_expired_params(kwargs)
+
     if gid is None:
         gid = generate_hash_code()
 
-    if fieldSpecs is None:
-        fieldSpecs = {}
+    if field_specs is None:
+        field_specs = {}
 
     walker = PygWalker(
         gid=gid,
         dataset=df,
-        field_specs=fieldSpecs,
+        field_specs=field_specs,
         spec=spec,
         source_invoke_code="",
-        hidedata_source_config=hideDataSourceConfig,
-        theme_key=themeKey,
+        hidedata_source_config=hide_data_source_config,
+        theme_key=theme_key,
         dark=dark,
         show_cloud_tool=False,
         use_preview=False,

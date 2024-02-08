@@ -18,6 +18,7 @@ from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.utils.randoms import rand_str
+from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.services.streamlit_components import render_explore_modal_button
 
 if TYPE_CHECKING:
@@ -54,8 +55,8 @@ class StreamlitRenderer:
         dataset: Union[DataFrame, Connector],
         gid: Union[int, str] = None,
         *,
-        fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
-        themeKey: Literal['vega', 'g2'] = 'g2',
+        field_specs: Optional[Dict[str, FieldSpec]] = None,
+        theme_key: Literal['vega', 'g2'] = 'g2',
         dark: Literal['media', 'light', 'dark'] = 'media',
         spec: str = "",
         debug: bool = False,
@@ -73,8 +74,8 @@ class StreamlitRenderer:
 
         Kargs:
             - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
-            - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-            - themeKey ('vega' | 'g2'): theme type.
+            - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+            - theme_key ('vega' | 'g2'): theme type.
             - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
             - spec (str): chart config data. config id, json, remote file url
             - debug (bool): Whether to use debug mode, Default to False.
@@ -82,16 +83,18 @@ class StreamlitRenderer:
             - kanaries_api_key (str): kanaries api key, Default to "".
             - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         """
+        check_expired_params(kwargs)
+
         init_streamlit_comm()
 
         self.walker = PygWalker(
             gid=gid,
             dataset=dataset,
-            field_specs=fieldSpecs if fieldSpecs is not None else {},
+            field_specs=field_specs if field_specs is not None else {},
             spec=spec,
             source_invoke_code="",
             hidedata_source_config=True,
-            theme_key=themeKey,
+            theme_key=theme_key,
             dark=dark,
             show_cloud_tool=show_cloud_tool,
             use_preview=False,
@@ -261,8 +264,8 @@ def get_streamlit_html(
     dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
-    fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
-    themeKey: Literal['vega', 'g2'] = 'g2',
+    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
     use_kernel_calc: bool = False,
@@ -280,8 +283,8 @@ def get_streamlit_html(
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
-        - fieldSpecs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-        - themeKey ('vega' | 'g2'): theme type.
+        - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
@@ -289,15 +292,15 @@ def get_streamlit_html(
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
-    if fieldSpecs is None:
-        fieldSpecs = {}
+    if field_specs is None:
+        field_specs = {}
 
     renderer = StreamlitRenderer(
         gid=gid,
         dataset=dataset,
-        fieldSpecs=fieldSpecs,
+        field_specs=field_specs,
         spec=spec,
-        themeKey=themeKey,
+        theme_key=theme_key,
         dark=dark,
         debug=debug,
         use_kernel_calc=use_kernel_calc,

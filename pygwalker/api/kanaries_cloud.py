@@ -44,7 +44,7 @@ def create_cloud_walker(
     *,
     chart_name: str,
     workspace_name: str,
-    fieldSpecs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Optional[Dict[str, FieldSpec]] = None,
     kanaries_api_key: str = ""
 ) -> str:
     """
@@ -57,16 +57,16 @@ def create_cloud_walker(
     Kargs:
         - chart_name (str): pygwalker chart name in kanaries cloud.
         - workspace_name (str): kanaries workspace name.
-        - fieldSpecs (Dict[str, FieldSpec]): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - field_specs (Dict[str, FieldSpec]): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
 
     Returns:
         str: pygwalker url in kanaries cloud
     """
-    if fieldSpecs is None:
-        fieldSpecs = {}
+    if field_specs is None:
+        field_specs = {}
 
     cloud_service = CloudService(kanaries_api_key)
-    data_parser = get_parser(dataset, False, fieldSpecs)
+    data_parser = get_parser(dataset, False, field_specs)
 
     cloud_service.create_cloud_graphic_walker(
         chart_name=chart_name,
