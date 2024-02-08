@@ -1,4 +1,4 @@
-from typing import NamedTuple, Generic, Dict, List, Any, Optional
+from typing import Generic, Dict, List, Any, Optional, NamedTuple
 from typing_extensions import Literal
 from functools import lru_cache
 from datetime import datetime, date
