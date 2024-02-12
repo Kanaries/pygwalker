@@ -154,7 +154,7 @@ class MetricsChart:
     ):
         self.dataset = dataset
         self.field_map = field_map
-        self.params = params
+        self.params = params if params is not None else {}
         self.reverse_axis = reverse_axis
 
     def _get_datas(self, metrics_name: str, params: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
