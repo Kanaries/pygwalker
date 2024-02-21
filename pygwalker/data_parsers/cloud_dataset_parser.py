@@ -6,7 +6,7 @@ import io
 
 import pandas as pd
 
-from .base import BaseDataParser, get_data_meta_type
+from .base import BaseDataParser, get_data_meta_type, INFINITY_DATA_SIZE
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.services.cloud_service import CloudService
@@ -19,19 +19,18 @@ class CloudDatasetParser(BaseDataParser):
     def __init__(
         self,
         dataset_id: str,
-        _: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
         other_params: Dict[str, Any]
     ):
         self.dataset_id = dataset_id
-        self.example_pandas_df = self._get_example_pandas_df()
         self.field_specs = field_specs
         self.infer_string_to_date = infer_string_to_date
         self.infer_number_to_dimension = infer_number_to_dimension
         self.other_params = other_params
         self._cloud_service = CloudService(other_params.get("kanaries_api_key", ""))
+        self.example_pandas_df = self._get_example_pandas_df()
 
     def _get_example_pandas_df(self) -> pd.DataFrame:
         datas = self._get_all_datas(1000)
@@ -52,7 +51,6 @@ class CloudDatasetParser(BaseDataParser):
     def raw_fields(self) -> List[Dict[str, str]]:
         pandas_parser = PandasDataFrameDataParser(
             self.example_pandas_df,
-            False,
             self.field_specs,
             self.infer_string_to_date,
             self.infer_number_to_dimension,
@@ -99,3 +97,7 @@ class CloudDatasetParser(BaseDataParser):
     @property
     def placeholder_table_name(self) -> str:
         return "pygwalker_mid_table"
+
+    @property
+    def data_size(self) -> int:
+        return INFINITY_DATA_SIZE

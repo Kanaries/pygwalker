@@ -6,7 +6,7 @@ import io
 from pyspark.sql import DataFrame
 import sqlglot
 
-from .base import BaseDataParser, get_data_meta_type
+from .base import BaseDataParser, get_data_meta_type, INFINITY_DATA_SIZE
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.services.fname_encodings import rename_columns
 from pygwalker.data_parsers.base import FieldSpec
@@ -20,7 +20,6 @@ class SparkDataFrameDataParser(BaseDataParser):
     def __init__(
         self,
         df: DataFrame,
-        use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
@@ -36,20 +35,16 @@ class SparkDataFrameDataParser(BaseDataParser):
         self.origin_df = df
         self.df = self._rename_dataframe(df)
         self.example_pandas_df = df.limit(1000).toPandas()
-        self.use_kernel_calc = use_kernel_calc
         self.field_specs = field_specs
         self.infer_string_to_date = infer_string_to_date
         self.infer_number_to_dimension = infer_number_to_dimension
         self.other_params = other_params
-        if self.use_kernel_calc:
-            self.df = self._preprocess_dataframe(self.df)
 
     @property
     @lru_cache()
     def raw_fields(self) -> List[Dict[str, str]]:
         pandas_parser = PandasDataFrameDataParser(
             self.example_pandas_df,
-            False,
             self.field_specs,
             self.infer_string_to_date,
             self.infer_number_to_dimension,
@@ -95,9 +90,6 @@ class SparkDataFrameDataParser(BaseDataParser):
         new_columns = rename_columns(list(df.columns))
         return df.toDF(*new_columns)
 
-    def _preprocess_dataframe(self, df: DataFrame) -> DataFrame:
-        return df
-
     @property
     def dataset_tpye(self) -> str:
         return "spark_dataframe"
@@ -105,3 +97,7 @@ class SparkDataFrameDataParser(BaseDataParser):
     @property
     def placeholder_table_name(self) -> str:
         return "pygwalker_mid_table"
+
+    @property
+    def data_size(self) -> int:
+        return INFINITY_DATA_SIZE
