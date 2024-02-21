@@ -60,7 +60,7 @@ class StreamlitRenderer:
         dark: Literal['media', 'light', 'dark'] = 'media',
         spec: str = "",
         debug: bool = False,
-        use_kernel_calc: bool = True,
+        use_kernel_calc: Optional[bool] = True,
         show_cloud_tool: Optional[bool] = None,
         kanaries_api_key: str = "",
         default_tab: Literal["data", "vis"] = "vis",
@@ -268,7 +268,7 @@ def get_streamlit_html(
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
-    use_kernel_calc: bool = False,
+    use_kernel_calc: Optional[bool] = None,
     show_cloud_tool: Optional[bool] = None,
     debug: bool = False,
     kanaries_api_key: str = "",
@@ -287,7 +287,7 @@ def get_streamlit_html(
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
+        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
         - debug (bool): Whether to use debug mode, Default to False.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"

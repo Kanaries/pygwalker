@@ -34,9 +34,6 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         df.columns = rename_columns(list(df.columns))
         return df
 
-    def _preprocess_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df
-
     def _infer_semantic(self, s: pd.Series, field_name: str):
         example_value = s[0]
         kind = s.dtype.kind

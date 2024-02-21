@@ -26,7 +26,7 @@ def walk(
     spec: str = "",
     use_preview: bool = True,
     store_chart_data: bool = False,
-    use_kernel_calc: bool = False,
+    use_kernel_calc: Optional[bool] = None,
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
@@ -48,7 +48,7 @@ def walk(
         - spec (str): chart config data. config id, json, remote file url
         - use_preview(bool): Whether to use preview function, Default to False.
         - store_chart_data(bool): Whether to save chart to disk, only work when spec is json file, Default to False.
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to False.
+        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """

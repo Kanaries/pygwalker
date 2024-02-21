@@ -17,13 +17,12 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
     def __init__(
         self,
         df: mpd.DataFrame,
-        use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
         other_params: Dict[str, Any]
     ):
-        super().__init__(df, use_kernel_calc, field_specs, infer_string_to_date, infer_number_to_dimension, other_params)
+        super().__init__(df, field_specs, infer_string_to_date, infer_number_to_dimension, other_params)
         self._duckdb_df = self.df._to_pandas()
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -44,9 +43,6 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
     def _rename_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         df = df.reset_index(drop=True)
         df.columns = rename_columns(list(df.columns))
-        return df
-
-    def _preprocess_dataframe(self, df: mpd.DataFrame) -> mpd.DataFrame:
         return df
 
     def _infer_semantic(self, s: mpd.Series, field_name: str):

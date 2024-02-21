@@ -60,7 +60,6 @@ def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> BaseDataParse
 
 def get_parser(
     dataset: Union[DataFrame, Connector, str],
-    use_kernel_calc: bool = False,
     field_specs: Optional[Dict[str, FieldSpec]] = None,
     infer_string_to_date: bool = False,
     infer_number_to_dimension: bool = True,
@@ -73,7 +72,6 @@ def get_parser(
 
     parser = _get_data_parser(dataset)(
         dataset,
-        use_kernel_calc,
         field_specs,
         infer_string_to_date,
         infer_number_to_dimension,
