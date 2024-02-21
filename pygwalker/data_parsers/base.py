@@ -6,7 +6,6 @@ from datetime import timedelta
 import abc
 import io
 
-from sqlglot import column as column_func
 import duckdb
 import arrow
 import pytz
@@ -157,35 +156,14 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         }
 
     def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
-        """
-        Due to duckdb don't support use 'EPOCH FROM' timestamp_s, timestamp_ms.
-        So we need to convert timestamp_s, timestamp_ms to timestamp temporarily.
-        """
+        """get datas by duckdb"""
         try:
             duckdb.query("SET TimeZone = 'UTC'")
         except Exception:
             pass
 
-        duckdb.register("__pygwalker_mid_table", self._duckdb_df)
+        duckdb.register("pygwalker_mid_table", self._duckdb_df)
 
-        select_expr_list = []
-        for field in self.field_metas:
-            origin_field = str(column_func(field["key"], quoted=True))
-            if field["type"] != "datetime":
-                select_expr_list.append(origin_field)
-            else:
-                select_expr_list.append(f'{origin_field}::timestamp {origin_field}')
-        select_expr = ",".join(select_expr_list)
-
-        sql = f"""
-            WITH pygwalker_mid_table AS (
-                SELECT
-                    {select_expr}
-                FROM
-                    "__pygwalker_mid_table"
-            )
-            {sql}
-        """
         result = duckdb.query(sql)
         return [
             dict(zip(result.columns, row))
