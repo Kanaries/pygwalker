@@ -10,7 +10,7 @@ import pandas as pd
 import sqlglot.expressions as exp
 import sqlglot
 
-from .base import BaseDataParser, get_data_meta_type
+from .base import BaseDataParser, get_data_meta_type, INFINITY_DATA_SIZE
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.utils.custom_sqlglot import DuckdbDialect
@@ -88,7 +88,6 @@ class DatabaseDataParser(BaseDataParser):
     def __init__(
         self,
         conn: Connector,
-        _: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
@@ -139,7 +138,6 @@ class DatabaseDataParser(BaseDataParser):
     def raw_fields(self) -> List[Dict[str, str]]:
         pandas_parser = PandasDataFrameDataParser(
             self.example_pandas_df,
-            False,
             self.field_specs,
             self.infer_string_to_date,
             self.infer_number_to_dimension,
@@ -190,3 +188,7 @@ class DatabaseDataParser(BaseDataParser):
     @property
     def dataset_tpye(self) -> str:
         return f"connector_{self.conn.dialect_name}"
+
+    @property
+    def data_size(self) -> int:
+        return INFINITY_DATA_SIZE

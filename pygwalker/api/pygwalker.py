@@ -58,7 +58,7 @@ class PygWalker:
         show_cloud_tool: Optional[bool],
         use_preview: bool,
         store_chart_data: bool,
-        use_kernel_calc: bool,
+        use_kernel_calc: Optional[bool],
         use_save_tool: bool,
         is_export_dataframe: bool,
         kanaries_api_key: str,
@@ -72,11 +72,11 @@ class PygWalker:
             self.gid = gid
         self.data_parser = get_parser(
             dataset,
-            use_kernel_calc,
             field_specs,
             other_params={"kanaries_api_key": self.kanaries_api_key}
         )
-        self.origin_data_source = self.data_parser.to_records(500 if use_kernel_calc else None)
+        self.use_kernel_calc = self.data_parser.data_size > JUPYTER_WIDGETS_BYTE_LIMIT if use_kernel_calc is None else use_kernel_calc
+        self.origin_data_source = self.data_parser.to_records(500 if self.use_kernel_calc else None)
         self.field_specs = self.data_parser.raw_fields
         self.spec = spec
         self.source_invoke_code = source_invoke_code
@@ -90,7 +90,6 @@ class PygWalker:
         self.use_preview = use_preview
         self.store_chart_data = store_chart_data
         self._init_spec(spec, self.field_specs)
-        self.use_kernel_calc = use_kernel_calc
         self.use_save_tool = use_save_tool
         self.parse_dsl_type = "server" if isinstance(dataset, (Connector, str)) else "client"
         self.gw_mode = "explore"

@@ -36,9 +36,6 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         })
         return df
 
-    def _preprocess_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
-        return df
-
     def _infer_semantic(self, s: pl.Series, field_name: str):
         example_value = s[0]
         kind = s.dtype

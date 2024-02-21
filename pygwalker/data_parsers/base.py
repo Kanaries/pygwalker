@@ -12,6 +12,7 @@ import pytz
 
 from pygwalker._typing import DataFrame
 from pygwalker.utils.payload_to_sql import get_sql_from_payload
+from pygwalker.utils.estimate_tools import estimate_average_data_size
 
 
 # pylint: disable=broad-except
@@ -30,6 +31,8 @@ class FieldSpec(NamedTuple):
 
 default_field_spec = FieldSpec()
 
+INFINITY_DATA_SIZE = 1 << 62
+
 
 class BaseDataParser(abc.ABC):
     """Base class for data parser"""
@@ -38,7 +41,6 @@ class BaseDataParser(abc.ABC):
     def __init__(
         self,
         data: Any,
-        use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
@@ -95,12 +97,17 @@ class BaseDataParser(abc.ABC):
         """get placeholder table name"""
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def data_size(self) -> int:
+        """Estimate data bytes size"""
+        raise NotImplementedError
+
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
     def __init__(
         self, df: DataFrame,
-        use_kernel_calc: bool,
         field_specs: Dict[str, FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
@@ -109,10 +116,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         self.origin_df = df
         self.df = self._rename_dataframe(df)
         self._example_df = self.df[:1000]
-        self.use_kernel_calc = use_kernel_calc
         self.field_specs = field_specs
-        if self.use_kernel_calc:
-            self.df = self._preprocess_dataframe(self.df)
         self._duckdb_df = self.df
         self.infer_string_to_date = infer_string_to_date
         self.infer_number_to_dimension = infer_number_to_dimension
@@ -174,10 +178,6 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         """rename dataframe"""
         raise NotImplementedError
 
-    def _preprocess_dataframe(self, df: DataFrame) -> DataFrame:
-        """preprocess dataframe"""
-        raise NotImplementedError
-
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         sql = get_sql_from_payload(
             "pygwalker_mid_table",
@@ -193,6 +193,12 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     @property
     def placeholder_table_name(self) -> str:
         return "pygwalker_mid_table"
+
+    @property
+    def data_size(self) -> int:
+        datas = self.to_records(300)
+        avg_size = estimate_average_data_size(datas)
+        return avg_size * self.df.shape[0]
 
 
 def is_temporal_field(value: Any, infer_string_to_date: bool) -> bool:
