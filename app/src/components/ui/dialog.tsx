@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { Cross2Icon } from "@radix-ui/react-icons"
 
 import { cn } from "@/lib/utils"
+import { portalContainerContext } from "@/store/context"
 
 const Dialog = DialogPrimitive.Root
 
@@ -31,7 +32,7 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   { hideClose?: boolean } & React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, hideClose, ...props }, ref) => (
-  <DialogPortal>
+  <DialogPortal container={React.useContext(portalContainerContext)}>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
@@ -88,7 +89,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
+      "text-lg font-semibold leading-none tracking-tight text-muted-foreground",
       className
     )}
     {...props}

@@ -8,6 +8,9 @@ import communicationStore from "../../store/communication";
 import commonStore from "../../store/common";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface IUploadChartModal {
     gwRef: React.MutableRefObject<IGWHandler | null>;
@@ -98,11 +101,9 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
                     </DialogDescription>
                 </DialogHeader>
                 <div>
-                    <div className="text-sm max-h-64 overflow-auto">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
-                            Dashboard Name
-                        </label>
-                        <input
+                    <div className="text-sm max-h-64 overflow-auto p-1">
+                        <Label>Dashboard Name</Label>
+                        <Input
                             value={chartName}
                             onChange={(e) => {
                                 setChartName(e.target.value);
@@ -110,12 +111,10 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
                             type="text"
                             placeholder="please input chart name"
                             id="chart-name-input"
-                            className="mb-2 block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="mb-1"
                         />
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
-                            Dataset Name
-                        </label>
-                        <input
+                        <Label>Dataset Name</Label>
+                        <Input
                             value={datasetName}
                             onChange={(e) => {
                                 setDatasetName(e.target.value);
@@ -123,19 +122,15 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
                             type="text"
                             placeholder="please input dataset name"
                             id="dataset-name-input"
-                            className="mb-2 block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="mb-1"
                         />
                         <div className="flex items-center justify-end mt-2">
-                            <input
+                            <Checkbox
                                 id="link-checkbox"
-                                type="checkbox"
                                 checked={isPublic}
-                                onChange={(e) => {
-                                    setIsPublic(e.target.checked);
-                                }}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                onCheckedChange={(checked) => {setIsPublic(checked as boolean);}}
                             />
-                            <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Is Public?</label>
+                            <Label className="ml-2">Is Public?</Label>
                         </div>
                     </div>
                     <div className="mt-4 flex justify-end">

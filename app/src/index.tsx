@@ -38,7 +38,8 @@ import {
 
 // @ts-ignore
 import style from './index.css?inline'
-import { currentMediaTheme } from './utils/media';
+import { currentMediaTheme } from './utils/theme';
+import { AppContext } from './store/context';
 
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
@@ -71,7 +72,25 @@ const getComputationCallback = (props: IAppProps) => {
     }
 }
 
-const App: React.FC<IAppProps> = observer((props) => {
+const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" | "media"}) => {
+    const [portal, setPortal] = useState<HTMLDivElement | null>(null);
+    const darkMode = currentMediaTheme(props.darkMode);
+
+    return (
+        <AppContext
+            portalContainerContext={portal}
+            darkModeContext={darkMode}
+        >
+            <div className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground p-2`}>
+                <style>{style}</style>
+                { props.children }
+                <div ref={setPortal}></div>
+            </div>
+        </AppContext>
+    )
+}
+
+const ExploreApp: React.FC<IAppProps> = observer((props) => {
     const storeRef = React.useRef<VizSpecStore|null>(null);
     const gwRef = React.useRef<IGWHandler|null>(null);
     const { dataSourceProps, userConfig } = props;
@@ -80,7 +99,6 @@ const App: React.FC<IAppProps> = observer((props) => {
     const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
     const [mode, setMode] = useState<string>("walker");
     const [visSpec, setVisSpec] = useState(props.visSpec);
-    const isDark = currentMediaTheme(props.dark) === "dark";
     commonStore.setVersion(props.version!);
 
     const updateDataSource = () => {
@@ -169,7 +187,7 @@ const App: React.FC<IAppProps> = observer((props) => {
                     <span className='text-muted-foreground'>Mode: </span>
                     <SelectValue className='' placeholder="Mode" />
                 </SelectTrigger>
-                <SelectContent className={isDark ? "dark": ""}>
+                <SelectContent>
                     <SelectItem value="walker">Walker</SelectItem>
                     <SelectItem value="renderer">Renderer</SelectItem>
                 </SelectContent>
@@ -270,10 +288,10 @@ function GWalker(props: IAppProps, id: string) {
     }
 
     preRender(props).then(() => {
-        let component = <App {...props} />;
+        let component = <ExploreApp {...props} />;
         switch(props.gwMode) {
             case "explore":
-                component = <App {...props} />;
+                component = <ExploreApp {...props} />;
                 break;
             case "renderer":
                 component = <PureRednererApp {...props} />;
@@ -282,15 +300,11 @@ function GWalker(props: IAppProps, id: string) {
                 component = <GraphicRendererApp {...props} />;
                 break;
             default:
-                component = <App {...props} />
+                component = <ExploreApp {...props} />
         }
-        const isDark = currentMediaTheme(props.dark) === "dark";
 
         ReactDOM.render(
-            <div className={`${isDark ? "dark": ""} bg-background text-foreground p-2`}>
-                <style>{style}</style>
-                {component}
-            </div>,
+            <MainApp darkMode={props.dark}> {component} </MainApp>,
             document.getElementById(id)
         );
     })
@@ -298,14 +312,18 @@ function GWalker(props: IAppProps, id: string) {
 
 function PreviewApp(props: IPreviewProps, id: string) {
     ReactDOM.render(
-        <Preview {...props} />,
+        <MainApp darkMode={props.dark}>
+            <Preview {...props} />
+        </MainApp>,
         document.getElementById(id)
     );
 }
 
 function ChartPreviewApp(props: IChartPreviewProps, id: string) {
     ReactDOM.render(
-        <ChartPreview {...props} />,
+        <MainApp darkMode={props.dark}>
+            <ChartPreview {...props} />
+        </MainApp>,
         document.getElementById(id)
     );
 }

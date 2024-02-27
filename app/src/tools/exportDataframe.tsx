@@ -3,7 +3,7 @@ import communicationStore from "../store/communication"
 import commonStore from '../store/common';
 
 import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
-import LoadingIcon from '../components/loadingIcon';
+import { Loader2 } from "lucide-react"
 
 import type { IAppProps } from '../interfaces';
 import { parser_dsl_with_meta } from "@kanaries-temp/gw-dsl-parser";
@@ -66,7 +66,7 @@ export function getExportDataframeTool(
         key: "export_dataframe",
         label: "export_dataframe",
         icon: (iconProps?: any) => {
-            return exporting ? <LoadingIcon width={36} height={36} /> : <DocumentArrowDownIcon {...iconProps} />
+            return exporting ? <Loader2 className='animate-spin' />  : <DocumentArrowDownIcon {...iconProps} />
         },
         onClick: onClick,
     }

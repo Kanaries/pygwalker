@@ -5,6 +5,9 @@ import communicationStore from "../../store/communication";
 import commonStore from "../../store/common";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface IUploadSpecModal {
 }
@@ -73,8 +76,8 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
                     </DialogDescription>
                 </DialogHeader>
                 <div>
-                    <div className="text-sm max-h-64 overflow-auto">
-                        <input
+                    <div className="text-sm max-h-64 overflow-auto p-1">
+                        <Input
                             value={specName}
                             onChange={(e) => {
                                 setSpecName(e.target.value);
@@ -82,25 +85,23 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
                             type="text"
                             placeholder="please input spec file name"
                             id="chart-name-input"
-                            className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="mb-1"
                         />
                     </div>
                     <div className="flex items-center justify-end mt-2">
-                        <input
+                        <Checkbox
                             id="link-checkbox"
-                            type="checkbox"
                             checked={isSetToken}
-                            onChange={(e) => {
-                                onClickSetToken(e.target.checked);
+                            onCheckedChange={(checked) => {
+                                onClickSetToken(checked as boolean);
                             }}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Set a new kanaries_token?</label>
+                        <Label className="ml-2">Set a new kanaries_token?</Label>
                     </div>
                     {
                         isSetToken && (
-                            <div className="text-sm max-h-64 overflow-auto mt-2">
-                                <input
+                            <div className="text-sm max-h-64 overflow-auto p-1 mt-2">
+                                <Input
                                     value={token}
                                     onChange={(e) => {
                                         setToken(e.target.value);
@@ -109,7 +110,6 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
                                     autoComplete="off"
                                     placeholder="please input new kanaries token"
                                     id="token-input"
-                                    className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 />
                             </div>
                         )

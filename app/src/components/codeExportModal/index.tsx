@@ -4,10 +4,12 @@ import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import py from "react-syntax-highlighter/dist/esm/languages/hljs/python";
 import atomOneLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
+import atomOneDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
 import { IChartForExport } from "@kanaries/graphic-walker/dist/interfaces";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import commonStore from "@/store/common";
+import { darkModeContext } from "@/store/context";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -27,6 +29,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     const { globalStore, sourceCode, open, setOpen } = props;
     const [visSpec, setVisSpec] = useState<IChartForExport[]>([]);
     const [tips, setTips] = useState<string>("");
+    const darkMode = React.useContext(darkModeContext);
 
     const { pyCode } = usePythonCode({
         sourceCode,
@@ -75,7 +78,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         Export the code of all charts in PyGWalker.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="text-sm max-h-64 overflow-auto">
+                <div className="text-sm max-h-64 overflow-auto p-1">
                     <Tabs defaultValue="python" className="w-full">
                         <TabsList>
                             <TabsTrigger value="python">Python</TabsTrigger>
@@ -86,7 +89,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         </div>
                         <TabsContent className="py-4" value="python">
                             <h3 className="text-sm font-medium mb-2">PyGWalker Code</h3>
-                            <SyntaxHighlighter showLineNumbers language="python" style={atomOneLight}>
+                            <SyntaxHighlighter showLineNumbers language="python" style={darkMode === 'dark' ? atomOneDark : atomOneLight}>
                                 {pyCode}
                             </SyntaxHighlighter>
                             <div className="mt-4 flex justify-start gap-2">
@@ -104,7 +107,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         </TabsContent>
                         <TabsContent value="json">
                             <h3 className="text-sm font-medium mb-2">Graphic Walker Specification</h3>
-                            <SyntaxHighlighter showLineNumbers language="json" style={atomOneLight}>
+                            <SyntaxHighlighter showLineNumbers language="json" style={darkMode === 'dark' ? atomOneDark : atomOneLight}>
                                 {JSON.stringify(visSpec, null, 2)}
                             </SyntaxHighlighter>
                             <div className="mt-4 flex justify-start gap-2">
@@ -115,7 +118,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                                 >
                                     Copy to Clipboard
                                 </Button>
-                                <Button variant="outline">Cancel</Button>
+                                <Button variant="outline" onClick={closeModal}>Cancel</Button>
                             </div>
                         </TabsContent>
                     </Tabs>

@@ -7,7 +7,6 @@ import type { IDarkMode, IThemeKey } from '@kanaries/graphic-walker/dist/interfa
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // @ts-ignore
 import style from '@/index.css?inline'
-import { currentMediaTheme } from "@/utils/media";
 
 interface IPreviewProps {
     themeKey: string;
@@ -46,7 +45,6 @@ const getInflateData = (dataStr: string) => {
 
 const Preview: React.FC<IPreviewProps> = observer((props) => {
     const { charts, themeKey } = props;
-    const isDark = currentMediaTheme(props.dark) === "dark";
     const formatedCharts = charts.map((chart) => {
         return {
             ...chart,
@@ -56,7 +54,7 @@ const Preview: React.FC<IPreviewProps> = observer((props) => {
 
     return (
         <React.StrictMode>
-            <div className={`${isDark ? "dark": ""} bg-background text-foreground`}>
+            <div className="bg-background text-foreground">
                 <style>{style}</style>
                 <Tabs defaultValue="0" className="w-full">
                     <div className="overflow-x-auto max-w-full">
@@ -88,7 +86,7 @@ const Preview: React.FC<IPreviewProps> = observer((props) => {
 
 interface IChartPreviewProps {
     themeKey: string;
-    dark: string;
+    dark: IDarkMode;
     visSpec: any;
     data: string;
     title: string;
