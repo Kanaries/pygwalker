@@ -6,7 +6,7 @@ import { checkUploadPrivacy } from '../utils/userConfig';
 
 import { chartToWorkflow } from "@kanaries/graphic-walker"
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
-import LoadingIcon from '../components/loadingIcon';
+import { Loader2 } from "lucide-react"
 
 import type { IAppProps } from '../interfaces';
 import type { IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
@@ -103,7 +103,7 @@ export function getSaveTool(
         key: "save",
         label: "save",
         icon: (iconProps?: any) => {
-            return saving ? <LoadingIcon width={36} height={36} /> : <DocumentTextIcon {...iconProps} />
+            return saving ? <Loader2 className='animate-spin' /> : <DocumentTextIcon {...iconProps} />
         },
         onClick: onClick,
     }
