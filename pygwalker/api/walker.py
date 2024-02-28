@@ -102,6 +102,9 @@ def walk(
     }
 
     display_func = env_display_map.get(env, lambda: None)
-    display_func()
+    if display_func:
+        display_func()
+    else:
+        raise ValueError(f"Unsupported environment: {env}")
 
     return walker
