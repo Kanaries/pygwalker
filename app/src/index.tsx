@@ -74,7 +74,20 @@ const getComputationCallback = (props: IAppProps) => {
 
 const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" | "media"}) => {
     const [portal, setPortal] = useState<HTMLDivElement | null>(null);
-    const darkMode = currentMediaTheme(props.darkMode);
+    const [darkMode, setDarkMode] = useState(currentMediaTheme(props.darkMode));
+
+    useEffect(() => {
+        if (props.darkMode === "media") {
+            const media = window.matchMedia('(prefers-color-scheme: dark)');
+            const listener = (e: MediaQueryListEvent) => {
+                setDarkMode(e.matches ? "dark" : "light");
+            }
+            media.addEventListener("change", listener);
+            return () => media.removeEventListener("change", listener);
+        } else {
+            setDarkMode(props.darkMode);
+        }
+    }, [props.darkMode])
 
     return (
         <AppContext
