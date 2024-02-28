@@ -121,10 +121,9 @@ const Options: React.FC<IAppProps> = (props: IAppProps) => {
         .update_link {
             position: fixed;
             right: 2rem;
-            top: 2rem;
+            top: 1rem;
             background-color: rgba(56,189,248,.1);
             color: rgb(2, 132, 199);
-            margin-top: 50px;
             --line-height: 1.25rem;
             line-height: var(--line-height);
             --padding-block: 0.25rem;
