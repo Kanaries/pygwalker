@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 import random
 import string
+import secrets
 
 
 def rand_str(n: int = 8, options: str = string.ascii_letters + string.digits) -> str:
-    return ''.join(random.sample(options, n))
+    return ''.join(secrets.choice(options) for _ in range(n))
 
 
 def generate_hash_code() -> str:
