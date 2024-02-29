@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer, GraphicRenderer } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
-import { IRow, IGWHandler, IViewField, ISegmentKey } from '@kanaries/graphic-walker/dist/interfaces';
+import { IRow, IGWHandler, IViewField, ISegmentKey, IDarkMode } from '@kanaries/graphic-walker/dist/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import Options from './components/options';
@@ -35,11 +35,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import {
+    ToggleGroup,
+    ToggleGroupItem,
+} from "@/components/ui/toggle-group"
+import { SunIcon, MoonIcon, DesktopIcon } from "@radix-ui/react-icons"
 
 // @ts-ignore
 import style from './index.css?inline'
 import { currentMediaTheme } from './utils/theme';
-import { AppContext } from './store/context';
+import { AppContext, darkModeContext } from './store/context';
 
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
@@ -72,12 +77,14 @@ const getComputationCallback = (props: IAppProps) => {
     }
 }
 
-const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" | "media"}) => {
+const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean}) => {
     const [portal, setPortal] = useState<HTMLDivElement | null>(null);
+    const [selectedDarkMode, setSelectedDarkMode] = useState(props.darkMode);
     const [darkMode, setDarkMode] = useState(currentMediaTheme(props.darkMode));
 
     useEffect(() => {
-        if (props.darkMode === "media") {
+        if (selectedDarkMode === "media") {
+            setDarkMode(currentMediaTheme(selectedDarkMode));
             const media = window.matchMedia('(prefers-color-scheme: dark)');
             const listener = (e: MediaQueryListEvent) => {
                 setDarkMode(e.matches ? "dark" : "light");
@@ -85,9 +92,9 @@ const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" |
             media.addEventListener("change", listener);
             return () => media.removeEventListener("change", listener);
         } else {
-            setDarkMode(props.darkMode);
+            setDarkMode(selectedDarkMode);
         }
-    }, [props.darkMode])
+    }, [selectedDarkMode])
 
     return (
         <AppContext
@@ -97,6 +104,25 @@ const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" |
             <div className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground p-2`}>
                 <style>{style}</style>
                 { props.children }
+                {!props.hideToolBar && (
+                    <div className="flex w-full p-1 overflow-hidden border-t border-border">
+                        <ToggleGroup
+                            type="single"
+                            value={selectedDarkMode}
+                            onValueChange={(value) => {setSelectedDarkMode(value as IDarkMode)}}
+                        >
+                            <ToggleGroupItem value="dark">
+                                <MoonIcon className="h-4 w-4" />
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="light">
+                                <SunIcon className="h-4 w-4" />
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="media">
+                                <DesktopIcon className="h-4 w-4" />
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                    </div>
+                )}
                 <div ref={setPortal}></div>
             </div>
         </AppContext>
@@ -193,7 +219,7 @@ const ExploreApp: React.FC<IAppProps> = observer((props) => {
         <React.StrictMode>
             <Notification />
             <UploadSpecModal />
-            <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={props.dark} />
+            <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={useContext(darkModeContext)} />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
             <Select onValueChange={modeChange} defaultValue='walker' >
                 <SelectTrigger className="w-[140px] h-[30px] mb-[20px] text-xs">
@@ -209,7 +235,7 @@ const ExploreApp: React.FC<IAppProps> = observer((props) => {
                 mode === "walker" ? 
                 <GraphicWalker
                     {...props.extraConfig}
-                    dark={props.dark}
+                    dark={useContext(darkModeContext)}
                     themeKey={props.themeKey}
                     hideDataSourceConfig={props.hideDataSourceConfig}
                     fieldkeyGuard={props.fieldkeyGuard}
@@ -325,7 +351,7 @@ function GWalker(props: IAppProps, id: string) {
 
 function PreviewApp(props: IPreviewProps, id: string) {
     ReactDOM.render(
-        <MainApp darkMode={props.dark}>
+        <MainApp darkMode={props.dark} hideToolBar>
             <Preview {...props} />
         </MainApp>,
         document.getElementById(id)
@@ -334,7 +360,7 @@ function PreviewApp(props: IPreviewProps, id: string) {
 
 function ChartPreviewApp(props: IChartPreviewProps, id: string) {
     ReactDOM.render(
-        <MainApp darkMode={props.dark}>
+        <MainApp darkMode={props.dark} hideToolBar>
             <ChartPreview {...props} />
         </MainApp>,
         document.getElementById(id)
@@ -362,7 +388,7 @@ function GraphicRendererApp(props: IAppProps) {
                                 rawFields={props.rawFields}
                                 containerStyle={{ height: "600px", width: "60%" }}
                                 themeKey={props.themeKey}
-                                dark={props.dark}
+                                dark={useContext(darkModeContext)}
                                 computation={computationCallback!}
                                 chart={[chart]}
                             /> :
@@ -370,7 +396,7 @@ function GraphicRendererApp(props: IAppProps) {
                                 rawFields={props.rawFields}
                                 containerStyle={{ height: "600px", width: "60%" }}
                                 themeKey={props.themeKey}
-                                dark={props.dark}
+                                dark={useContext(darkModeContext)}
                                 dataSource={props.dataSource!}
                                 chart={[chart]}
                             />

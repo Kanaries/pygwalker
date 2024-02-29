@@ -25,6 +25,8 @@
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-toggle": "^1.0.3",
+    "@radix-ui/react-toggle-group": "^1.0.4",
     "autoprefixer": "^10.3.5",
     "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.0",

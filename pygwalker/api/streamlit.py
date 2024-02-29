@@ -184,7 +184,7 @@ class StreamlitRenderer:
     def render_filter_renderer(
         self,
         width: int = 1300,
-        height: int = 1000,
+        height: int = 1010,
         scrolling: bool = False,
     ) -> "DeltaGenerator":
         """Render filter renderer UI"""
@@ -194,7 +194,7 @@ class StreamlitRenderer:
     def render_explore(
         self,
         width: int = 1300,
-        height: int = 1000,
+        height: int = 1010,
         scrolling: bool = False,
         default_tab: Literal["data", "vis"] = "vis"
     ) -> "DeltaGenerator":
