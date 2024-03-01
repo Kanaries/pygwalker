@@ -64,11 +64,20 @@ class PrivateSession(requests.Session):
             resp_json = resp.json()
         except Exception as e:
             raise CloudFunctionError(f"Request failed: {resp.text}") from e
-        if resp_json["success"] is False:
-            raise CloudFunctionError(
-                f"Request failed: {resp_json['message']}",
-                code=resp_json["code"] if resp_json["code"] != 0 else ErrorCode.UNKNOWN_ERROR
-            )
+
+        if "success" in resp_json:
+            if resp_json["success"] is False:
+                raise CloudFunctionError(
+                    f"Request failed: {resp_json['message']}",
+                    code=resp_json["code"] if resp_json["code"] != 0 else ErrorCode.UNKNOWN_ERROR
+                )
+        else:
+            if resp.status_code != 200:
+                raise CloudFunctionError(
+                    f"Request failed: {resp_json['error']['message']}",
+                    code=resp_json["error"]["code"]
+                )
+
         return resp
 
 
@@ -314,6 +323,14 @@ class CloudService:
             "query": payload,
         }
         resp = self.session.post(url, json=params, timeout=15)
+        return resp.json()["data"]
+
+    def batch_query_from_dataset(self, dataset_id: str, query_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        url = f"{GlobalVarManager.kanaries_api_host}/v1/dataset/{dataset_id}/query"
+        params = {
+            "query": query_list,
+        }
+        resp = self.session.post(url, json=params, timeout=40)
         return resp.json()["data"]
 
     def create_cloud_dataset(
