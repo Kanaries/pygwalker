@@ -3,7 +3,6 @@ import type { IDarkMode, IThemeKey, IComputationFunction } from '@kanaries/graph
 
 export interface IAppProps {
     // graphic-walker props
-    hideDataSourceConfig: boolean;
     fieldkeyGuard: boolean;
     themeKey: IThemeKey;
     dark: IDarkMode;

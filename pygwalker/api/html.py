@@ -19,7 +19,6 @@ def to_html(
     *,
     spec: str = "",
     field_specs: Optional[Dict[str, FieldSpec]] = None,
-    hide_data_source_config: bool = True,
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     default_tab: Literal["data", "vis"] = "vis",
@@ -35,7 +34,6 @@ def to_html(
     Kargs:
         - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - spec (str): chart config data. config id, json, remote file url
-        - hide_data_source_config (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         - theme_key ('vega' | 'g2'): theme type.
         - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
@@ -53,12 +51,10 @@ def to_html(
         field_specs=field_specs,
         spec=spec,
         source_invoke_code="",
-        hidedata_source_config=hide_data_source_config,
         theme_key=theme_key,
         dark=dark,
         show_cloud_tool=False,
         use_preview=False,
-        store_chart_data=False,
         use_kernel_calc=False,
         use_save_tool=False,
         gw_mode="explore",

@@ -52,12 +52,10 @@ class PygWalker:
         field_specs: Dict[str, Any],
         spec: str,
         source_invoke_code: str,
-        hidedata_source_config: bool,
         theme_key: Literal['vega', 'g2'],
         dark: Literal['media', 'light', 'dark'],
         show_cloud_tool: Optional[bool],
         use_preview: bool,
-        store_chart_data: bool,
         use_kernel_calc: Optional[bool],
         use_save_tool: bool,
         is_export_dataframe: bool,
@@ -80,7 +78,6 @@ class PygWalker:
         self.field_specs = self.data_parser.raw_fields
         self.spec = spec
         self.source_invoke_code = source_invoke_code
-        self.hidedata_source_config = hidedata_source_config
         self.theme_key = theme_key
         self.dark = dark
         self.data_source_id = rand_str()
@@ -88,7 +85,6 @@ class PygWalker:
         self.tunnel_id = "tunnel!"
         self.show_cloud_tool = bool(self.kanaries_api_key) if show_cloud_tool is None else show_cloud_tool
         self.use_preview = use_preview
-        self.store_chart_data = store_chart_data
         self._init_spec(spec, self.field_specs)
         self.use_save_tool = use_save_tool
         self.parse_dsl_type = "server" if isinstance(dataset, (Connector, str)) else "client"
@@ -312,8 +308,6 @@ class PygWalker:
                 preview_tool.render_gw_review(self._get_gw_preview_html())
 
             save_chart_endpoint(data["chartData"])
-            if self.store_chart_data:
-                spec_obj["chart_map"] = self._get_chart_map_dict(self._chart_map)
 
             if self.spec_type == "json_file":
                 with open(self.spec, "w", encoding="utf-8") as f:
@@ -416,7 +410,7 @@ class PygWalker:
 
     def _send_props_track(self, props: Dict[str, Any]):
         needed_fields = {
-            "id", "version", "hashcode", "hideDataSourceConfig", "themeKey",
+            "id", "version", "hashcode", "themeKey",
             "dark", "env", "specType", "needLoadDatas", "showCloudTool",
             "useKernelCalc", "useSaveTool", "parseDslType", "gwMode", "datasetType",
             "defaultTab"
@@ -445,7 +439,6 @@ class PygWalker:
             },
             "visSpec": self.vis_spec,
             "rawFields": self.field_specs,
-            "hideDataSourceConfig": self.hidedata_source_config,
             "fieldkeyGuard": False,
             "themeKey": self.theme_key,
             "dark": self.dark,
@@ -458,7 +451,7 @@ class PygWalker:
             "specType": self.spec_type,
             "needLoadDatas": not self.use_kernel_calc and need_load_datas,
             "showCloudTool": self.show_cloud_tool,
-            "needInitChart": not (self.store_chart_data and self._chart_map),
+            "needInitChart": not self._chart_map,
             "useKernelCalc": self.use_kernel_calc,
             "useSaveTool": self.use_save_tool,
             "parseDslType": self.parse_dsl_type,
