@@ -50,11 +50,9 @@ PYGWALKER_ROUTE = Route(
 # it will work when gradio server reload
 def _hack_gradio_server():
     for obj in gc.get_objects():
-        if isinstance(obj, FastAPI):
-            for index, route in enumerate(obj.routes):
-                if route.path == "/_pygwalker/comm/{gid}":
-                    obj.routes[index] = PYGWALKER_ROUTE
-                    return
+        if isinstance(obj, FastAPI) and any(route.path == "/_pygwalker/comm/{gid}" for route in obj.routes):
+            obj.routes = [PYGWALKER_ROUTE if route.path == "/_pygwalker/comm/{gid}" else route for route in obj.routes]
+            break
 
 
 _hack_gradio_server()
