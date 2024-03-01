@@ -90,6 +90,20 @@ class CloudDatasetParser(BaseDataParser):
         payload = {"workflow": [{"type": "view", "query": [{"op": "raw", "fields": ["*"]}]}], "limit": limit, "offset": 0}
         return self.get_datas_by_payload(payload)
 
+    def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
+        """batch get records"""
+        return [
+            self.get_datas_by_sql(sql)
+            for sql in sql_list
+        ]
+
+    def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+        """batch get records"""
+        return [
+            self.get_datas_by_payload(payload)
+            for payload in payload_list
+        ]
+
     @property
     def dataset_tpye(self) -> str:
         return "cloud_dataset"

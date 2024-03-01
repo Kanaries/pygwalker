@@ -105,7 +105,7 @@ const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" |
                 <style>{style}</style>
                 { props.children }
                 {!props.hideToolBar && (
-                    <div className="flex w-full p-1 overflow-hidden border-t border-border">
+                    <div className="flex w-full mt-1 p-1 overflow-hidden border-t border-border">
                         <ToggleGroup
                             type="single"
                             value={selectedDarkMode}

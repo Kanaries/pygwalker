@@ -185,6 +185,20 @@ class DatabaseDataParser(BaseDataParser):
         self.example_pandas_df.toPandas().to_parquet(content, index=False, compression="snappy")
         return content
 
+    def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
+        """batch get records"""
+        return [
+            self.get_datas_by_sql(sql)
+            for sql in sql_list
+        ]
+
+    def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+        """batch get records"""
+        return [
+            self.get_datas_by_payload(payload)
+            for payload in payload_list
+        ]
+
     @property
     def dataset_tpye(self) -> str:
         return f"connector_{self.conn.dialect_name}"

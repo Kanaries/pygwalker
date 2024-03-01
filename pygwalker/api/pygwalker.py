@@ -41,6 +41,8 @@ from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker.errors import DataCountLimitError
 from pygwalker import __version__
 
+RESPONSE_MAX_DATA_LENGTH = 1 * 1000 * 1000
+
 
 class PygWalker:
     """PygWalker"""
@@ -334,7 +336,7 @@ class PygWalker:
         def _get_datas(data: Dict[str, Any]):
             sql = data["sql"]
             datas = self.data_parser.get_datas_by_sql(sql)
-            if len(datas) > 1 * 1000 * 1000:
+            if len(datas) > RESPONSE_MAX_DATA_LENGTH:
                 raise DataCountLimitError()
             return {
                 "datas": datas
@@ -342,10 +344,28 @@ class PygWalker:
 
         def _get_datas_by_payload(data: Dict[str, Any]):
             datas = self.data_parser.get_datas_by_payload(data["payload"])
-            if len(datas) > 1 * 1000 * 1000:
+            if len(datas) > RESPONSE_MAX_DATA_LENGTH:
                 raise DataCountLimitError()
             return {
                 "datas": datas
+            }
+
+        def _batch_get_datas_by_sql(data: Dict[str, Any]):
+            result = self.data_parser.batch_get_datas_by_sql(data["queryList"])
+            for datas in result:
+                if len(datas) > RESPONSE_MAX_DATA_LENGTH:
+                    raise DataCountLimitError()
+            return {
+                "datas": result
+            }
+
+        def _batch_get_datas_by_payload(data: Dict[str, Any]):
+            result = self.data_parser.batch_get_datas_by_payload(data["queryList"])
+            for datas in result:
+                if len(datas) > RESPONSE_MAX_DATA_LENGTH:
+                    raise DataCountLimitError()
+            return {
+                "datas": result
             }
 
         def _get_spec_by_text(data: Dict[str, Any]):
@@ -403,6 +423,8 @@ class PygWalker:
         if self.use_kernel_calc:
             comm.register("get_datas", _get_datas)
             comm.register("get_datas_by_payload", _get_datas_by_payload)
+            comm.register("batch_get_datas_by_sql", _batch_get_datas_by_sql)
+            comm.register("batch_get_datas_by_payload", _batch_get_datas_by_payload)
 
         if self.is_export_dataframe:
             comm.register("export_dataframe_by_payload", _export_dataframe_by_payload)

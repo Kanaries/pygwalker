@@ -77,9 +77,16 @@ const initJupyterCommunication = (gid: string) => {
         return document.getElementsByClassName(`hacker-comm-pyg-kernel-store-${gid}-${index}`)[0].childNodes[1] as HTMLInputElement;
     })
 
-    const requestTask = [] as any[];
     const endpoints = new Map<string, (data: any) => any>();
     const bufferMap = new Map<string, any>();
+
+    const fetchOnJupyter = (value: string) => {
+        const event = new Event("input", { bubbles: true })
+        const kernelText = kernelTextList[curKernelTextIndex];
+        kernelText.value = value;
+        kernelText.dispatchEvent(event);
+        curKernelTextIndex = (curKernelTextIndex + 1) % kernelTextCount;
+    }
 
     const onMessage = (msg: string) => {
         const data = JSON.parse(msg);
@@ -87,13 +94,6 @@ const initJupyterCommunication = (gid: string) => {
         if (action === "finish_request") {
             bufferMap.set(data.rid, data.data);
             document.dispatchEvent(new CustomEvent(getSignalName(data.rid)));
-            return
-        }
-        if (action === "finish_batch_request") {
-            data.data.forEach((resp: any) => {
-                bufferMap.set(resp.rid, resp.data);
-                document.dispatchEvent(new CustomEvent(getSignalName(resp.rid)));
-            })
             return
         }
         const callback = endpoints.get(action);
@@ -129,21 +129,7 @@ const initJupyterCommunication = (gid: string) => {
 
     const sendMsgAsync = (action: string, data: any, rid: string | null) => {
         rid = rid ?? uuidv4();
-        requestTask.push({ action, data, rid });
-        if (requestTask.length === 1) {
-            setTimeout(() => {
-                batchSendMsgAsync(requestTask.splice(0, requestTask.length));
-            }, 100);
-        }
-    }
-
-    const batchSendMsgAsync = (data: any) => {
-        const rid = uuidv4();
-        const event = new Event("input", { bubbles: true })
-        const kernelText = kernelTextList[curKernelTextIndex];
-        kernelText.value = JSON.stringify({ gid: gid, rid: rid, action: "batch_request", data });
-        kernelText.dispatchEvent(event);
-        curKernelTextIndex = (curKernelTextIndex + 1) % kernelTextCount;
+        fetchOnJupyter(JSON.stringify({ gid, rid, action, data }));
     }
 
     const registerEndpoint = (action: string, callback: (data: any) => any) => {
@@ -187,17 +173,6 @@ const initJupyterCommunication = (gid: string) => {
     }
 }
 
-interface IHttpRequestTask {
-    data: {
-        action: string;
-        data: any;
-        rid: string;
-        gid: string;
-    };
-    resolve: (resp: any) => void;
-    reject: (err: any) => void;
-}
-
 const initHttpCommunication = (gid: string, baseUrl: string) => {
     // temporary solution in streamlit could
     const domain = window.parent.document.location.host.split(".").slice(-2).join('.');
@@ -207,8 +182,6 @@ const initHttpCommunication = (gid: string, baseUrl: string) => {
     } else {
         url = `/${baseUrl}/${gid}`
     }
-
-    const requestTask = [] as IHttpRequestTask[];
 
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
         const timer = setTimeout(() => {
@@ -227,48 +200,16 @@ const initHttpCommunication = (gid: string, baseUrl: string) => {
         }
     }
 
-    const sendMsgAsync = (action: string, data: any) => {
+    const sendMsgAsync = async(action: string, data: any) => {
         const rid = uuidv4();
-        const promise = new Promise<any>((resolve, reject) => {
-            requestTask.push({
-                data: { action, data, rid, gid },
-                resolve,
-                reject,
-            });
-            if (requestTask.length === 1) {
-                setTimeout(() => {
-                    batchSendMsgAsync(requestTask.splice(0, requestTask.length));
-                }, 100);
+        return await (await fetch(
+            url,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action, data, rid, gid }),
             }
-        });
-        return promise;
-    }
-
-    const batchSendMsgAsync = async(taskList: IHttpRequestTask[]) => {
-        try {
-            const resp = await fetch(
-                url,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        gid: gid,
-                        rid: uuidv4(),
-                        action: "batch_request",
-                        data: taskList.map(task => task.data)
-                    }),
-                }
-            )
-            const respJson = await resp.json();
-            taskList.forEach((task, index) => {
-                const taskResp = respJson[index];
-                task.resolve(taskResp);
-            })
-        } catch (err) {
-            taskList.forEach(task => {
-                task.reject(err);
-            })
-        }
+        )).json();
     }
 
     const registerEndpoint = (_: string, __: (data: any) => any) => {}
