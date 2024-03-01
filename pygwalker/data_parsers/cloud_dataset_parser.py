@@ -92,16 +92,14 @@ class CloudDatasetParser(BaseDataParser):
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
-        return [
-            self.get_datas_by_sql(sql)
-            for sql in sql_list
-        ]
+        pass
 
     def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
+        result = self._cloud_service.batch_query_from_dataset(self.dataset_id, payload_list)
         return [
-            self.get_datas_by_payload(payload)
-            for payload in payload_list
+            item["rows"]
+            for item in result
         ]
 
     @property
