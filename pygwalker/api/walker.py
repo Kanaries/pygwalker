@@ -19,13 +19,9 @@ def walk(
     *,
     env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
     field_specs: Optional[Dict[str, FieldSpec]] = None,
-    hide_data_source_config: bool = True,
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
-    return_html: bool = False,
     spec: str = "",
-    use_preview: bool = True,
-    store_chart_data: bool = False,
     use_kernel_calc: Optional[bool] = None,
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
@@ -41,13 +37,9 @@ def walk(
     Kargs:
         - env: (Literal['Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterWidget'
         - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-        - hide_data_source_config (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
-        - return_html (bool, optional): Directly return a html string. Defaults to False.
         - spec (str): chart config data. config id, json, remote file url
-        - use_preview(bool): Whether to use preview function, Default to False.
-        - store_chart_data(bool): Whether to save chart to disk, only work when spec is json file, Default to False.
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -67,12 +59,10 @@ def walk(
         field_specs=field_specs,
         spec=spec,
         source_invoke_code=source_invoke_code,
-        hidedata_source_config=hide_data_source_config,
         theme_key=theme_key,
         dark=dark,
         show_cloud_tool=show_cloud_tool,
-        use_preview=use_preview,
-        store_chart_data=store_chart_data,
+        use_preview=True,
         use_kernel_calc=isinstance(dataset, (Connector, str)) or use_kernel_calc,
         use_save_tool=True,
         gw_mode="explore",
@@ -81,9 +71,6 @@ def walk(
         default_tab=default_tab,
         **kwargs
     )
-
-    if return_html:
-        return walker.to_html()
 
     if check_kaggle():
         auto_set_kanaries_api_key_on_kaggle()

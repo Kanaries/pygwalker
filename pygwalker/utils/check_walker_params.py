@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 def check_expired_params(params: Dict[str, Any]):
     expired_params_map = {
         "fieldSpecs": "field_specs",
-        "hideDataSourceConfig": "hide_data_source_config",
         "themeKey": "theme_key",
     }
 

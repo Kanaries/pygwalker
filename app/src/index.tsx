@@ -237,7 +237,6 @@ const ExploreApp: React.FC<IAppProps> = observer((props) => {
                     {...props.extraConfig}
                     dark={useContext(darkModeContext)}
                     themeKey={props.themeKey}
-                    hideDataSourceConfig={props.hideDataSourceConfig}
                     fieldkeyGuard={props.fieldkeyGuard}
                     rawFields={props.rawFields}
                     dataSource={props.useKernelCalc ? undefined : dataSource}
