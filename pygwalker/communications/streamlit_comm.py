@@ -35,13 +35,7 @@ class PygwalkerHandler(tornado.web.RequestHandler):
         json_data = json.loads(self.request.body)
 
         # pylint: disable=protected-access
-        if json_data["action"] == "batch_request":
-            result = [
-                comm_obj._receive_msg(request["action"], request["data"])
-                for request in json_data["data"]
-            ]
-        else:
-            result = comm_obj._receive_msg(json_data["action"], json_data["data"])
+        result = comm_obj._receive_msg(json_data["action"], json_data["data"])
         # pylint: enable=protected-access
 
         self.write(json.dumps(result, cls=DataFrameEncoder))

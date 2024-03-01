@@ -22,13 +22,7 @@ async def _pygwalker_router(req: Request) -> Response:
     json_data = await req.json()
 
     # pylint: disable=protected-access
-    if json_data["action"] == "batch_request":
-        result = [
-            comm_obj._receive_msg(request["action"], request["data"])
-            for request in json_data["data"]
-        ]
-    else:
-        result = comm_obj._receive_msg(json_data["action"], json_data["data"])
+    result = comm_obj._receive_msg(json_data["action"], json_data["data"])
     # pylint: enable=protected-access
 
     result = json.dumps(result, cls=DataFrameEncoder)

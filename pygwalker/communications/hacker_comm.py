@@ -61,19 +61,8 @@ class HackerCommunication(BaseCommunication):
         if action == "finish_request":
             return
 
-        if action == "batch_request":
-            resp = [
-                {
-                    "data": self._receive_msg(request["action"], request["data"]),
-                    "rid": request["rid"]
-                }
-                for request in data
-                if request["action"] != "finish_request"
-            ]
-            self.send_msg_async("finish_batch_request", resp, rid)
-        else:
-            resp = self._receive_msg(action, data)
-            self.send_msg_async("finish_request", resp, rid)
+        resp = self._receive_msg(action, data)
+        self.send_msg_async("finish_request", resp, rid)
 
     def _get_html_widget(self) -> Text:
         text = Text(value="", placeholder="")

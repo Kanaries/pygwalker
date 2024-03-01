@@ -76,6 +76,20 @@ class SparkDataFrameDataParser(BaseDataParser):
         )
         return self.get_datas_by_sql(sql)
 
+    def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
+        """batch get records"""
+        return [
+            self.get_datas_by_sql(sql)
+            for sql in sql_list
+        ]
+
+    def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+        """batch get records"""
+        return [
+            self.get_datas_by_payload(payload)
+            for payload in payload_list
+        ]
+
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
         self.df.toPandas().to_csv(content, index=False)

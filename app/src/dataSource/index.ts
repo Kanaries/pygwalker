@@ -78,6 +78,50 @@ export function finishDataService(msg: any) {
     )
 }
 
+interface IBatchGetDatasTask {
+    query: any;
+    resolve: (value: any) => void;
+    reject: (reason?: any) => void;
+}
+
+function initBatchGetDatas(action: string) {
+    const taskList = [] as IBatchGetDatasTask[];
+
+    const batchGetDatas = async(taskList: IBatchGetDatasTask[]) => {
+        const result = await communicationStore.comm?.sendMsg(
+            action,
+            {"queryList": taskList.map(task => task.query)}
+        );
+        if (result) {
+            for (let i = 0; i < taskList.length; i++) {
+                taskList[i].resolve(result["data"]["datas"][i]);
+            }
+        } else {
+            for (let i = 0; i < taskList.length; i++) {
+                taskList[i].reject("get result error");
+            }
+        }
+    }
+
+    const getDatas = (query: any) => {
+        return new Promise<any>((resolve, reject) => {
+            taskList.push({ query, resolve, reject });
+            if (taskList.length === 1) {
+                setTimeout(() => {
+                    batchGetDatas(taskList.splice(0, taskList.length));
+                }, 100);
+            }
+        })
+    }
+
+    return {
+        getDatas
+    }
+}
+
+const batchGetDatasBySql = initBatchGetDatas("batch_get_datas_by_sql");
+const batchGetDatasByPayload = initBatchGetDatas("batch_get_datas_by_payload");
+
 export function getDatasFromKernelBySql(fieldMetas: any) {
     return async (payload: IDataQueryPayload) => {
         const sql = parser_dsl_with_meta(
@@ -85,18 +129,12 @@ export function getDatasFromKernelBySql(fieldMetas: any) {
             JSON.stringify(payload),
             JSON.stringify({"pygwalker_mid_table": fieldMetas})
         );
-        const result = await communicationStore.comm?.sendMsg(
-            "get_datas",
-            {"sql": sql}
-        );
-        return (result ? result["data"]["datas"] : []) as IRow[];
+        const result = await batchGetDatasBySql.getDatas(sql);
+        return (result ?? []) as IRow[];
     }
 }
 
 export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
-    const result = await communicationStore.comm?.sendMsg(
-        "get_datas_by_payload",
-        {payload}
-    );
-    return (result ? result["data"]["datas"] : []) as IRow[];
+    const result = await batchGetDatasByPayload.getDatas(payload);
+    return (result ?? []) as IRow[];
 }
