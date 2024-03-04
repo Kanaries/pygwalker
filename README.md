@@ -109,8 +109,9 @@ Cool things you can do with PyGwalker:
 + To make a facet view of several subviews divided by the value in dimension, put dimensions into rows or columns to make a facets view. The rules are similar to Tableau.
 ![graphic walker scatter chart](https://user-images.githubusercontent.com/8137814/221894480-b5ec5df2-d0bb-45bc-aa3d-6479920b6fe2.png)
 
-+ You can view the data frame in a table and configure the analytic types and semantic types.
-![page-data-view-light](https://user-images.githubusercontent.com/8137814/221895610-76165bc6-95ee-4567-a55b-41d47d3310eb.png)
++ PyGWalker contains a powerful data table, which provides a quick view of data and its distribution, profiling. You can also add filters or change the data types in the table.
+<img width="1537" alt="pygwalker-data-preview" src="https://github.com/Kanaries/pygwalker/assets/22167673/e3239932-bc3c-4de3-8387-1eabf2ca3a3a">
+
 
 
 + You can save the data exploration result to a local file
