@@ -62,6 +62,7 @@ def get_html_on_gradio(
         is_export_dataframe=False,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
+        use_cloud_calc=False,
         **kwargs
     )
 
