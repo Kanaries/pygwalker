@@ -37,8 +37,8 @@
     "mobx-react-lite": "^3.4.3",
     "pako": "^2.1.0",
     "postcss": "^8.3.7",
-    "react": "^17.x",
-    "react-dom": "^17.x",
+    "react": "^18.x",
+    "react-dom": "^18.x",
     "react-syntax-highlighter": "^15.5.0",
     "styled-components": "^5.3.6",
     "tailwind-merge": "^1.14.0",
@@ -52,14 +52,20 @@
     "@rollup/plugin-terser": "^0.4.x",
     "@rollup/plugin-typescript": "^11.0.x",
     "@types/node": "^20.7.2",
-    "@types/react": "^17.x",
-    "@types/react-dom": "^17.x",
+    "@types/react": "^18.x",
+    "@types/react-dom": "^18.x",
     "@types/react-syntax-highlighter": "^15.5.7",
     "@types/styled-components": "^5.1.26",
     "@vitejs/plugin-react": "^3.1.x",
     "typescript": "^4.9.5",
     "vite": "^4.1.4",
     "vite-plugin-wasm": "^3.2.2"
+  },
+  "resolutions": {
+    "react": "^18.x",
+    "react-dom": "^18.x",
+    "@types/react": "^18.x",
+    "@types/react-dom": "^18.x"
   },
   "peerDependencies": {},
   "prettier": {

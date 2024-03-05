@@ -460,7 +460,10 @@ class PygWalker:
                 "privacy": GlobalVarManager.privacy,
             },
             "visSpec": self.vis_spec,
-            "rawFields": self.field_specs,
+            "rawFields": [
+                {**field, "offset": 0}
+                for field in self.field_specs
+            ],
             "fieldkeyGuard": False,
             "themeKey": self.theme_key,
             "dark": self.dark,
