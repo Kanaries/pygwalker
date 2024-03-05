@@ -93,10 +93,13 @@ export function getDatasFromKernelBySql(fieldMetas: any) {
     }
 }
 
-export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
-    const result = await communicationStore.comm?.sendMsg(
-        "get_datas_by_payload",
-        {payload}
-    );
-    return result && result["data"]["datas"] as IRow[];
+export async function getDatasFromKernelByPayload(payload: IDataQueryPayload): Promise<IRow[]> {
+    try {
+        const result = await communicationStore.comm?.sendMsg("get_datas_by_payload", {payload});
+        return result?.data?.datas as IRow[];
+    } catch (error) {
+        console.error("Error getting data by payload", error);
+        throw error; // Rethrow or handle accordingly
+    }
 }
+
