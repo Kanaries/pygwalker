@@ -23,6 +23,7 @@ def walk(
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
     use_kernel_calc: Optional[bool] = None,
+    use_cloud_calc: bool = False,
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
@@ -69,6 +70,7 @@ def walk(
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
+        use_cloud_calc=use_cloud_calc,
         **kwargs
     )
 

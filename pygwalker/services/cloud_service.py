@@ -2,6 +2,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from urllib.parse import urlencode
 from typing_extensions import Literal
+import logging
 import io
 import json
 import hashlib
@@ -11,6 +12,8 @@ import requests
 from .global_var import GlobalVarManager
 from pygwalker.services.data_parsers import BaseDataParser
 from pygwalker.errors import CloudFunctionError, ErrorCode
+
+logger = logging.getLogger(__name__)
 
 
 def _get_database_type_from_dialect_name(dialect_name: str) -> str:
@@ -58,6 +61,12 @@ class PrivateSession(requests.Session):
     def send(self, request: requests.PreparedRequest, **kwargs) -> requests.Response:
         kanaries_api_key = self.kanaries_api_key or GlobalVarManager.kanaries_api_key
         if not kanaries_api_key:
+            logger.error((
+                "kanaries_api_key is not valid.\n"
+                "Please set kanaries_api_key first.\n"
+                "If you are not kanaries user, please register it from 'https://kanaries.net/home/access' \n"
+                "Then refer 'https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F' to set kanaries_api_key. \n"
+            ))
             raise CloudFunctionError("no kanaries api key", code=ErrorCode.TOKEN_ERROR)
         resp = super().send(request, **kwargs)
         try:
@@ -90,7 +99,8 @@ class CloudService:
         self,
         name: str,
         file_type: str = Literal["parquet", "csv"],
-        is_public: bool = True
+        is_public: bool = True,
+        kind: Literal["TEMP", "FILE"] = "FILE"
     ) -> Dict[str, Any]:
         param_file_type_map = {
             "csv": "TEXT_FILE",
@@ -108,7 +118,8 @@ class CloudService:
                 "encoding": "utf-8",
                 "type": param_file_type_map.get(file_type, "TEXT_FILE"),
                 "separator": ",",
-            }
+            },
+            "type": kind,
         }
         resp = self.session.post(url, json=params, timeout=10)
         return resp.json()["data"]
@@ -263,8 +274,9 @@ class CloudService:
         dataset_content: io.BytesIO,
         fid_list: List[str],
         is_public: bool,
+        kind: Literal["TEMP", "FILE"]
     ) -> str:
-        dataset_info = self._upload_file_dataset_meta(dataset_name, "parquet", is_public)
+        dataset_info = self._upload_file_dataset_meta(dataset_name, "parquet", is_public, kind=kind)
         dataset_id = dataset_info["datasetId"]
         upload_url = dataset_info["uploadUrl"]
         _upload_file_to_s3(upload_url, dataset_content)
@@ -296,7 +308,7 @@ class CloudService:
         return datasources[0]["id"] if datasources else None
 
     def create_database_dataset(
-        self, 
+        self,
         name: str,
         datasource_id: str,
         is_public: bool,
@@ -330,14 +342,15 @@ class CloudService:
         params = {
             "query": query_list,
         }
-        resp = self.session.post(url, json=params, timeout=40)
+        resp = self.session.post(url, json=params, timeout=60)
         return resp.json()["data"]
 
     def create_cloud_dataset(
         self,
         data_parser: BaseDataParser,
         name: str,
-        is_public: bool
+        is_public: bool,
+        is_temp_dataset: bool = False
     ) -> str:
         if name is None:
             name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
@@ -367,7 +380,8 @@ class CloudService:
                 name,
                 data_parser.to_parquet(),
                 [field["name"] for field in data_parser.raw_fields],
-                is_public
+                is_public,
+                kind="TEMP" if is_temp_dataset else "FILE"
             )
 
         return dataset_id

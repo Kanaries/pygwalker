@@ -61,6 +61,7 @@ def to_html(
         is_export_dataframe=False,
         kanaries_api_key="",
         default_tab=default_tab,
+        use_cloud_calc=False,
         **kwargs
     )
 

@@ -90,7 +90,8 @@ function initBatchGetDatas(action: string) {
     const batchGetDatas = async(taskList: IBatchGetDatasTask[]) => {
         const result = await communicationStore.comm?.sendMsg(
             action,
-            {"queryList": taskList.map(task => task.query)}
+            {"queryList": taskList.map(task => task.query)},
+            60_000
         );
         if (result) {
             for (let i = 0; i < taskList.length; i++) {

@@ -9,6 +9,7 @@ import ipywidgets
 import pandas as pd
 
 from pygwalker._typing import DataFrame
+from pygwalker.data_parsers.base import BaseDataParser
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import rand_str
@@ -59,6 +60,7 @@ class PygWalker:
         show_cloud_tool: Optional[bool],
         use_preview: bool,
         use_kernel_calc: Optional[bool],
+        use_cloud_calc: Optional[bool],
         use_save_tool: bool,
         is_export_dataframe: bool,
         kanaries_api_key: str,
@@ -70,10 +72,13 @@ class PygWalker:
             self.gid = generate_hash_code()
         else:
             self.gid = gid
-        self.data_parser = get_parser(
-            dataset,
-            field_specs,
-            other_params={"kanaries_api_key": self.kanaries_api_key}
+        self.cloud_service = CloudService(self.kanaries_api_key)
+        self.data_parser = self._get_data_parser(
+            dataset=dataset,
+            field_specs=field_specs,
+            use_cloud_calc=use_cloud_calc,
+            kanaries_api_key=self.kanaries_api_key,
+            cloud_service=self.cloud_service
         )
         self.use_kernel_calc = self.data_parser.data_size > JUPYTER_WIDGETS_BYTE_LIMIT if use_kernel_calc is None else use_kernel_calc
         self.origin_data_source = self.data_parser.to_records(500 if self.use_kernel_calc else None)
@@ -89,13 +94,13 @@ class PygWalker:
         self.use_preview = use_preview
         self._init_spec(spec, self.field_specs)
         self.use_save_tool = use_save_tool
-        self.parse_dsl_type = "server" if isinstance(dataset, (Connector, str)) else "client"
+        self.parse_dsl_type = self._get_parse_dsl_type(self.data_parser)
         self.gw_mode = "explore"
         self.dataset_type = self.data_parser.dataset_tpye
         self.is_export_dataframe = is_export_dataframe
         self._last_exported_dataframe = None
-        self.cloud_service = CloudService(self.kanaries_api_key)
         self.default_tab = default_tab
+        self.use_cloud_calc = use_cloud_calc
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.use_kernel_calc:
@@ -109,6 +114,43 @@ class PygWalker:
     @property
     def last_exported_dataframe(self) -> Optional[pd.DataFrame]:
         return self._last_exported_dataframe
+
+    def _get_data_parser(
+        self,
+        *,
+        dataset: Union[DataFrame, Connector, str],
+        field_specs: Dict[str, Any],
+        use_cloud_calc: bool,
+        kanaries_api_key: str,
+        cloud_service: CloudService
+    ) -> BaseDataParser:
+        data_parser = get_parser(
+            dataset,
+            field_specs,
+            other_params={"kanaries_api_key": kanaries_api_key}
+        )
+        if not use_cloud_calc:
+            return data_parser
+
+        dataset_id = cloud_service.create_cloud_dataset(
+            data_parser,
+            f"temp_{rand_str()}",
+            False,
+            True
+        )
+
+        return get_parser(
+            dataset_id,
+            field_specs,
+            other_params={"kanaries_api_key": kanaries_api_key}
+        )
+
+    def _get_parse_dsl_type(self, data_parser: BaseDataParser) -> Literal["server", "client"]:
+        if data_parser.dataset_tpye.startswith("connector"):
+            return "server"
+        if data_parser.dataset_tpye == "cloud_dataset":
+            return "server"
+        return "client"
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
         spec_obj, spec_type = get_spec_json(spec)
@@ -435,7 +477,7 @@ class PygWalker:
             "id", "version", "hashcode", "themeKey",
             "dark", "env", "specType", "needLoadDatas", "showCloudTool",
             "useKernelCalc", "useSaveTool", "parseDslType", "gwMode", "datasetType",
-            "defaultTab"
+            "defaultTab", "useCloudCalc"
         }
         event_info = {key: value for key, value in props.items() if key in needed_fields}
         event_info["hasKanariesToken"] = bool(self.kanaries_api_key)
@@ -486,7 +528,8 @@ class PygWalker:
             "extraConfig": self.other_props,
             "fieldMetas": self.data_parser.field_metas,
             "isExportDataFrame": self.is_export_dataframe,
-            "defaultTab": self.default_tab
+            "defaultTab": self.default_tab,
+            "useCloudCalc": self.use_cloud_calc
         }
 
         self._send_props_track(props)
