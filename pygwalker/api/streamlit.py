@@ -182,7 +182,7 @@ class StreamlitRenderer:
 
     def render_filter_renderer(
         self,
-        width: int = 1300,
+        width: Optional[int] = None,
         height: int = 1010,
         scrolling: bool = False,
     ) -> "DeltaGenerator":
@@ -192,7 +192,7 @@ class StreamlitRenderer:
 
     def render_explore(
         self,
-        width: int = 1300,
+        width: Optional[int] = None,
         height: int = 1010,
         scrolling: bool = False,
         default_tab: Literal["data", "vis"] = "vis"
