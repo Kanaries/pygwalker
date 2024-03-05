@@ -134,6 +134,24 @@ def fill_new_fields(config: List[Dict[str, Any]], all_fields: List[Dict[str, str
     return config
 
 
+def _config_adapter_045a5(config: List[Dict[str, Any]]):
+    config = deepcopy(config)
+
+    for chart_item in config:
+        if "config" in chart_item and chart_item["config"].get("timezoneDisplayOffset", None) is None:
+            chart_item["config"]["timezoneDisplayOffset"] = 0
+
+        for item_list in chart_item["encodings"].values():
+            for item in item_list:
+                item["offset"] = 0
+                if isinstance(item.get("expression", {}).get("params"), list):
+                    for param in item["expression"]["params"]:
+                        if param.get("type") == "offset":
+                            param["value"] = 0
+
+    return config
+
+
 def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
     spec, spec_type = _get_spec_json_from_diff_source(spec)
 
@@ -153,5 +171,8 @@ def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
 
     if isinstance(spec_obj["config"], str):
         spec_obj["config"] = json.loads(spec_obj["config"])
+
+    if StrictVersion(spec_obj.get("version", "0.1.0")) <= StrictVersion("0.4.7a5"):
+        spec_obj["config"] = _config_adapter_045a5(spec_obj["config"])
 
     return spec_obj, spec_type

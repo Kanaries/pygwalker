@@ -247,7 +247,7 @@ const ExploreApp: React.FC<IAppProps> = observer((props) => {
                     enhanceAPI={enhanceAPI}
                     chart={visSpec.length === 0 ? undefined : visSpec}
                     experimentalFeatures={{ computedField: props.useKernelCalc }}
-                    defaultConfig={ props.useKernelCalc ? { config: { timezoneDisplayOffset: 0 } } : undefined}
+                    defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
                 /> :
                 <GraphicRendererApp
                     {...props}
