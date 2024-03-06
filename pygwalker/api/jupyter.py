@@ -94,3 +94,89 @@ def walk(
     display_func()
 
     return walker
+
+
+def render(
+    dataset: Union[DataFrame, Connector, str],
+    spec: str,
+    *,
+    theme_key: Literal['vega', 'g2'] = 'g2',
+    dark: Literal['media', 'light', 'dark'] = 'media',
+    use_kernel_calc: Optional[bool] = None,
+    kanaries_api_key: str = "",
+    **kwargs
+):
+    """
+    Args:
+        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - spec (str): chart config data. config id, json, remote file url
+
+    Kargs:
+        - theme_key ('vega' | 'g2'): theme type.
+        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
+        - kanaries_api_key (str): kanaries api key, Default to "".
+    """
+    walker = PygWalker(
+        gid=None,
+        dataset=dataset,
+        field_specs={},
+        spec=spec,
+        source_invoke_code="",
+        theme_key=theme_key,
+        dark=dark,
+        show_cloud_tool=False,
+        use_preview=False,
+        use_kernel_calc=isinstance(dataset, (Connector, str)) or use_kernel_calc,
+        use_save_tool=False,
+        gw_mode="filter_renderer",
+        is_export_dataframe=True,
+        kanaries_api_key=kanaries_api_key,
+        default_tab="vis",
+        use_cloud_calc=False,
+        **kwargs
+    )
+
+    walker.display_on_jupyter_use_widgets()
+
+
+def table(
+    dataset: Union[DataFrame, Connector, str],
+    *,
+    theme_key: Literal['vega', 'g2'] = 'g2',
+    dark: Literal['media', 'light', 'dark'] = 'media',
+    use_kernel_calc: Optional[bool] = None,
+    kanaries_api_key: str = "",
+    **kwargs
+):
+    """
+    Args:
+        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+
+    Kargs:
+        - theme_key ('vega' | 'g2'): theme type.
+        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
+        - kanaries_api_key (str): kanaries api key, Default to "".
+    """
+    walker = PygWalker(
+        gid=None,
+        dataset=dataset,
+        field_specs={},
+        spec="",
+        source_invoke_code="",
+        theme_key=theme_key,
+        dark=dark,
+        show_cloud_tool=False,
+        use_preview=False,
+        use_kernel_calc=isinstance(dataset, (Connector, str)) or use_kernel_calc,
+        use_save_tool=False,
+        gw_mode="table",
+        is_export_dataframe=True,
+        kanaries_api_key=kanaries_api_key,
+        default_tab="vis",
+        use_cloud_calc=False,
+        **kwargs
+    )
+
+    walker.display_on_jupyter_use_widgets("800px")

@@ -13,7 +13,7 @@ from pygwalker.services.kaggle import show_tips_user_kaggle as __show_tips_user_
 __version__ = "0.4.7a6"
 __hash__ = __rand_str()
 
-from pygwalker.api.jupyter import walk
+from pygwalker.api.jupyter import walk, render, table
 from pygwalker.api.html import to_html
 from pygwalker.data_parsers.base import FieldSpec
 
@@ -23,4 +23,4 @@ if GlobalVarManager.privacy == 'offline':
 if __check_kaggle():
     __show_tips_user_kaggle()
 
-__all__ = ["walk", "to_html", "FieldSpec", "GlobalVarManager"]
+__all__ = ["walk", "render", "table", "to_html", "FieldSpec", "GlobalVarManager"]

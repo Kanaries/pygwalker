@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
-import { GraphicWalker, PureRenderer, GraphicRenderer } from '@kanaries/graphic-walker'
+import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
 import { IRow, IGWHandler, IViewField, ISegmentKey, IDarkMode } from '@kanaries/graphic-walker/dist/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,7 +49,7 @@ import { AppContext, darkModeContext } from './store/context';
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
     if (props.needInitChart && props.env === "jupyter_widgets" && total !== 0) {
-        commonStore.initModalOpen = true;
+        commonStore.setInitModalOpen(true);
         commonStore.setInitModalInfo({
             title: "Recover Charts",
             curIndex: 0,
@@ -77,7 +77,7 @@ const getComputationCallback = (props: IAppProps) => {
     }
 }
 
-const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean}) => {
+const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean}) => {
     const [portal, setPortal] = useState<HTMLDivElement | null>(null);
     const [selectedDarkMode, setSelectedDarkMode] = useState(props.darkMode);
     const [darkMode, setDarkMode] = useState(currentMediaTheme(props.darkMode));
@@ -103,7 +103,9 @@ const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" |
         >
             <div className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground p-2`}>
                 <style>{style}</style>
-                { props.children }
+                <div className='overflow-y-auto'>
+                    { props.children }
+                </div>
                 {!props.hideToolBar && (
                     <div className="flex w-full mt-1 p-1 overflow-hidden border-t border-border">
                         <ToggleGroup
@@ -123,50 +125,34 @@ const MainApp = (props: {children: React.ReactNode, darkMode: "dark" | "light" |
                         </ToggleGroup>
                     </div>
                 )}
+                <InitModal />
                 <div ref={setPortal}></div>
             </div>
         </AppContext>
     )
-}
+})
 
-const ExploreApp: React.FC<IAppProps> = observer((props) => {
+const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const storeRef = React.useRef<VizSpecStore|null>(null);
     const gwRef = React.useRef<IGWHandler|null>(null);
-    const { dataSourceProps, userConfig } = props;
+    const { userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
     const [uploadChartModalOpen, setUploadChartModalOpen] = useState(false);
-    const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
     const [mode, setMode] = useState<string>("walker");
     const [visSpec, setVisSpec] = useState(props.visSpec);
+    const [hideModeOption, _] = useState(true);
     commonStore.setVersion(props.version!);
-
-    const updateDataSource = () => {
-        loadDataSource(dataSourceProps).then((data) => {
-            setDataSource(data);
-            initChart(gwRef, visSpec.length, props);
-        }).catch(e => {
-            console.error('Load DataSource Error', e);
-        });
-    }
 
     useEffect(() => {
         commonStore.setShowCloudTool(props.showCloudTool);
-        if (props.needLoadDatas) {
-            updateDataSource()
-        } else {
+        if (userConfig) setConfig(userConfig);
+    }, []);
+
+    useEffect(() => {
+        if (props.initChartFlag) {
             setTimeout(() => { initChart(gwRef, visSpec.length, props) }, 0);
         }
-        updateDataSource();
-        if (userConfig) setConfig(userConfig);
-        // temporary notifcation
-        if (props.useKernelCalc) {
-            commonStore.setNotification({
-                type: "info",
-                title: "Tips",
-                message: "in `useKernelCalc` mode, If your dataset too big, not suitable for some non-aggregated charts, such as scatter.",
-            }, 6_000);   
-        }
-    }, []);
+    }, [props.initChartFlag]);
 
     useEffect(() => {
         setTimeout(() => {
@@ -221,16 +207,19 @@ const ExploreApp: React.FC<IAppProps> = observer((props) => {
             <UploadSpecModal />
             <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={useContext(darkModeContext)} />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
-            <Select onValueChange={modeChange} defaultValue='walker' >
-                <SelectTrigger className="w-[140px] h-[30px] mb-[20px] text-xs">
-                    <span className='text-muted-foreground'>Mode: </span>
-                    <SelectValue className='' placeholder="Mode" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="walker">Walker</SelectItem>
-                    <SelectItem value="renderer">Renderer</SelectItem>
-                </SelectContent>
-            </Select>
+            {
+                !hideModeOption &&
+                <Select onValueChange={modeChange} defaultValue='walker' >
+                    <SelectTrigger className="w-[140px] h-[30px] mb-[20px] text-xs">
+                        <span className='text-muted-foreground'>Mode: </span>
+                        <SelectValue className='' placeholder="Mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="walker">Walker</SelectItem>
+                        <SelectItem value="renderer">Renderer</SelectItem>
+                    </SelectContent>
+                </Select>
+            }
             {
                 mode === "walker" ? 
                 <GraphicWalker
@@ -239,7 +228,7 @@ const ExploreApp: React.FC<IAppProps> = observer((props) => {
                     themeKey={props.themeKey}
                     fieldkeyGuard={props.fieldkeyGuard}
                     rawFields={props.rawFields}
-                    dataSource={props.useKernelCalc ? undefined : dataSource}
+                    dataSource={props.useKernelCalc ? undefined : props.dataSource}
                     storeRef={storeRef}
                     ref={gwRef}
                     toolbar={toolbarConfig}
@@ -251,15 +240,14 @@ const ExploreApp: React.FC<IAppProps> = observer((props) => {
                 /> :
                 <GraphicRendererApp
                     {...props}
-                    dataSource={dataSource}
+                    dataSource={props.dataSource}
                     visSpec={visSpec}
                 />
             }
-            <InitModal />
             <Options {...props} />
         </React.StrictMode>
     );
-})
+}
 
 const PureRednererApp: React.FC<IAppProps> = observer((props) => {
     const computationCallback = getComputationCallback(props);
@@ -308,6 +296,34 @@ const initOnHttpCommunication = async(props: IAppProps) => {
 
 const defaultInit = async(props: IAppProps) => {}
 
+function GWalkerComponent(props: IAppProps) {
+    const [initChartFlag, setInitChartFlag] = useState(false);
+
+    useEffect(() => {
+        if (props.needLoadDatas) {
+            loadDataSource(props.dataSourceProps).then((data) => {
+                props.dataSource = data;
+                setInitChartFlag(true);
+                commonStore.setInitModalOpen(false);
+            })
+        } else {
+            setInitChartFlag(true);
+        }
+    }, []);
+
+    switch(props.gwMode) {
+        case "explore":
+            return <ExploreApp {...props} initChartFlag={initChartFlag} />;
+        case "renderer":
+            return <PureRednererApp {...props} />;
+        case "filter_renderer":
+            return <GraphicRendererApp {...props} />;
+        case "table":
+            return <TableWalkerApp {...props} />;
+        default:
+            return<ExploreApp {...props} initChartFlag={initChartFlag} />
+    }
+}
 
 function GWalker(props: IAppProps, id: string) {
     let preRender = defaultInit;
@@ -326,23 +342,10 @@ function GWalker(props: IAppProps, id: string) {
     }
 
     preRender(props).then(() => {
-        let component = <ExploreApp {...props} />;
-        switch(props.gwMode) {
-            case "explore":
-                component = <ExploreApp {...props} />;
-                break;
-            case "renderer":
-                component = <PureRednererApp {...props} />;
-                break;
-            case "filter_renderer":
-                component = <GraphicRendererApp {...props} />;
-                break;
-            default:
-                component = <ExploreApp {...props} />
-        }
-
         ReactDOM.render(
-            <MainApp darkMode={props.dark}> {component} </MainApp>,
+            <MainApp darkMode={props.dark}>
+                <GWalkerComponent {...props} />
+            </MainApp>,
             document.getElementById(id)
         );
     })
@@ -368,6 +371,12 @@ function ChartPreviewApp(props: IChartPreviewProps, id: string) {
 
 function GraphicRendererApp(props: IAppProps) {
     const computationCallback = getComputationCallback(props);
+    const globalProps = {
+        rawFields: props.rawFields,
+        containerStyle: { height: "700px", width: "60%" },
+        themeKey:props.themeKey,
+        dark: useContext(darkModeContext),
+    }
 
     return (
         <React.StrictMode>
@@ -384,18 +393,12 @@ function GraphicRendererApp(props: IAppProps) {
                         {
                             props.useKernelCalc ? 
                             <GraphicRenderer
-                                rawFields={props.rawFields}
-                                containerStyle={{ height: "600px", width: "60%" }}
-                                themeKey={props.themeKey}
-                                dark={useContext(darkModeContext)}
+                                {...globalProps}
                                 computation={computationCallback!}
                                 chart={[chart]}
                             /> :
                             <GraphicRenderer
-                                rawFields={props.rawFields}
-                                containerStyle={{ height: "600px", width: "60%" }}
-                                themeKey={props.themeKey}
-                                dark={useContext(darkModeContext)}
+                                {...globalProps}
                                 dataSource={props.dataSource!}
                                 chart={[chart]}
                             />
@@ -403,6 +406,31 @@ function GraphicRendererApp(props: IAppProps) {
                     </TabsContent>
                 })}
             </Tabs>
+        </React.StrictMode>
+    )
+}
+
+function TableWalkerApp(props: IAppProps) {
+    const computationCallback = getComputationCallback(props);
+    const globalProps = {
+        rawFields: props.rawFields,
+        themeKey: props.themeKey,
+        dark: useContext(darkModeContext)
+    }
+
+    return (
+        <React.StrictMode>
+            {
+                props.useKernelCalc ?
+                <TableWalker
+                    {...globalProps}
+                    computation={computationCallback!}
+                /> :
+                <TableWalker
+                    {...globalProps}
+                    dataSource={props.dataSource}
+                />
+            }
         </React.StrictMode>
     )
 }

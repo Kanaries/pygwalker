@@ -103,6 +103,7 @@ class StreamlitRenderer:
             kanaries_api_key=kanaries_api_key,
             default_tab=default_tab,
             use_cloud_calc=False,
+            gw_mode="explore",
             **kwargs
         )
         comm = StreamlitCommunication(str(self.walker.gid))
