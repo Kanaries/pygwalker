@@ -28,10 +28,11 @@ def get_max_limited_datas(datas: List[Dict[str, Any]], byte_limit: int) -> List[
     return datas
 
 
-def render_gwalker_iframe(gid: int, srcdoc: str) -> str:
+def render_gwalker_iframe(gid: int, srcdoc: str, height: str) -> str:
     return jinja_env.get_template("pygwalker_iframe.html").render(
         gid=gid,
         srcdoc=srcdoc,
+        height=height,
     )
 
 

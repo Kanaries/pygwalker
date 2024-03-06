@@ -65,6 +65,7 @@ class PygWalker:
         is_export_dataframe: bool,
         kanaries_api_key: str,
         default_tab: Literal["data", "vis"],
+        gw_mode: Literal["explore", "renderer", "filter_renderer", "table"],
         **kwargs
     ):
         self.kanaries_api_key = kanaries_api_key or GlobalVarManager.kanaries_api_key
@@ -95,7 +96,7 @@ class PygWalker:
         self._init_spec(spec, self.field_specs)
         self.use_save_tool = use_save_tool
         self.parse_dsl_type = self._get_parse_dsl_type(self.data_parser)
-        self.gw_mode = "explore"
+        self.gw_mode = gw_mode
         self.dataset_type = self.data_parser.dataset_tpye
         self.is_export_dataframe = is_export_dataframe
         self._last_exported_dataframe = None
@@ -224,7 +225,7 @@ class PygWalker:
         else:
             display_html(iframe_html)
 
-    def display_on_jupyter_use_widgets(self):
+    def display_on_jupyter_use_widgets(self, iframe_height: str = "1010px"):
         """
         use ipywidgets, Display on jupyter notebook/lab.
         When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
@@ -237,7 +238,7 @@ class PygWalker:
             data_source,
             len(self.origin_data_source) > len(data_source)
         )
-        iframe_html = self._get_render_iframe(props)
+        iframe_html = self._get_render_iframe(props, iframe_height=iframe_height)
 
         html_widgets = ipywidgets.Box(
             [ipywidgets.HTML(iframe_html), comm.get_widgets()],
@@ -450,12 +451,12 @@ class PygWalker:
             return {"dashboardId": dashboard_id}
 
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
+        comm.register("request_data", reuqest_data_callback)
 
         if self.use_save_tool:
             comm.register("upload_spec_to_cloud", upload_spec_to_cloud)
             comm.register("update_spec", update_spec)
             comm.register("save_chart", save_chart_endpoint)
-            comm.register("request_data", reuqest_data_callback)
 
         if self.show_cloud_tool:
             comm.register("upload_to_cloud_charts", _upload_to_cloud_charts)
@@ -536,11 +537,16 @@ class PygWalker:
 
         return props
 
-    def _get_render_iframe(self, props: Dict[str, Any], return_iframe: bool = True) -> str:
+    def _get_render_iframe(
+        self,
+        props: Dict[str, Any],
+        return_iframe: bool = True,
+        iframe_height: str = "1010px"
+    ) -> str:
         html = render_gwalker_html(self.gid, props)
         if return_iframe:
             srcdoc = m_html.escape(html)
-            return render_gwalker_iframe(self.gid, srcdoc)
+            return render_gwalker_iframe(self.gid, srcdoc, iframe_height)
         else:
             return html
 

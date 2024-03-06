@@ -24,7 +24,7 @@ export interface IAppProps {
     useSaveTool: boolean;
     parseDslType: "server" | "client";
     communicationUrl: string;
-    gwMode: "explore" | "renderer" | "filter_renderer";
+    gwMode: "explore" | "renderer" | "filter_renderer" | "table";
     needLoadLastSpec: boolean;
     extraConfig?: any;
     fieldMetas: any;
