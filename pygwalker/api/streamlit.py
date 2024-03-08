@@ -59,7 +59,7 @@ class StreamlitRenderer:
         theme_key: Literal['vega', 'g2'] = 'g2',
         dark: Literal['media', 'light', 'dark'] = 'media',
         spec: str = "",
-        debug: bool = False,
+        spec_io_mode: Literal["r", "rw"] = "r",
         use_kernel_calc: Optional[bool] = True,
         show_cloud_tool: Optional[bool] = None,
         kanaries_api_key: str = "",
@@ -78,7 +78,7 @@ class StreamlitRenderer:
             - theme_key ('vega' | 'g2'): theme type.
             - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
             - spec (str): chart config data. config id, json, remote file url
-            - debug (bool): Whether to use debug mode, Default to False.
+            - spec_io_mode (Literal["r", "rw"]): spec io mode, Default to "r", "r" for read, "rw" for read and write.
             - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
             - kanaries_api_key (str): kanaries api key, Default to "".
             - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -98,7 +98,7 @@ class StreamlitRenderer:
             show_cloud_tool=show_cloud_tool,
             use_preview=False,
             use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
-            use_save_tool=debug,
+            use_save_tool="w" in spec_io_mode,
             is_export_dataframe=False,
             kanaries_api_key=kanaries_api_key,
             default_tab=default_tab,
@@ -270,7 +270,7 @@ def get_streamlit_html(
     spec: str = "",
     use_kernel_calc: Optional[bool] = None,
     show_cloud_tool: Optional[bool] = None,
-    debug: bool = False,
+    spec_io_mode: Literal["r", "rw"] = "r",
     kanaries_api_key: str = "",
     mode: Literal["explore", "filter_renderer"] = "explore",
     default_tab: Literal["data", "vis"] = "vis",
@@ -288,7 +288,7 @@ def get_streamlit_html(
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
-        - debug (bool): Whether to use debug mode, Default to False.
+        - spec_io_mode (Literal["r", "rw"]): spec io mode, Default to "r", "r" for read, "rw" for read and write.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
@@ -302,7 +302,7 @@ def get_streamlit_html(
         spec=spec,
         theme_key=theme_key,
         dark=dark,
-        debug=debug,
+        spec_io_mode=spec_io_mode,
         use_kernel_calc=use_kernel_calc,
         show_cloud_tool=show_cloud_tool,
         kanaries_api_key=kanaries_api_key,

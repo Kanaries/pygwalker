@@ -8,6 +8,7 @@ def check_expired_params(params: Dict[str, Any]):
     expired_params_map = {
         "fieldSpecs": "field_specs",
         "themeKey": "theme_key",
+        "debug": "spec_io_mode",
     }
 
     for old_param, new_param in expired_params_map.items():
