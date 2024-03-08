@@ -5,7 +5,8 @@
   "license": "Apache License 2.0",
   "private": true,
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && vite build --mode=dsl_to_workflow && vite build --mode=vega_to_dsl",
+    "build:app": "vite build",
     "dev:preinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
     "dev:server": "vite --host",
     "dev": "vite build --mode=develop",

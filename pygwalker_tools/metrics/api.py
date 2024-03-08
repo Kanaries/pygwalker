@@ -1,14 +1,37 @@
+"""
+Experimental features
+"""
 from typing import List, Dict, Any, Union, Optional
 from decimal import Decimal
 import json
 
-import altair as alt
 import pandas as pd
 
 from pygwalker._typing import DataFrame
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.services.data_parsers import get_parser
+from pygwalker.api.html import to_chart_html
 from .core import get_metrics_sql
+
+
+class Chart:
+    """Chart"""
+    def __init__(self, data: DataFrame, spec: Dict[str, Any]):
+        self._html = to_chart_html(
+            data,
+            spec,
+            spec_type="vega"
+        )
+
+    @property
+    def html(self) -> str:
+        return self._html
+
+    def __str__(self) -> str:
+        return self._html
+
+    def _repr_html_(self):
+        return self._html
 
 
 class _JSONEncoder(json.JSONEncoder):
@@ -171,62 +194,62 @@ class MetricsChart:
             encode_params["x"], encode_params["y"] = encode_params["y"], encode_params["x"]
         return encode_params
 
-    def pv(self) -> alt.Chart:
+    def pv(self) -> Chart:
         datas = self._get_datas("pv")
-        encode_params = {
-            "x": "date",
-            "y": "pv",
-            "tooltip": ["date", "pv"]
+        params = {
+            "mark": "line",
+            "encoding": {
+                "x": {"field": "date"},
+                "y": {"field": "pv"},
+            }
         }
-        return alt.Chart(datas).mark_line().encode(
-            **self._format_encode(encode_params)
-        )
+        return Chart(datas, params)
 
-    def uv(self) -> alt.Chart:
+    def uv(self) -> Chart:
         datas = self._get_datas("uv")
-        encode_params = {
-            "x": "date",
-            "y": "uv",
-            "tooltip": ["date", "uv"]
+        params = {
+            "mark": "line",
+            "encoding": {
+                "x": {"field": "date"},
+                "y": {"field": "uv"},
+            }
         }
-        return alt.Chart(datas).mark_line().encode(
-            **self._format_encode(encode_params)
-        )
+        return Chart(datas, params)
 
-    def mau(self) -> alt.Chart:
+    def mau(self) -> Chart:
         datas = self._get_datas("mau")
-        encode_params = {
-            "x": "date",
-            "y": "mau",
-            "tooltip": ["date", "mau"]
+        params = {
+            "mark": "line",
+            "encoding": {
+                "x": {"field": "date"},
+                "y": {"field": "mau"},
+            }
         }
-        return alt.Chart(datas).mark_line().encode(
-            **self._format_encode(encode_params)
-        )
+        return Chart(datas, params)
 
-    def retention(self) -> alt.Chart:
+    def retention(self) -> Chart:
         datas = self._get_datas("retention")
-        encode_params = {
-            "x": "date",
-            "y": "retention",
-            "tooltip": ["date", "retention"]
+        params = {
+            "mark": "line",
+            "encoding": {
+                "x": {"field": "date"},
+                "y": {"field": "retention"},
+            }
         }
-        return alt.Chart(datas).mark_line().encode(
-            **self._format_encode(encode_params)
-        )
+        return Chart(datas, params)
 
-    def new_user_count(self) -> alt.Chart:
+    def new_user_count(self) -> Chart:
         datas = self._get_datas("new_user_count")
-        encode_params = {
-            "x": "date",
-            "y": "new_user_count",
-            "tooltip": ["date", "new_user_count"],
+        params = {
+            "mark": "line",
+            "encoding": {
+                "x": {"field": "date"},
+                "y": {"field": "new_user_count"},
+            }
         }
-        return alt.Chart(datas).mark_bar().encode(
-            **self._format_encode(encode_params)
-        )
+        return Chart(datas, params)
 
-    def cohort_matrix(self) -> alt.Chart:
+    def cohort_matrix(self) -> Chart:
         all_df = []
         for i in range(1, 31):
             df = self._get_datas("retention", {"time_unit": "day", "time_size": i})
@@ -234,34 +257,34 @@ class MetricsChart:
             all_df.append(df)
 
         datas = pd.concat(all_df)
-        encode_params = {
-            "x": "time_size:O",
-            "y": "date:O",
-            "color": "retention",
-            "tooltip": ["date", "time_size", "retention"]
+        params = {
+            "mark": "rect",
+            "encoding": {
+                "x": {"field": "date", "type": "ordinal"},
+                "y": {"field": "new_user_count", "type": "ordinal"},
+                "color": {"field": "retention"},
+            }
         }
-        return alt.Chart(datas).mark_rect().encode(
-            **self._format_encode(encode_params)
-        )
+        return Chart(datas, params)
 
-    def active_user_count(self) -> alt.Chart:
+    def active_user_count(self) -> Chart:
         datas = self._get_datas("active_user_count")
-        encode_params = {
-            "x": "date",
-            "y": "active_user_count",
-            "tooltip": ["date", "active_user_count"],
+        params = {
+            "mark": "bar",
+            "encoding": {
+                "x": {"field": "date"},
+                "y": {"field": "active_user_count"},
+            }
         }
-        return alt.Chart(datas).mark_bar().encode(
-            **self._format_encode(encode_params)
-        )
+        return Chart(datas, params)
 
-    def user_churn_rate_base_active(self) -> alt.Chart:
+    def user_churn_rate_base_active(self):
         datas = self._get_datas("user_churn_rate_base_active")
-        encode_params = {
-            "x": "date",
-            "y": "user_churn_rate",
-            "tooltip": ["date", "user_churn_rate"],
+        params = {
+            "mark": "line",
+            "encoding": {
+                "x": {"field": "date"},
+                "y": {"field": "user_churn_rate"},
+            }
         }
-        return alt.Chart(datas).mark_line().encode(
-            **self._format_encode(encode_params)
-        )
+        return Chart(datas, params)

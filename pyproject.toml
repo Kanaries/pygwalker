@@ -31,8 +31,8 @@ dependencies = [
     "pandas",
     "pytz",
     "kanaries_track==0.0.4",
-    "altair>=5.0.0",
     "cachetools",
+    "quickjs",
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
