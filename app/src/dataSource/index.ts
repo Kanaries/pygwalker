@@ -2,7 +2,7 @@ import type { IDataSourceProps } from "../interfaces";
 import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/dist/interfaces";
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
-import { parser_dsl_with_meta } from "@kanaries-temp/gw-dsl-parser";
+import { parser_dsl_with_meta } from "@kanaries/gw-dsl-parser";
 
 interface MessagePayload extends IDataSourceProps {
     action: "requestData" | "postData" | "finishData";

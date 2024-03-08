@@ -6,7 +6,7 @@ import py from "react-syntax-highlighter/dist/esm/languages/hljs/python";
 import atomOneLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
 import atomOneDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
-import { IChartForExport } from "@kanaries/graphic-walker/dist/interfaces";
+import { IChart } from "@kanaries/graphic-walker/dist/interfaces";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import commonStore from "@/store/common";
 import { darkModeContext } from "@/store/context";
@@ -27,7 +27,7 @@ interface ICodeExport {
 
 const CodeExport: React.FC<ICodeExport> = observer((props) => {
     const { globalStore, sourceCode, open, setOpen } = props;
-    const [visSpec, setVisSpec] = useState<IChartForExport[]>([]);
+    const [visSpec, setVisSpec] = useState<IChart[]>([]);
     const [tips, setTips] = useState<string>("");
     const darkMode = React.useContext(darkModeContext);
 

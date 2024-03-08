@@ -1,10 +1,10 @@
 import { chartToWorkflow } from "@kanaries/graphic-walker";
-import { IChartForExport } from "@kanaries/graphic-walker/dist/interfaces";
+import { IChart } from "@kanaries/graphic-walker/dist/interfaces";
 import { useMemo } from "react"
 
 export function usePythonCode (props: {
     sourceCode: string;
-    visSpec: IChartForExport[];
+    visSpec: IChart[];
     version: string;
 }) {
     const { sourceCode, visSpec, version } = props;

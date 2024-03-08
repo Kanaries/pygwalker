@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 from functools import lru_cache
 from decimal import Decimal
 import logging
+import json
 import io
 
 from sqlalchemy import create_engine, text
@@ -68,10 +69,20 @@ class Connector:
         return self.engine_map[self.url]
 
     def query_datas(self, sql: str) -> List[Dict[str, Any]]:
+        field_type_map = {}
         with self.engine.connect() as connection:
+            result = connection.execute(text(sql))
+            if self.dialect_name == "snowflake":
+                field_type_map = {
+                    column_desc.name: column_desc.type_code
+                    for column_desc in result.cursor.description
+                }
             return [
-                dict(item)
-                for item in connection.execute(text(sql)).mappings()
+                {
+                    key: json.loads(value) if field_type_map.get(key, -1) in {9, 10} else value
+                    for key, value in item.items()
+                }
+                for item in result.mappings()
             ]
 
     @property

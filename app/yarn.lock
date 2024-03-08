@@ -1045,15 +1045,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries-temp/gw-dsl-parser@0.1.44":
-  version "0.1.44"
-  resolved "https://registry.yarnpkg.com/@kanaries-temp/gw-dsl-parser/-/gw-dsl-parser-0.1.44.tgz#57b2a32f32651ad99c94d952cb2e77c10773631d"
-  integrity sha512-rOSSC+QUoaxsE+nOfRYPHrE4rsxjrLwY1ZJIJ6B0NiCj3UU2HW60V1migdqOM5fhfoT26tvgTUeJlED37FWIOA==
-
-"@kanaries/graphic-walker@0.4.54":
-  version "0.4.54"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.54.tgz#63c208c5bc8add81dc81b1879dd58f7bd1b4b1be"
-  integrity sha512-l3vENdL66UmzmJsSW5b1dn3/BMZXLaNNDAgtzRIw34IGO2RMiB4FArofRT0VcKJg3jlbT+XsFQBfQFPbVWMxIg==
+"@kanaries/graphic-walker@0.4.55":
+  version "0.4.55"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.55.tgz#da8edb407ff34b1d07427be01237b5a329a81647"
+  integrity sha512-nnkzcuBY4gLPYlgsvkHXseLqiGr1W45bVm3r9SMEzMTHhyezxAk0fH5Ham5ToPT+qCo5NAjJgOTsSBWsHV7VXg==
   dependencies:
     "@headlessui-float/react" "^0.11.4"
     "@headlessui/react" "1.7.12"
@@ -1120,6 +1115,11 @@
     vega-embed "^6.21.0"
     vega-lite "^5.6.0"
     vega-webgl-renderer "^1.0.0-beta.2"
+
+"@kanaries/gw-dsl-parser@0.1.45-rc6":
+  version "0.1.45-rc6"
+  resolved "https://registry.yarnpkg.com/@kanaries/gw-dsl-parser/-/gw-dsl-parser-0.1.45-rc6.tgz#1ede8cea7fc867af79bc6ee13302ef3da609e854"
+  integrity sha512-uPmwJXzKpQf0/27Cf7hrCoSDw2qZwnXjsLJ5HkQdra1Jb6HogmVHpKGu6MN4eQjly4mlDAyrCXFjQCeEX55/BQ==
 
 "@kanaries/react-beautiful-dnd@^0.1.1":
   version "0.1.1"
