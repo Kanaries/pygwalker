@@ -6,7 +6,7 @@ import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { Loader2 } from "lucide-react"
 
 import type { IAppProps } from '../interfaces';
-import { parser_dsl_with_meta } from "@kanaries-temp/gw-dsl-parser";
+import { parser_dsl_with_meta } from "@kanaries/gw-dsl-parser";
 import type { ToolbarButtonItem } from "@kanaries/graphic-walker/dist/components/toolbar/toolbar-button"
 import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
 

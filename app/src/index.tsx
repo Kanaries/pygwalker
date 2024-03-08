@@ -27,7 +27,7 @@ import { getExportDataframeTool } from './tools/exportDataframe';
 import { getUploadChartTool } from './tools/uploadChartTool';
 import { formatExportedChartDatas } from "./utils/save";
 import Notification from "./notify"
-import initDslParser from "@kanaries-temp/gw-dsl-parser";
+import initDslParser from "@kanaries/gw-dsl-parser";
 import {
     Select,
     SelectContent,
