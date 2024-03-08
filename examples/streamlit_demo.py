@@ -1,4 +1,4 @@
-from pygwalker.api.streamlit import StreamlitRenderer, init_streamlit_comm
+from pygwalker.api.streamlit import StreamlitRenderer
 import pandas as pd
 import streamlit as st
 
@@ -8,9 +8,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Initialize pygwalker communication
-init_streamlit_comm()
-
 # Add Title
 st.title("Use Pygwalker In Streamlit")
 
@@ -18,8 +15,8 @@ st.title("Use Pygwalker In Streamlit")
 @st.cache_resource
 def get_pyg_renderer() -> "StreamlitRenderer":
     df = pd.read_csv("https://kanaries-app.s3.ap-northeast-1.amazonaws.com/public-datasets/bike_sharing_dc.csv")
-    # When you need to publish your application, you need set `debug=False`,prevent other users to write your config file.
-    return StreamlitRenderer(df, spec="./gw_config.json", debug=False)
+    # If you want to use feature of saving chart config, set `spec_io_mode="rw"`
+    return StreamlitRenderer(df, spec="./gw_config.json")
 
 
 renderer = get_pyg_renderer()

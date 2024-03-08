@@ -153,36 +153,30 @@ Here are some of the app examples build with pygwalker and streamlit:
 [![](https://user-images.githubusercontent.com/22167673/271170853-5643c3b1-6216-4ade-87f4-41c6e6893eab.png)](https://earthquake-dashboard-pygwalker.streamlit.app/)
 
 ```python
+from pygwalker.api.streamlit import StreamlitRenderer
 import pandas as pd
-import streamlit.components.v1 as components
 import streamlit as st
-from pygwalker.api.streamlit import init_streamlit_comm, get_streamlit_html
 
+# Adjust the width of the Streamlit page
 st.set_page_config(
     page_title="Use Pygwalker In Streamlit",
     layout="wide"
 )
 
-st.title("Use Pygwalker In Streamlit(support communication)")
+# Add Title
+st.title("Use Pygwalker In Streamlit")
 
-# Initialize pygwalker communication
-init_streamlit_comm()
-
-# When using `use_kernel_calc=True`, you should cache your pygwalker html, if you don't want your memory to explode
+# You should cache your pygwalker renderer, if you don't want your memory to explode
 @st.cache_resource
-def get_pyg_html(df: pd.DataFrame) -> str:
-    # When you need to publish your application, you need set `debug=False`,prevent other users to write your config file.
-    # If you want to use feature of saving chart config, set `debug=True`
-    html = get_streamlit_html(df, spec="./gw0.json", use_kernel_calc=True, debug=False)
-    return html
+def get_pyg_renderer() -> "StreamlitRenderer":
+    df = pd.read_csv("./bike_sharing_dc.csv")
+    # If you want to use feature of saving chart config, set `spec_io_mode="rw"`
+    return StreamlitRenderer(df, spec="./gw_config.json", spec_io_mode="rw")
 
-@st.cache_data
-def get_df() -> pd.DataFrame:
-    return pd.read_csv("/bike_sharing_dc.csv")
 
-df = get_df()
+renderer = get_pyg_renderer()
 
-components.html(get_pyg_html(df), width=1300, height=1000, scrolling=True)
+renderer.render_explore()
 ```
 
 ## [API Reference](https://docs.kanaries.net/pygwalker/api-reference)
@@ -194,15 +188,13 @@ components.html(get_pyg_html(df), width=1300, height=1000, scrolling=True)
 |------------------------|-----------------------------------------------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | dataset                | Union[DataFrame, Connector]                               | -                    | The dataframe or connector to be used.                                                                                                           |
 | gid                    | Union[int, str]                                           | None                 | ID for the GraphicWalker container div, formatted as 'gwalker-{gid}'.                                                                            |
-| env                    | Literal['Jupyter', 'Streamlit', 'JupyterWidget']          | 'JupyterWidget'      | Environment using pygwalker.                                                                                                                     |
+| env                    | Literal['Jupyter', 'JupyterWidget']          | 'JupyterWidget'      | Environment using pygwalker.                                                                                                                     |
 | field_specs             | Optional[Dict[str, FieldSpec]]                            | None                 | Specifications of fields. Will be automatically inferred from `dataset` if not specified.                                                        |
 | hide_data_source_config   | bool                                                      | True                 | If True, hides DataSource import and export button.                                                                                              |
 | theme_key               | Literal['vega', 'g2']                                     | 'g2'                 | Theme type for the GraphicWalker.                                                                                                                |
 | dark                   | Literal['media', 'light', 'dark']                         | 'media'              | Theme setting. 'media' will auto-detect the OS theme.                                                                                            |
-| return_html            | bool                                                      | False                | If True, returns the result as an HTML string.                                                                                                   |
 | spec                   | str                                                       | ""                   | Chart configuration data. Can be a configuration ID, JSON, or remote file URL.                                                                   |
 | use_preview            | bool                                                      | True                 | If True, uses the preview function.                                                                                                              |
-| store_chart_data       | bool                                                      | False                | If True and `spec` is a JSON file, saves the chart to disk.                                                                                      |
 | use_kernel_calc        | bool                                                      | False                | If True, uses kernel computation for data.                                                                                                       |
 | **kwargs               | Any                                                       | -                    | Additional keyword arguments.                                                                                                                    |
 

@@ -73,7 +73,6 @@ class StreamlitRenderer:
             - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
         Kargs:
-            - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
             - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
             - theme_key ('vega' | 'g2'): theme type.
             - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.

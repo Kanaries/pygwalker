@@ -41,9 +41,10 @@ def walk(
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
+        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
+        - use_cloud_calc(bool): Whether to use cloud compute for datas, it upload your data to kanaries cloud. Default to False.
     """
     check_expired_params(kwargs)
 
