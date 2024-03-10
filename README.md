@@ -1,6 +1,5 @@
-[English](README.md) | [中文](./docs/README.zh.md) | [Türkçe](./docs/README.tr.md) | [Español](./docs/README.es.md) | [Français](./docs/README.fr.md) | [Deutsch](./docs/README.de.md) | [日本語](./docs/README.ja.md) | [한국어](./docs/README.ko.md)
+[English](README.md) | [Español](./docs/README.es.md) | [Français](./docs/README.fr.md) | [Deutsch](./docs/README.de.md) | [中文](./docs/README.zh.md) | [Türkçe](./docs/README.tr.md) | [日本語](./docs/README.ja.md) | [한국어](./docs/README.ko.md)
 
-> PyGWalker Cloud is released! You can now save your charts to cloud, publish the interactive cell as a web app and use advanced GPT-powered features. Check out the [PyGWalker Cloud](https://kanaries.net/home/pygwalker?from=gh_md) for more details.
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png" /></a></p>
 
 <h2 align="center">PyGWalker: A Python Library for Exploratory Data Analysis with Visualization</h2>
@@ -30,13 +29,13 @@
     </a> 
 </p>
 
-[**PyGWalker**](https://github.com/Kanaries/pygwalker) can simplify your Jupyter Notebook data analysis and data visualization workflow, by turning your pandas dataframe (and polars dataframe) into a Tableau-style User Interface for visual exploration.
+[**PyGWalker**](https://github.com/Kanaries/pygwalker) can simplify your Jupyter Notebook data analysis and data visualization workflow, by turning your pandas dataframe into an interactive user interface for visual exploration.
 
-**PyGWalker** (pronounced like "Pig Walker", just for fun) is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It integrates Jupyter Notebook (or other jupyter-based notebooks) with [Graphic Walker](https://github.com/Kanaries/graphic-walker), a different type of open-source alternative to Tableau. It allows data scientists to analyze data and visualize patterns with simple drag-and-drop operations.
+**PyGWalker** (pronounced like "Pig Walker", just for fun) is named as an abbreviation of "**Py**thon binding of **G**raphic **Walker**". It integrates Jupyter Notebook with [Graphic Walker](https://github.com/Kanaries/graphic-walker), an open-source alternative to Tableau. It allows data scientists to visualize / clean / annotates the data with simple drag-and-drop operations and even natural language queries.
      
 Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
-> If you prefer using R, you can check out [GWalkR](https://github.com/Kanaries/GWalkR) now!
+> If you prefer using R, check [GWalkR](https://github.com/Kanaries/GWalkR), the R wrapper of Graphic Walker.
 
 
 
@@ -94,7 +93,7 @@ walker = pyg.walk(df)
 
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-0-light.gif)
 
-That's it. Now you have a interactive UI to analyze and visualize data with simple drag-and-drop operations.
+That's it. Now you have an interactive UI to analyze and visualize data with simple drag-and-drop operations.
 
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-1-light.gif)
 
@@ -112,14 +111,12 @@ Cool things you can do with PyGwalker:
 + PyGWalker contains a powerful data table, which provides a quick view of data and its distribution, profiling. You can also add filters or change the data types in the table.
 <img width="1537" alt="pygwalker-data-preview" src="https://github.com/Kanaries/pygwalker/assets/22167673/e3239932-bc3c-4de3-8387-1eabf2ca3a3a">
 
-
-
 + You can save the data exploration result to a local file
 
-For more detailed instructions, visit the [Graphic Walker GitHub page](https://github.com/Kanaries/graphic-walker).
+### Better Practices
 
-### Better Practice
 There are some important parameters you should know when using pygwalker: 
+
 + `spec`: for save/load chart config (json string or file path)
 + `use_kernel_calc`: for using duckdb as computing engine which allows you to handle larger dataset faster in your local machine.
 
@@ -253,14 +250,15 @@ More details, refer it: [How to set your privacy configuration?](https://github.
 
 # Resources
 
-+ Check out more resources about Graphic Walker on [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)
+> PyGWalker Cloud is released! You can now save your charts to cloud, publish the interactive cell as a web app and use advanced GPT-powered features. Check out the [PyGWalker Cloud](https://kanaries.net/home/pygwalker?from=gh_md) for more details.
+
++ Check out more resources about PyGWalker on [Kanaries PyGWalker](https://kanaries.net/home/pygwalker)
 + We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis software that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [Kanaries website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
 + [Use pygwalker to build visual analysis app in streamlit](https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit)
-+ If you encounter any issues and need support, join our [Slack](https://join.slack.com/t/kanaries-community/shared_invite/zt-1pcosgbua-E_GBPawQOI79C41dPDyyvw) or [Discord](https://discord.gg/Z4ngFWXz2U) channels.
++ If you encounter any issues and need support, please join our [Discord](https://discord.gg/Z4ngFWXz2U) channel or raise an issue on github.
 + Share pygwalker on these social media platforms if you like it!
-
 [![Reddit](https://img.shields.io/badge/share%20on-reddit-red?style=flat-square&logo=reddit)](https://reddit.com/submit?url=https://github.com/Kanaries/pygwalker&title=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-like%20UI)
 [![HackerNews](https://img.shields.io/badge/share%20on-hacker%20news-orange?style=flat-square&logo=ycombinator)](https://news.ycombinator.com/submitlink?u=https://github.com/Kanaries/pygwalker)
-[![Twitter](https://img.shields.io/badge/share%20on-twitter-03A9F4?style=flat-square&logo=twitter)](https://twitter.com/share?url=https://github.com/Kanaries/pygwalker&text=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-like%20UI)
+[![Twitter](https://img.shields.io/badge/share%20on-twitter-03A9F4?style=flat-square&logo=twitter)](https://twitter.com/share?url=https://github.com/Kanaries/pygwalker&text=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-alternative%20UI)
 [![Facebook](https://img.shields.io/badge/share%20on-facebook-1976D2?style=flat-square&logo=facebook)](https://www.facebook.com/sharer/sharer.php?u=https://github.com/Kanaries/pygwalker)
-[![LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?style=flat-square&logo=linkedin)](https://www.linkedin.com/shareArticle?url=https://github.com/Kanaries/pygwalker&&title=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-like%20UI)
+[![LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?style=flat-square&logo=linkedin)](https://www.linkedin.com/shareArticle?url=https://github.com/Kanaries/pygwalker&&title=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-alternative%20UI)
