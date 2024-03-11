@@ -176,9 +176,9 @@ renderer = get_pyg_renderer()
 renderer.render_explore()
 ```
 
-## [API Reference](https://docs.kanaries.net/pygwalker/api-reference)
+## [API Reference](https://pygwalker-docs.vercel.app/api-reference/jupyter)
 
-### [pygwalker.walk](https://docs.kanaries.net/pygwalker/api-reference/core#pygwalkerwalk)
+### [pygwalker.walk](https://pygwalker-docs.vercel.app/api-reference/jupyter#walk)
 
 
 | Parameter              | Type                                                      | Default              | Description                                                                                                                                      |
