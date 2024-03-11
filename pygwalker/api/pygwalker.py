@@ -412,8 +412,12 @@ class PygWalker:
             }
 
         def _get_spec_by_text(data: Dict[str, Any]):
+            callback = self.other_props.get(
+                "custom_ask_callback",
+                self.cloud_service.get_spec_by_text
+            )
             return {
-                "data": self.cloud_service.get_spec_by_text(data["metas"], data["query"])
+                "data": callback(data["metas"], data["query"])
             }
 
         def _export_dataframe_by_payload(data: Dict[str, Any]):
