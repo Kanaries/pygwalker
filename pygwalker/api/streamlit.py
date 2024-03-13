@@ -1,5 +1,6 @@
 from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any
 from distutils.version import StrictVersion
+from copy import deepcopy
 import json
 
 from typing_extensions import Literal
@@ -213,7 +214,7 @@ class StreamlitRenderer:
         Render pure chart, index is the order of chart, starting from 0.
         If you set `pre_filters`, it will overwritre global_pre_filters.
         """
-        cur_spec_obj = self.walker.vis_spec[index]
+        cur_spec_obj = deepcopy(self.walker.vis_spec[index])
 
         if StrictVersion(self.walker.spec_version) > StrictVersion("0.3.11"):
             chart_size_config = cur_spec_obj["layout"]["size"]
