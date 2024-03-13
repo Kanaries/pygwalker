@@ -1,6 +1,5 @@
 from typing import Union, Dict, Optional, Any
 import logging
-import traceback
 
 from typing_extensions import Literal
 
@@ -16,7 +15,7 @@ from pygwalker.utils.check_walker_params import check_expired_params
 logger = logging.getLogger(__name__)
 
 
-def to_html(
+def _to_html(
     df: DataFrame,
     gid: Union[int, str] = None,
     *,
@@ -25,20 +24,13 @@ def to_html(
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     default_tab: Literal["data", "vis"] = "vis",
+    gw_mode: Literal['explore', 'renderer', 'filter_renderer', 'table'] = "explore",
+    width: Optional[int] = None,
+    height: Optional[int] = None,
     **kwargs
-):
+) -> str:
     """
     Generate embeddable HTML code of Graphic Walker with data of `df`.
-
-    Args:
-        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
-        - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
-
-    Kargs:
-        - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-        - spec (str): chart config data. config id, json, remote file url
-        - theme_key ('vega' | 'g2'): theme type.
-        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     check_expired_params(kwargs)
 
@@ -60,7 +52,7 @@ def to_html(
         use_preview=False,
         use_kernel_calc=False,
         use_save_tool=False,
-        gw_mode="explore",
+        gw_mode=gw_mode,
         is_export_dataframe=False,
         kanaries_api_key="",
         default_tab=default_tab,
@@ -68,12 +60,103 @@ def to_html(
         **kwargs
     )
 
-    try:
-        html = walker.to_html()
-    except Exception as e:
-        logger.error(traceback.format_exc())
-        return f"<div>{str(e)}</div>"
-    return html
+    return walker.to_html(width, height)
+
+
+def to_html(
+    df: DataFrame,
+    gid: Union[int, str] = None,
+    *,
+    spec: str = "",
+    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    theme_key: Literal['vega', 'g2'] = 'g2',
+    dark: Literal['media', 'light', 'dark'] = 'media',
+    default_tab: Literal["data", "vis"] = "vis",
+    **kwargs
+) -> str:
+    """
+    Generate embeddable HTML code of Graphic Walker with data of `df`.
+
+    Args:
+        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+
+    Kargs:
+        - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - spec (str): chart config data. config id, json, remote file url
+        - theme_key ('vega' | 'g2'): theme type.
+        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
+    """
+    return _to_html(
+        df,
+        gid,
+        spec=spec,
+        field_specs=field_specs,
+        theme_key=theme_key,
+        dark=dark,
+        default_tab=default_tab,
+        **kwargs
+    )
+
+
+def to_table_html(
+    df: DataFrame,
+    *,
+    theme_key: Literal['vega', 'g2'] = 'g2',
+    dark: Literal['media', 'light', 'dark'] = 'media',
+    **kwargs
+) -> str:
+    """
+    Generate embeddable HTML code of Graphic Walker with data of `df`.
+
+    Args:
+        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+
+    Kargs:
+        - theme_key ('vega' | 'g2'): theme type.
+        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+    """
+    return _to_html(
+        df,
+        None,
+        spec="",
+        field_specs={},
+        theme_key=theme_key,
+        dark=dark,
+        gw_mode="table",
+        height="800px",
+        **kwargs
+    )
+
+
+def to_render_html(
+    df: DataFrame,
+    spec: str,
+    *,
+    theme_key: Literal['vega', 'g2'] = 'g2',
+    dark: Literal['media', 'light', 'dark'] = 'media',
+    **kwargs
+) -> str:
+    """
+    Args:
+        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - spec (str): chart config data. config id, json, remote file url
+
+    Kargs:
+        - theme_key ('vega' | 'g2'): theme type.
+        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+    """
+    return _to_html(
+        df,
+        None,
+        spec=spec,
+        field_specs={},
+        theme_key=theme_key,
+        dark=dark,
+        gw_mode="filter_renderer",
+        **kwargs
+    )
 
 
 def to_chart_html(

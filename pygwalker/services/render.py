@@ -1,7 +1,7 @@
 import os
 import json
 import base64
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 from jinja2 import Environment, PackageLoader
 
@@ -28,11 +28,22 @@ def get_max_limited_datas(datas: List[Dict[str, Any]], byte_limit: int) -> List[
     return datas
 
 
-def render_gwalker_iframe(gid: int, srcdoc: str, height: str) -> str:
+def render_gwalker_iframe(
+    gid: int,
+    srcdoc: str,
+    width: Optional[str] = None,
+    height: Optional[str] = None
+) -> str:
+    if height is None:
+        height = "1010px"
+    if width is None:
+        width = "100%"
+
     return jinja_env.get_template("pygwalker_iframe.html").render(
         gid=gid,
         srcdoc=srcdoc,
         height=height,
+        width=width
     )
 
 
