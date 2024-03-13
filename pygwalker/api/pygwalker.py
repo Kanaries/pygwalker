@@ -180,9 +180,9 @@ class PygWalker:
             for key, value in chart_map_dict.items()
         }
 
-    def to_html(self) -> str:
+    def to_html(self, iframe_width: Optional[str] = None, iframe_height: Optional[str] = None) -> str:
         props = self._get_props()
-        return self._get_render_iframe(props)
+        return self._get_render_iframe(props, iframe_width=iframe_width, iframe_height=iframe_height)
 
     def to_html_without_iframe(self) -> str:
         props = self._get_props()
@@ -225,7 +225,7 @@ class PygWalker:
         else:
             display_html(iframe_html)
 
-    def display_on_jupyter_use_widgets(self, iframe_height: str = "1010px"):
+    def display_on_jupyter_use_widgets(self, iframe_width: Optional[str] = None, iframe_height: Optional[str] = None):
         """
         use ipywidgets, Display on jupyter notebook/lab.
         When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
@@ -238,7 +238,7 @@ class PygWalker:
             data_source,
             len(self.origin_data_source) > len(data_source)
         )
-        iframe_html = self._get_render_iframe(props, iframe_height=iframe_height)
+        iframe_html = self._get_render_iframe(props, iframe_width=iframe_width, iframe_height=iframe_height)
 
         html_widgets = ipywidgets.Box(
             [ipywidgets.HTML(iframe_html), comm.get_widgets()],
@@ -545,12 +545,13 @@ class PygWalker:
         self,
         props: Dict[str, Any],
         return_iframe: bool = True,
-        iframe_height: str = "1010px"
+        iframe_width: Optional[str] = None,
+        iframe_height: Optional[str] = None
     ) -> str:
         html = render_gwalker_html(self.gid, props)
         if return_iframe:
             srcdoc = m_html.escape(html)
-            return render_gwalker_iframe(self.gid, srcdoc, iframe_height)
+            return render_gwalker_iframe(self.gid, srcdoc, iframe_width, iframe_height)
         else:
             return html
 
