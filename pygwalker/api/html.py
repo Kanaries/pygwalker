@@ -1,4 +1,4 @@
-from typing import Union, Dict, Optional, Any
+from typing import Union, Dict, Optional, Any, List
 import logging
 
 from typing_extensions import Literal
@@ -20,7 +20,7 @@ def _to_html(
     gid: Union[int, str] = None,
     *,
     spec: str = "",
-    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Optional[List[FieldSpec]] = None,
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     default_tab: Literal["data", "vis"] = "vis",
@@ -31,6 +31,16 @@ def _to_html(
 ) -> str:
     """
     Generate embeddable HTML code of Graphic Walker with data of `df`.
+
+    Args:
+        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
+
+    Kargs:
+        - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - spec (str): chart config data. config id, json, remote file url
+        - theme_key ('vega' | 'g2'): theme type.
+        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     check_expired_params(kwargs)
 
@@ -38,7 +48,7 @@ def _to_html(
         gid = generate_hash_code()
 
     if field_specs is None:
-        field_specs = {}
+        field_specs = []
 
     walker = PygWalker(
         gid=gid,
@@ -68,7 +78,7 @@ def to_html(
     gid: Union[int, str] = None,
     *,
     spec: str = "",
-    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Optional[List[FieldSpec]] = None,
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     default_tab: Literal["data", "vis"] = "vis",
@@ -121,7 +131,7 @@ def to_table_html(
         df,
         None,
         spec="",
-        field_specs={},
+        field_specs=[],
         theme_key=theme_key,
         dark=dark,
         gw_mode="table",
@@ -151,7 +161,7 @@ def to_render_html(
         df,
         None,
         spec=spec,
-        field_specs={},
+        field_specs=[],
         theme_key=theme_key,
         dark=dark,
         gw_mode="filter_renderer",

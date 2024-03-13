@@ -1,5 +1,5 @@
 import sys
-from typing import Dict, Optional, Union, Any
+from typing import Dict, Optional, Union, Any, List
 
 from pygwalker.data_parsers.base import BaseDataParser, FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
@@ -60,13 +60,13 @@ def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> BaseDataParse
 
 def get_parser(
     dataset: Union[DataFrame, Connector, str],
-    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Optional[List[FieldSpec]] = None,
     infer_string_to_date: bool = False,
     infer_number_to_dimension: bool = True,
     other_params: Optional[Dict[str, Any]] = None
 ) -> BaseDataParser:
     if field_specs is None:
-        field_specs = {}
+        field_specs = []
     if other_params is None:
         other_params = {}
 

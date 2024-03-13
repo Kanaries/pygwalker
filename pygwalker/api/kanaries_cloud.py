@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import List, Optional, Union
 from datetime import datetime
 
 from pygwalker.data_parsers.base import FieldSpec
@@ -7,7 +7,6 @@ from pygwalker.utils.display import display_html
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.services.global_var import GlobalVarManager
 
 
 def create_cloud_dataset(
@@ -44,7 +43,7 @@ def create_cloud_walker(
     *,
     chart_name: str,
     workspace_name: str,
-    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Optional[List[FieldSpec]] = None,
     kanaries_api_key: str = ""
 ) -> str:
     """
@@ -63,7 +62,7 @@ def create_cloud_walker(
         str: pygwalker url in kanaries cloud
     """
     if field_specs is None:
-        field_specs = {}
+        field_specs = []
 
     cloud_service = CloudService(kanaries_api_key)
     data_parser = get_parser(dataset, False, field_specs)

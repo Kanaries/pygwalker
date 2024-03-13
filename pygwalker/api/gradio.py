@@ -1,4 +1,4 @@
-from typing import Union, Dict, Optional
+from typing import Union, List, Optional
 from typing_extensions import Literal
 
 from .pygwalker import PygWalker
@@ -18,7 +18,7 @@ def get_html_on_gradio(
     dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
-    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Optional[List[FieldSpec]] = None,
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
@@ -36,7 +36,7 @@ def get_html_on_gradio(
 
     Kargs:
         - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
-        - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
@@ -50,7 +50,7 @@ def get_html_on_gradio(
     walker = PygWalker(
         gid=gid,
         dataset=dataset,
-        field_specs=field_specs if field_specs is not None else {},
+        field_specs=field_specs if field_specs is not None else [],
         spec=spec,
         source_invoke_code="",
         theme_key=theme_key,

@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, Tuple
 import html as m_html
 import urllib
 import json
@@ -9,7 +9,7 @@ import ipywidgets
 import pandas as pd
 
 from pygwalker._typing import DataFrame
-from pygwalker.data_parsers.base import BaseDataParser
+from pygwalker.data_parsers.base import BaseDataParser, FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import rand_str
@@ -52,7 +52,7 @@ class PygWalker:
         *,
         gid: Optional[Union[int, str]],
         dataset: Union[DataFrame, Connector, str],
-        field_specs: Dict[str, Any],
+        field_specs: List[FieldSpec],
         spec: str,
         source_invoke_code: str,
         theme_key: Literal['vega', 'g2'],
@@ -120,7 +120,7 @@ class PygWalker:
         self,
         *,
         dataset: Union[DataFrame, Connector, str],
-        field_specs: Dict[str, Any],
+        field_specs: List[FieldSpec],
         use_cloud_calc: bool,
         kanaries_api_key: str,
         cloud_service: CloudService
@@ -153,7 +153,7 @@ class PygWalker:
             return "server"
         return "client"
 
-    def _init_spec(self, spec: Dict[str, Any], field_specs: List[Dict[str, Any]]):
+    def _init_spec(self, spec: Dict[str, Any], field_specs: List[FieldSpec]):
         spec_obj, spec_type = get_spec_json(spec)
         self._update_vis_spec(spec_obj["config"] and fill_new_fields(spec_obj["config"], field_specs))
         self.spec_type = spec_type

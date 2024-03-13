@@ -19,7 +19,7 @@ class CloudDatasetParser(BaseDataParser):
     def __init__(
         self,
         dataset_id: str,
-        field_specs: Dict[str, FieldSpec],
+        field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
         other_params: Dict[str, Any]
