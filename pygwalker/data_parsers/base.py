@@ -1,4 +1,4 @@
-from typing import Generic, Dict, List, Any, Optional, NamedTuple
+from typing import Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
 from functools import lru_cache
 from datetime import datetime, date
@@ -6,6 +6,7 @@ from datetime import timedelta
 import abc
 import io
 
+from pydantic import BaseModel
 import duckdb
 import arrow
 import pytz
@@ -16,20 +17,20 @@ from pygwalker.utils.estimate_tools import estimate_average_data_size
 
 
 # pylint: disable=broad-except
-class FieldSpec(NamedTuple):
+class FieldSpec(BaseModel):
     """Field specification.
 
     Args:
-    - semanticType: '?' | 'nominal' | 'ordinal' | 'temporal' | 'quantitative'. default to '?'.
-    - analyticType: '?' | 'dimension' | 'measure'. default to '?'.
+    - fname: str. The field name.
+    - semantic_type: '?' | 'nominal' | 'ordinal' | 'temporal' | 'quantitative'. default to '?'.
+    - analytic_type: '?' | 'dimension' | 'measure'. default to '?'.
     - display_as: str. The field name displayed. None means using the original column name.
     """
-    semanticType: Literal['?', 'nominal', 'ordinal', 'temporal', 'quantitative'] = '?'
-    analyticType: Literal['?', 'dimension', 'measure'] = '?'
+    fname: str
+    semantic_type: Literal['?', 'nominal', 'ordinal', 'temporal', 'quantitative'] = '?'
+    analytic_type: Literal['?', 'dimension', 'measure'] = '?'
     display_as: str = None
 
-
-default_field_spec = FieldSpec()
 
 INFINITY_DATA_SIZE = 1 << 62
 
@@ -41,7 +42,7 @@ class BaseDataParser(abc.ABC):
     def __init__(
         self,
         data: Any,
-        field_specs: Dict[str, FieldSpec],
+        field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
         other_params: Dict[str, Any]
@@ -118,7 +119,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
     def __init__(
         self, df: DataFrame,
-        field_specs: Dict[str, FieldSpec],
+        field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
         other_params: Dict[str, Any]
@@ -149,7 +150,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         ]
 
     def _infer_prop(
-        self, col: str, field_specs: Dict[str, FieldSpec] = None
+        self, col: str, field_specs: List[FieldSpec] = None
     ) -> Dict[str, str]:
         """get IMutField
 
@@ -158,9 +159,12 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         """
         s = self._example_df[col]
         orig_fname = col
-        field_spec = field_specs.get(orig_fname, default_field_spec)
-        semantic_type = self._infer_semantic(s, orig_fname) if field_spec.semanticType == '?' else field_spec.semanticType
-        analytic_type = self._infer_analytic(s, orig_fname) if field_spec.analyticType == '?' else field_spec.analyticType
+
+        field_spec_map = {field_spec.fname: field_spec for field_spec in field_specs}
+
+        field_spec = field_spec_map.get(orig_fname, FieldSpec(fname=orig_fname))
+        semantic_type = self._infer_semantic(s, orig_fname) if field_spec.semantic_type == '?' else field_spec.semantic_type
+        analytic_type = self._infer_analytic(s, orig_fname) if field_spec.analytic_type == '?' else field_spec.analytic_type
         fname = orig_fname if field_spec.display_as is None else field_spec.display_as
         return {
             'fid': col,

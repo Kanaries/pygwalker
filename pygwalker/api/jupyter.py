@@ -1,4 +1,4 @@
-from typing import Union, Dict, Optional
+from typing import Union, List, Optional
 import inspect
 
 from typing_extensions import Literal
@@ -18,7 +18,7 @@ def walk(
     gid: Union[int, str] = None,
     *,
     env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
-    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Optional[List[FieldSpec]] = None,
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
@@ -37,7 +37,7 @@ def walk(
 
     Kargs:
         - env: (Literal['Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterWidget'
-        - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
@@ -49,7 +49,7 @@ def walk(
     check_expired_params(kwargs)
 
     if field_specs is None:
-        field_specs = {}
+        field_specs = []
 
     source_invoke_code = get_formated_spec_params_code_from_frame(
         inspect.stack()[1].frame
@@ -121,7 +121,7 @@ def render(
     walker = PygWalker(
         gid=None,
         dataset=dataset,
-        field_specs={},
+        field_specs=[],
         spec=spec,
         source_invoke_code="",
         theme_key=theme_key,
@@ -163,7 +163,7 @@ def table(
     walker = PygWalker(
         gid=None,
         dataset=dataset,
-        field_specs={},
+        field_specs=[],
         spec="",
         source_invoke_code="",
         theme_key=theme_key,

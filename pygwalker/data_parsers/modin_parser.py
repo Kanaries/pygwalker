@@ -17,7 +17,7 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
     def __init__(
         self,
         df: mpd.DataFrame,
-        field_specs: Dict[str, FieldSpec],
+        field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
         other_params: Dict[str, Any]

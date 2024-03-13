@@ -56,7 +56,7 @@ class StreamlitRenderer:
         dataset: Union[DataFrame, Connector],
         gid: Union[int, str] = None,
         *,
-        field_specs: Optional[Dict[str, FieldSpec]] = None,
+        field_specs: Optional[List[FieldSpec]] = None,
         theme_key: Literal['vega', 'g2'] = 'g2',
         dark: Literal['media', 'light', 'dark'] = 'media',
         spec: str = "",
@@ -74,7 +74,7 @@ class StreamlitRenderer:
             - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
         Kargs:
-            - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+            - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
             - theme_key ('vega' | 'g2'): theme type.
             - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
             - spec (str): chart config data. config id, json, remote file url
@@ -90,7 +90,7 @@ class StreamlitRenderer:
         self.walker = PygWalker(
             gid=gid,
             dataset=dataset,
-            field_specs=field_specs if field_specs is not None else {},
+            field_specs=field_specs if field_specs is not None else [],
             spec=spec,
             source_invoke_code="",
             theme_key=theme_key,
@@ -264,7 +264,7 @@ def get_streamlit_html(
     dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
-    field_specs: Optional[Dict[str, FieldSpec]] = None,
+    field_specs: Optional[List[FieldSpec]] = None,
     theme_key: Literal['vega', 'g2'] = 'g2',
     dark: Literal['media', 'light', 'dark'] = 'media',
     spec: str = "",
@@ -283,7 +283,7 @@ def get_streamlit_html(
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
-        - field_specs (Dict[str, FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
@@ -293,7 +293,7 @@ def get_streamlit_html(
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
     if field_specs is None:
-        field_specs = {}
+        field_specs = []
 
     renderer = StreamlitRenderer(
         gid=gid,
