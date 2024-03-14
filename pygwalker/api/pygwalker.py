@@ -155,7 +155,10 @@ class PygWalker:
 
     def _init_spec(self, spec: Dict[str, Any], field_specs: List[FieldSpec]):
         spec_obj, spec_type = get_spec_json(spec)
-        self._update_vis_spec(spec_obj["config"] and fill_new_fields(spec_obj["config"], field_specs))
+        if spec_type.startswith("vega"):
+            self._update_vis_spec(spec_obj["config"])
+        else:
+            self._update_vis_spec(spec_obj["config"] and fill_new_fields(spec_obj["config"], field_specs))
         self.spec_type = spec_type
         self._chart_map = self._parse_chart_map_dict(spec_obj["chart_map"])
         self.spec_version = spec_obj.get("version", None)
@@ -166,6 +169,7 @@ class PygWalker:
         self._chart_name_index_map = {
             item["name"]: index
             for index, item in enumerate(vis_spec)
+            if "name" in item
         }
 
     def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:

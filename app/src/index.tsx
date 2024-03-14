@@ -45,6 +45,7 @@ import { SunIcon, MoonIcon, DesktopIcon } from "@radix-ui/react-icons"
 import style from './index.css?inline'
 import { currentMediaTheme } from './utils/theme';
 import { AppContext, darkModeContext } from './store/context';
+import FormatSpec from './utils/formatSpec';
 
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
@@ -275,7 +276,7 @@ const initOnJupyter = async(props: IAppProps) => {
     communicationStore.setComm(comm);
     if (props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
-        props.visSpec = visSpecResp["data"]["visSpec"];
+        props.visSpec = FormatSpec(visSpecResp["data"]["visSpec"], props.rawFields);
     }
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
@@ -326,6 +327,7 @@ function GWalkerComponent(props: IAppProps) {
 }
 
 function GWalker(props: IAppProps, id: string) {
+    props.visSpec = FormatSpec(props.visSpec, props.rawFields);
     let preRender = defaultInit;
     switch(props.env) {
         case "jupyter_widgets":
@@ -352,6 +354,8 @@ function GWalker(props: IAppProps, id: string) {
 }
 
 function PreviewApp(props: IPreviewProps, id: string) {
+    props.charts = FormatSpec(props.charts.map(chart => chart.visSpec), [])
+                    .map((visSpec, index) => { return {...props.charts[index], visSpec} });
     ReactDOM.render(
         <MainApp darkMode={props.dark} hideToolBar>
             <Preview {...props} />
@@ -361,6 +365,7 @@ function PreviewApp(props: IPreviewProps, id: string) {
 }
 
 function ChartPreviewApp(props: IChartPreviewProps, id: string) {
+    props.visSpec = FormatSpec(props.visSpec, []);
     ReactDOM.render(
         <MainApp darkMode={props.dark} hideToolBar>
             <ChartPreview {...props} />
