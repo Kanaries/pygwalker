@@ -1,5 +1,5 @@
 from urllib import request
-from typing import Tuple, Dict, Any, List
+from typing import Tuple, Dict, Any, List, Union
 from distutils.version import StrictVersion
 from copy import deepcopy
 import json
@@ -152,19 +152,36 @@ def _config_adapter_045a5(config: List[Dict[str, Any]]):
     return config
 
 
-def get_spec_json(spec: str) -> Tuple[Dict[str, Any], str]:
-    spec, spec_type = _get_spec_json_from_diff_source(spec)
+def _is_gw_config(config: Dict[str, Any]) -> bool:
+    return not bool({"config", "encodings", "visId"} - set(config.keys()))
 
-    if not spec:
-        return {"chart_map": {}, "config": [], "workflow_list": []}, spec_type
 
-    try:
-        spec_obj = json.loads(spec)
-    except json.decoder.JSONDecodeError as e:
-        raise ValueError("spec is not a valid json") from e
+def _is_pygwalker_config(config: Dict[str, Any]) -> bool:
+    return "config" in config and isinstance(config["config"], (list, str))
+
+
+def get_spec_json(spec: Union[str, List[Any], Dict[str, Any]]) -> Tuple[Dict[str, Any], str]:
+    if isinstance(spec, str):
+        spec, spec_type = _get_spec_json_from_diff_source(spec)
+        if not spec:
+            return {"chart_map": {}, "config": [], "workflow_list": []}, spec_type
+
+        try:
+            spec_obj = json.loads(spec)
+        except json.decoder.JSONDecodeError as e:
+            raise ValueError("spec is not a valid json") from e
+    else:
+        spec_obj = spec
+        spec_type = "json_obj"
 
     if isinstance(spec_obj, list):
-        spec_obj = {"chart_map": {}, "config": json.dumps(spec_obj), "workflow_list": []}
+        if spec_obj and not _is_gw_config(spec_obj[0]):
+            return {"chart_map": {}, "config": spec_obj, "workflow_list": []}, "vega_list"
+        else:
+            spec_obj = {"chart_map": {}, "config": json.dumps(spec_obj), "workflow_list": []}
+
+    if isinstance(spec_obj, dict) and not _is_pygwalker_config(spec_obj):
+        return {"chart_map": {}, "config": [spec_obj], "workflow_list": []}, "vega_single"
 
     if StrictVersion(spec_obj.get("version", "0.1.0")) <= StrictVersion("0.3.17a4"):
         spec_obj["config"] = _config_adapter(spec_obj["config"])
