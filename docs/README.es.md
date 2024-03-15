@@ -1,5 +1,6 @@
-> PyGWalker 0.3 is released! Check out the [changelog](https://github.com/Kanaries/pygwalker/releases/tag/0.3.0) for more details. You can now active duckdb mode for larger datasets with extremely fast speed.
-<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png"></a></p>
+> Si eres un hablante nativo del idioma actual, te invitamos a ayudarnos a mantener la traducción de este documento. Puedes hacer una PR [aquí](https://github.com/Kanaries/pygwalker/pulls)
+
+<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/Kanaries/pygwalker/assets/22167673/bed8b3db-fda8-43e7-8ad2-71f6afb9dddd"></a></p>
 
 <h2 align="center">PyGWalker: Una Biblioteca de Python para Análisis Exploratorio de Datos con Visualización.</h2>
 

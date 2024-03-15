@@ -1,5 +1,6 @@
-> PyGWalker 0.3 yayınlandı! [changelog](https://github.com/Kanaries/pygwalker/releases/tag/0.3.0) daha fazla ayrıntı için. Artık daha büyük veri kümeleri için son derece hızlı bir şekilde duckdb modunu etkinleştirebilirsiniz.
-<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png"></a></p>
+> Eğer mevcut dilin anadiliyseniz, bu belgenin çevirisini güncel tutmamıza yardımcı olmaya hoş geldiniz. Bir PR [buradan](https://github.com/Kanaries/pygwalker/pulls) yapabilirsiniz.
+
+<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/Kanaries/pygwalker/assets/22167673/bed8b3db-fda8-43e7-8ad2-71f6afb9dddd"></a></p>
 
 <h2 align="center">PyGWalker: Görselleştirmeyle Keşif Amaçlı Veri Analizi için Python Kütüphanesi</h2>
 

@@ -1,4 +1,6 @@
-<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://user-images.githubusercontent.com/8137814/221879671-70379d15-81ac-44b9-b267-a8fa3842a0d9.png"></a></p>
+> 如果您是当前语言的母语使用者，欢迎帮助我们维护本文档的翻译。您可以在[这里](https://github.com/Kanaries/pygwalker/pulls)提交PR。
+
+<p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/Kanaries/pygwalker/assets/22167673/bed8b3db-fda8-43e7-8ad2-71f6afb9dddd"></a></p>
 
 <h2 align="center">PyGWalker: 一行代码将数据集转化为交互式可视化分析工具</h2>
 

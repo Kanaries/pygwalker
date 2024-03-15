@@ -105,7 +105,7 @@ Cool things you can do with PyGwalker:
 + To compare different measures, you can create a concat view by adding more than one measure into rows/columns.
 ![graphic walker area chart](https://user-images.githubusercontent.com/8137814/224550839-7b8a2193-d3e9-4c11-a19e-ad8e5ec19539.png)
 
-+ To make a facet view of several subviews divided by the value in dimension, put dimensions into rows or columns to make a facets view. The rules are similar to Tableau.
++ To make a facet view of several subviews divided by the value in dimension, put dimensions into rows or columns to make a facets view.
 ![graphic walker scatter chart](https://user-images.githubusercontent.com/8137814/221894480-b5ec5df2-d0bb-45bc-aa3d-6479920b6fe2.png)
 
 + PyGWalker contains a powerful data table, which provides a quick view of data and its distribution, profiling. You can also add filters or change the data types in the table.
