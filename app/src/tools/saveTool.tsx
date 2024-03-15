@@ -59,6 +59,13 @@ export function getSaveTool(
             if (visSpec === undefined) {
                 throw new Error("visSpec is undefined");
             }
+            if (storeRef.current?.visIndex !== undefined) {
+                const currentChart = visSpec[storeRef.current?.visIndex];
+                if (currentChart.layout.size.mode === "auto") {
+                    currentChart.layout.size.width = chartData.container()?.clientWidth || 320;
+                    currentChart.layout.size.height = chartData.container()?.clientHeight || 200;
+                }
+            }
             await communicationStore.comm?.sendMsg("update_spec", {
                 "visSpec": visSpec,
                 "chartData": await formatExportedChartDatas(chartData),
