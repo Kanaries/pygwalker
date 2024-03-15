@@ -2,7 +2,7 @@
 name = "pygwalker"
 dynamic = ["version"]
 requires-python = ">=3.6"
-description = "pygwalker: Combining Jupyter Notebook with a Tableau-like UI"
+description = "pygwalker: turn your data into an interactive UI for data exploration and visualization"
 authors = [ { name = "kanaries", email = "support@kanaries.net" } ]
 license-files = { paths = ["LICENSE"] }
 readme = "README.md"
