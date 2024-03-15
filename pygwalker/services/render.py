@@ -35,7 +35,7 @@ def render_gwalker_iframe(
     height: Optional[str] = None
 ) -> str:
     if height is None:
-        height = "1010px"
+        height = "960px"
     if width is None:
         width = "100%"
 
