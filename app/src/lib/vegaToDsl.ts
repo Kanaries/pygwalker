@@ -1,4 +1,4 @@
-import { VegaliteMapper } from '@kanaries/graphic-walker/src/lib/vl2gw';
+import { VegaliteMapper } from '@kanaries/graphic-walker/lib/vl2gw';
 
 export default function Transform(str: string) {
     const params = JSON.parse(str);

@@ -1,4 +1,4 @@
-import { VegaliteMapper } from '@kanaries/graphic-walker/src/lib/vl2gw';
+import { VegaliteMapper } from '@kanaries/graphic-walker/lib/vl2gw';
 
 export default function FormatSpec(spec: any[], fields: any[]) {
     return spec.map((item, index) => {

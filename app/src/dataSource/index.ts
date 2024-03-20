@@ -1,5 +1,5 @@
 import type { IDataSourceProps } from "../interfaces";
-import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/dist/interfaces";
+import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/interfaces";
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
 import { parser_dsl_with_meta } from "@kanaries/gw-dsl-parser";

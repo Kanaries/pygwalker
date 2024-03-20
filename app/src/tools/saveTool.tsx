@@ -9,9 +9,9 @@ import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import { Loader2 } from "lucide-react"
 
 import type { IAppProps } from '../interfaces';
-import type { IGWHandler } from '@kanaries/graphic-walker/dist/interfaces';
-import type { ToolbarButtonItem } from "@kanaries/graphic-walker/dist/components/toolbar/toolbar-button"
-import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
+import type { IGWHandler } from '@kanaries/graphic-walker/interfaces';
+import type { ToolbarButtonItem } from "@kanaries/graphic-walker/components/toolbar/toolbar-button"
+import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 
 function saveJupyterNotebook() {
     const rootDocument = window.parent.document;

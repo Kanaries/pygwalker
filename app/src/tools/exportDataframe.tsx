@@ -7,8 +7,8 @@ import { Loader2 } from "lucide-react"
 
 import type { IAppProps } from '../interfaces';
 import { parser_dsl_with_meta } from "@kanaries/gw-dsl-parser";
-import type { ToolbarButtonItem } from "@kanaries/graphic-walker/dist/components/toolbar/toolbar-button"
-import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
+import type { ToolbarButtonItem } from "@kanaries/graphic-walker/components/toolbar/toolbar-button"
+import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 
 export function getExportDataframeTool(
     props: IAppProps,

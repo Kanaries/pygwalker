@@ -1,5 +1,5 @@
-import { chartToWorkflow } from "@kanaries/graphic-walker";
-import { IChart } from "@kanaries/graphic-walker/dist/interfaces";
+import { chartToWorkflow } from "@kanaries/graphic-walker/utils/workflow";
+import type { IChart } from "@kanaries/graphic-walker/interfaces";
 import { useMemo } from "react"
 
 export function usePythonCode (props: {

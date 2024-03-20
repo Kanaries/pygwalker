@@ -17,7 +17,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.8",
-    "@kanaries/graphic-walker": "0.4.55",
+    "@kanaries/graphic-walker": "0.4.56",
     "@kanaries/gw-dsl-parser": "0.1.45-rc6",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -58,7 +58,7 @@
     "@types/react-syntax-highlighter": "^15.5.7",
     "@types/styled-components": "^5.1.26",
     "@vitejs/plugin-react": "^3.1.x",
-    "typescript": "^4.9.5",
+    "typescript": "^5.4.2",
     "vite": "^4.1.4",
     "vite-plugin-wasm": "^3.2.2"
   },

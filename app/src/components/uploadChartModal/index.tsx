@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
-import type { IGWHandler } from "@kanaries/graphic-walker/dist/interfaces";
-import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
+import type { IGWHandler } from "@kanaries/graphic-walker/interfaces";
+import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 import { chartToWorkflow } from "@kanaries/graphic-walker"
 
 import communicationStore from "../../store/communication";

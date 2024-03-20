@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
-import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
-import { IRow, IGWHandler, IViewField, ISegmentKey, IDarkMode } from '@kanaries/graphic-walker/dist/interfaces';
+import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
+import type { IRow, IGWHandler, IViewField, ISegmentKey, IDarkMode } from '@kanaries/graphic-walker/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import Options from './components/options';

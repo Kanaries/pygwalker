@@ -2,7 +2,7 @@ import React from "react";
 import { observer } from "mobx-react-lite";
 import pako from "pako";
 import { PureRenderer } from '@kanaries/graphic-walker';
-import type { IDarkMode, IThemeKey } from '@kanaries/graphic-walker/dist/interfaces';
+import type { IDarkMode, IThemeKey } from '@kanaries/graphic-walker/interfaces';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // @ts-ignore
