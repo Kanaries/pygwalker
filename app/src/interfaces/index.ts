@@ -1,5 +1,5 @@
-import type { IRow, IMutField } from '@kanaries/graphic-walker/dist/interfaces'
-import type { IDarkMode, IThemeKey, IComputationFunction } from '@kanaries/graphic-walker/dist/interfaces';
+import type { IRow, IMutField } from '@kanaries/graphic-walker/interfaces'
+import type { IDarkMode, IThemeKey, IComputationFunction } from '@kanaries/graphic-walker/interfaces';
 
 export interface IAppProps {
     // graphic-walker props

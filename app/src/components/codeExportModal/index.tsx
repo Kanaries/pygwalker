@@ -5,8 +5,8 @@ import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import py from "react-syntax-highlighter/dist/esm/languages/hljs/python";
 import atomOneLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
 import atomOneDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
-import type { VizSpecStore } from '@kanaries/graphic-walker/dist/store/visualSpecStore'
-import { IChart } from "@kanaries/graphic-walker/dist/interfaces";
+import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
+import type { IChart } from "@kanaries/graphic-walker/interfaces";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import commonStore from "@/store/common";
 import { darkModeContext } from "@/store/context";

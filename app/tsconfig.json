@@ -11,7 +11,7 @@
       "downlevelIteration": true,
       "noImplicitAny": false,
       "module": "ESNext",
-      "moduleResolution": "Node",
+      "moduleResolution": "Bundler",
       "resolveJsonModule": true,
       "isolatedModules": true,
       "noEmit": true,

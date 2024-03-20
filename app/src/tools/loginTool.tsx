@@ -2,7 +2,7 @@ import React from 'react';
 
 import { UserIcon } from '@heroicons/react/24/outline';
 
-import type { ToolbarButtonItem } from "@kanaries/graphic-walker/dist/components/toolbar/toolbar-button"
+import type { ToolbarButtonItem } from "@kanaries/graphic-walker/components/toolbar/toolbar-button"
 
 
 export function getLoginTool(

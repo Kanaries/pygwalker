@@ -1,5 +1,5 @@
 import * as htmlToImage from 'html-to-image';
-import type { IChartExportResult } from '@kanaries/graphic-walker/dist/interfaces';
+import type { IChartExportResult } from '@kanaries/graphic-walker/interfaces';
 
 export function download(data: string, filename: string, type: string) {
     var file = new Blob([data], { type: type });
