@@ -181,7 +181,7 @@ class StreamlitRenderer:
         """It will append new filters to exists charts."""
         self.global_pre_filters = pre_filters
 
-    def render_filter_renderer(
+    def viewer(
         self,
         width: Optional[int] = None,
         height: int = 1010,
@@ -190,8 +190,11 @@ class StreamlitRenderer:
         """Render filter renderer UI"""
         html = self._get_html(mode="filter_renderer")
         return components.html(html, height=height, width=width, scrolling=scrolling)
-
-    def render_explore(
+    # alias, render_filter_renderer is deprecated, use viewer instead.
+    render_filter_renderer = viewer
+    
+    
+    def explorer(
         self,
         width: Optional[int] = None,
         height: int = 1010,
@@ -201,8 +204,10 @@ class StreamlitRenderer:
         """Render explore UI(it can drag and drop fields)"""
         html = self._get_html(**{"defaultTab": default_tab})
         return components.html(html, height=height, width=width, scrolling=scrolling)
+    # alias, render_explore is deprecated, use explorer instead.
+    render_explore = explorer
 
-    def render_pure_chart(
+    def chart(
         self,
         index: int,
         width: Optional[int] = None,
@@ -258,7 +263,10 @@ class StreamlitRenderer:
         render_explore_modal_button(explore_html, left, explore_button_size)
 
         return components.html(html, height=height, width=width, scrolling=scrolling)
-
+    # alias, render_pure_chart is deprecated, use chart instead.
+    render_pure_chart = chart
+    
+    
 
 def get_streamlit_html(
     dataset: Union[DataFrame, Connector],

@@ -28,16 +28,16 @@ tab1, tab2, tab3, tab4 = st.tabs(
 )
 
 with tab1:
-    renderer.render_explore()
+    renderer.explorer()
 
 with tab2:
-    renderer.render_explore(default_tab="data")
+    renderer.explorer(default_tab="data")
 
 with tab3:
     renderer.render_filter_renderer()
 
 with tab4:
     st.markdown("### registered per weekday")
-    renderer.render_pure_chart(0)
+    renderer.chart(0)
     st.markdown("### registered per day")
-    renderer.render_pure_chart(1)
+    renderer.chart(1)

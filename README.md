@@ -173,7 +173,7 @@ def get_pyg_renderer() -> "StreamlitRenderer":
 
 renderer = get_pyg_renderer()
 
-renderer.render_explore()
+renderer.explorer()
 ```
 
 ## [API Reference](https://pygwalker-docs.vercel.app/api-reference/jupyter)
