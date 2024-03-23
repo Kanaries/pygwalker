@@ -1,6 +1,6 @@
 from urllib import request
 from typing import Tuple, Dict, Any, List, Union
-from distutils.version import StrictVersion
+from packaging.version import Version
 from copy import deepcopy
 import json
 import os
@@ -183,13 +183,13 @@ def get_spec_json(spec: Union[str, List[Any], Dict[str, Any]]) -> Tuple[Dict[str
     if isinstance(spec_obj, dict) and not _is_pygwalker_config(spec_obj):
         return {"chart_map": {}, "config": [spec_obj], "workflow_list": []}, "vega_single"
 
-    if StrictVersion(spec_obj.get("version", "0.1.0")) <= StrictVersion("0.3.17a4"):
+    if Version(spec_obj.get("version", "0.1.0")) <= Version("0.3.17a4"):
         spec_obj["config"] = _config_adapter(spec_obj["config"])
 
     if isinstance(spec_obj["config"], str):
         spec_obj["config"] = json.loads(spec_obj["config"])
 
-    if StrictVersion(spec_obj.get("version", "0.1.0")) <= StrictVersion("0.4.7a5"):
+    if Version(spec_obj.get("version", "0.1.0")) <= Version("0.4.7a5"):
         spec_obj["config"] = _config_adapter_045a5(spec_obj["config"])
 
     return spec_obj, spec_type
