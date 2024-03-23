@@ -1,5 +1,5 @@
 from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any
-from distutils.version import StrictVersion
+from packaging.version import Version
 from copy import deepcopy
 import json
 
@@ -221,7 +221,7 @@ class StreamlitRenderer:
         """
         cur_spec_obj = deepcopy(self.walker.vis_spec[index])
 
-        if StrictVersion(self.walker.spec_version) > StrictVersion("0.3.11"):
+        if Version(self.walker.spec_version) > Version("0.3.11"):
             chart_size_config = cur_spec_obj["layout"]["size"]
         else:
             chart_size_config = cur_spec_obj["config"]["size"]
