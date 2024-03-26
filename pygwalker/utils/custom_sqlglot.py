@@ -1,5 +1,6 @@
 from sqlglot.dialects.duckdb import DuckDB as DuckdbDialect
 from sqlglot.dialects.postgres import Postgres as PostgresDialect
+from sqlglot.dialects.mysql import MySQL as MysqlDialect
 from sqlglot import exp
 from sqlglot.helper import seq_get
 
@@ -19,3 +20,5 @@ DuckdbDialect.Parser.FUNCTIONS["LOG10"] = lambda args: exp.Log(
 )
 
 PostgresDialect.Generator.TRANSFORMS[exp.Round] = lambda _, e: _postgres_round_generator(e)
+
+MysqlDialect.Generator.TRANSFORMS[exp.Array] = lambda self, e: self.func("JSON_ARRAY", *e.expressions)

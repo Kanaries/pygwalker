@@ -50,6 +50,10 @@ class Connector:
     - engine_params: engine params, refer to sqlalchemy doc for params. example: {"pool_size": 10}
     """
     engine_map = {}
+    JSON_TYPE_CODE_SET_MAP = {
+        "snowflake": {9, 10},
+        "mysql": {245}
+    }
 
     def __init__(self, url: str, view_sql: str, engine_params: Optional[Dict[str, Any]] = None) -> "Connector":
         _check_view_sql(view_sql)
@@ -59,6 +63,7 @@ class Connector:
         self.url = url
         self.engine = self._get_engine(engine_params)
         self.view_sql = view_sql
+        self._json_type_code_set = self.JSON_TYPE_CODE_SET_MAP.get(self.dialect_name, set())
 
     def _get_engine(self, engine_params: Dict[str, Any]) -> Engine:
         if self.url not in self.engine_map:
@@ -72,14 +77,14 @@ class Connector:
         field_type_map = {}
         with self.engine.connect() as connection:
             result = connection.execute(text(sql))
-            if self.dialect_name == "snowflake":
+            if self.dialect_name in self.JSON_TYPE_CODE_SET_MAP:
                 field_type_map = {
-                    column_desc.name: column_desc.type_code
+                    column_desc[0]: column_desc[1]
                     for column_desc in result.cursor.description
                 }
             return [
                 {
-                    key: json.loads(value) if field_type_map.get(key, -1) in {9, 10} else value
+                    key: json.loads(value) if field_type_map.get(key, -1) in self._json_type_code_set else value
                     for key, value in item.items()
                 }
                 for item in result.mappings()
