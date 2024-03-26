@@ -446,7 +446,10 @@ class CloudService:
             is_public=is_public
         )
 
-        return chart_info["chartId"]
+        return {
+            "chart_id": chart_info["chartId"],
+            "dataset_id": dataset_id
+        }
 
     def upload_cloud_dashboard(
         self,
@@ -458,7 +461,8 @@ class CloudService:
         spec_list: List[Dict[str, Any]],
         is_public: bool,
         dark: str,
-    ) -> str:
+        is_create_dashboard: bool
+    ) -> Dict[str, str]:
         dataset_id = self.create_cloud_dataset(data_parser, dataset_name, False)
 
         chart_info_list = []
@@ -486,6 +490,12 @@ class CloudService:
 
             chart_info_list.append(chart_info)
 
+        if not is_create_dashboard:
+            return {
+                "dashboard_id": "",
+                "dataset_id": dataset_id
+            }
+
         dashboard_id = self.create_dashboard(
             name=dashboard_name,
             is_public=is_public,
@@ -511,4 +521,7 @@ class CloudService:
             ]
         )
 
-        return dashboard_id
+        return {
+            "dashboard_id": dashboard_id,
+            "dataset_id": dataset_id
+        }
