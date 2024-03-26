@@ -436,7 +436,7 @@ class PygWalker:
             self._last_exported_dataframe = df
 
         def _upload_to_cloud_charts(data: Dict[str, Any]):
-            chart_id = self.cloud_service.upload_cloud_chart(
+            result = self.cloud_service.upload_cloud_chart(
                 data_parser=self.data_parser,
                 chart_name=data["chartName"],
                 dataset_name=data["datasetName"],
@@ -444,19 +444,20 @@ class PygWalker:
                 spec_list=data["visSpec"],
                 is_public=data["isPublic"],
             )
-            return {"chartId": chart_id}
+            return {"chartId": result["chart_id"], "datasetId": result["dataset_id"]}
 
         def _upload_to_cloud_dashboard(data: Dict[str, Any]):
-            dashboard_id = self.cloud_service.upload_cloud_dashboard(
+            result = self.cloud_service.upload_cloud_dashboard(
                 data_parser=self.data_parser,
                 dashboard_name=data["chartName"],
                 dataset_name=data["datasetName"],
                 workflow_list=data["workflowList"],
                 spec_list=data["visSpec"],
                 is_public=data["isPublic"],
-                dark=self.dark
+                dark=self.dark,
+                is_create_dashboard=data["isCreateDashboard"]
             )
-            return {"dashboardId": dashboard_id}
+            return {"dashboardId": result["dashboard_id"], "datasetId": result["dataset_id"]}
 
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
         comm.register("request_data", reuqest_data_callback)
