@@ -3,7 +3,7 @@ from packaging.version import Version
 from copy import deepcopy
 import json
 
-from typing_extensions import Literal
+from typing_extensions import Literal, deprecated
 from pydantic import BaseModel
 from cachetools import cached, TTLCache
 import arrow
@@ -190,10 +190,11 @@ class StreamlitRenderer:
         """Render filter renderer UI"""
         html = self._get_html(mode="filter_renderer")
         return components.html(html, height=height, width=width, scrolling=scrolling)
-    # alias, render_filter_renderer is deprecated, use viewer instead.
-    render_filter_renderer = viewer
-    
-    
+
+    @deprecated("render_filter_renderer is deprecated, use viewer instead.")
+    def render_filter_renderer(self, *args, **kwargs):
+        return self.viewer(*args, **kwargs)
+
     def explorer(
         self,
         width: Optional[int] = None,
@@ -204,8 +205,10 @@ class StreamlitRenderer:
         """Render explore UI(it can drag and drop fields)"""
         html = self._get_html(**{"defaultTab": default_tab})
         return components.html(html, height=height, width=width, scrolling=scrolling)
-    # alias, render_explore is deprecated, use explorer instead.
-    render_explore = explorer
+
+    @deprecated("render_explore is deprecated, use explorer instead.")
+    def render_explore(self, *args, **kwargs):
+        return self.explorer(*args, **kwargs)
 
     def chart(
         self,
@@ -263,10 +266,11 @@ class StreamlitRenderer:
         render_explore_modal_button(explore_html, left, explore_button_size)
 
         return components.html(html, height=height, width=width, scrolling=scrolling)
-    # alias, render_pure_chart is deprecated, use chart instead.
-    render_pure_chart = chart
-    
-    
+
+    @deprecated("render_pure_chart is deprecated, use chart instead.")
+    def render_pure_chart(self, *args, **kwargs):
+        return self.chart(*args, **kwargs)
+
 
 def get_streamlit_html(
     dataset: Union[DataFrame, Connector],
