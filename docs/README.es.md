@@ -102,10 +102,8 @@ walker = pyg.walk(
 
 ### Ejemplo en línea
 
-* [Código de Kaggle para el nuevo Pygwalker](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
-* [Página de intercambio de Kanaries](https://kanaries.net/share/notebook/cwa8g22r6kg0#heading-0)
-* [Código de Kaggle](https://www.kaggle.com/asmdef/pygwalker-test)
-* [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)
+* [Use PyGWalker in Kaggle](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
+* [Use PyGWalker in Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)
 
 ***
 
