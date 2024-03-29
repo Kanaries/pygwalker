@@ -268,6 +268,15 @@ class CloudService:
         )
         return resp.json()["data"]
 
+    def get_chart_by_chats(self, metas: List[Dict[str, Any]], chats: Any) -> Dict[str, Any]:
+        url = f"{GlobalVarManager.kanaries_api_host}/vis/chat2gw"
+        resp = self.session.post(
+            url,
+            json={"metas": metas, "messages": chats},
+            timeout=30
+        )
+        return resp.json()["data"]
+
     def create_file_dataset(
         self,
         dataset_name: str,

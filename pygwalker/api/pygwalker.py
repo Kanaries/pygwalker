@@ -424,6 +424,15 @@ class PygWalker:
                 "data": callback(data["metas"], data["query"])
             }
 
+        def _get_chart_by_chats(data: Dict[str, Any]):
+            callback = self.other_props.get(
+                "custom_chat_callback",
+                self.cloud_service.get_chart_by_chats
+            )
+            return {
+                "data": callback(data["metas"], data["chats"])
+            }
+
         def _export_dataframe_by_payload(data: Dict[str, Any]):
             df = pd.DataFrame(self.data_parser.get_datas_by_payload(data["payload"]))
             GlobalVarManager.set_last_exported_dataframe(df)
@@ -471,6 +480,7 @@ class PygWalker:
             comm.register("upload_to_cloud_charts", _upload_to_cloud_charts)
             comm.register("upload_to_cloud_dashboard", _upload_to_cloud_dashboard)
             comm.register("get_spec_by_text", _get_spec_by_text)
+            comm.register("get_chart_by_chats", _get_chart_by_chats)
 
         if self.use_kernel_calc:
             comm.register("get_datas", _get_datas)

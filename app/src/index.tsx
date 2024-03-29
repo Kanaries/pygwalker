@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
-import type { IRow, IGWHandler, IViewField, ISegmentKey, IDarkMode } from '@kanaries/graphic-walker/interfaces';
+import type { IGWHandler, IViewField, ISegmentKey, IDarkMode, IChatMessage } from '@kanaries/graphic-walker/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import Options from './components/options';
@@ -189,6 +189,10 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
             features: {
                 "askviz": async (metas: IViewField[], query: string) => {
                     const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", { metas, query });
+                    return resp?.data.data;
+                },
+                "vlChat": async (metas: IViewField[], chats: IChatMessage[]) => {
+                    const resp = await communicationStore.comm?.sendMsg("get_chart_by_chats", { metas, chats });
                     return resp?.data.data;
                 }
             }
