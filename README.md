@@ -143,7 +143,7 @@ walker = pyg.walk(
 Streamlit allows you to host a web version of pygwalker without figuring out details of how web application works.
 
 Here are some of the app examples build with pygwalker and streamlit:
-+ [PyGWalker + streamlit for Bike sharing dataset](https://pygwalker-in-app-dngxb2r82ho2zqct244v7b.streamlit.app/)
++ [PyGWalker + streamlit for Bike sharing dataset](https://pygwalkerdemo-cxz7f7pt5oc.streamlit.app/)
 + [Earthquake Dashboard](https://earthquake-dashboard-pygwalker.streamlit.app/)
 
 [![](https://user-images.githubusercontent.com/22167673/271170853-5643c3b1-6216-4ade-87f4-41c6e6893eab.png)](https://earthquake-dashboard-pygwalker.streamlit.app/)
