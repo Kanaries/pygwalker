@@ -469,7 +469,7 @@ class CloudService:
         workflow_list: List[List[Dict[str, Any]]],
         spec_list: List[Dict[str, Any]],
         is_public: bool,
-        dark: str,
+        appearance: str,
         is_create_dashboard: bool
     ) -> Dict[str, str]:
         dataset_id = self.create_cloud_dataset(data_parser, dataset_name, False)
@@ -513,7 +513,7 @@ class CloudService:
                     {"id": "dashboard_title", "content": f"# {dashboard_name}", "type": "text", "name": "Text"},
                     {
                         "id": "chart_tab",
-                        "dark": dark,
+                        "dark": appearance,
                         "name": "Charts",
                         "type": "data",
                         "tabs": [

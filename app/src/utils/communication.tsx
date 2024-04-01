@@ -89,6 +89,7 @@ const initJupyterCommunication = (gid: string) => {
     }
 
     const onMessage = (msg: string) => {
+        console.log(msg)
         const data = JSON.parse(msg);
         const action = data.action;
         if (action === "finish_request") {

@@ -3,6 +3,8 @@ import logging
 
 from typing_extensions import Literal
 
+from pygwalker.common.types import IAppearance, IThemeKey
+
 from .pygwalker import PygWalker
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.preview_image import render_gw_chart_preview_html
@@ -21,8 +23,8 @@ def _to_html(
     *,
     spec: str = "",
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
     default_tab: Literal["data", "vis"] = "vis",
     gw_mode: Literal['explore', 'renderer', 'filter_renderer', 'table'] = "explore",
     width: Optional[int] = None,
@@ -39,7 +41,7 @@ def _to_html(
     Kargs:
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - spec (str): chart config data. config id, json, remote file url
-        - theme_key ('vega' | 'g2'): theme type.
+        - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     check_expired_params(kwargs)
@@ -57,7 +59,7 @@ def _to_html(
         spec=spec,
         source_invoke_code="",
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
         use_kernel_calc=False,
@@ -79,8 +81,8 @@ def to_html(
     *,
     spec: str = "",
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
     default_tab: Literal["data", "vis"] = "vis",
     **kwargs
 ) -> str:
@@ -104,7 +106,7 @@ def to_html(
         spec=spec,
         field_specs=field_specs,
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         default_tab=default_tab,
         **kwargs
     )
@@ -113,8 +115,8 @@ def to_html(
 def to_table_html(
     df: DataFrame,
     *,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
     **kwargs
 ) -> str:
     """
@@ -133,7 +135,7 @@ def to_table_html(
         spec="",
         field_specs=[],
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         gw_mode="table",
         height="800px",
         **kwargs
@@ -144,8 +146,8 @@ def to_render_html(
     df: DataFrame,
     spec: str,
     *,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
     **kwargs
 ) -> str:
     """
@@ -163,7 +165,7 @@ def to_render_html(
         spec=spec,
         field_specs=[],
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         gw_mode="filter_renderer",
         **kwargs
     )
@@ -174,8 +176,8 @@ def to_chart_html(
     spec: Dict[str, Any],
     *,
     spec_type: Literal["graphic-walker", "vega"] = "graphic-walker",
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
 ) -> str:
     """
     Generate HTML code of a chart by graphic-walker or vega spec.
@@ -205,7 +207,7 @@ def to_chart_html(
         single_vis_spec=gw_dsl,
         data=data,
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         title="",
         desc=""
     )

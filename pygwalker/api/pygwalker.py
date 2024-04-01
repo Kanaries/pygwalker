@@ -9,6 +9,7 @@ import ipywidgets
 import pandas as pd
 
 from pygwalker._typing import DataFrame
+from pygwalker.common.types import IAppearance, IThemeKey
 from pygwalker.data_parsers.base import BaseDataParser, FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html
@@ -55,8 +56,8 @@ class PygWalker:
         field_specs: List[FieldSpec],
         spec: str,
         source_invoke_code: str,
-        theme_key: Literal['vega', 'g2'],
-        dark: Literal['media', 'light', 'dark'],
+        theme_key: IThemeKey,
+        appearance: IAppearance,
         show_cloud_tool: Optional[bool],
         use_preview: bool,
         use_kernel_calc: Optional[bool],
@@ -87,7 +88,7 @@ class PygWalker:
         self.spec = spec
         self.source_invoke_code = source_invoke_code
         self.theme_key = theme_key
-        self.dark = dark
+        self.appearance = appearance
         self.data_source_id = rand_str()
         self.other_props = kwargs
         self.tunnel_id = "tunnel!"
@@ -463,8 +464,8 @@ class PygWalker:
                 workflow_list=data["workflowList"],
                 spec_list=data["visSpec"],
                 is_public=data["isPublic"],
-                dark=self.dark,
-                is_create_dashboard=data["isCreateDashboard"]
+                is_create_dashboard=data["isCreateDashboard"],
+                appearance=self.appearance
             )
             return {"dashboardId": result["dashboard_id"], "datasetId": result["dataset_id"]}
 
@@ -528,7 +529,7 @@ class PygWalker:
             ],
             "fieldkeyGuard": False,
             "themeKey": self.theme_key,
-            "dark": self.dark,
+            "dark": self.appearance,
             "sourceInvokeCode": self.source_invoke_code,
             "dataSourceProps": {
                 'tunnelId': self.tunnel_id,
@@ -584,7 +585,7 @@ class PygWalker:
             datas,
             self.theme_key,
             self.gid,
-            self.dark
+            self.appearance
         )
 
         return html
@@ -603,5 +604,5 @@ class PygWalker:
             theme_key=self.theme_key,
             title=title,
             desc=desc,
-            dark=self.dark
+            dark=self.appearance
         )
