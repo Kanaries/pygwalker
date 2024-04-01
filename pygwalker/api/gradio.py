@@ -25,7 +25,7 @@ def get_html_on_gradio(
     appearance: IAppearance = 'media',
     spec: str = "",
     spec_io_mode: ISpecIOMode = "r",
-    use_kernel_calc: bool = True,
+    kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
     **kwargs
@@ -43,7 +43,7 @@ def get_html_on_gradio(
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
+        - kernel_computation(bool): Whether to use kernel compute for datas, Default to True.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
@@ -59,12 +59,12 @@ def get_html_on_gradio(
         appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
+        kernel_computation=isinstance(dataset, Connector) or kernel_computation,
         use_save_tool="w" in spec_io_mode,
         is_export_dataframe=False,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
-        use_cloud_calc=False,
+        cloud_computation=False,
         gw_mode="explore",
         **kwargs
     )

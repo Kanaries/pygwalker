@@ -60,8 +60,8 @@ class PygWalker:
         appearance: IAppearance,
         show_cloud_tool: Optional[bool],
         use_preview: bool,
-        use_kernel_calc: Optional[bool],
-        use_cloud_calc: Optional[bool],
+        kernel_computation: Optional[bool],
+        cloud_computation: Optional[bool],
         use_save_tool: bool,
         is_export_dataframe: bool,
         kanaries_api_key: str,
@@ -78,12 +78,15 @@ class PygWalker:
         self.data_parser = self._get_data_parser(
             dataset=dataset,
             field_specs=field_specs,
-            use_cloud_calc=use_cloud_calc,
+            cloud_computation=cloud_computation,
             kanaries_api_key=self.kanaries_api_key,
             cloud_service=self.cloud_service
         )
-        self.use_kernel_calc = self.data_parser.data_size > JUPYTER_WIDGETS_BYTE_LIMIT if use_kernel_calc is None else use_kernel_calc
-        self.origin_data_source = self.data_parser.to_records(500 if self.use_kernel_calc else None)
+
+        suggest_kernel_computation = self.data_parser.data_size > JUPYTER_BYTE_LIMIT
+        self.kernel_computation = suggest_kernel_computation if kernel_computation is None else kernel_computation
+        
+        self.origin_data_source = self.data_parser.to_records(500 if self.kernel_computation else None)
         self.field_specs = self.data_parser.raw_fields
         self.spec = spec
         self.source_invoke_code = source_invoke_code
@@ -102,10 +105,10 @@ class PygWalker:
         self.is_export_dataframe = is_export_dataframe
         self._last_exported_dataframe = None
         self.default_tab = default_tab
-        self.use_cloud_calc = use_cloud_calc
+        self.cloud_computation = cloud_computation
         check_update()
         # Temporarily adapt to pandas import module bug
-        if self.use_kernel_calc:
+        if self.kernel_computation:
             try:
                 self.data_parser.get_datas_by_sql("SELECT 1 FROM pygwalker_mid_table LIMIT 1")
             except Exception:
@@ -123,7 +126,7 @@ class PygWalker:
         *,
         dataset: Union[DataFrame, Connector, str],
         field_specs: List[FieldSpec],
-        use_cloud_calc: bool,
+        cloud_computation: bool,
         kanaries_api_key: str,
         cloud_service: CloudService
     ) -> BaseDataParser:
@@ -132,7 +135,7 @@ class PygWalker:
             field_specs,
             other_params={"kanaries_api_key": kanaries_api_key}
         )
-        if not use_cloud_calc:
+        if not cloud_computation:
             return data_parser
 
         dataset_id = cloud_service.create_cloud_dataset(
@@ -484,7 +487,7 @@ class PygWalker:
             comm.register("get_spec_by_text", _get_spec_by_text)
             comm.register("get_chart_by_chats", _get_chart_by_chats)
 
-        if self.use_kernel_calc:
+        if self.kernel_computation:
             comm.register("get_datas", _get_datas)
             comm.register("get_datas_by_payload", _get_datas_by_payload)
             comm.register("batch_get_datas_by_sql", _batch_get_datas_by_sql)
@@ -538,10 +541,10 @@ class PygWalker:
             },
             "env": env,
             "specType": self.spec_type,
-            "needLoadDatas": not self.use_kernel_calc and need_load_datas,
+            "needLoadDatas": not self.kernel_computation and need_load_datas,
             "showCloudTool": self.show_cloud_tool,
             "needInitChart": not self._chart_map,
-            "useKernelCalc": self.use_kernel_calc,
+            "useKernelCalc": self.kernel_computation,
             "useSaveTool": self.use_save_tool,
             "parseDslType": self.parse_dsl_type,
             "gwMode": self.gw_mode,
@@ -551,7 +554,7 @@ class PygWalker:
             "fieldMetas": self.data_parser.field_metas,
             "isExportDataFrame": self.is_export_dataframe,
             "defaultTab": self.default_tab,
-            "useCloudCalc": self.use_cloud_calc
+            "useCloudCalc": self.cloud_computation
         }
 
         self._send_props_track(props)

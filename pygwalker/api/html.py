@@ -62,13 +62,13 @@ def _to_html(
         appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        use_kernel_calc=False,
+        kernel_computation=False,
         use_save_tool=False,
         gw_mode=gw_mode,
         is_export_dataframe=False,
         kanaries_api_key="",
         default_tab=default_tab,
-        use_cloud_calc=False,
+        cloud_computation=False,
         **kwargs
     )
 

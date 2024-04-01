@@ -91,7 +91,7 @@ df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
     spec="./chart_meta_0.json",    # 이 json 파일은 차트 상태를 저장하며, 차트를 완료할 때 수동으로 저장 버튼을 클릭해야 합니다. 'autosave'는 미래에 지원될 예정입니다.
-    use_kernel_calc=True,          # `use_kernel_calc=True`로 설정하면 pygwalker가 계산 엔진으로 duckdb를 사용하며, 더 큰 데이터셋(<=100GB)을 탐색할 수 있습니다.
+    kernel_computation=True,          # `kernel_computation=True`로 설정하면 pygwalker가 계산 엔진으로 duckdb를 사용하며, 더 큰 데이터셋(<=100GB)을 탐색할 수 있습니다.
 )
 ```
 

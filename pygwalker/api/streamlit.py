@@ -10,6 +10,7 @@ import arrow
 import streamlit.components.v1 as components
 
 from pygwalker.common.types import IAppearance, ISpecIOMode, IThemeKey
+from pygwalker.utils import fallback_value
 
 from .pygwalker import PygWalker
 from pygwalker.communications.streamlit_comm import (
@@ -63,6 +64,7 @@ class StreamlitRenderer:
         appearance: IAppearance = 'media',
         spec: str = "",
         spec_io_mode: ISpecIOMode = "r",
+        kernel_computation: Optional[bool] = None,
         use_kernel_calc: Optional[bool] = True,
         show_cloud_tool: Optional[bool] = None,
         kanaries_api_key: str = "",
@@ -81,7 +83,8 @@ class StreamlitRenderer:
             - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
             - spec (str): chart config data. config id, json, remote file url
             - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
-            - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
+            - kernel_computation(bool): Whether to use kernel compute for datas, Default to True.
+            - use_kernel_calc(bool): Deprecated, use kernel_computation instead.
             - kanaries_api_key (str): kanaries api key, Default to "".
             - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         """
@@ -99,12 +102,12 @@ class StreamlitRenderer:
             appearance=appearance,
             show_cloud_tool=show_cloud_tool,
             use_preview=False,
-            use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
+            kernel_computation=isinstance(dataset, Connector) or fallback_value(kernel_computation, use_kernel_calc),
             use_save_tool="w" in spec_io_mode,
             is_export_dataframe=False,
             kanaries_api_key=kanaries_api_key,
             default_tab=default_tab,
-            use_cloud_calc=False,
+            cloud_computation=False,
             gw_mode="explore",
             **kwargs
         )
@@ -284,6 +287,7 @@ def get_streamlit_html(
     appearance: IAppearance = 'media',
     spec: str = "",
     use_kernel_calc: Optional[bool] = None,
+    kernel_computation: Optional[bool] = None,
     show_cloud_tool: Optional[bool] = None,
     spec_io_mode: ISpecIOMode = "r",
     kanaries_api_key: str = "",
@@ -302,7 +306,8 @@ def get_streamlit_html(
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
+        - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
+        - use_kernel_calc(bool): Deprecated, use kernel_computation instead.
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -319,6 +324,7 @@ def get_streamlit_html(
         appearance=appearance,
         spec_io_mode=spec_io_mode,
         use_kernel_calc=use_kernel_calc,
+        kernel_computation=kernel_computation,
         show_cloud_tool=show_cloud_tool,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,

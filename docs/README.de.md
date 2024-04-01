@@ -91,7 +91,7 @@ df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
     spec="./chart_meta_0.json",    # Diese JSON-Datei speichert Ihren Diagrammstatus. Sie müssen auf die Schaltfläche "Speichern" in der Benutzeroberfläche klicken, wenn Sie ein Diagramm fertiggestellt haben. Die automatische Speicherung wird in Zukunft unterstützt.
-    use_kernel_calc=True,          # Setzen Sie `use_kernel_calc=True`, PyGWalker verwendet DuckDB als Berechnungsmaschine. Damit können Sie größere Datensätze (<=100 GB) erkunden.
+    kernel_computation=True,          # Setzen Sie `kernel_computation=True`, PyGWalker verwendet DuckDB als Berechnungsmaschine. Damit können Sie größere Datensätze (<=100 GB) erkunden.
 )
 ```
 

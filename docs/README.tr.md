@@ -92,7 +92,7 @@ df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
     spec="./chart_meta_0.json",    # bu json dosyası grafik durumunuzu kaydedecektir, bir grafiği bitirdiğinizde kullanıcı arayüzü kılavuzundaki kaydet düğmesine tıklamanız gerekir, 'otomatik kaydetme' gelecekte desteklenecektir
-    use_kernel_calc=True,          # `use_kernel_calc=True` ayarını yapın, pygwalker bilgi işlem motoru olarak duckdb'yi kullanacak, daha büyük veri kümesini keşfetmenizi destekleyecektir (<=100GB).
+    kernel_computation=True,          # `kernel_computation=True` ayarını yapın, pygwalker bilgi işlem motoru olarak duckdb'yi kullanacak, daha büyük veri kümesini keşfetmenizi destekleyecektir (<=100GB).
 )
 ```
 
