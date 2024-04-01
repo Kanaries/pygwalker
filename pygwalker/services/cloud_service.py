@@ -470,7 +470,7 @@ class CloudService:
         spec_list: List[Dict[str, Any]],
         is_public: bool,
         appearance: str,
-        is_create_dashboard: bool
+        create_dashboard_flag: bool
     ) -> Dict[str, str]:
         dataset_id = self.create_cloud_dataset(data_parser, dataset_name, False)
 
@@ -499,7 +499,7 @@ class CloudService:
 
             chart_info_list.append(chart_info)
 
-        if not is_create_dashboard:
+        if not create_dashboard_flag:
             return {
                 "dashboard_id": "",
                 "dataset_id": dataset_id

@@ -116,6 +116,7 @@ class PygWalker:
     @property
     def last_exported_dataframe(self) -> Optional[pd.DataFrame]:
         return self._last_exported_dataframe
+    
 
     def _get_data_parser(
         self,
@@ -464,7 +465,7 @@ class PygWalker:
                 workflow_list=data["workflowList"],
                 spec_list=data["visSpec"],
                 is_public=data["isPublic"],
-                is_create_dashboard=data["isCreateDashboard"],
+                create_dashboard_flag=data["isCreateDashboard"],
                 appearance=self.appearance
             )
             return {"dashboardId": result["dashboard_id"], "datasetId": result["dataset_id"]}
