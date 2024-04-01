@@ -7,6 +7,7 @@
   "scripts": {
     "build": "vite build && vite build --mode=dsl_to_workflow && vite build --mode=vega_to_dsl",
     "build:app": "vite build",
+    "build:streamlit": "vite build --mode=streamlit",
     "dev:preinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
     "dev:server": "vite --host",
     "dev": "vite build --mode=develop",
@@ -41,6 +42,7 @@
     "react": "^18.x",
     "react-dom": "^18.x",
     "react-syntax-highlighter": "^15.5.0",
+    "streamlit-component-lib": "^2.0.0",
     "styled-components": "^5.3.6",
     "tailwind-merge": "^1.14.0",
     "tailwindcss": "^3.2.4",

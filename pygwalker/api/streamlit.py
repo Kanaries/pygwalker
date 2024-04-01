@@ -20,7 +20,7 @@ from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.check_walker_params import check_expired_params
-from pygwalker.services.streamlit_components import render_explore_modal_button
+from pygwalker.services.streamlit_components import render_explore_modal_button, pygwalker_component
 
 if TYPE_CHECKING:
     from streamlit.delta_generator import DeltaGenerator
@@ -106,8 +106,8 @@ class StreamlitRenderer:
             gw_mode="explore",
             **kwargs
         )
-        comm = StreamlitCommunication(str(self.walker.gid))
-        self.walker._init_callback(comm)
+        self.comm = StreamlitCommunication(str(self.walker.gid))
+        self.walker._init_callback(self.comm)
         self.global_pre_filters = None
 
     @cached(cache=TTLCache(maxsize=256, ttl=1800))
@@ -270,6 +270,23 @@ class StreamlitRenderer:
     @deprecated("render_pure_chart is deprecated, use chart instead.")
     def render_pure_chart(self, *args, **kwargs):
         return self.chart(*args, **kwargs)
+
+    def new_component(
+        self,
+        *,
+        key: str = "pygwalker",
+        mode: Literal["explore", "renderer", "filter_renderer"] = "explore",
+        vis_spec: Optional[List[Dict[str, Any]]] = None,
+        **kwargs: Dict[str, Any]
+    ) -> None:
+        props = self.walker._get_props("streamlit")
+        props["communicationUrl"] = BASE_URL_PATH
+        props["gwMode"] = mode
+        if vis_spec is not None:
+            props["visSpec"] = vis_spec
+        props.update(kwargs)
+        
+        return pygwalker_component(props, self.comm, key)
 
 
 def get_streamlit_html(

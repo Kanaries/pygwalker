@@ -2,7 +2,6 @@ import { defineConfig, ConfigEnv, UserConfig } from 'vite'
 import wasm from 'vite-plugin-wasm';
 import path from 'path';
 import react from '@vitejs/plugin-react'
-import typescript from '@rollup/plugin-typescript'
 import { peerDependencies } from './package.json'
 import Replace from '@rollup/plugin-replace'
 
@@ -56,13 +55,6 @@ export default defineConfig((config: ConfigEnv) => {
     plugins: [
       react(),
       wasm(),
-      // @ts-ignore
-      {
-        ...typescript({
-          tsconfig: path.resolve(__dirname, './tsconfig.json'),
-        }),
-        apply: 'build'
-      },
       Replace({
         'process.env.NODE_ENV': JSON.stringify(config.mode),
         'preventAssignment': true

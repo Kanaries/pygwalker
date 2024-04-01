@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
@@ -12,7 +12,7 @@ import { IAppProps } from './interfaces';
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
 import commonStore from "./store/common";
-import { initJupyterCommunication, initHttpCommunication } from "./utils/communication";
+import { initJupyterCommunication, initHttpCommunication, initStreamlitCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig, checkUploadPrivacy } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
@@ -46,6 +46,7 @@ import style from './index.css?inline'
 import { currentMediaTheme } from './utils/theme';
 import { AppContext, darkModeContext } from './store/context';
 import FormatSpec from './utils/formatSpec';
+import { Streamlit, withStreamlitConnection } from "streamlit-component-lib"
 
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
@@ -57,7 +58,10 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
             total: total,
         });
         for await (const chart of gwRef.current?.exportChartList("data-url")!) {
-            await communicationStore.comm?.sendMsg("save_chart", await formatExportedChartDatas(chart.data));
+            await communicationStore.comm?.sendMsg(
+                "save_chart",
+                JSON.parse(JSON.stringify(await formatExportedChartDatas(chart.data)))
+            );
             commonStore.setInitModalInfo({
                 title: "Recover Charts",
                 curIndex: chart.index + 1,
@@ -182,22 +186,24 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
         extra: tools
     }
 
-    const computationCallback = getComputationCallback(props);
-    let enhanceAPI;
-    if (props.showCloudTool) {
-        enhanceAPI = {
-            features: {
-                "askviz": async (metas: IViewField[], query: string) => {
-                    const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", { metas, query });
-                    return resp?.data.data;
-                },
-                "vlChat": async (metas: IViewField[], chats: IChatMessage[]) => {
-                    const resp = await communicationStore.comm?.sendMsg("get_chart_by_chats", { metas, chats });
-                    return resp?.data.data;
+    const enhanceAPI = useMemo(() => {
+        if (props.showCloudTool) {
+            return {
+                features: {
+                    "askviz": async (metas: IViewField[], query: string) => {
+                        const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", { metas, query });
+                        return resp?.data.data;
+                    },
+                    "vlChat": async (metas: IViewField[], chats: IChatMessage[]) => {
+                        const resp = await communicationStore.comm?.sendMsg("get_chart_by_chats", { metas, chats });
+                        return resp?.data.data;
+                    }
                 }
             }
         }
-    }
+    }, [props.showCloudTool]);
+
+    const computationCallback = useMemo(() => getComputationCallback(props), []);
 
     const modeChange = (value: string) => {
         if (mode === "walker") {
@@ -299,6 +305,12 @@ const initOnHttpCommunication = async(props: IAppProps) => {
     await initDslParser();
 }
 
+const initOnStreamlit = async(props: IAppProps) => {
+    const comm = initStreamlitCommunication();
+    communicationStore.setComm(comm);
+    await initDslParser();
+}
+
 const defaultInit = async(props: IAppProps) => {}
 
 function GWalkerComponent(props: IAppProps) {
@@ -316,18 +328,14 @@ function GWalkerComponent(props: IAppProps) {
         }
     }, []);
 
-    switch(props.gwMode) {
-        case "explore":
-            return <ExploreApp {...props} initChartFlag={initChartFlag} />;
-        case "renderer":
-            return <PureRednererApp {...props} />;
-        case "filter_renderer":
-            return <GraphicRendererApp {...props} />;
-        case "table":
-            return <TableWalkerApp {...props} />;
-        default:
-            return<ExploreApp {...props} initChartFlag={initChartFlag} />
-    }
+    return (
+        <React.StrictMode>
+            { props.gwMode === "explore" && <ExploreApp {...props} initChartFlag={initChartFlag} /> }
+            { props.gwMode === "renderer" && <PureRednererApp {...props} /> }
+            { props.gwMode === "filter_renderer" && <GraphicRendererApp {...props} /> }
+            { props.gwMode === "table" && <TableWalkerApp {...props} /> }
+        </React.StrictMode>
+    )
 }
 
 function GWalker(props: IAppProps, id: string) {
@@ -444,4 +452,58 @@ function TableWalkerApp(props: IAppProps) {
     )
 }
 
-export default { GWalker, PreviewApp, ChartPreviewApp }
+function SteamlitGWalker(streamlitProps: any) {
+    const commCallbackMsg = streamlitProps.args.comm_callback_msg;
+    const props = streamlitProps.args as IAppProps;
+    const [inited, setInited] = useState(false);
+    const container = useRef(null);
+    props.visSpec = FormatSpec(props.visSpec, props.rawFields);
+
+    useEffect(() => {
+        initOnStreamlit(props).then(() => {
+            setInited(true);
+        })
+    }, []);
+
+    useEffect(() => {
+        if(commCallbackMsg.response !== null) {
+            commCallbackMsg.response.map(item => {
+                communicationStore.comm?.resolveTaskResult(item.rid, item.data)
+            });
+            Streamlit.setComponentValue({"request": null, "response": null});
+        }
+    }, [commCallbackMsg]);
+
+    useEffect(() => {
+        if (!container.current) return;
+        const resizeObserver = new ResizeObserver(() => {
+            Streamlit.setFrameHeight((container.current.clientHeight ?? 0) + 20);
+        })
+        resizeObserver.observe(container.current);
+        return () => resizeObserver.disconnect();
+    }, [inited]);
+
+    return (
+        <React.StrictMode>
+            {inited && (
+                <div ref={container}>
+                    <MainApp darkMode={props.dark}>
+                        <GWalkerComponent {...props} />
+                    </MainApp>
+                </div>
+            )}
+        </React.StrictMode>
+    );
+};
+
+const renderStreamlitGWalker = () => {
+    const StreamlitGWalker = withStreamlitConnection(SteamlitGWalker);
+    ReactDOM.render(
+        <React.StrictMode>
+            <StreamlitGWalker />
+        </React.StrictMode>,
+        document.getElementById("root")
+    )
+}
+
+export default { GWalker, PreviewApp, ChartPreviewApp, renderStreamlitGWalker }
