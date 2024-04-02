@@ -118,14 +118,15 @@ Cool things you can do with PyGwalker:
 There are some important parameters you should know when using pygwalker: 
 
 + `spec`: for save/load chart config (json string or file path)
-+ `use_kernel_calc`: for using duckdb as computing engine which allows you to handle larger dataset faster in your local machine.
++ `kernel_computation`: for using duckdb as computing engine which allows you to handle larger dataset faster in your local machine.
++ `use_kernel_calc`: Deprecated, use `kernel_computation` instead.
 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
     spec="./chart_meta_0.json",    # this json file will save your chart state, you need to click save button in ui mannual when you finish a chart, 'autosave' will be supported in the future.
-    use_kernel_calc=True,          # set `use_kernel_calc=True`, pygwalker will use duckdb as computing engine, it support you explore bigger dataset(<=100GB).
+    kernel_computation=True,          # set `kernel_computation=True`, pygwalker will use duckdb as computing engine, it support you explore bigger dataset(<=100GB).
 )
 ```
 
@@ -191,7 +192,7 @@ renderer.explorer()
 | dark                   | Literal['media', 'light', 'dark']                         | 'media'              | Theme setting. 'media' will auto-detect the OS theme.                                                                                            |
 | spec                   | str                                                       | ""                   | Chart configuration data. Can be a configuration ID, JSON, or remote file URL.                                                                   |
 | use_preview            | bool                                                      | True                 | If True, uses the preview function.                                                                                                              |
-| use_kernel_calc        | bool                                                      | False                | If True, uses kernel computation for data.                                                                                                       |
+| kernel_computation        | bool                                                      | False                | If True, uses kernel computation for data.                                                                                                       |
 | **kwargs               | Any                                                       | -                    | Additional keyword arguments.                                                                                                                    |
 
 ## Tested Environments

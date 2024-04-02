@@ -9,6 +9,9 @@ from cachetools import cached, TTLCache
 import arrow
 import streamlit.components.v1 as components
 
+from pygwalker.common.types import IAppearance, ISpecIOMode, IThemeKey
+from pygwalker.utils import fallback_value
+
 from .pygwalker import PygWalker
 from pygwalker.communications.streamlit_comm import (
     hack_streamlit_server,
@@ -57,10 +60,11 @@ class StreamlitRenderer:
         gid: Union[int, str] = None,
         *,
         field_specs: Optional[List[FieldSpec]] = None,
-        theme_key: Literal['vega', 'g2'] = 'g2',
-        dark: Literal['media', 'light', 'dark'] = 'media',
+        theme_key: IThemeKey = 'g2',
+        appearance: IAppearance = 'media',
         spec: str = "",
-        spec_io_mode: Literal["r", "rw"] = "r",
+        spec_io_mode: ISpecIOMode = "r",
+        kernel_computation: Optional[bool] = None,
         use_kernel_calc: Optional[bool] = True,
         show_cloud_tool: Optional[bool] = None,
         kanaries_api_key: str = "",
@@ -78,8 +82,9 @@ class StreamlitRenderer:
             - theme_key ('vega' | 'g2'): theme type.
             - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
             - spec (str): chart config data. config id, json, remote file url
-            - spec_io_mode (Literal["r", "rw"]): spec io mode, Default to "r", "r" for read, "rw" for read and write.
-            - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
+            - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
+            - kernel_computation(bool): Whether to use kernel compute for datas, Default to True.
+            - use_kernel_calc(bool): Deprecated, use kernel_computation instead.
             - kanaries_api_key (str): kanaries api key, Default to "".
             - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         """
@@ -94,15 +99,15 @@ class StreamlitRenderer:
             spec=spec,
             source_invoke_code="",
             theme_key=theme_key,
-            dark=dark,
+            appearance=appearance,
             show_cloud_tool=show_cloud_tool,
             use_preview=False,
-            use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
+            kernel_computation=isinstance(dataset, Connector) or fallback_value(kernel_computation, use_kernel_calc),
             use_save_tool="w" in spec_io_mode,
             is_export_dataframe=False,
             kanaries_api_key=kanaries_api_key,
             default_tab=default_tab,
-            use_cloud_calc=False,
+            cloud_computation=False,
             gw_mode="explore",
             **kwargs
         )
@@ -205,10 +210,10 @@ class StreamlitRenderer:
         """Render explore UI(it can drag and drop fields)"""
         html = self._get_html(**{"defaultTab": default_tab})
         return components.html(html, height=height, width=width, scrolling=scrolling)
-
-    @deprecated("render_explore is deprecated, use explorer instead.")
-    def render_explore(self, *args, **kwargs):
-        return self.explorer(*args, **kwargs)
+    render_explore = explorer
+    """
+    `render_explore` is alias of explorer and is deprecated, use explorer instead.
+    """
 
     def chart(
         self,
@@ -266,23 +271,25 @@ class StreamlitRenderer:
         render_explore_modal_button(explore_html, left, explore_button_size)
 
         return components.html(html, height=height, width=width, scrolling=scrolling)
-
-    @deprecated("render_pure_chart is deprecated, use chart instead.")
-    def render_pure_chart(self, *args, **kwargs):
-        return self.chart(*args, **kwargs)
-
+    render_pure_chart = chart
+    """
+    `render_pure_chart` is alias of chart and is deprecated, use chart instead.
+    """
+    
+    
 
 def get_streamlit_html(
     dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
     spec: str = "",
     use_kernel_calc: Optional[bool] = None,
+    kernel_computation: Optional[bool] = None,
     show_cloud_tool: Optional[bool] = None,
-    spec_io_mode: Literal["r", "rw"] = "r",
+    spec_io_mode: ISpecIOMode = "r",
     kanaries_api_key: str = "",
     mode: Literal["explore", "filter_renderer"] = "explore",
     default_tab: Literal["data", "vis"] = "vis",
@@ -299,8 +306,9 @@ def get_streamlit_html(
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
-        - spec_io_mode (Literal["r", "rw"]): spec io mode, Default to "r", "r" for read, "rw" for read and write.
+        - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
+        - use_kernel_calc(bool): Deprecated, use kernel_computation instead.
+        - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
@@ -313,9 +321,10 @@ def get_streamlit_html(
         field_specs=field_specs,
         spec=spec,
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         spec_io_mode=spec_io_mode,
         use_kernel_calc=use_kernel_calc,
+        kernel_computation=kernel_computation,
         show_cloud_tool=show_cloud_tool,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,

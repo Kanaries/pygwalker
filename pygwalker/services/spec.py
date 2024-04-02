@@ -185,6 +185,7 @@ def get_spec_json(spec: Union[str, List[Any], Dict[str, Any]]) -> Tuple[Dict[str
 
     if Version(spec_obj.get("version", "0.1.0")) <= Version("0.3.17a4"):
         spec_obj["config"] = _config_adapter(spec_obj["config"])
+    
 
     if isinstance(spec_obj["config"], str):
         spec_obj["config"] = json.loads(spec_obj["config"])

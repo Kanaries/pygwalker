@@ -24,6 +24,7 @@ const getInflateData = (dataStr: string) => {
         compressed[i] = binaryString.charCodeAt(i);
     }
     const inflated = pako.inflate(compressed, {to: "string"});
+
     const datas = JSON.parse(inflated);
     const keys = Object.keys(datas);
     if (keys.length === 0) {

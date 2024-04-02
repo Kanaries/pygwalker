@@ -100,7 +100,7 @@ df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
     spec="./chart_meta_0.json",    # 这个JSON文件将保存您的图表状态，当您完成一个图表时，需要在UI界面上手动点击保存按钮。在未来，将支持“自动保存”。
-    use_kernel_calc=True,          # 如果设置`use_kernel_calc=True` ，pygwalker 将使用duckdb作为计算引擎，它支持您探索更大的数据集（<=100GB）。
+    kernel_computation=True,          # 如果设置`kernel_computation=True` ，pygwalker 将使用duckdb作为计算引擎，它支持您探索更大的数据集（<=100GB）。
 )
 ```
 

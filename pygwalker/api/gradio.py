@@ -1,6 +1,8 @@
 from typing import Union, List, Optional
 from typing_extensions import Literal
 
+from pygwalker.common.types import IAppearance, ISpecIOMode, IThemeKey
+
 from .pygwalker import PygWalker
 from pygwalker.communications.gradio_comm import (
     BASE_URL_PATH,
@@ -19,11 +21,11 @@ def get_html_on_gradio(
     gid: Union[int, str] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
     spec: str = "",
-    spec_io_mode: Literal["r", "rw"] = "r",
-    use_kernel_calc: bool = True,
+    spec_io_mode: ISpecIOMode = "r",
+    kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
     **kwargs
@@ -37,11 +39,11 @@ def get_html_on_gradio(
     Kargs:
         - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-        - theme_key ('vega' | 'g2'): theme type.
+        - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
-        - spec_io_mode (Literal["r", "rw"]): spec io mode, Default to "r", "r" for read, "rw" for read and write.
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to True.
+        - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
+        - kernel_computation(bool): Whether to use kernel compute for datas, Default to True.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
@@ -54,15 +56,15 @@ def get_html_on_gradio(
         spec=spec,
         source_invoke_code="",
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        use_kernel_calc=isinstance(dataset, Connector) or use_kernel_calc,
+        kernel_computation=isinstance(dataset, Connector) or kernel_computation,
         use_save_tool="w" in spec_io_mode,
         is_export_dataframe=False,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
-        use_cloud_calc=False,
+        cloud_computation=False,
         gw_mode="explore",
         **kwargs
     )

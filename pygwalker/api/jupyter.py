@@ -3,6 +3,9 @@ import inspect
 
 from typing_extensions import Literal
 
+from pygwalker.common.types import IAppearance, IThemeKey
+from pygwalker.utils import fallback_value
+
 from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
@@ -19,11 +22,13 @@ def walk(
     *,
     env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
+    theme_key: IThemeKey = 'g2',
+    # alias for appearance, dark is deprecated, please use appearance instead
+    appearance: IAppearance = 'media',
     spec: str = "",
     use_kernel_calc: Optional[bool] = None,
-    use_cloud_calc: bool = False,
+    kernel_computation: Optional[bool] = None,
+    cloud_computation: bool = False,
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
@@ -38,13 +43,13 @@ def walk(
     Kargs:
         - env: (Literal['Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterWidget'
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
-        - theme_key ('vega' | 'g2'): theme type.
+        - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
-        - use_cloud_calc(bool): Whether to use cloud compute for datas, it upload your data to kanaries cloud. Default to False.
+        - cloud_computation(bool): Whether to use cloud compute for datas, it upload your data to kanaries cloud. Default to False.
     """
     check_expired_params(kwargs)
 
@@ -62,16 +67,16 @@ def walk(
         spec=spec,
         source_invoke_code=source_invoke_code,
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         show_cloud_tool=show_cloud_tool,
         use_preview=True,
-        use_kernel_calc=isinstance(dataset, (Connector, str)) or use_kernel_calc,
+        kernel_computation=isinstance(dataset, (Connector, str)) or fallback_value(kernel_computation, use_kernel_calc),
         use_save_tool=True,
         gw_mode="explore",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
-        use_cloud_calc=use_cloud_calc,
+        cloud_computation=cloud_computation,
         **kwargs
     )
 
@@ -101,9 +106,9 @@ def render(
     dataset: Union[DataFrame, Connector, str],
     spec: str,
     *,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
-    use_kernel_calc: Optional[bool] = None,
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
+    kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     **kwargs
 ):
@@ -115,9 +120,10 @@ def render(
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
+        - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
+
     walker = PygWalker(
         gid=None,
         dataset=dataset,
@@ -125,16 +131,16 @@ def render(
         spec=spec,
         source_invoke_code="",
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        use_kernel_calc=isinstance(dataset, (Connector, str)) or use_kernel_calc,
+        kernel_computation=isinstance(dataset, (Connector, str)) or kernel_computation,
         use_save_tool=False,
         gw_mode="filter_renderer",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab="vis",
-        use_cloud_calc=False,
+        cloud_computation=False,
         **kwargs
     )
 
@@ -144,9 +150,9 @@ def render(
 def table(
     dataset: Union[DataFrame, Connector, str],
     *,
-    theme_key: Literal['vega', 'g2'] = 'g2',
-    dark: Literal['media', 'light', 'dark'] = 'media',
-    use_kernel_calc: Optional[bool] = None,
+    theme_key: IThemeKey = 'g2',
+    appearance: IAppearance = 'media',
+    kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     **kwargs
 ):
@@ -157,7 +163,7 @@ def table(
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
-        - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None.
+        - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
     walker = PygWalker(
@@ -167,16 +173,16 @@ def table(
         spec="",
         source_invoke_code="",
         theme_key=theme_key,
-        dark=dark,
+        appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        use_kernel_calc=isinstance(dataset, (Connector, str)) or use_kernel_calc,
+        kernel_computation=isinstance(dataset, (Connector, str)) or kernel_computation,
         use_save_tool=False,
         gw_mode="table",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab="vis",
-        use_cloud_calc=False,
+        cloud_computation=False,
         **kwargs
     )
 

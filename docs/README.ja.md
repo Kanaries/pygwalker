@@ -91,7 +91,7 @@ df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
     spec="./chart_meta_0.json",    # このJSONファイルにはチャートの状態が保存されます。チャートが完了したらUIで保存ボタンをクリックする必要があります。将来的には「自動保存」がサポートされる予定です。
-    use_kernel_calc=True,          # `use_kernel_calc=True`を設定すると、pygwalkerは計算エンジンとしてduckdbを使用します。これにより、より大きなデータセット（<=100GB）を探索できます。
+    kernel_computation=True,          # `kernel_computation=True`を設定すると、pygwalkerは計算エンジンとしてduckdbを使用します。これにより、より大きなデータセット（<=100GB）を探索できます。
 )
 ```
 

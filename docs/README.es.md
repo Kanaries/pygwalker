@@ -91,7 +91,7 @@ df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
     spec="./chart_meta_0.json",    # este archivo JSON guardará el estado de su gráfico, debe hacer clic en el botón de guardar en la interfaz de usuario cuando termine un gráfico, el "guardado automático" se admitirá en el futuro.
-    use_kernel_calc=True,          # establezca `use_kernel_calc=True`, pygwalker utilizará DuckDB como motor de cálculo, lo que le permitirá explorar conjuntos de datos más grandes (<= 100 GB).
+    kernel_computation=True,          # establezca `kernel_computation=True`, pygwalker utilizará DuckDB como motor de cálculo, lo que le permitirá explorar conjuntos de datos más grandes (<= 100 GB).
 )
 ```
 
