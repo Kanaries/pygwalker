@@ -9,9 +9,6 @@ from cachetools import cached, TTLCache
 import arrow
 import streamlit.components.v1 as components
 
-from pygwalker.common.types import IAppearance, ISpecIOMode, IThemeKey
-from pygwalker.utils import fallback_value
-
 from .pygwalker import PygWalker
 from pygwalker.communications.streamlit_comm import (
     hack_streamlit_server,
@@ -20,9 +17,10 @@ from pygwalker.communications.streamlit_comm import (
 )
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame
+from pygwalker._typing import DataFrame, IAppearance, ISpecIOMode, IThemeKey
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.check_walker_params import check_expired_params
+from pygwalker.utils import fallback_value
 from pygwalker.services.streamlit_components import render_explore_modal_button
 
 if TYPE_CHECKING:
@@ -210,10 +208,10 @@ class StreamlitRenderer:
         """Render explore UI(it can drag and drop fields)"""
         html = self._get_html(**{"defaultTab": default_tab})
         return components.html(html, height=height, width=width, scrolling=scrolling)
-    render_explore = explorer
-    """
-    `render_explore` is alias of explorer and is deprecated, use explorer instead.
-    """
+
+    @deprecated("render_explore is deprecated, use explorer instead.")
+    def render_explore(self, *args, **kwargs):
+        return self.explorer(*args, **kwargs)
 
     def chart(
         self,
@@ -271,12 +269,11 @@ class StreamlitRenderer:
         render_explore_modal_button(explore_html, left, explore_button_size)
 
         return components.html(html, height=height, width=width, scrolling=scrolling)
-    render_pure_chart = chart
-    """
-    `render_pure_chart` is alias of chart and is deprecated, use chart instead.
-    """
-    
-    
+
+    @deprecated("render_pure_chart is deprecated, use chart instead.")
+    def render_pure_chart(self, *args, **kwargs):
+        return self.chart(*args, **kwargs)
+
 
 def get_streamlit_html(
     dataset: Union[DataFrame, Connector],

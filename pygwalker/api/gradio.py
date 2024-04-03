@@ -1,8 +1,6 @@
 from typing import Union, List, Optional
 from typing_extensions import Literal
 
-from pygwalker.common.types import IAppearance, ISpecIOMode, IThemeKey
-
 from .pygwalker import PygWalker
 from pygwalker.communications.gradio_comm import (
     BASE_URL_PATH,
@@ -11,7 +9,7 @@ from pygwalker.communications.gradio_comm import (
 )
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame
+from pygwalker._typing import DataFrame, IAppearance, ISpecIOMode, IThemeKey
 from pygwalker.utils.check_walker_params import check_expired_params
 
 

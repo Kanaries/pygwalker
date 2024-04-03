@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import List, Dict, Any, Optional, Union
 import html as m_html
 import urllib
 import json
@@ -8,8 +8,7 @@ from duckdb import ParserException
 import ipywidgets
 import pandas as pd
 
-from pygwalker._typing import DataFrame
-from pygwalker.common.types import IAppearance, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IThemeKey
 from pygwalker.data_parsers.base import BaseDataParser, FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html
@@ -85,7 +84,6 @@ class PygWalker:
 
         suggest_kernel_computation = self.data_parser.data_size > JUPYTER_BYTE_LIMIT
         self.kernel_computation = suggest_kernel_computation if kernel_computation is None else kernel_computation
-        
         self.origin_data_source = self.data_parser.to_records(500 if self.kernel_computation else None)
         self.field_specs = self.data_parser.raw_fields
         self.spec = spec
@@ -119,7 +117,6 @@ class PygWalker:
     @property
     def last_exported_dataframe(self) -> Optional[pd.DataFrame]:
         return self._last_exported_dataframe
-    
 
     def _get_data_parser(
         self,

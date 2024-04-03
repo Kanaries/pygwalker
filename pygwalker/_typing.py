@@ -1,5 +1,6 @@
 from typing import TypeVar, TYPE_CHECKING
 
+from typing_extensions import Literal
 
 dataframe_types = []
 if TYPE_CHECKING:
@@ -27,3 +28,7 @@ if TYPE_CHECKING:
 
 DataFrame = TypeVar("DataFrame", *dataframe_types)
 Series = TypeVar("Series")
+
+IThemeKey = Literal['vega', 'g2', 'streamlit']
+IAppearance = Literal['media', 'light', 'dark']
+ISpecIOMode = Literal["r", "rw"]
