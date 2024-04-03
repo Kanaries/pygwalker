@@ -1045,10 +1045,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries/graphic-walker@0.4.56":
-  version "0.4.56"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.56.tgz#fb277b21b6fdcca41ec99728accbcaf46566f95d"
-  integrity sha512-8KcWvhkDzVu9S6tWFSiz5qcYRsZDRPpUsFU5Wgmechk3v57ymJUC3RnJDFLv3sOs8IqwN+BXa9/I4FWht48WEQ==
+"@kanaries/graphic-walker@0.4.58":
+  version "0.4.58"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.58.tgz#37af3369a37940ee7ec27fcea23bb21871820265"
+  integrity sha512-F/nSmcdH9dN1DxCCJXHGBWgHQmiMCvBy3G2WJ4EeedGSonW1sf0odwvfrY/vzOKFOlDCrsh79o8THUn8yesrTw==
   dependencies:
     "@headlessui-float/react" "^0.11.4"
     "@headlessui/react" "1.7.12"
@@ -1117,10 +1117,10 @@
     vega-lite "^5.6.0"
     vega-webgl-renderer "^1.0.0-beta.2"
 
-"@kanaries/gw-dsl-parser@0.1.45-rc6":
-  version "0.1.45-rc6"
-  resolved "https://registry.yarnpkg.com/@kanaries/gw-dsl-parser/-/gw-dsl-parser-0.1.45-rc6.tgz#1ede8cea7fc867af79bc6ee13302ef3da609e854"
-  integrity sha512-uPmwJXzKpQf0/27Cf7hrCoSDw2qZwnXjsLJ5HkQdra1Jb6HogmVHpKGu6MN4eQjly4mlDAyrCXFjQCeEX55/BQ==
+"@kanaries/gw-dsl-parser@0.1.47":
+  version "0.1.47"
+  resolved "https://registry.yarnpkg.com/@kanaries/gw-dsl-parser/-/gw-dsl-parser-0.1.47.tgz#b31f990bb66940b0b94434b2e016be72fb3fcc81"
+  integrity sha512-aFdu/+0bJeR5J06j7r1Upj/B8WQnsssEpCWIif93dn1xup0HvYq+5iKm1lxW4OIvYi0/Ti1vCqjOuqVPB6D+ow==
 
 "@kanaries/react-beautiful-dnd@^0.1.1":
   version "0.1.1"

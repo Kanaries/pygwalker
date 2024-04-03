@@ -229,11 +229,11 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
                 mode === "walker" ? 
                 <GraphicWalker
                     {...props.extraConfig}
-                    dark={useContext(darkModeContext)}
-                    themeKey={props.themeKey}
+                    appearance={useContext(darkModeContext)}
+                    vizThemeConfig={props.themeKey}
                     fieldkeyGuard={props.fieldkeyGuard}
-                    rawFields={props.rawFields}
-                    dataSource={props.useKernelCalc ? undefined : props.dataSource}
+                    fields={props.rawFields}
+                    data={props.useKernelCalc ? undefined : props.dataSource}
                     storeRef={storeRef}
                     ref={gwRef}
                     toolbar={toolbarConfig}
@@ -408,7 +408,7 @@ function GraphicRendererApp(props: IAppProps) {
                             /> :
                             <GraphicRenderer
                                 {...globalProps}
-                                dataSource={props.dataSource!}
+                                data={props.dataSource!}
                                 chart={[chart]}
                             />
                         }
@@ -437,7 +437,7 @@ function TableWalkerApp(props: IAppProps) {
                 /> :
                 <TableWalker
                     {...globalProps}
-                    dataSource={props.dataSource}
+                    data={props.dataSource}
                 />
             }
         </React.StrictMode>

@@ -68,14 +68,14 @@ const Preview: React.FC<IPreviewProps> = observer((props) => {
                     {formatedCharts.map((chart, index) => {
                         return <TabsContent key={index} value={index.toString()}>
                             <PureRenderer
-                                themeKey={themeKey as IThemeKey}
+                                vizThemeConfig={themeKey as IThemeKey}
                                 name={chart.visSpec.name}
                                 visualConfig={chart.visSpec.config}
                                 visualLayout={chart.visSpec.layout}
                                 visualState={chart.visSpec.encodings}
                                 type='remote'
                                 computation={async(_) => { return chart.data }}
-                                dark={props.dark as IDarkMode}
+                                appearance={props.dark as IDarkMode}
                             />
                         </TabsContent>
                     })}
@@ -103,14 +103,14 @@ const ChartPreview: React.FC<IChartPreviewProps> = observer((props) => {
                 <h1 style={{marginTop: "1rem", color: "#333", fontSize: "1.1rem", marginBottom: "0.5rem", paddingInlineStart: "1rem"}}>{ props.title }</h1>
                 <p style={{color: "#666", fontWeight: 300, paddingInlineStart: "1rem"}}>{ props.desc }</p>
                 <PureRenderer
-                    themeKey={props.themeKey as IThemeKey}
+                    vizThemeConfig={props.themeKey as IThemeKey}
                     name={props.visSpec.name}
                     visualConfig={props.visSpec.config}
                     visualLayout={props.visSpec.layout}
                     visualState={props.visSpec.encodings}
                     type='remote'
                     computation={async(_) => { return formatedData }}
-                    dark={props.dark as IDarkMode}
+                    appearance={props.dark as IDarkMode}
                 />
             </div>
         </React.StrictMode>
