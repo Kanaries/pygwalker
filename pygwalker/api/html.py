@@ -3,14 +3,12 @@ import logging
 
 from typing_extensions import Literal
 
-from pygwalker.common.types import IAppearance, IThemeKey
-
 from .pygwalker import PygWalker
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.preview_image import render_gw_chart_preview_html
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame
+from pygwalker._typing import DataFrame, IAppearance, IThemeKey
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.utils.check_walker_params import check_expired_params
 

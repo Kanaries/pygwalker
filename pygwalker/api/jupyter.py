@@ -3,17 +3,15 @@ import inspect
 
 from typing_extensions import Literal
 
-from pygwalker.common.types import IAppearance, IThemeKey
-from pygwalker.utils import fallback_value
-
 from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame
+from pygwalker._typing import DataFrame, IAppearance, IThemeKey
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.services.kaggle import auto_set_kanaries_api_key_on_kaggle, adjust_kaggle_default_font_size
 from pygwalker.utils.execute_env_check import check_convert, get_kaggle_run_type, check_kaggle
 from pygwalker.utils.check_walker_params import check_expired_params
+from pygwalker.utils import fallback_value
 
 
 def walk(
