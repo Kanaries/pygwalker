@@ -19,6 +19,15 @@ function saveJupyterNotebook() {
     rootDocument.body.dispatchEvent(new KeyboardEvent('keydown', {key:'s', keyCode: 83, ctrlKey: true}));
 }
 
+function DocumentTextIconWithRedPoint(iconProps) {
+    return (
+        <div style={{position: "relative"}} >
+            <DocumentTextIcon {...iconProps} />
+            <div style={{position: "absolute", top: "-2px", right: "-2px", width: "4px", height: "4px", borderRadius: "50%", backgroundColor: "red"}}></div>
+        </div>
+    )
+}
+
 export function hidePreview(id: string) {
     setTimeout(() => {
         window.parent.document.getElementById(`pygwalker-preview-${id}`)?.remove();
@@ -28,7 +37,9 @@ export function hidePreview(id: string) {
 export function getSaveTool(
     props: IAppProps,
     gwRef: React.MutableRefObject<IGWHandler | null>,
-    storeRef: React.MutableRefObject<VizSpecStore | null>
+    storeRef: React.MutableRefObject<VizSpecStore | null>,
+    isChanged: boolean,
+    setIsChanged: React.Dispatch<React.SetStateAction<boolean>>
 ) : ToolbarButtonItem {
     const [saving, setSaving] = useState(false);
 
@@ -72,6 +83,7 @@ export function getSaveTool(
                 "workflowList": visSpec.map((spec) => chartToWorkflow(spec))
             });
             saveJupyterNotebook();
+            setIsChanged(false);
         } finally {
             setSaving(false);
             hidePreview(props.id);
@@ -110,7 +122,8 @@ export function getSaveTool(
         key: "save",
         label: "save",
         icon: (iconProps?: any) => {
-            return saving ? <Loader2 className='animate-spin' /> : <DocumentTextIcon {...iconProps} />
+            if (saving) return <Loader2 className='animate-spin' />;
+            return isChanged ? <DocumentTextIconWithRedPoint {...iconProps} /> :  <DocumentTextIcon {...iconProps} />
         },
         onClick: onClick,
     }
