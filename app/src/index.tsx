@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
+import { autorun } from "mobx"
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 import type { IGWHandler, IViewField, ISegmentKey, IDarkMode, IChatMessage } from '@kanaries/graphic-walker/interfaces';
@@ -134,7 +135,6 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
 })
 
 const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
-    const storeRef = React.useRef<VizSpecStore|null>(null);
     const gwRef = React.useRef<IGWHandler|null>(null);
     const { userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
@@ -142,6 +142,27 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const [mode, setMode] = useState<string>("walker");
     const [visSpec, setVisSpec] = useState(props.visSpec);
     const [hideModeOption, _] = useState(true);
+    const [isChanged, setIsChanged] = useState(false);
+    const storeRef = React.useRef<VizSpecStore|null>(null);
+    const disposerRef = React.useRef<() => void>();
+    const storeRefProxied = React.useMemo(
+        () =>
+            new Proxy(storeRef, {
+                set(target, prop, value) {
+                    if (prop === "current") {
+                        if (value) {
+                            disposerRef.current?.();
+                            disposerRef.current = autorun(() => {
+                                setIsChanged((value as VizSpecStore).canUndo);
+                            });
+                        }
+                    }
+                    return Reflect.set(target, prop, value);
+                },
+            }),
+        []
+    );
+
     commonStore.setVersion(props.version!);
 
     useEffect(() => {
@@ -165,7 +186,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
 
     const tools = [exportTool];
     if ((props.env === "jupyter_widgets" || props.env === "streamlit" || props.env === "gradio") && props.useSaveTool) {
-        const saveTool = getSaveTool(props, gwRef, storeRef);
+        const saveTool = getSaveTool(props, gwRef, storeRef, isChanged, setIsChanged);
         tools.push(saveTool);
     }
     if (props.isExportDataFrame) {
@@ -234,7 +255,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
                     fieldkeyGuard={props.fieldkeyGuard}
                     fields={props.rawFields}
                     data={props.useKernelCalc ? undefined : props.dataSource}
-                    storeRef={storeRef}
+                    storeRef={storeRefProxied}
                     ref={gwRef}
                     toolbar={toolbarConfig}
                     computation={computationCallback}
