@@ -19,7 +19,7 @@ dependencies = [
     "ipywidgets",
     "pydantic",
     "psutil",
-    "duckdb==0.10.0",
+    "duckdb==0.10.1",
     "pyarrow",
     "sqlglot>=19.0.0",
     "requests",
