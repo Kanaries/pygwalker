@@ -34,7 +34,7 @@ with tab2:
     renderer.explorer(default_tab="data")
 
 with tab3:
-    renderer.render_filter_renderer()
+    renderer.viewer()
 
 with tab4:
     st.markdown("### registered per weekday")
