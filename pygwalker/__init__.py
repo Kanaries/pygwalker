@@ -10,7 +10,7 @@ from pygwalker.utils.execute_env_check import check_kaggle as __check_kaggle
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.kaggle import show_tips_user_kaggle as __show_tips_user_kaggle
 
-__version__ = "0.4.8a13"
+__version__ = "0.4.8"
 __hash__ = __rand_str()
 
 from pygwalker.api.jupyter import walk, render, table
