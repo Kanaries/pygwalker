@@ -26,6 +26,7 @@ class CommonStore {
     version: string = "";
     notification: INotification | null = null;
     uploadSpecModalOpen: boolean = false;
+    uploadChartModalOpen: boolean = false;
 
     setInitModalOpen(value: boolean) {
         this.initModalOpen = value;
@@ -55,6 +56,10 @@ class CommonStore {
         this.uploadSpecModalOpen = value;
     }
 
+    setUploadChartModalOpen(value: boolean) {
+        this.uploadChartModalOpen = value;
+    }
+
     constructor() {
         makeObservable(this, {
             initModalOpen: observable,
@@ -63,12 +68,14 @@ class CommonStore {
             version: observable,
             notification: observable,
             uploadSpecModalOpen: observable,
+            uploadChartModalOpen: observable,
             setInitModalOpen: action,
             setInitModalInfo: action,
             setShowCloudTool: action,
             setVersion: action,
             setNotification: action,
             setUploadSpecModalOpen: action,
+            setUploadChartModalOpen: action,
         });
     }
 }

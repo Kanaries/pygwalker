@@ -25,7 +25,6 @@ import InitModal from './components/initModal';
 import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
-import { getUploadChartTool } from './tools/uploadChartTool';
 import { formatExportedChartDatas } from "./utils/save";
 import Notification from "./notify"
 import initDslParser from "@kanaries/gw-dsl-parser";
@@ -138,7 +137,6 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const gwRef = React.useRef<IGWHandler|null>(null);
     const { userConfig } = props;
     const [exportOpen, setExportOpen] = useState(false);
-    const [uploadChartModalOpen, setUploadChartModalOpen] = useState(false);
     const [mode, setMode] = useState<string>("walker");
     const [visSpec, setVisSpec] = useState(props.visSpec);
     const [hideModeOption, _] = useState(true);
@@ -193,10 +191,6 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
         const exportDataFrameTool = getExportDataframeTool(props, storeRef);
         tools.push(exportDataFrameTool);
     }
-    if (checkUploadPrivacy() && commonStore.showCloudTool) {
-        const uploadTool = getUploadChartTool(setUploadChartModalOpen);
-        tools.push(uploadTool);
-    }
 
     const toolbarConfig = {
         exclude: ["export_code"],
@@ -233,7 +227,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
         <React.StrictMode>
             <Notification />
             <UploadSpecModal storeRef={storeRef} setGwIsChanged={setIsChanged} />
-            <UploadChartModal gwRef={gwRef} storeRef={storeRef} open={uploadChartModalOpen} setOpen={setUploadChartModalOpen} dark={useContext(darkModeContext)} />
+            <UploadChartModal gwRef={gwRef} storeRef={storeRef} dark={useContext(darkModeContext)} />
             <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
             {
                 !hideModeOption &&
