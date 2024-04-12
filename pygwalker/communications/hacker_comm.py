@@ -17,8 +17,7 @@ class HackerCommunication(BaseCommunication):
     some expired buffers and locks will not be cleaned up.
     """
     def __init__(self, gid: str) -> None:
-        super().__init__()
-        self.gid = gid
+        super().__init__(gid)
         self._kernel_widget = self._get_kernel_widget()
         self._html_widget = self._get_html_widget()
         self._send_msg_lock = Lock()
