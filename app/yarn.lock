@@ -1045,10 +1045,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries/graphic-walker@0.4.59":
-  version "0.4.59"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.59.tgz#2e4004cde1b4980c971b5ddf9fe083b6aeb3faa6"
-  integrity sha512-MVsWOdaHS3qNwF1QS1NyBVQuwBJXz5r2Z/jj2IYYcfYTiRoZ39eyzE5tUY5hgNaiRYyf8oqbKNbaQ4hIvbxKhg==
+"@kanaries/graphic-walker@0.4.62":
+  version "0.4.62"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.62.tgz#59f6b4fbf2913ab3416a5334692f5f2f93e81f8e"
+  integrity sha512-fQCR3Eqxf3An1DH/g8q+ZsEV8ewtcD0G48IBD1eu2+HxR+F0qd/Sa4zcIQD9b7Aa9WCX8G7tyRYeSD64ZOFhMQ==
   dependencies:
     "@headlessui-float/react" "^0.11.4"
     "@headlessui/react" "1.7.12"
