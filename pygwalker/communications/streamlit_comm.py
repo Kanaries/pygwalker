@@ -59,6 +59,5 @@ class StreamlitCommunication(BaseCommunication):
     only support receive message.
     """
     def __init__(self, gid: str) -> None:
-        super().__init__()
+        super().__init__(gid)
         streamlit_comm_map[gid] = self
-        self.gid = gid
