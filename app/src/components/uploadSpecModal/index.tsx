@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
+import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
+import { chartToWorkflow } from "@kanaries/graphic-walker/utils/workflow";
 
 import communicationStore from "../../store/communication";
 import commonStore from "../../store/common";
@@ -8,8 +10,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { badgeVariants } from "@/components/ui/badge";
 
 interface IUploadSpecModal {
+    setGwIsChanged: React.Dispatch<React.SetStateAction<boolean>>;
+    storeRef: React.MutableRefObject<VizSpecStore | null>;
 }
 
 const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
@@ -17,6 +22,7 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
     const [specName, setSpecName] = useState("");
     const [isSetToken, setIsSetToken] = useState(false);
     const [token, setToken] = useState("");
+    const [contentType, setContentType] = useState<"onboarding" | "upload">("onboarding");
 
     const uploadSuccess = (path: string) => {
         commonStore.setNotification(
@@ -48,6 +54,7 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
             );
             commonStore.setUploadSpecModalOpen(false);
             uploadSuccess(resp?.data["specFilePath"]);
+            props.setGwIsChanged(false);
         } finally {
             setUploading(false);
         }
@@ -58,6 +65,113 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
         setToken("");
     }
 
+    const saveSpecToLocal = () => {
+        const visSpec = props.storeRef.current?.exportCode();
+        const configObj = {
+            config: visSpec,
+            chart_map: {},
+            version: commonStore.version,
+            workflow_list: visSpec?.map(spec => chartToWorkflow(spec).workflow),
+        }
+        const blob = new Blob([JSON.stringify(configObj)], {type: "text/plain;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const tempLink = document.createElement("a");
+        tempLink.href = url;
+        tempLink.download = `pygwalker_spec_${new Date().getTime()}.json`
+        tempLink.click();
+        URL.revokeObjectURL(url);
+        commonStore.setUploadSpecModalOpen(false);
+        props.setGwIsChanged(false);
+    };
+
+    useEffect(() => {
+        setContentType("onboarding");
+    }, [commonStore.uploadSpecModalOpen]);
+
+    const OnboardingContent = (
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Save Spec</DialogTitle>
+            </DialogHeader>
+            <div className="grid h-full grid-rows-2 gap-6 lg:grid-cols-2 lg:grid-rows-1">
+                <button
+                    className={"flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent"}
+                    onClick={() => {setContentType("upload")}}
+                >
+                    <div className="flex items-center justify-center h-[160px] w-full">
+                        <span className="font-semibold">upload as cloud file</span>
+                    </div>
+                </button>
+                <button
+                    className={"flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent"}
+                    onClick={saveSpecToLocal}
+                >
+                    <div className="flex items-center justify-center h-[160px] w-full">
+                        <span className="font-semibold">save as local file</span>
+                    </div>
+                </button>
+            </div>
+        </DialogContent>
+    )
+
+    const UpdateSpecContent = (
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Upload Sepc</DialogTitle>
+                <DialogDescription>
+                <p className="py-1">Because you currently don't pass in the spec parameter or the passed in spec parameter is not a writable spec file.</p>
+                <p className="py-1">Currently the spec configuration is already in your ui cache, you may need to upload kanaries cloud to save it.</p>
+                <p className="py-1">If you don't have kanaries_token, you need to get it: <a className={badgeVariants({ variant: "outline" })} href="https://kanaries.net/analytics/settings?tab=apikey" target="_blank">Kanaries</a></p>
+                </DialogDescription>
+            </DialogHeader>
+            <div>
+                <div className="text-sm max-h-64 overflow-auto p-1">
+                    <Input
+                        value={specName}
+                        onChange={(e) => {
+                            setSpecName(e.target.value);
+                        }}
+                        type="text"
+                        placeholder="please input spec file name"
+                        id="chart-name-input"
+                        className="mb-1"
+                    />
+                </div>
+                <div className="flex items-center justify-end mt-2">
+                    <Checkbox
+                        id="link-checkbox"
+                        checked={isSetToken}
+                        onCheckedChange={(checked) => {
+                            onClickSetToken(checked as boolean);
+                        }}
+                    />
+                    <Label className="ml-2">Set a new kanaries_token?</Label>
+                </div>
+                {
+                    isSetToken && (
+                        <div className="text-sm max-h-64 overflow-auto p-1 mt-2">
+                            <Input
+                                value={token}
+                                onChange={(e) => {
+                                    setToken(e.target.value);
+                                }}
+                                type="text"
+                                autoComplete="off"
+                                placeholder="please input new kanaries token"
+                                id="token-input"
+                            />
+                        </div>
+                    )
+                }
+                <div className="mt-4 flex justify-end">
+                    <Button variant="outline" className="mr-2 px-6" disabled={uploading} onClick={onClick}>
+                        {uploading ? "uploading.." : "upload"}
+                    </Button>
+                </div>
+            </div>
+        </DialogContent>
+    )
+
     return (
         <Dialog
             open={commonStore.uploadSpecModalOpen}
@@ -66,61 +180,8 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
                 commonStore.setUploadSpecModalOpen(show);
             }}
         >
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Upload Sepc</DialogTitle>
-                    <DialogDescription>
-                    <p className="py-1">Because you currently don't pass in the spec parameter or the passed in spec parameter is not a writable spec file.</p>
-                    <p className="py-1">Currently the spec configuration is already in your ui cache, you may need to upload kanaries cloud to save it.</p>
-                    <p className="py-1">If you don't have kanaries_token, you need to get it first, refer to: <a className="font-semibold px-1" href="https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F" target="_blank">How to get api key of kanaries?</a></p>
-                    </DialogDescription>
-                </DialogHeader>
-                <div>
-                    <div className="text-sm max-h-64 overflow-auto p-1">
-                        <Input
-                            value={specName}
-                            onChange={(e) => {
-                                setSpecName(e.target.value);
-                            }}
-                            type="text"
-                            placeholder="please input spec file name"
-                            id="chart-name-input"
-                            className="mb-1"
-                        />
-                    </div>
-                    <div className="flex items-center justify-end mt-2">
-                        <Checkbox
-                            id="link-checkbox"
-                            checked={isSetToken}
-                            onCheckedChange={(checked) => {
-                                onClickSetToken(checked as boolean);
-                            }}
-                        />
-                        <Label className="ml-2">Set a new kanaries_token?</Label>
-                    </div>
-                    {
-                        isSetToken && (
-                            <div className="text-sm max-h-64 overflow-auto p-1 mt-2">
-                                <Input
-                                    value={token}
-                                    onChange={(e) => {
-                                        setToken(e.target.value);
-                                    }}
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder="please input new kanaries token"
-                                    id="token-input"
-                                />
-                            </div>
-                        )
-                    }
-                    <div className="mt-4 flex justify-end">
-                        <Button variant="outline" className="mr-2 px-6" disabled={uploading} onClick={onClick}>
-                            {uploading ? "uploading.." : "upload"}
-                        </Button>
-                    </div>
-                </div>
-            </DialogContent>
+            {contentType === "upload" && UpdateSpecContent }
+            {contentType === "onboarding" && OnboardingContent }
         </Dialog>
     );
 });

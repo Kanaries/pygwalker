@@ -83,7 +83,6 @@ export function getSaveTool(
                 "workflowList": visSpec.map((spec) => chartToWorkflow(spec))
             });
             saveJupyterNotebook();
-            setIsChanged(false);
         } finally {
             setSaving(false);
             hidePreview(props.id);
@@ -100,6 +99,7 @@ export function getSaveTool(
                 }, 4_000);
             }
         } else {
+            setIsChanged(false);
             saveSuccess();
         }
     }
