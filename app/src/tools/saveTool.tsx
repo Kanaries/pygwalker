@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import communicationStore from "../store/communication"
 import commonStore from '../store/common';
 import { formatExportedChartDatas } from "../utils/save"
@@ -9,6 +9,7 @@ import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import { Loader2 } from "lucide-react"
 
 import type { IAppProps } from '../interfaces';
+import { Button } from "@/components/ui/button"
 import type { IGWHandler } from '@kanaries/graphic-walker/interfaces';
 import type { ToolbarButtonItem } from "@kanaries/graphic-walker/components/toolbar/toolbar-button"
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
@@ -42,6 +43,10 @@ export function getSaveTool(
     setIsChanged: React.Dispatch<React.SetStateAction<boolean>>
 ) : ToolbarButtonItem {
     const [saving, setSaving] = useState(false);
+
+    const showUploadButton = useMemo(() => {
+        return checkUploadPrivacy() && commonStore.showCloudTool;
+    }, [commonStore.showCloudTool]);
 
     const saveSuccess = () => {
         commonStore.setNotification({
@@ -125,6 +130,18 @@ export function getSaveTool(
             if (saving) return <Loader2 className='animate-spin' />;
             return isChanged ? <DocumentTextIconWithRedPoint {...iconProps} /> :  <DocumentTextIcon {...iconProps} />
         },
+        form: (
+            <div className='flex flex-col'>
+                <Button variant="ghost" aria-label="save spec" onClick={onClick}>
+                    save spec
+                </Button>
+                {showUploadButton && (
+                    <Button variant="ghost" aria-label="upload chart" onClick={() => {commonStore.setUploadChartModalOpen(true)}}>
+                        upload chart
+                    </Button>
+                )}
+            </div>
+        ),
         onClick: onClick,
     }
 }

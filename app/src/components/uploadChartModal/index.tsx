@@ -15,9 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface IUploadChartModal {
     gwRef: React.MutableRefObject<IGWHandler | null>;
     storeRef: React.MutableRefObject<VizSpecStore | null>;
-    open: boolean;
     dark: string;
-    setOpen: (open: boolean) => void;
 }
 
 const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
@@ -29,14 +27,14 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
     const [instanceType, setInstanceType] = useState("");
 
     useEffect(() => {
-        if (props.open) {
+        if (commonStore.uploadChartModalOpen) {
             const instanceType = (props.storeRef.current?.exportCode().length || 0) > 1 ? "dashboard" : "chart";
             setChartName(`${instanceType}-${new Date().getTime().toString(16).padStart(16, "0")}`);
             setDatasetName(`dataset-${new Date().getTime().toString(16).padStart(16, "0")}`);
             setIsPublic(true);
             setInstanceType(instanceType);
         }
-    }, [props.open])
+    }, [commonStore.uploadChartModalOpen])
 
     const uploadSuccess = (instanceType: string, instanceId: string, datasetId: string) => {
         const managerUrl = instanceType === "chart" ? `https://kanaries.net/analytics/c/${instanceId}` : `https://kanaries.net/analytics/d/${instanceId}`
@@ -119,7 +117,7 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
                 );
                 uploadSuccess(instanceType, resp?.data.chartId, resp?.data.datasetId);
             }
-            props.setOpen(false);
+            commonStore.setUploadChartModalOpen(false);
         } finally {
             setUploading(false);
         }
@@ -127,10 +125,10 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
 
     return (
         <Dialog
-            open={props.open}
+            open={commonStore.uploadChartModalOpen}
             modal={false}
             onOpenChange={(show) => {
-                props.setOpen(show);
+                commonStore.setUploadChartModalOpen(show)
             }}
         >
             <DialogContent>
