@@ -35,16 +35,8 @@ const raiseRequestError = (message: string, code: number) => {
                 <>
                 <p className="py-1">kanaries_api_key is not valid.</p>
                 <p className="py-1">Please set kanaries_api_key first.</p>
-                <p className="py-1">If you are not kanaries user, please register it from
-                    <a className="font-semibold px-1" href="https://kanaries.net/home/access" target='_blank'>
-                        https://kanaries.net/home/access
-                    </a>
-                </p>
-                <p className="py-1">Then refer
-                    <a className="font-semibold px-1" href="https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F" target='_blank'>
-                        document
-                    </a>
-                    to set kanaries_api_key.</p>
+                <p className="py-1">execute it in terminal:</p>
+                <p className="font-semibold px-1 py-1">`pygwalker login`</p>
                 </>
             );
             break;
