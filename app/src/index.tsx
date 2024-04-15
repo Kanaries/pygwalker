@@ -112,7 +112,7 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
                         <ToggleGroup
                             type="single"
                             value={selectedDarkMode}
-                            onValueChange={(value) => {setSelectedDarkMode(value as IDarkMode)}}
+                            onValueChange={(value) => {value && setSelectedDarkMode(value as IDarkMode)}}
                         >
                             <ToggleGroupItem value="dark">
                                 <MoonIcon className="h-4 w-4" />
