@@ -49,7 +49,7 @@ def render_gwalker_iframe(
 
 def render_gwalker_html(gid: int, props: Dict[str, Any]) -> str:
     container_id = f"gwalker-div-{gid}"
-    template = jinja_env.get_template("index.html")
+    template = jinja_env.get_template("pygwalker_main_page.html")
     html = template.render(
         gwalker={
             'id': container_id,

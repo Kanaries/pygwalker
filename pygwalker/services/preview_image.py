@@ -109,7 +109,7 @@ def render_gw_preview_html(
     props = {"charts": charts, "themeKey": theme_key, "dark": appearance}
 
     container_id = f"pygwalker-preview-{gid}"
-    template = jinja_env.get_template("index.html")
+    template = jinja_env.get_template("pygwalker_main_page.html")
     html = template.render(
         gwalker={
             'id': container_id,
@@ -144,7 +144,7 @@ def render_gw_chart_preview_html(
     }
 
     container_id = f"pygwalker-chart-preview-{generate_hash_code()[:20]}"
-    template = jinja_env.get_template("index.html")
+    template = jinja_env.get_template("pygwalker_main_page.html")
     html = template.render(
         gwalker={
             'id': container_id,

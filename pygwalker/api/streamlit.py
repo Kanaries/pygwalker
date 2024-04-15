@@ -1,4 +1,4 @@
-from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any
+from typing import Union, Dict, Optional, TYPE_CHECKING, List, Any, Tuple
 from packaging.version import Version
 from copy import deepcopy
 import json
@@ -7,7 +7,6 @@ from typing_extensions import Literal, deprecated
 from pydantic import BaseModel
 from cachetools import cached, TTLCache
 import arrow
-import streamlit.components.v1 as components
 
 from .pygwalker import PygWalker
 from pygwalker.communications.streamlit_comm import (
@@ -21,7 +20,7 @@ from pygwalker._typing import DataFrame, IAppearance, ISpecIOMode, IThemeKey
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.utils import fallback_value
-from pygwalker.services.streamlit_components import render_explore_modal_button
+from pygwalker.services.streamlit_components import pygwalker_component
 
 if TYPE_CHECKING:
     from streamlit.delta_generator import DeltaGenerator
@@ -109,8 +108,8 @@ class StreamlitRenderer:
             gw_mode="explore",
             **kwargs
         )
-        comm = StreamlitCommunication(str(self.walker.gid))
-        self.walker._init_callback(comm)
+        self.comm = StreamlitCommunication(str(self.walker.gid))
+        self.walker._init_callback(self.comm)
         self.global_pre_filters = None
 
     @cached(cache=TTLCache(maxsize=256, ttl=1800))
@@ -184,15 +183,10 @@ class StreamlitRenderer:
         """It will append new filters to exists charts."""
         self.global_pre_filters = pre_filters
 
-    def viewer(
-        self,
-        width: Optional[int] = None,
-        height: int = 1010,
-        scrolling: bool = False,
-    ) -> "DeltaGenerator":
+    def viewer(self, *, key: str = "viewer"):
         """Render filter renderer UI"""
-        html = self._get_html(mode="filter_renderer")
-        return components.html(html, height=height, width=width, scrolling=scrolling)
+        key = f"{self.walker.gid}-{key}"
+        return self._component(key=key, mode="filter_renderer")
 
     @deprecated("render_filter_renderer is deprecated, use viewer instead.")
     def render_filter_renderer(self, *args, **kwargs):
@@ -200,14 +194,13 @@ class StreamlitRenderer:
 
     def explorer(
         self,
-        width: Optional[int] = None,
-        height: int = 1010,
-        scrolling: bool = False,
+        *,
+        key: str = "explorer",
         default_tab: Literal["data", "vis"] = "vis"
     ) -> "DeltaGenerator":
         """Render explore UI(it can drag and drop fields)"""
-        html = self._get_html(**{"defaultTab": default_tab})
-        return components.html(html, height=height, width=width, scrolling=scrolling)
+        key = f"{self.walker.gid}-{key}"
+        return self._component(key=key, mode="explore", defaultTab=default_tab)
 
     @deprecated("render_explore is deprecated, use explorer instead.")
     def render_explore(self, *args, **kwargs):
@@ -216,9 +209,9 @@ class StreamlitRenderer:
     def chart(
         self,
         index: int,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        scrolling: bool = False,
+        *,
+        key: str = "chart",
+        size: Optional[Tuple[int, int]] = None,
         pre_filters: Optional[List[PreFilter]] = None,
     ) -> "DeltaGenerator":
         """
@@ -226,14 +219,13 @@ class StreamlitRenderer:
         If you set `pre_filters`, it will overwritre global_pre_filters.
         """
         cur_spec_obj = deepcopy(self.walker.vis_spec[index])
+        key = f"{self.walker.gid}-{key}-{index}"
 
         if Version(self.walker.spec_version) > Version("0.3.11"):
             chart_size_config = cur_spec_obj["layout"]["size"]
         else:
             chart_size_config = cur_spec_obj["config"]["size"]
 
-        chart_size_config["mode"] = "fixed"
-        explore_button_size = 20
         if pre_filters is None:
             pre_filters = self.global_pre_filters
 
@@ -243,36 +235,32 @@ class StreamlitRenderer:
             )
             cur_spec_obj["encodings"]["filters"].extend(pre_filters_json)
 
-        if width is None:
-            width = chart_size_config["width"]
-            left = width + 6
-        else:
-            width = width - explore_button_size - 6
-            chart_size_config["width"] = width
-            left = width + 6
+        if size is not None:
+            chart_size_config["mode"] = "fixed"
+            chart_size_config["width"] = size[0]
+            chart_size_config["height"] = size[1]
 
-        if height is None:
-            height = chart_size_config["height"]
-        else:
-            chart_size_config["height"] = height
-
-        html = self._get_html(
-            mode="renderer",
-            vis_spec=[cur_spec_obj]
-        )
-
-        explore_html = self._get_html(
-            vis_spec=[cur_spec_obj],
-            needLoadLastSpec=False,
-            useSaveTool=False
-        )
-        render_explore_modal_button(explore_html, left, explore_button_size)
-
-        return components.html(html, height=height, width=width, scrolling=scrolling)
+        return self._component(key=key, mode="renderer", vis_spec=[cur_spec_obj])
 
     @deprecated("render_pure_chart is deprecated, use chart instead.")
     def render_pure_chart(self, *args, **kwargs):
         return self.chart(*args, **kwargs)
+
+    def _component(
+        self,
+        *,
+        key: str,
+        mode: Literal["explore", "renderer", "filter_renderer"],
+        vis_spec: Optional[List[Dict[str, Any]]] = None,
+        **kwargs: Dict[str, Any]
+    ) -> None:
+        props = self.walker._get_props("streamlit")
+        props["gwMode"] = mode
+        if vis_spec is not None:
+            props["visSpec"] = vis_spec
+        props.update(kwargs)
+
+        return pygwalker_component(props, self.comm, key)
 
 
 def get_streamlit_html(

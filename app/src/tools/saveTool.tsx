@@ -84,7 +84,7 @@ export function getSaveTool(
             }
             await communicationStore.comm?.sendMsg("update_spec", {
                 "visSpec": visSpec,
-                "chartData": await formatExportedChartDatas(chartData),
+                "chartData": await JSON.parse(JSON.stringify(await formatExportedChartDatas(chartData))),
                 "workflowList": visSpec.map((spec) => chartToWorkflow(spec))
             });
             saveJupyterNotebook();
