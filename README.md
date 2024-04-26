@@ -44,6 +44,8 @@ https://github.com/Kanaries/pygwalker/assets/22167673/2b940e11-cf8b-4cde-b7f6-19
 
 
 # Getting Started
+> Check our video tutorial about using pygwalker, pygwalker + streamlit and pygwalker + snowflake, [How to explore data with PyGWalker in Python
+](https://youtu.be/rprn79wfB9E?si=lAsJn1cAQnb-EklD)
 
 | [Run in Kaggle](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo) | [Run in Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) |
 |--------------------------------------------------------------|--------------------------------------------------------|
@@ -254,6 +256,8 @@ More details, refer it: [How to set your privacy configuration?](https://github.
 
 + Check out more resources about PyGWalker on [Kanaries PyGWalker](https://kanaries.net/home/pygwalker)
 + We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis software that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [Kanaries website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
++ [Youtube: How to explore data with PyGWalker in Python
+](https://youtu.be/rprn79wfB9E?si=lAsJn1cAQnb-EklD)
 + [Use pygwalker to build visual analysis app in streamlit](https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit)
 + If you encounter any issues and need support, please join our [Discord](https://discord.gg/Z4ngFWXz2U) channel or raise an issue on github.
 + Share pygwalker on these social media platforms if you like it!
