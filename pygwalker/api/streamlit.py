@@ -191,7 +191,7 @@ class StreamlitRenderer:
         scrolling: bool = False,
     ) -> "DeltaGenerator":
         """Render filter renderer UI"""
-        html = self._get_html(mode="filter_renderer")
+        html = self._get_html(mode="filter_renderer", **{"containerSize": [width, height]})
         return components.html(html, height=height, width=width, scrolling=scrolling)
 
     @deprecated("render_filter_renderer is deprecated, use viewer instead.")
