@@ -62,13 +62,13 @@ jobs:
           pip install build twine
           python -m build .
       - name: Uploading packages
-        if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' }}
+        if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3
         with:
           name: pygwalker
           path: ./dist/*
       - name: Uploading PyPI
-        if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags')) }}
+        if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags')) }}
         uses: pypa/gh-action-pypi-publish@v1.8.14
         with:
           # PyPI user
