@@ -397,9 +397,13 @@ function ChartPreviewApp(props: IChartPreviewProps, id: string) {
 
 function GraphicRendererApp(props: IAppProps) {
     const computationCallback = getComputationCallback(props);
+    const containerSize = props["containerSize"] ?? [null, null];
     const globalProps = {
         rawFields: props.rawFields,
-        containerStyle: { height: "700px", width: "60%" },
+        containerStyle: {
+            height: containerSize[1] ? `${containerSize[1]-200}px` : "700px",
+            width: containerSize[0] ? `${containerSize[0]-20}px` : "60%"
+        },
         themeKey:props.themeKey,
         dark: useContext(darkModeContext),
     }
