@@ -1,6 +1,5 @@
-from typing import Optional, List, Any
+from typing import Optional, List
 from types import FrameType
-from lib2to3 import fixer_base, refactor
 import logging
 import inspect
 import ast
@@ -11,42 +10,6 @@ import astor
 _MAX_LINE = 150
 
 logger = logging.getLogger(__name__)
-
-
-class StatementScraper(fixer_base.BaseFix):
-    """StatementScraper"""
-    PATTERN = 'simple_stmt'
-
-    def __init__(self, lineno):
-        super().__init__(None, None)
-        self.lineno = lineno
-        self.statement = ''
-
-    def transform(self, node: Any, results: Any) -> Any:
-        if not self.statement and self.lineno - node.get_lineno() < str(node).count('\n'):
-            prev_sibling = str(node.prev_sibling)
-            if prev_sibling.isspace():
-                self.statement += prev_sibling.lstrip('\n')
-            self.statement += str(node)
-        return node
-
-
-class InvokeCodeParser(refactor.RefactoringTool):
-    """
-    Parse the code and get the invoke code.
-    TODO: temporary solution, need to be improved.
-    """
-    def __init__(self, frame: FrameType):
-        self.source = inspect.getsource(frame)
-        self.scraper = StatementScraper(frame.f_lineno)
-        super().__init__(None)
-
-    def get_fixers(self):
-        return [self.scraper], []
-
-    def __str__(self):
-        self.refactor_string(self.source, '')
-        return self.scraper.statement
 
 
 def _find_walk_func_node(code: str) -> Optional['ast.Call']:
@@ -89,7 +52,6 @@ def _repalce_spec_params_code(func: 'ast.Call') -> str:
 
 
 def _get_default_code() -> str:
-    logger.warning("parse invoke code failed, This may affect feature of export code.")
     return "pyg.walk(df, spec='____pyg_walker_spec_params____')"
 
 
@@ -103,7 +65,7 @@ def get_formated_spec_params_code(code: str) -> str:
 def get_formated_spec_params_code_from_frame(frame: FrameType) -> str:
     try:
         source_invoke_code = get_formated_spec_params_code(
-            str(InvokeCodeParser(frame))
+            inspect.getsource(frame).split("\n")[frame.f_lineno-1]
         )
     except Exception:
         return _get_default_code()
