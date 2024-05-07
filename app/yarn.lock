@@ -1045,10 +1045,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries/graphic-walker@0.4.63":
-  version "0.4.63"
-  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.63.tgz#2ab7d655f5530f1aeec0ec934e144a7129a5badb"
-  integrity sha512-GqailsQBkRFSr14ZjNn447ZbE7CmNVvMCMcYy21xmmfH8yW16TtVtht649zDRsBtmkp4X4s2he5SMEf++HLgPw==
+"@kanaries/graphic-walker@0.4.64":
+  version "0.4.64"
+  resolved "https://registry.yarnpkg.com/@kanaries/graphic-walker/-/graphic-walker-0.4.64.tgz#bc119475ec2e97e69ba2476cabddcbf36e7735db"
+  integrity sha512-6xm4iXWTllDSrcCSmUIr1IA+XF/hei9sr294E0ezroo5mnHrqX+u/jjAag/OvvbNsDDVvU0xJAD1qWMAdqcYmw==
   dependencies:
     "@headlessui-float/react" "^0.11.4"
     "@headlessui/react" "1.7.12"
@@ -1097,6 +1097,7 @@
     pgsql-ast-parser "^11.1.0"
     postcss "^8.3.7"
     postinstall-postinstall "^2.1.0"
+    rbush "^3.0.1"
     re-resizable "^6.9.8"
     react-color "^2.19.3"
     react-dropzone "^14.2.3"
@@ -1117,10 +1118,10 @@
     vega-lite "^5.6.0"
     vega-webgl-renderer "^1.0.0-beta.2"
 
-"@kanaries/gw-dsl-parser@0.1.47":
-  version "0.1.47"
-  resolved "https://registry.yarnpkg.com/@kanaries/gw-dsl-parser/-/gw-dsl-parser-0.1.47.tgz#b31f990bb66940b0b94434b2e016be72fb3fcc81"
-  integrity sha512-aFdu/+0bJeR5J06j7r1Upj/B8WQnsssEpCWIif93dn1xup0HvYq+5iKm1lxW4OIvYi0/Ti1vCqjOuqVPB6D+ow==
+"@kanaries/gw-dsl-parser@0.1.48-rc3":
+  version "0.1.48-rc3"
+  resolved "https://registry.yarnpkg.com/@kanaries/gw-dsl-parser/-/gw-dsl-parser-0.1.48-rc3.tgz#021fc2e082d55050b0282aa6dd28ffb22e4cd53f"
+  integrity sha512-nN0q5bGL4GaHGf19JO80/UMIq6hbkxbseB4qK6rm1qxu/87tsuMq8xZuLb10yCBeia0wFo3+Fn/ulDJ/eSp+LQ==
 
 "@kanaries/react-beautiful-dnd@^0.1.1":
   version "0.1.1"
@@ -4457,6 +4458,11 @@ queue-microtask@^1.2.2:
   resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.2.3.tgz#4929228bbc724dfac43e0efb058caf7b6cfb6243"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
+quickselect@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/quickselect/-/quickselect-2.0.0.tgz#f19680a486a5eefb581303e023e98faaf25dd018"
+  integrity sha512-RKJ22hX8mHe3Y6wH/N3wCM6BWtjaxIyyUIkpHOvfFnxdI4yD4tBXEBKSbriGujF6jnSVkJrffuo6vxACiSSxIw==
+
 raf-schd@^4.0.2:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/raf-schd/-/raf-schd-4.0.3.tgz#5d6c34ef46f8b2a0e880a8fcdb743efc5bfdbc1a"
@@ -4481,6 +4487,13 @@ randombytes@^2.1.0:
   integrity sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==
   dependencies:
     safe-buffer "^5.1.0"
+
+rbush@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/rbush/-/rbush-3.0.1.tgz#5fafa8a79b3b9afdfe5008403a720cc1de882ecf"
+  integrity sha512-XRaVO0YecOpEuIvbhbpTrZgoiI6xBlz6hnlr6EHhd+0x9ase6EmeN+hdwwUaJvLcsFFQ8iWVF1GAK1yB0BWi0w==
+  dependencies:
+    quickselect "^2.0.0"
 
 re-resizable@^6.9.8:
   version "6.9.9"
