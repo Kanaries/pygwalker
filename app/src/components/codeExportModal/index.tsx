@@ -5,7 +5,7 @@ import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import py from "react-syntax-highlighter/dist/esm/languages/hljs/python";
 import atomOneLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
 import atomOneDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
-import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
+import type { VizSpecStore } from "@kanaries/graphic-walker/store/visualSpecStore";
 import type { IChart } from "@kanaries/graphic-walker/interfaces";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import commonStore from "@/store/common";
@@ -42,6 +42,25 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     }, [setOpen]);
 
     const copyToCliboard = async (content: string) => {
+        const isChromium = () => {
+            const optionalChrome = (window as any).chrome;
+            const isChromiumWithExtension = optionalChrome && optionalChrome.runtime;
+            const isChromiumWithoutExtension = optionalChrome && "webstore" in optionalChrome;
+            const isUserAgentChromium = !!navigator.userAgent.match(/Chrom(e|ium)\/[\d\.]+/);
+            return isUserAgentChromium && (isChromiumWithExtension || isChromiumWithoutExtension);
+        };
+
+        // for Firefox and Webkit browser
+        if (!isChromium()) {
+            try {
+                navigator.clipboard.writeText(content);
+                setOpen(false);
+            } catch(e) {
+                setTips("Clipboard write failed. Please copy manully.");
+            }
+            return;
+        }
+
         const queryOpts = { name: "clipboard-read" as PermissionName, allowWithoutGesture: false };
         const permissionStatus = await navigator.permissions.query(queryOpts);
         try {
