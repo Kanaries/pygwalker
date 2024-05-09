@@ -42,35 +42,10 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     }, [setOpen]);
 
     const copyToCliboard = async (content: string) => {
-        const isChromium = () => {
-            const optionalChrome = (window as any).chrome;
-            const isChromiumWithExtension = optionalChrome && optionalChrome.runtime;
-            const isChromiumWithoutExtension = optionalChrome && "webstore" in optionalChrome;
-            const isUserAgentChromium = !!navigator.userAgent.match(/Chrom(e|ium)\/[\d\.]+/);
-            return isUserAgentChromium && (isChromiumWithExtension || isChromiumWithoutExtension);
-        };
-
-        // for Firefox and Webkit browser
-        if (!isChromium()) {
-            try {
-                navigator.clipboard.writeText(content);
-                setOpen(false);
-            } catch(e) {
-                setTips("Clipboard write failed. Please copy manully.");
-            }
-            return;
-        }
-
-        const queryOpts = { name: "clipboard-read" as PermissionName, allowWithoutGesture: false };
-        const permissionStatus = await navigator.permissions.query(queryOpts);
         try {
-            if (permissionStatus.state !== "denied") {
-                navigator.clipboard.writeText(content);
-                setOpen(false);
-            } else {
-                setTips("The Clipboard API has been blocked in this environment. Please copy manully.");
-            }
-        } catch (e) {
+            navigator.clipboard.writeText(content);
+            setOpen(false);
+        } catch(e) {
             setTips("The Clipboard API has been blocked in this environment. Please copy manully.");
         }
     };
