@@ -5,7 +5,7 @@ import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import py from "react-syntax-highlighter/dist/esm/languages/hljs/python";
 import atomOneLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
 import atomOneDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
-import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
+import type { VizSpecStore } from "@kanaries/graphic-walker/store/visualSpecStore";
 import type { IChart } from "@kanaries/graphic-walker/interfaces";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import commonStore from "@/store/common";
@@ -42,16 +42,10 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     }, [setOpen]);
 
     const copyToCliboard = async (content: string) => {
-        const queryOpts = { name: "clipboard-read" as PermissionName, allowWithoutGesture: false };
-        const permissionStatus = await navigator.permissions.query(queryOpts);
         try {
-            if (permissionStatus.state !== "denied") {
-                navigator.clipboard.writeText(content);
-                setOpen(false);
-            } else {
-                setTips("The Clipboard API has been blocked in this environment. Please copy manully.");
-            }
-        } catch (e) {
+            navigator.clipboard.writeText(content);
+            setOpen(false);
+        } catch(e) {
             setTips("The Clipboard API has been blocked in this environment. Please copy manully.");
         }
     };
