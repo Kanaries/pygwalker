@@ -14,6 +14,7 @@ class GlobalVarManager:
     kanaries_api_host = "https://api.kanaries.net"
     kanaries_main_host = "https://kanaries.net"
     last_exported_dataframe = None
+    max_data_length = 1000 * 1000
 
     @classmethod
     def set_env(cls, env: Literal['Jupyter', 'Streamlit']):
@@ -42,3 +43,7 @@ class GlobalVarManager:
     @classmethod
     def set_last_exported_dataframe(cls, df: DataFrame):
         cls.last_exported_dataframe = df
+
+    @classmethod
+    def set_max_data_length(cls, length: int):
+        cls.max_data_length = length
