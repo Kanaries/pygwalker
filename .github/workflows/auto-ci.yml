@@ -92,7 +92,7 @@ jobs:
           pytest tests
       - name: Uploading notebooks
         uses: actions/upload-artifact@v3
-        if: ${{ matrix.python-version == '3.11' && matrix.os-version == 'ubuntu-latest' }}
+        if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}
         with:
           name: notebook
           path: |

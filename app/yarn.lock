@@ -1118,10 +1118,10 @@
     vega-lite "^5.6.0"
     vega-webgl-renderer "^1.0.0-beta.2"
 
-"@kanaries/gw-dsl-parser@0.1.48-rc3":
-  version "0.1.48-rc3"
-  resolved "https://registry.yarnpkg.com/@kanaries/gw-dsl-parser/-/gw-dsl-parser-0.1.48-rc3.tgz#021fc2e082d55050b0282aa6dd28ffb22e4cd53f"
-  integrity sha512-nN0q5bGL4GaHGf19JO80/UMIq6hbkxbseB4qK6rm1qxu/87tsuMq8xZuLb10yCBeia0wFo3+Fn/ulDJ/eSp+LQ==
+"@kanaries/gw-dsl-parser@0.1.48-rc4":
+  version "0.1.48-rc4"
+  resolved "https://registry.yarnpkg.com/@kanaries/gw-dsl-parser/-/gw-dsl-parser-0.1.48-rc4.tgz#13a2d6011c379e7a1a8b90ed202c4ca26e9a59e6"
+  integrity sha512-BjnH3PWYgGgFFXZfKSPChbOvGymJ1b6zRCSO/KaA+u6i3T2PmRTN4PFRThaU1aimSj2zE2KHJA4vIJS0OoZ4/w==
 
 "@kanaries/react-beautiful-dnd@^0.1.1":
   version "0.1.1"
