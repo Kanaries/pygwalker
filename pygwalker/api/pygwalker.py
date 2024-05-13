@@ -42,8 +42,6 @@ from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker.errors import DataCountLimitError
 from pygwalker import __version__
 
-RESPONSE_MAX_DATA_LENGTH = 1 * 1000 * 1000
-
 
 class PygWalker:
     """PygWalker"""
@@ -385,7 +383,7 @@ class PygWalker:
         def _get_datas(data: Dict[str, Any]):
             sql = data["sql"]
             datas = self.data_parser.get_datas_by_sql(sql)
-            if len(datas) > RESPONSE_MAX_DATA_LENGTH:
+            if len(datas) > GlobalVarManager.max_data_length:
                 raise DataCountLimitError()
             return {
                 "datas": datas
@@ -393,7 +391,7 @@ class PygWalker:
 
         def _get_datas_by_payload(data: Dict[str, Any]):
             datas = self.data_parser.get_datas_by_payload(data["payload"])
-            if len(datas) > RESPONSE_MAX_DATA_LENGTH:
+            if len(datas) > GlobalVarManager.max_data_length:
                 raise DataCountLimitError()
             return {
                 "datas": datas
@@ -402,7 +400,7 @@ class PygWalker:
         def _batch_get_datas_by_sql(data: Dict[str, Any]):
             result = self.data_parser.batch_get_datas_by_sql(data["queryList"])
             for datas in result:
-                if len(datas) > RESPONSE_MAX_DATA_LENGTH:
+                if len(datas) > GlobalVarManager.max_data_length:
                     raise DataCountLimitError()
             return {
                 "datas": result
@@ -411,7 +409,7 @@ class PygWalker:
         def _batch_get_datas_by_payload(data: Dict[str, Any]):
             result = self.data_parser.batch_get_datas_by_payload(data["queryList"])
             for datas in result:
-                if len(datas) > RESPONSE_MAX_DATA_LENGTH:
+                if len(datas) > GlobalVarManager.max_data_length:
                     raise DataCountLimitError()
             return {
                 "datas": result
