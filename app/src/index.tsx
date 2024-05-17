@@ -15,7 +15,7 @@ import { loadDataSource, postDataService, finishDataService, getDatasFromKernelB
 import commonStore from "./store/common";
 import { initJupyterCommunication, initHttpCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
-import { setConfig, checkUploadPrivacy } from './utils/userConfig';
+import { setConfig } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
 import type { IPreviewProps, IChartPreviewProps } from './components/preview';
 import { Preview, ChartPreview } from './components/preview';
@@ -26,6 +26,7 @@ import { getSaveTool, hidePreview } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
 import { formatExportedChartDatas } from "./utils/save";
+import { tracker } from "@/utils/tracker";
 import Notification from "./notify"
 import initDslParser from "@kanaries/gw-dsl-parser";
 import {
@@ -165,7 +166,11 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
 
     useEffect(() => {
         commonStore.setShowCloudTool(props.showCloudTool);
-        if (userConfig) setConfig(userConfig);
+        tracker.setUserId(props.hashcode ?? "");
+        if (userConfig) {
+            setConfig(userConfig);
+            tracker.setOpen(userConfig.privacy === "events");
+        };
     }, []);
 
     useEffect(() => {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import communicationStore from "../store/communication"
 import commonStore from '../store/common';
+import { tracker } from "@/utils/tracker";
 
 import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { Loader2 } from "lucide-react"
@@ -37,6 +38,8 @@ export function getExportDataframeTool(
     const onClick = async () => {
         if (exporting) return;
         setExporting(true);
+        tracker.track("click", {"entity": "export_dataframe_icon"});
+
         try {
             if (props.parseDslType === "server") {
                 await communicationStore.comm?.sendMsg("export_dataframe_by_payload", {

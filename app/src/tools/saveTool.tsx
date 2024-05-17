@@ -3,6 +3,7 @@ import communicationStore from "../store/communication"
 import commonStore from '../store/common';
 import { formatExportedChartDatas } from "../utils/save"
 import { checkUploadPrivacy } from '../utils/userConfig';
+import { tracker } from "@/utils/tracker";
 
 import { chartToWorkflow } from "@kanaries/graphic-walker"
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
@@ -60,9 +61,10 @@ export function getSaveTool(
         }, 500);
     }
 
-    const onClick = async () => {
+    const onClick = async (where: string) => {
         if (saving) return;
         setSaving(true);
+        tracker.track("click", {"entity": `save_${where}`, "spec_type": props.specType})
 
         // if exportChart is undefined, it means that the chart is not reload, so we think dont need to save.
         if (gwRef.current?.exportChart === undefined) {
@@ -109,6 +111,11 @@ export function getSaveTool(
         }
     }
 
+    const onClickUpload = () => {
+        commonStore.setUploadChartModalOpen(true);
+        tracker.track("click", {"entity": "save_icon_form_upload", "spec_type": props.specType});
+    }
+
     useEffect(() => {
         let locker = false;
         document.addEventListener("keydown", (event) => {
@@ -116,7 +123,7 @@ export function getSaveTool(
                 event.preventDefault();
                 if (locker) return;
                 locker = true;
-                onClick().then(() => {
+                onClick("from_keyboard").then(() => {
                     locker = false;
                 });
             }
@@ -132,16 +139,16 @@ export function getSaveTool(
         },
         form: (
             <div className='flex flex-col'>
-                <Button variant="ghost" aria-label="save spec" onClick={onClick}>
+                <Button variant="ghost" aria-label="save spec" onClick={() => onClick("icon_form_save")}>
                     save spec
                 </Button>
                 {showUploadButton && (
-                    <Button variant="ghost" aria-label="upload chart" onClick={() => {commonStore.setUploadChartModalOpen(true)}}>
+                    <Button variant="ghost" aria-label="upload chart" onClick={onClickUpload}>
                         upload chart
                     </Button>
                 )}
             </div>
         ),
-        onClick: onClick,
+        onClick: () => onClick("icon"),
     }
 }

@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import type { IGWHandler } from "@kanaries/graphic-walker/interfaces";
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 import { chartToWorkflow } from "@kanaries/graphic-walker"
+import { tracker } from "@/utils/tracker";
 
 import communicationStore from "../../store/communication";
 import commonStore from "../../store/common";
@@ -86,6 +87,7 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
     const onClick = async () => {
         if (uploading) return;
         setUploading(true);
+        tracker.track("click", {"entity": "upload_chart_button"});
 
         const visSpec = props.storeRef.current?.exportCode()!;
         try {
