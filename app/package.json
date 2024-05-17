@@ -28,6 +28,7 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toggle": "^1.0.3",
     "@radix-ui/react-toggle-group": "^1.0.4",
+    "@segment/analytics-next": "^1.69.0",
     "autoprefixer": "^10.3.5",
     "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.0",

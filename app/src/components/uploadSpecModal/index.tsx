@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 import { chartToWorkflow } from "@kanaries/graphic-walker/utils/workflow";
+import { tracker } from "@/utils/tracker";
 
 import communicationStore from "../../store/communication";
 import commonStore from "../../store/common";
@@ -43,6 +44,7 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
 
     const onClick = async () => {
         if (uploading) return;
+        tracker.track("click", {"entity": "upload_spec_to_cloud_button"});
         setUploading(true);
 
         try {
@@ -66,6 +68,7 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
     }
 
     const saveSpecToLocal = () => {
+        tracker.track("click", {"entity": "save_spec_to_local_file_button"});
         const visSpec = props.storeRef.current?.exportCode();
         const configObj = {
             config: visSpec,
@@ -96,7 +99,10 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
             <div className="grid h-full grid-rows-2 gap-6 lg:grid-cols-2 lg:grid-rows-1">
                 <button
                     className={"flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent"}
-                    onClick={() => {setContentType("upload")}}
+                    onClick={() => {
+                        setContentType("upload");
+                        tracker.track("click", {"entity": "select_upload_spec_to_cloud_button"});
+                    }}
                 >
                     <div className="flex items-center justify-center h-[160px] w-full">
                         <span className="font-semibold">upload as cloud file</span>
