@@ -365,6 +365,9 @@ function GWalker(props: IAppProps, id: string) {
         case "gradio":
             preRender = initOnHttpCommunication;
             break;
+        case "web_server":
+            preRender = initOnHttpCommunication;
+            break;
         default:
             preRender = defaultInit;
     }

@@ -102,6 +102,7 @@ class PygWalker:
         self._last_exported_dataframe = None
         self.default_tab = default_tab
         self.cloud_computation = cloud_computation
+        self.comm = None
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.kernel_computation:
@@ -326,6 +327,7 @@ class PygWalker:
 
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool = None):
         upload_tool = BatchUploadDatasToolOnWidgets(comm)
+        self.comm = comm
 
         def reuqest_data_callback(_):
             upload_tool.run(
