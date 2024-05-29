@@ -54,8 +54,8 @@ class Connector:
         "snowflake": {9, 10},
         "mysql": {245}
     }
-    PRE_SQL_MAP = {
-        "snowflake": "ALTER SESSION SET STRICT_JSON_OUTPUT=True;",
+    PRE_INIT_SQL_MAP = {
+        "snowflake": "ALTER SESSION SET WEEK_OF_YEAR_POLICY=1, WEEK_START=7, STRICT_JSON_OUTPUT=True;",
     }
 
     def __init__(self, url: str, view_sql: str, engine_params: Optional[Dict[str, Any]] = None) -> "Connector":
@@ -73,14 +73,16 @@ class Connector:
             engine = create_engine(self.url, **engine_params)
             engine.dialect.requires_name_normalize = False
             self.engine_map[self.url] = engine
+            if engine.dialect.name in self.PRE_INIT_SQL_MAP:
+                pre_init_sql = self.PRE_INIT_SQL_MAP[engine.dialect.name]
+                with engine.connect(True) as connection:
+                    connection.execute(text(pre_init_sql))
 
         return self.engine_map[self.url]
 
     def query_datas(self, sql: str) -> List[Dict[str, Any]]:
         field_type_map = {}
         with self.engine.connect() as connection:
-            if self.dialect_name in self.PRE_SQL_MAP:
-                connection.execute(text(self.PRE_SQL_MAP[self.dialect_name]))
             result = connection.execute(text(sql))
             if self.dialect_name in self.JSON_TYPE_CODE_SET_MAP:
                 field_type_map = {
