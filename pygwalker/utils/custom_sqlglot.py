@@ -90,12 +90,20 @@ def _postgres_str_to_time_sql(self: Generator, expression: exp.StrToTime) -> str
     return self.func("TO_TIMESTAMP", expression.this, self.format_time(expression))
 
 
+def _postgres_regexp_like_sql(self: Generator, expression: exp.RegexpLike) -> str:
+    flag = expression.args.get("flag")
+    if flag and flag.this == "i":
+        return self.binary(expression, "~*")
+    return self.binary(expression, "~")
+
+
 PostgresDialect.Generator.TRANSFORMS[exp.Round] = lambda _, e: _postgres_round_generator(e)
 PostgresDialect.Generator.TRANSFORMS[exp.UnixToTime] = _postgres_unix_to_time_sql
 PostgresDialect.Generator.TRANSFORMS[exp.In] = _postgres_in_sql
 PostgresDialect.Generator.TRANSFORMS[exp.TimestampTrunc] = _postgres_timestamp_trunc
 PostgresDialect.Generator.TRANSFORMS[exp.TimeToStr] = _postgres_time_to_str_sql
 PostgresDialect.Generator.TRANSFORMS[exp.StrToTime] = _postgres_str_to_time_sql
+PostgresDialect.Generator.TRANSFORMS[exp.RegexpLike] = _postgres_regexp_like_sql
 
 
 # Mysql Dialect
