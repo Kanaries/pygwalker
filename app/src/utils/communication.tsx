@@ -165,14 +165,48 @@ const initJupyterCommunication = (gid: string) => {
     }
 }
 
-const initHttpCommunication = (gid: string, baseUrl: string) => {
+const getRealApiUrl = async(basePath: string, baseApiUrl: string) => {
+    if (basePath === "") {
+        return baseApiUrl;
+    }
+
+    const basePathPart = basePath.split("/");
+    const possibleBasePaths: string[] = [];
+    for (let i = basePathPart.length; i >= 0; i--) {
+        possibleBasePaths.push(basePathPart.slice(0, i).join("/"));
+    }
+    const possibleApiUrls = possibleBasePaths.slice(0, 3).map(path => `${path.length === 0 ? '' : '/'}${path}/${baseApiUrl}`);
+
+    return (await Promise.all(possibleApiUrls.map(async(url) => {
+        try {
+            const resp = await fetch(
+                url,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "ping", data: {} }),
+                }
+            )
+            const respJson = await resp.json();
+            if (respJson.code === 0) {
+                return url;
+            }
+            return null;
+        } catch {
+            return null;
+        }
+    }))).find(url => url !== null) as string;
+}
+
+const initHttpCommunication = async(gid: string, baseUrl: string) => {
     // temporary solution in streamlit could
     const domain = window.parent.document.location.host.split(".").slice(-2).join('.');
     let url = "";
     if (domain === "streamlit.app") {
         url = `/~/+/_stcore/_pygwalker/comm/${gid}`
     } else {
-        url = `/${baseUrl}/${gid}`
+        const basePath = window.parent.location.pathname.replace(/\/+$/, '').replace(/^\/+/, '');
+        url = await getRealApiUrl(basePath, `${baseUrl}/${gid}`);
     }
 
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {

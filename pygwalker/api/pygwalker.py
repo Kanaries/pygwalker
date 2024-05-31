@@ -472,6 +472,7 @@ class PygWalker:
 
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
         comm.register("request_data", reuqest_data_callback)
+        comm.register("ping", lambda _: {})
 
         if self.use_save_tool:
             comm.register("upload_spec_to_cloud", upload_spec_to_cloud)
