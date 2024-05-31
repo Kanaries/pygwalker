@@ -312,7 +312,7 @@ const initOnJupyter = async(props: IAppProps) => {
 }
 
 const initOnHttpCommunication = async(props: IAppProps) => {
-    const comm = initHttpCommunication(props.id, props.communicationUrl);
+    const comm = await initHttpCommunication(props.id, props.communicationUrl);
     communicationStore.setComm(comm);
     if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
