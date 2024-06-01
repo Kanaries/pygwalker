@@ -175,7 +175,7 @@ const getRealApiUrl = async(basePath: string, baseApiUrl: string) => {
     for (let i = basePathPart.length; i >= 0; i--) {
         possibleBasePaths.push(basePathPart.slice(0, i).join("/"));
     }
-    const possibleApiUrls = possibleBasePaths.slice(0, 3).map(path => `${path.length === 0 ? '' : '/'}${path}/${baseApiUrl}`);
+    const possibleApiUrls = possibleBasePaths.slice(0, 2).map(path => `${path.length === 0 ? '' : '/'}${path}/${baseApiUrl}`);
 
     return (await Promise.all(possibleApiUrls.map(async(url) => {
         try {

@@ -54,7 +54,8 @@ def init_pygwalker_entity_map() -> Dict[str, PygWalker]:
 pygwalker_entity_map = init_pygwalker_entity_map()
 
 
-@app.post("/_pygwalker/comm/{gid}")
+# api path and html path need to have the same prefix
+@app.post("/pyg_html/_pygwalker/comm/{gid}")
 def pygwalker_comm(gid: str, payload: Dict[str, Any] = Body(...)):
     if gid not in pygwalker_entity_map:
         return {"success": False, "message": f"Unknown gid: {gid}"}
@@ -64,6 +65,7 @@ def pygwalker_comm(gid: str, payload: Dict[str, Any] = Body(...)):
     return JSONResponse(content=json.loads(json.dumps(result, cls=DataFrameEncoder)))
 
 
+# api path and html path need to have the same prefix
 @app.get("/pyg_html/{gid}")
 def pyg_html(gid: str):
     walker = pygwalker_entity_map[gid]
