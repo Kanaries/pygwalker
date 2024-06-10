@@ -16,34 +16,23 @@ def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> BaseDataParse
     """
     if type(dataset) in __classname2method:
         return __classname2method[type(dataset)]
+    
+    parsers = [
+        ('pandas', 'pandas as pd', 'pd.DataFrame', 'pygwalker.data_parsers.pandas_parser', 'PandasDataFrameDataParser'),
+        ('polars', 'polars as pl', 'pl.DataFrame', 'pygwalker.data_parsers.polars_parser', 'PolarsDataFrameDataParser'),
+        ('modin.pandas', 'modin.pandas as mpd', 'mpd.DataFrame', 'pygwalker.data_parsers.modin_parser', 'ModinPandasDataFrameDataParser'),
+        ('pyspark.sql', 'pyspark.sql import DataFrame as SparkDataFrame', 'SparkDataFrame', 'pygwalker.data_parsers.spark_parser', 'SparkDataFrameDataParser')
+    ]
 
-    if 'pandas' in sys.modules:
-        import pandas as pd
-        if isinstance(dataset, pd.DataFrame):
-            from pygwalker.data_parsers.pandas_parser import PandasDataFrameDataParser
-            __classname2method[pd.DataFrame] = PandasDataFrameDataParser
-            return __classname2method[pd.DataFrame]
+    for module_name, import_stmt, dataframe_class_str, parser_module_str, parser_class_str in parsers:
+        if module_name in sys.modules:
+            exec(f"import {import_stmt}")  
+            dataframe_class = eval(dataframe_class_str) 
+            if isinstance(dataset, dataframe_class):
+                exec(f"from {parser_module_str} import {parser_class_str}")
+                __classname2method[dataframe_class] = eval(parser_class_str) 
+                return __classname2method[dataframe_class]
 
-    if 'polars' in sys.modules:
-        import polars as pl
-        if isinstance(dataset, pl.DataFrame):
-            from pygwalker.data_parsers.polars_parser import PolarsDataFrameDataParser
-            __classname2method[pl.DataFrame] = PolarsDataFrameDataParser
-            return __classname2method[pl.DataFrame]
-
-    if 'modin.pandas' in sys.modules:
-        from modin import pandas as mpd
-        if isinstance(dataset, mpd.DataFrame):
-            from pygwalker.data_parsers.modin_parser import ModinPandasDataFrameDataParser
-            __classname2method[mpd.DataFrame] = ModinPandasDataFrameDataParser
-            return __classname2method[mpd.DataFrame]
-
-    if 'pyspark' in sys.modules:
-        from pyspark.sql import DataFrame as SparkDataFrame
-        if isinstance(dataset, SparkDataFrame):
-            from pygwalker.data_parsers.spark_parser import SparkDataFrameDataParser
-            __classname2method[SparkDataFrame] = SparkDataFrameDataParser
-            return __classname2method[SparkDataFrame]
 
     if isinstance(dataset, Connector):
         from pygwalker.data_parsers.database_parser import DatabaseDataParser
