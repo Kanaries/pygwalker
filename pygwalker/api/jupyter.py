@@ -21,7 +21,6 @@ def walk(
     env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
     field_specs: Optional[List[FieldSpec]] = None,
     theme_key: IThemeKey = 'g2',
-    # alias for appearance, dark is deprecated, please use appearance instead
     appearance: IAppearance = 'media',
     spec: str = "",
     use_kernel_calc: Optional[bool] = None,
@@ -42,7 +41,7 @@ def walk(
         - env: (Literal['Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterWidget'
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
-        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - use_kernel_calc(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
@@ -117,7 +116,7 @@ def render(
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
-        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
@@ -160,7 +159,7 @@ def table(
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
-        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """

@@ -189,7 +189,7 @@ Kargs:
     - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
     - hide_data_source_config (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
     - theme_key ('vega' | 'g2'): theme type.
-    - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+    - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
     - return_html (bool, optional): Directly return a html string. Defaults to False.
 File:      /usr/local/lib/python3.9/dist-packages/pygwalker/gwalker.py
 Type:      function

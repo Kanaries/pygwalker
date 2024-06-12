@@ -38,7 +38,7 @@ def get_html_on_gradio(
         - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
-        - dark (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to True.
