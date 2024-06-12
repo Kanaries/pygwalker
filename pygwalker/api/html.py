@@ -40,7 +40,7 @@ def _to_html(
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - spec (str): chart config data. config id, json, remote file url
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
-        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     check_expired_params(kwargs)
 
@@ -95,7 +95,7 @@ def to_html(
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - spec (str): chart config data. config id, json, remote file url
         - theme_key ('vega' | 'g2'): theme type.
-        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
     return _to_html(
@@ -125,7 +125,7 @@ def to_table_html(
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
-        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     return _to_html(
         df,
@@ -155,7 +155,7 @@ def to_render_html(
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
-        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     return _to_html(
         df,
@@ -187,7 +187,7 @@ def to_chart_html(
     Kargs:
         - spec_type (Literal["graphic-walker", "vega"]): type of spec.
         - theme_key ('vega' | 'g2'): theme type.
-        - dark ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     # pylint: disable=import-outside-toplevel
     # Since the compatibility of quick js is not certain, the related methods are lazy loaded.
