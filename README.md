@@ -5,6 +5,9 @@
 <h2 align="center">PyGWalker: A Python Library for Exploratory Data Analysis with Visualization</h2>
 
 <p align="center">
+    <a href="https://arxiv.org/abs/2406.11637">
+      <img src="https://img.shields.io/badge/arXiv-2406.11637-b31b1b.svg" height="18" align="center">
+    </a>
     <a href="https://badge.fury.io/py/pygwalker">
         <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center" />
     </a>
@@ -252,9 +255,11 @@ More details, refer it: [How to set your privacy configuration?](https://github.
 
 # Resources
 
-> PyGWalker Cloud is released! You can now save your charts to cloud, publish the interactive cell as a web app and use advanced GPT-powered features. Check out the [PyGWalker Cloud](https://kanaries.net/home/pygwalker?from=gh_md) for more details.
+> PyGWalker Cloud is released! You can now save your charts to cloud, publish the interactive cell as a web app and use advanced GPT-powered features. Check out the [PyGWalker Cloud](https://kanaries.net/pygwalker?from=gh_md) for more details.
 
-+ Check out more resources about PyGWalker on [Kanaries PyGWalker](https://kanaries.net/home/pygwalker)
++ Check out more resources about PyGWalker on [Kanaries PyGWalker](https://kanaries.net/pygwalker)
++ PyGWalker Paper [PyGWalker: On-the-fly Assistant for Exploratory Visual Data Analysis
+](https://arxiv.org/abs/2406.11637)
 + We are also working on [RATH](https://kanaries.net): an Open Source, Automate exploratory data analysis software that redefines the workflow of data wrangling, exploration and visualization with AI-powered automation. Check out the [Kanaries website](https://kanaries.net) and [RATH GitHub](https://github.com/Kanaries/Rath) for more!
 + [Youtube: How to explore data with PyGWalker in Python
 ](https://youtu.be/rprn79wfB9E?si=lAsJn1cAQnb-EklD)

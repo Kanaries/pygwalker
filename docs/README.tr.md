@@ -5,6 +5,9 @@
 <h2 align="center">PyGWalker: Görselleştirmeyle Keşif Amaçlı Veri Analizi için Python Kütüphanesi</h2>
 
 <p align="center">
+    <a href="https://arxiv.org/abs/2406.11637">
+      <img src="https://img.shields.io/badge/arXiv-2406.11637-b31b1b.svg" height="18" align="center">
+    </a>
     <a href="https://badge.fury.io/py/pygwalker">
         <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center">
     </a>
@@ -208,6 +211,8 @@ Daha fazla ayrıntı, bakın: [How to set your privacy configuration?](https://g
 
 # Resources
 
++ PyGWalker Paper [PyGWalker: On-the-fly Assistant for Exploratory Visual Data Analysis
+](https://arxiv.org/abs/2406.11637)
 + [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)'da Graphic Walker hakkında daha fazla kaynağa göz atın
 + Ayrıca, yapay zeka destekli otomasyonla veri düzenleme, keşif ve görselleştirme iş akışını yeniden tanımlayan Açık Kaynaklı, Otomatik keşif amaçlı veri analizi yazılımı olan [RATH](https://kanaries.net) üzerinde de çalışıyoruz. Daha fazla bilgi için [Kanaries web sitesine](https://kanaries.net) ve [RATH GitHub'a](https://github.com/Kanaries/Rath) göz atın!
 + [Use pygwalker to build visual analysis app in streamlit](https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit)

@@ -5,6 +5,9 @@
 <h2 align="center">PyGWalker: 一行代码将数据集转化为交互式可视化分析工具</h2>
 
 <p align="center">
+    <a href="https://arxiv.org/abs/2406.11637">
+      <img src="https://img.shields.io/badge/arXiv-2406.11637-b31b1b.svg" height="18" align="center">
+    </a>
     <a href="https://badge.fury.io/py/pygwalker">
         <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center">
     </a>
@@ -251,13 +254,7 @@ options:
 
 # 更多阅读
 
++ PyGWalker论文 [PyGWalker: On-the-fly Assistant for Exploratory Visual Data Analysis
+](https://arxiv.org/abs/2406.11637)
 + 关于Graphic Walker，参考 [Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)
 + 我们也在开发新一代增强分析型BI：[RATH](https://kanaries.net)。RATH是新一代智能化数据分析工具。借助AI，因果推断，智能可视化引擎协助你进行数据分析，体验前所未有的自动化。更多请访问：[RATH GitHub](https://github.com/Kanaries/Rath)
-+ QQ交流群：129132269
-+ 微信交流群: [Kanaries 开源社区(点击此处加群)](https://ewgw6z7tk0.feishu.cn/docx/Jnw5d0w60oU2xlxVKupcdeaGn0f?from=from_copylink)
-
-| [微信交流群](https://ewgw6z7tk0.feishu.cn/docx/Jnw5d0w60oU2xlxVKupcdeaGn0f?from=from_copylink) | kanaries公众号 |
-| --- | --- |
-| ![feishu](https://github.com/Kanaries/pygwalker/assets/28337703/a8759212-5bd1-4dc5-b638-f09eab45654c) | ![](https://kanaries-docs.oss-cn-hangzhou.aliyuncs.com/img/qrcode_for_gh_49e6f7d65120_860.jpg) |
-
-

@@ -5,6 +5,9 @@
 <h2 align="center">Une Bibliothèque Python pour l'Analyse Exploratoire de Données avec Visualisation.</h2>
 
 <p align="center">
+    <a href="https://arxiv.org/abs/2406.11637">
+      <img src="https://img.shields.io/badge/arXiv-2406.11637-b31b1b.svg" height="18" align="center">
+    </a>
     <a href="https://badge.fury.io/py/pygwalker">
         <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center">
     </a>
@@ -186,6 +189,8 @@ Plus de détails, référez-le: [How to set your privacy configuration?](https:/
 
 # Ressources
 
++ PyGWalker Paper [PyGWalker: On-the-fly Assistant for Exploratory Visual Data Analysis
+](https://arxiv.org/abs/2406.11637)
 + Découvrez plus de ressources sur Graphic Walker sur [GitHub de Graphic Walker](https://github.com/Kanaries/graphic-walker)
 + Nous travaillons également sur [RATH](https://kanaries.net) : un logiciel open source d'analyse exploratoire de données automatisée qui redéfinit le flux de travail de la manipulation des données, de l'exploration et de la visualisation avec une automatisation alimentée par l'IA. Consultez le [site web de Kanaries](https://kanaries.net) et [GitHub de Rath](https://github.com/Kanaries/Rath) pour en savoir plus !
 + [Utilisez pygwalker pour construire une application d'analyse visuelle dans Streamlit](https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit)

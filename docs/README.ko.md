@@ -4,6 +4,9 @@
 <h2 align="center">PyGWalker: 시각화와 함께 탐색적 데이터 분석을 위한 Python 라이브러리</h2>
 
 <p align="center">
+    <a href="https://arxiv.org/abs/2406.11637">
+      <img src="https://img.shields.io/badge/arXiv-2406.11637-b31b1b.svg" height="18" align="center">
+    </a>
     <a href="https://badge.fury.io/py/pygwalker">
         <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center">
     </a>
@@ -186,6 +189,8 @@ options:
 
 # 자원
 
++ PyGWalker Paper [PyGWalker: On-the-fly Assistant for Exploratory Visual Data Analysis
+](https://arxiv.org/abs/2406.11637)
 + [Graphic Walker에 대한 자세한 자료](https://github.com/Kanaries/graphic-walker)
 + [RATH](https://kanaries.net) (작업 중인 항목): 인공 지능 기반 자동화를 통해 데이터 처리, 탐색 및 시각화 워크플로우를 재정의하는 오픈 소스 자동 탐색 데이터 분석 소프트웨어입니다. 더 많은 정보를 보려면 [Kanaries 웹 사이트](https://kanaries.net)
 

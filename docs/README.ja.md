@@ -5,6 +5,9 @@
 <h2 align="center">PyGWalker：データ探索と可視化のためのPythonライブラリ</h2>
 
 <p align="center">
+    <a href="https://arxiv.org/abs/2406.11637">
+      <img src="https://img.shields.io/badge/arXiv-2406.11637-b31b1b.svg" height="18" align="center">
+    </a>
     <a href="https://badge.fury.io/py/pygwalker">
         <img src="https://badge.fury.io/py/pygwalker.svg" alt="PyPI version" height="18" align="center">
     </a>
@@ -187,6 +190,8 @@ options:
 
 # リソース
 
++ PyGWalker Paper [PyGWalker: On-the-fly Assistant for Exploratory Visual Data Analysis
+](https://arxiv.org/abs/2406.11637)
 + [Graphic Walkerに関する詳細な情報は、Graphic Walker GitHub](https://github.com/Kanaries/graphic-walker)をチェックしてください。
 + 私たちはまた、AIパワードの自動化を備えたデータ整理、探索、可視化のワークフローを再定義するオープンソースの探索的データ分析ソフトウェアである[RATH](https://kanaries.net)に取り組んでいます。[Kanariesのウェブサイト](https://kanaries.net)と[RATH GitHub](https://github.com/Kanaries/Rath)をチェックしてください！
 + [Streamlitで視覚的分析アプリを構築するためにpygwalkerを使用](https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit)
