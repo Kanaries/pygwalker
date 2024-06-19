@@ -1,9 +1,11 @@
 from typing import Optional, List, Dict, Any
+from concurrent.futures.thread import ThreadPoolExecutor
 import base64
 import zlib
 import json
 
 from pydantic import BaseModel, Field
+from ipylab import JupyterFrontEnd
 
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.display import display_html
@@ -106,7 +108,7 @@ def render_gw_preview_html(
             "data": data_base64_str
         })
 
-    props = {"charts": charts, "themeKey": theme_key, "dark": appearance}
+    props = {"charts": charts, "themeKey": theme_key, "dark": appearance, "gid": gid}
 
     container_id = f"pygwalker-preview-{gid}"
     template = jinja_env.get_template("index.html")
@@ -161,6 +163,11 @@ class PreviewImageTool:
     def __init__(self, gid: str):
         self.gid = gid
         self.image_slot_id = f"pygwalker-preview-{gid}"
+        self.t_pool = ThreadPoolExecutor(1)
+        try:
+            self.command_app = JupyterFrontEnd()
+        except Exception:
+            self.command_app = None
 
     def init_display(self):
         display_html("", slot_id=self.image_slot_id)
@@ -171,3 +178,12 @@ class PreviewImageTool:
 
     def render_gw_review(self, html: str):
         display_html(html, slot_id=self.image_slot_id)
+
+        if self.command_app:
+            try:
+                self.command_app.commands.execute('docmanager:save')
+            except Exception:
+                pass
+
+    def async_render_gw_review(self, html: str):
+        self.t_pool.submit(self.render_gw_review, html)

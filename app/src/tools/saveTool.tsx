@@ -15,12 +15,6 @@ import type { IGWHandler } from '@kanaries/graphic-walker/interfaces';
 import type { ToolbarButtonItem } from "@kanaries/graphic-walker/components/toolbar/toolbar-button"
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 
-function saveJupyterNotebook() {
-    const rootDocument = window.parent.document;
-    rootDocument.body.dispatchEvent(new KeyboardEvent('keydown', {key:'s', keyCode: 83, metaKey: true}));
-    rootDocument.body.dispatchEvent(new KeyboardEvent('keydown', {key:'s', keyCode: 83, ctrlKey: true}));
-}
-
 function DocumentTextIconWithRedPoint(iconProps) {
     return (
         <div style={{position: "relative"}} >
@@ -28,12 +22,6 @@ function DocumentTextIconWithRedPoint(iconProps) {
             <div style={{position: "absolute", top: "-2px", right: "-2px", width: "4px", height: "4px", borderRadius: "50%", backgroundColor: "red"}}></div>
         </div>
     )
-}
-
-export function hidePreview(id: string) {
-    setTimeout(() => {
-        window.parent.document.getElementById(`pygwalker-preview-${id}`)?.remove();
-    }, 500)
 }
 
 export function getSaveTool(
@@ -89,10 +77,8 @@ export function getSaveTool(
                 "chartData": await formatExportedChartDatas(chartData),
                 "workflowList": visSpec.map((spec) => chartToWorkflow(spec))
             });
-            saveJupyterNotebook();
         } finally {
             setSaving(false);
-            hidePreview(props.id);
         }
         
         if (["json_file", "json_ksf"].indexOf(props.specType) === -1) {

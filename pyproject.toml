@@ -33,7 +33,8 @@ dependencies = [
     "kanaries_track==0.0.5",
     "cachetools",
     "packaging",
-    "numpy<2.0.0"
+    "numpy<2.0.0",
+    "ipylab<=1.0.0"
 ]
 [project.urls]
 homepage = "https://github.com/Kanaries/pygwalker"
