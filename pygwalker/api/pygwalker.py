@@ -254,7 +254,7 @@ class PygWalker:
 
         display_html(html_widgets)
         preview_tool.init_display()
-        preview_tool.render_gw_review(self._get_gw_preview_html())
+        preview_tool.async_render_gw_review(self._get_gw_preview_html())
 
     def display_preview_on_jupyter(self):
         """
@@ -356,7 +356,7 @@ class PygWalker:
             self.workflow_list = data.get("workflowList", [])
 
             if self.use_preview:
-                preview_tool.render_gw_review(self._get_gw_preview_html())
+                preview_tool.async_render_gw_review(self._get_gw_preview_html())
 
             save_chart_endpoint(data["chartData"])
 

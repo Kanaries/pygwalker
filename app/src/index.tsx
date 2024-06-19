@@ -22,7 +22,7 @@ import { Preview, ChartPreview } from './components/preview';
 import UploadSpecModal from "./components/uploadSpecModal"
 import UploadChartModal from './components/uploadChartModal';
 import InitModal from './components/initModal';
-import { getSaveTool, hidePreview } from './tools/saveTool';
+import { getSaveTool } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
 import { formatExportedChartDatas } from "./utils/save";
@@ -64,7 +64,6 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
                 curIndex: chart.index + 1,
                 total: chart.total,
             });
-            hidePreview(props.id);
         }
     }
     commonStore.setInitModalOpen(false);
@@ -308,7 +307,6 @@ const initOnJupyter = async(props: IAppProps) => {
         comm.sendMsgAsync("request_data", {}, null);
     }
     await initDslParser();
-    hidePreview(props.id);
 }
 
 const initOnHttpCommunication = async(props: IAppProps) => {
@@ -382,14 +380,19 @@ function GWalker(props: IAppProps, id: string) {
     })
 }
 
-function PreviewApp(props: IPreviewProps, id: string) {
+function PreviewApp(props: IPreviewProps, containerId: string) {
     props.charts = FormatSpec(props.charts.map(chart => chart.visSpec), [])
                     .map((visSpec, index) => { return {...props.charts[index], visSpec} });
+
+    if (window.document.getElementById(`gwalker-${props.gid}`)) {
+        window.document.getElementById(containerId)?.remove();
+    }
+
     ReactDOM.render(
         <MainApp darkMode={props.dark} hideToolBar>
             <Preview {...props} />
         </MainApp>,
-        document.getElementById(id)
+        document.getElementById(containerId)
     );
 }
 
