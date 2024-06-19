@@ -79,14 +79,14 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                             <TabsTrigger value="python">Python</TabsTrigger>
                             <TabsTrigger value="json">JSON(Graphic Walker)</TabsTrigger>
                         </TabsList>
-                        <div className="text-xs max-h-56 mt-2">
-                            <p>{tips}</p>
-                        </div>
                         <TabsContent className="py-4" value="python">
                             <h3 className="text-sm font-medium mb-2">PyGWalker Code</h3>
                             <SyntaxHighlighter showLineNumbers language="python" style={darkMode === 'dark' ? atomOneDark : atomOneLight}>
                                 {pyCode}
                             </SyntaxHighlighter>
+                            <div className="text-xs max-h-56 mt-2">
+                                <p>{tips}</p>
+                            </div>
                             <div className="mt-4 flex justify-start gap-2">
                                 <Button
                                     onClick={() => {
@@ -105,6 +105,9 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                             <SyntaxHighlighter showLineNumbers language="json" style={darkMode === 'dark' ? atomOneDark : atomOneLight}>
                                 {JSON.stringify(visSpec, null, 2)}
                             </SyntaxHighlighter>
+                            <div className="text-xs max-h-56 mt-2">
+                                <p>{tips}</p>
+                            </div>
                             <div className="mt-4 flex justify-start gap-2">
                                 <Button
                                     onClick={() => {
