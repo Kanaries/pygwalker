@@ -1,3 +1,4 @@
+{% if component_url == "" %}
 <div id="ifr-pyg-{{ gid }}" style="height: auto">
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
@@ -12,3 +13,28 @@
         allowfullscreen>
     </iframe>
 </div>
+{% endif %}
+
+{% if component_url != "" %}
+<div id="ifr-pyg-{{ gid }}" style="height: auto">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    </head>
+    <iframe
+        width="0"
+        height="0"
+        frameborder="0"
+        srcdoc="{{ srcdoc }}"
+    >
+    </iframe>
+    <iframe
+        width="{{ width }}"
+        height="{{ height }}"
+        id="gwalker-{{ gid }}"
+        src="{{ component_url }}"
+        frameborder="0"
+        allow="clipboard-read; clipboard-write"
+        allowfullscreen>
+    </iframe>
+</div>
+{% endif %}

@@ -76,7 +76,8 @@ def render_gw_preview_html(
             'gw_script': GWALKER_SCRIPT_BASE64,
             "component_script": "PyGWalkerApp.PreviewApp(props, gw_id);",
             "props": json.dumps(props, cls=DataFrameEncoder)
-        }
+        },
+        component_url=""
     )
     return html
 
@@ -111,7 +112,8 @@ def render_gw_chart_preview_html(
             'gw_script': GWALKER_SCRIPT_BASE64,
             "component_script": "PyGWalkerApp.ChartPreviewApp(props, gw_id);",
             "props": json.dumps(props, cls=DataFrameEncoder)
-        }
+        },
+        component_url=""
     )
     return html
 

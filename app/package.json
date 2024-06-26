@@ -9,7 +9,7 @@
     "build:app": "vite build",
     "dev:preinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
     "dev:server": "vite --host",
-    "dev": "vite build --mode=develop",
+    "dev": "vite",
     "test:front_end": "vite --host",
     "test": "npm run test:front_end",
     "serve": "vite preview"

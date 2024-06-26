@@ -10,7 +10,11 @@
     <div id="pygwalker-app"></div>
     <script type="module">
         import PyGWalkerApp from './src/index';
-        PyGWalkerApp.GWalker({}, "pygwalker-app");
+        window.addEventListener('message', function(event) {
+            if (event.data.type == "pyg_props") {
+                PyGWalkerApp.GWalker(event.data.data, "pygwalker-app");
+            }
+        }, false);
     </script>
 </body>
 </html>

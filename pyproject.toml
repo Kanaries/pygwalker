@@ -67,6 +67,8 @@ all = [
 dev = [
     "build",
     "twine",
+    "jupyterlab",
+    "jupyter_server_proxy",
 ]
 
 [project.scripts]
