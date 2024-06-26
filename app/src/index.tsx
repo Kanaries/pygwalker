@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { autorun } from "mobx"
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
-import type { IGWHandler, IViewField, ISegmentKey, IDarkMode, IChatMessage } from '@kanaries/graphic-walker/interfaces';
+import type { IGWHandler, IViewField, ISegmentKey, IDarkMode, IChatMessage, IRow } from '@kanaries/graphic-walker/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import Options from './components/options';
@@ -29,6 +29,7 @@ import { formatExportedChartDatas } from "./utils/save";
 import { tracker } from "@/utils/tracker";
 import Notification from "./notify"
 import initDslParser from "@kanaries/gw-dsl-parser";
+import wasmPath from "@kanaries/gw-dsl-parser/gw_dsl_parser_bg.wasm?url";
 import {
     Select,
     SelectContent,
@@ -306,7 +307,7 @@ const initOnJupyter = async(props: IAppProps) => {
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
     }
-    await initDslParser();
+    await initDslParser(wasmPath);
 }
 
 const initOnHttpCommunication = async(props: IAppProps) => {
@@ -316,18 +317,19 @@ const initOnHttpCommunication = async(props: IAppProps) => {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
         props.visSpec = visSpecResp["data"]["visSpec"];
     }
-    await initDslParser();
+    await initDslParser(wasmPath);
 }
 
 const defaultInit = async(props: IAppProps) => {}
 
 function GWalkerComponent(props: IAppProps) {
     const [initChartFlag, setInitChartFlag] = useState(false);
+    const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
 
     useEffect(() => {
         if (props.needLoadDatas) {
             loadDataSource(props.dataSourceProps).then((data) => {
-                props.dataSource = data;
+                setDataSource(data);
                 setInitChartFlag(true);
                 commonStore.setInitModalOpen(false);
             })
@@ -338,15 +340,15 @@ function GWalkerComponent(props: IAppProps) {
 
     switch(props.gwMode) {
         case "explore":
-            return <ExploreApp {...props} initChartFlag={initChartFlag} />;
+            return <ExploreApp {...props} dataSource={dataSource} initChartFlag={initChartFlag} />;
         case "renderer":
-            return <PureRednererApp {...props} />;
+            return <PureRednererApp {...props} dataSource={dataSource} />;
         case "filter_renderer":
-            return <GraphicRendererApp {...props} />;
+            return <GraphicRendererApp {...props} dataSource={dataSource} />;
         case "table":
-            return <TableWalkerApp {...props} />;
+            return <TableWalkerApp {...props} dataSource={dataSource} />;
         default:
-            return<ExploreApp {...props} initChartFlag={initChartFlag} />
+            return<ExploreApp {...props} dataSource={dataSource} initChartFlag={initChartFlag} />
     }
 }
 

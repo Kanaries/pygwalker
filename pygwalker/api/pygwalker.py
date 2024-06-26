@@ -1,5 +1,4 @@
 from typing import List, Dict, Any, Optional, Union
-import html as m_html
 import urllib
 import json
 
@@ -566,10 +565,10 @@ class PygWalker:
         iframe_width: Optional[str] = None,
         iframe_height: Optional[str] = None
     ) -> str:
+        """Get render iframe html."""
         html = render_gwalker_html(self.gid, props)
         if return_iframe:
-            srcdoc = m_html.escape(html)
-            return render_gwalker_iframe(self.gid, srcdoc, iframe_width, iframe_height)
+            return render_gwalker_iframe(self.gid, html, iframe_width, iframe_height)
         else:
             return html
 

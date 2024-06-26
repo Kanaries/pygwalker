@@ -3,6 +3,8 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 </head>
+
+{% if component_url == "" %}
 <body>
     <div id="{{ gwalker.id }}" class="gwalker-container">
         Loading Graphic-Walker UI...
@@ -25,4 +27,20 @@
         }
     </script>
 </body>
+{% endif %}
+
+{% if component_url != "" %}
+<body>
+    <script>   
+        window.onload = function() {
+            const props = {{ gwalker.props }};
+            const iframe = window.parent.document.getElementById("gwalker-" + props.id);   
+            iframe.onload = function() {
+                iframe.contentWindow.postMessage({data: props, type: "pyg_props"}, "*");
+            };
+        };
+    </script>
+</body>
+{% endif %}
+
 </html>

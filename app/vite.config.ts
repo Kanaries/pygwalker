@@ -11,8 +11,6 @@ const modulesNotToBundle = Object.keys(peerDependencies);
 
 // https://vitejs.dev/config/
 export default defineConfig((config: ConfigEnv) => {
-  console.log("defineConfig: ", config);
-
   const buildConfigMap = {
     "production": {
       lib: {
@@ -50,8 +48,9 @@ export default defineConfig((config: ConfigEnv) => {
   }
 
   return {
+    base: "/pyg_dev_app/",
     server: {
-      port: 2002,
+      port: 8769,
     },
     plugins: [
       react(),
@@ -73,6 +72,18 @@ export default defineConfig((config: ConfigEnv) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    build: buildConfigMap[config.mode]
+    build: {
+      ...buildConfigMap[config.mode],
+      rollupOptions: {
+        external: modulesNotToBundle,
+        output: {
+          globals: {
+            'react': 'React',
+            'react-dom': 'ReactDOM',
+            'styled-components': 'styled',
+          },
+        },
+      },
+    }
   } as UserConfig;
 })
