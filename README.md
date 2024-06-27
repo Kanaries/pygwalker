@@ -200,6 +200,10 @@ renderer.explorer()
 | kernel_computation        | bool                                                      | False                | If True, uses kernel computation for data.                                                                                                       |
 | **kwargs               | Any                                                       | -                    | Additional keyword arguments.                                                                                                                    |
 
+## Development
+
+Refer it: [local-development](https://docs.kanaries.net/pygwalker/installation#local-development)
+
 ## Tested Environments
 
 - [x] Jupyter Notebook
