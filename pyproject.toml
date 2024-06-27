@@ -37,7 +37,7 @@ dependencies = [
     "ipylab<=1.0.0"
 ]
 [project.urls]
-homepage = "https://github.com/Kanaries/pygwalker"
+homepage = "https://kanaries.net/pygwalker"
 repository = "https://github.com/Kanaries/pygwalker"
 # changelog, documentation
 
