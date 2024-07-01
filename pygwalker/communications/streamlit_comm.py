@@ -8,6 +8,7 @@ import tornado.web
 import streamlit as st
 
 from pygwalker.utils.encode import DataFrameEncoder
+from pygwalker.errors import StreamlitPygwalkerApiError
 from .base import BaseCommunication
 
 streamlit_comm_map = {}
@@ -46,11 +47,19 @@ class PygwalkerHandler(tornado.web.RequestHandler):
 def hack_streamlit_server():
     tornado_obj = None
     for obj in gc.get_objects():
-        if isinstance(obj, Application):
-            tornado_obj = obj
-            break
+        try:
+            if isinstance(obj, Application):
+                for rule in obj.wildcard_router.rules:
+                    if "streamlit" in str(rule.target):
+                        tornado_obj = obj
+                        break
+        except Exception:
+            pass
 
-    tornado_obj.add_handlers(".*", [(PYGWALKER_API_PATH, PygwalkerHandler)])
+    if tornado_obj:
+        tornado_obj.add_handlers(".*", [(PYGWALKER_API_PATH, PygwalkerHandler)])
+    else:
+        raise StreamlitPygwalkerApiError()
 
 
 class StreamlitCommunication(BaseCommunication):
