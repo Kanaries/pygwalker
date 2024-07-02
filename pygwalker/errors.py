@@ -50,3 +50,12 @@ class DataCountLimitError(BaseError):
             "The query returned too many data entries, making it difficult for the frontend to render. Please adjust your chart configuration and try again.",
             code=ErrorCode.UNKNOWN_ERROR
         )
+
+
+class StreamlitPygwalkerApiError(BaseError):
+    """Raised when the config is invalid."""
+    def __init__(self) -> None:
+        super().__init__(
+            "Adding pygwalker web api to streamlit failed. If possible, please report this case to the pygwalker team. Thanks!",
+            code=ErrorCode.UNKNOWN_ERROR
+        )
