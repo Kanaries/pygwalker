@@ -319,6 +319,26 @@ class PygWalker:
         )
         display_html(html)
 
+    def get_single_chart_html_by_spec(
+        self,
+        *,
+        spec: Dict[str, Any],
+        title: str = "",
+        desc: str = "",
+    ) -> str:
+        # pylint: disable=import-outside-toplevel
+        from pygwalker.utils.dsl_transform import dsl_to_workflow
+        workflow = dsl_to_workflow(spec)
+        data = self.data_parser.get_datas_by_payload(workflow)
+        return render_gw_chart_preview_html(
+            single_vis_spec=spec,
+            data=data,
+            theme_key=self.theme_key,
+            title=title,
+            desc=desc,
+            appearance=self.appearance
+        )
+
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
         if chart_name not in self._chart_map:
             raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
