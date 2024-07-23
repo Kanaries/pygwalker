@@ -1,7 +1,7 @@
 [project]
 name = "pygwalker"
 dynamic = ["version"]
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 description = "pygwalker: turn your data into an interactive UI for data exploration and visualization"
 authors = [ { name = "kanaries", email = "support@kanaries.net" } ]
 license-files = { paths = ["LICENSE"] }
@@ -19,7 +19,7 @@ dependencies = [
     "ipywidgets",
     "pydantic",
     "psutil",
-    "duckdb>=0.10.1,<=1.0.0",
+    "duckdb>=0.10.1,<2.0.0",
     "pyarrow",
     "sqlglot>=23.15.8",
     "requests",
@@ -34,7 +34,8 @@ dependencies = [
     "cachetools",
     "packaging",
     "numpy<2.0.0",
-    "ipylab<=1.0.0"
+    "ipylab<=1.0.0",
+    "quickjs",
 ]
 [project.urls]
 homepage = "https://kanaries.net/pygwalker"
