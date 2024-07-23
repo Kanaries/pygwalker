@@ -399,7 +399,7 @@ function PreviewApp(props: IPreviewProps, containerId: string) {
 }
 
 function ChartPreviewApp(props: IChartPreviewProps, id: string) {
-    props.visSpec = FormatSpec(props.visSpec, []);
+    props.visSpec = FormatSpec([props.visSpec], [])[0];
     ReactDOM.render(
         <MainApp darkMode={props.dark} hideToolBar>
             <ChartPreview {...props} />
