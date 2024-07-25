@@ -38,7 +38,6 @@ from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
-from pygwalker.errors import DataCountLimitError
 from pygwalker import __version__
 
 
@@ -404,34 +403,24 @@ class PygWalker:
         def _get_datas(data: Dict[str, Any]):
             sql = data["sql"]
             datas = self.data_parser.get_datas_by_sql(sql)
-            if len(datas) > GlobalVarManager.max_data_length:
-                raise DataCountLimitError()
             return {
                 "datas": datas
             }
 
         def _get_datas_by_payload(data: Dict[str, Any]):
             datas = self.data_parser.get_datas_by_payload(data["payload"])
-            if len(datas) > GlobalVarManager.max_data_length:
-                raise DataCountLimitError()
             return {
                 "datas": datas
             }
 
         def _batch_get_datas_by_sql(data: Dict[str, Any]):
             result = self.data_parser.batch_get_datas_by_sql(data["queryList"])
-            for datas in result:
-                if len(datas) > GlobalVarManager.max_data_length:
-                    raise DataCountLimitError()
             return {
                 "datas": result
             }
 
         def _batch_get_datas_by_payload(data: Dict[str, Any]):
             result = self.data_parser.batch_get_datas_by_payload(data["queryList"])
-            for datas in result:
-                if len(datas) > GlobalVarManager.max_data_length:
-                    raise DataCountLimitError()
             return {
                 "datas": result
             }

@@ -1,7 +1,7 @@
 import os
 
 from pandas import DataFrame
-from typing_extensions import Literal
+from typing_extensions import Literal, deprecated
 
 from .config import get_config
 
@@ -46,6 +46,7 @@ class GlobalVarManager:
         cls.last_exported_dataframe = df
 
     @classmethod
+    @deprecated("use ui config instead.")
     def set_max_data_length(cls, length: int):
         cls.max_data_length = length
 
