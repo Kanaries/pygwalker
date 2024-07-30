@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
-import { autorun } from "mobx"
+import { reaction } from "mobx"
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 import type { IGWHandler, IViewField, ISegmentKey, IDarkMode, IChatMessage, IRow } from '@kanaries/graphic-walker/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Streamlit, withStreamlitConnection } from "streamlit-component-lib"
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
@@ -13,7 +14,7 @@ import { IAppProps } from './interfaces';
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
 import commonStore from "./store/common";
-import { initJupyterCommunication, initHttpCommunication } from "./utils/communication";
+import { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
@@ -41,7 +42,7 @@ import {
     ToggleGroup,
     ToggleGroupItem,
 } from "@/components/ui/toggle-group"
-import { SunIcon, MoonIcon, DesktopIcon } from "@radix-ui/react-icons"
+import { SunIcon, MoonIcon, DesktopIcon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons"
 
 // @ts-ignore
 import style from './index.css?inline'
@@ -151,9 +152,17 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
                     if (prop === "current") {
                         if (value) {
                             disposerRef.current?.();
-                            disposerRef.current = autorun(() => {
-                                setIsChanged((value as VizSpecStore).canUndo);
-                            });
+                            const store = value as VizSpecStore;
+                            disposerRef.current = reaction(
+                                () => store.currentVis,
+                                () => {
+                                    setIsChanged((value as VizSpecStore).canUndo);
+                                    streamlitComponentCallback({
+                                        event: "spec_change",
+                                        data: store.exportCode()
+                                    });
+                                },
+                            );
                         }
                     }
                     return Reflect.set(target, prop, value);
@@ -279,18 +288,45 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
 const PureRednererApp: React.FC<IAppProps> = observer((props) => {
     const computationCallback = getComputationCallback(props);
     const spec = props.visSpec[0];
+    const [expand, setExpand] = useState(false);
 
     return (
         <React.StrictMode>
-            <PureRenderer
-                {...props.extraConfig}
-                name={spec.name}
-                visualConfig={spec.config}
-                visualLayout={spec.layout}
-                visualState={spec.encodings}
-                type='remote'
-                computation={computationCallback!}
-            />
+            <div className='flex'>
+                {
+                    !expand && (<PureRenderer
+                        {...props.extraConfig}
+                        appearance={useContext(darkModeContext)}
+                        vizThemeConfig={props.themeKey}
+                        name={spec.name}
+                        visualConfig={spec.config}
+                        visualLayout={spec.layout}
+                        visualState={spec.encodings}
+                        type='remote'
+                        computation={computationCallback!}
+                    />)
+                }
+                {
+                    expand && commonStore.isStreamlitComponent && (
+                        <div style={{minWidth: "96%"}}>
+                            <GraphicWalker
+                                {...props.extraConfig}
+                                appearance={useContext(darkModeContext)}
+                                vizThemeConfig={props.themeKey}
+                                fieldkeyGuard={props.fieldkeyGuard}
+                                fields={props.rawFields}
+                                data={props.useKernelCalc ? undefined : props.dataSource}
+                                computation={computationCallback}
+                                chart={props.visSpec}
+                                experimentalFeatures={{ computedField: props.useKernelCalc }}
+                                defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
+                            />
+                        </div>
+                    )
+                }
+                { commonStore.isStreamlitComponent && expand && ( <ChevronLeftIcon className='h-6 w-6 cursor-pointer border border-black-600 rounded-full'onClick={() => setExpand(false)}></ChevronLeftIcon> )}
+                { commonStore.isStreamlitComponent && !expand && ( <ChevronRightIcon className='h-6 w-6 cursor-pointer border border-black-600 rounded-full'onClick={() => setExpand(true)}></ChevronRightIcon> )}
+            </div>
         </React.StrictMode>
     )
 });
@@ -338,18 +374,14 @@ function GWalkerComponent(props: IAppProps) {
         }
     }, []);
 
-    switch(props.gwMode) {
-        case "explore":
-            return <ExploreApp {...props} dataSource={dataSource} initChartFlag={initChartFlag} />;
-        case "renderer":
-            return <PureRednererApp {...props} dataSource={dataSource} />;
-        case "filter_renderer":
-            return <GraphicRendererApp {...props} dataSource={dataSource} />;
-        case "table":
-            return <TableWalkerApp {...props} dataSource={dataSource} />;
-        default:
-            return<ExploreApp {...props} dataSource={dataSource} initChartFlag={initChartFlag} />
-    }
+    return (
+        <React.StrictMode>
+            { props.gwMode === "explore"  && <ExploreApp {...props} dataSource={dataSource} initChartFlag={initChartFlag} /> }
+            { props.gwMode === "renderer" && <PureRednererApp {...props} dataSource={dataSource}  /> }
+            { props.gwMode === "filter_renderer" && <GraphicRendererApp {...props} dataSource={dataSource} /> }
+            { props.gwMode === "table" && <TableWalkerApp {...props} dataSource={dataSource} /> }
+        </React.StrictMode>
+    )
 }
 
 function GWalker(props: IAppProps, id: string) {
@@ -478,4 +510,50 @@ function TableWalkerApp(props: IAppProps) {
     )
 }
 
-export default { GWalker, PreviewApp, ChartPreviewApp }
+
+function SteamlitGWalkerApp(streamlitProps: any) {
+    const props = streamlitProps.args as IAppProps;
+    const [inited, setInited] = useState(false);
+    const container = React.useRef(null);
+    props.visSpec = FormatSpec(props.visSpec, props.rawFields);
+
+    useEffect(() => {
+        commonStore.setIsStreamlitComponent(true);
+        initOnHttpCommunication(props).then(() => {
+            setInited(true);
+        })
+    }, []);
+
+    useEffect(() => {
+        if (!container.current) return;
+        const resizeObserver = new ResizeObserver(() => {
+            Streamlit.setFrameHeight((container.current?.clientHeight  ?? 0) + 20);
+        })
+        resizeObserver.observe(container.current);
+        return () => resizeObserver.disconnect();
+    }, [inited]);
+
+    return (
+        <React.StrictMode>
+            {inited && (
+                <div ref={container}>
+                    <MainApp darkMode={props.dark}>
+                        <GWalkerComponent {...props} />
+                    </MainApp>
+                </div>
+            )}
+        </React.StrictMode>
+    );
+};
+
+const StreamlitGWalker = () => {
+    const StreamlitGWalker = withStreamlitConnection(SteamlitGWalkerApp);
+    ReactDOM.render(
+        <React.StrictMode>
+            <StreamlitGWalker />
+        </React.StrictMode>,
+        document.getElementById("root")
+    )
+}
+
+export default { GWalker, PreviewApp, ChartPreviewApp, StreamlitGWalker }

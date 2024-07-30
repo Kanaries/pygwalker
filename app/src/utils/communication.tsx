@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import commonStore from '../store/common';
+import { Streamlit } from "streamlit-component-lib"
 
 interface IResponse {
     data?: any;
@@ -208,6 +209,7 @@ const initHttpCommunication = async(gid: string, baseUrl: string) => {
         const basePath = window.parent.location.pathname.replace(/\/+$/, '').replace(/^\/+/, '');
         url = await getRealApiUrl(basePath, `${baseUrl}/${gid}`);
     }
+   url = "/" + url.replace(new RegExp(`/*`), "");
 
     const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
         const timer = setTimeout(() => {
@@ -247,5 +249,11 @@ const initHttpCommunication = async(gid: string, baseUrl: string) => {
     }
 }
 
+const streamlitComponentCallback = (data: any) => {
+    if (commonStore.isStreamlitComponent) {
+        Streamlit.setComponentValue(data);
+    }
+}
+
 export type { ICommunication };
-export { initJupyterCommunication, initHttpCommunication };
+export { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback };

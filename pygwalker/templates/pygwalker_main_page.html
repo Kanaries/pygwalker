@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+</head>
+
+{% if component_url == "" %}
+<body>
+    <div id="{{ gwalker.id }}" class="gwalker-container">
+        Loading Graphic-Walker UI...
+    </div>
+    <script>
+        function decodeGwScript(gw_script) {
+            var decodedBase64 = atob(gw_script);
+            var textDecoder = new TextDecoder('utf-8');
+            return textDecoder.decode(new Uint8Array(decodedBase64.split('').map(char => char.charCodeAt(0))));
+        }
+        eval(decodeGwScript("{{ gwalker.gw_script }}"));
+
+        var gw_id = "{{ gwalker.id }}";
+        var props = {{ gwalker.props }};
+        try{
+            window.__GW_VERSION=props.version;
+            {{ gwalker.component_script }};
+        } catch(e) {
+            console.error(e);
+        }
+    </script>
+</body>
+{% endif %}
+
+{% if component_url != "" %}
+<body>
+    <script>   
+        window.onload = function() {
+            const props = {{ gwalker.props }};
+            const iframe = window.parent.document.getElementById("gwalker-" + props.id);   
+            iframe.onload = function() {
+                iframe.contentWindow.postMessage({data: props, type: "pyg_props"}, "*");
+            };
+        };
+    </script>
+</body>
+{% endif %}
+
+</html>
