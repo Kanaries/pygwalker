@@ -27,6 +27,7 @@ class CommonStore {
     notification: INotification | null = null;
     uploadSpecModalOpen: boolean = false;
     uploadChartModalOpen: boolean = false;
+    isStreamlitComponent: boolean = false;
 
     setInitModalOpen(value: boolean) {
         this.initModalOpen = value;
@@ -60,6 +61,10 @@ class CommonStore {
         this.uploadChartModalOpen = value;
     }
 
+    setIsStreamlitComponent(value: boolean) {
+        this.isStreamlitComponent = value;
+    }
+
     constructor() {
         makeObservable(this, {
             initModalOpen: observable,
@@ -69,6 +74,7 @@ class CommonStore {
             notification: observable,
             uploadSpecModalOpen: observable,
             uploadChartModalOpen: observable,
+            isStreamlitComponent: observable,
             setInitModalOpen: action,
             setInitModalInfo: action,
             setShowCloudTool: action,
@@ -76,6 +82,7 @@ class CommonStore {
             setNotification: action,
             setUploadSpecModalOpen: action,
             setUploadChartModalOpen: action,
+            setIsStreamlitComponent: action
         });
     }
 }
