@@ -258,7 +258,7 @@ class PygWalker:
         """
         Display preview on jupyter notebook/lab.
         """
-        display_html(self._get_gw_preview_html())
+        display_html(self._get_gw_preview_html(True))
 
     @property
     def chart_list(self) -> List[str]:
@@ -581,7 +581,10 @@ class PygWalker:
         else:
             return html
 
-    def _get_gw_preview_html(self) -> str:
+    def _get_gw_preview_html(self, manual: bool = False) -> str:
+        """
+        'manual' represents the user actively calling to obtain preview_html. It will randomly generate a gid, keeping it separate from the logic of walker automatically generating the preview part.
+        """
         if not self.workflow_list:
             return ""
         datas = []
@@ -594,7 +597,7 @@ class PygWalker:
             self.vis_spec,
             datas,
             self.theme_key,
-            self.gid,
+            self.gid if not manual else self.gid + rand_str(),
             self.appearance
         )
 
