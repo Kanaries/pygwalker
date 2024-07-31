@@ -57,6 +57,15 @@ def walk(
         inspect.stack()[1].frame
     )
 
+    if check_kaggle():
+        auto_set_kanaries_api_key_on_kaggle()
+
+    if get_kaggle_run_type() == "batch":
+        adjust_kaggle_default_font_size()
+        env = "JupyterPreview"
+    elif check_convert():
+        env = "JupyterConvert"
+
     walker = PygWalker(
         gid=gid,
         dataset=dataset,
@@ -67,7 +76,7 @@ def walk(
         appearance=appearance,
         show_cloud_tool=show_cloud_tool,
         use_preview=True,
-        kernel_computation=isinstance(dataset, (Connector, str)) or fallback_value(kernel_computation, use_kernel_calc),
+        kernel_computation=env != "JupyterConvert" and (isinstance(dataset, (Connector, str)) or fallback_value(kernel_computation, use_kernel_calc)),
         use_save_tool=True,
         gw_mode="explore",
         is_export_dataframe=True,
@@ -76,15 +85,6 @@ def walk(
         cloud_computation=cloud_computation,
         **kwargs
     )
-
-    if check_kaggle():
-        auto_set_kanaries_api_key_on_kaggle()
-
-    if get_kaggle_run_type() == "batch":
-        adjust_kaggle_default_font_size()
-        env = "JupyterPreview"
-    elif check_convert():
-        env = "JupyterConvert"
 
     env_display_map = {
         "JupyterWidget": walker.display_on_jupyter_use_widgets,
