@@ -14,7 +14,7 @@ from pygwalker.utils.randoms import rand_str
 
 
 GRAPHIC_WALKER_AGG_FUNCS = {
-    "sum", "mean", "median", "count",
+    "sum", "mean", "median",
     "min", "max", "variance", "stddev",
 }
 
@@ -42,6 +42,8 @@ def _convert_sql_to_field(sql: str, is_agg_sql: bool) -> Dict[str, Any]:
     }
     if is_agg_sql:
         field_item["aggName"] = "expr"
+        field_item["analyticType"] = "measure"
+        field_item["semanticType"] = "quantitative"
     return field_item
 
 
@@ -214,72 +216,91 @@ class Component:
         """Bar chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["bar"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def line(self) -> "Component":
         """Line chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["line"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def area(self) -> "Component":
         """Area chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["area"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def trail(self) -> "Component":
         """Trail chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["trail"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def scatter(self) -> "Component":
         """Scatter chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["point"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def circle(self) -> "Component":
         """Circle chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["circle"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def tick(self) -> "Component":
         """Tick chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["tick"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def rect(self) -> "Component":
         """Rect chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["rect"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def arc(self) -> "Component":
         """Arc chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["arc"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def text(self) -> "Component":
         """Text chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["text"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def box(self) -> "Component":
         """Box chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["boxplot"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
         return copied_obj
 
     def table(self) -> "Component":
         """Table chart."""
         copied_obj = self.copy()
         copied_obj._update_single_chart_spec("config__geoms", ["table"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "generic")
+        return copied_obj
+
+    def poi(self) -> "Component":
+        """Poi chart."""
+        copied_obj = self.copy()
+        copied_obj._update_single_chart_spec("config__geoms", ["poi"])
+        copied_obj._update_single_chart_spec("config__coordSystem", "geographic")
         return copied_obj
 
     # pylint: disable=unused-argument
