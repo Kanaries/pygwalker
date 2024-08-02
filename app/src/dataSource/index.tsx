@@ -1,5 +1,5 @@
 import type { IDataSourceProps } from "../interfaces";
-import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/interfaces";
+import type { IRow, IDataQueryPayload, IChart } from "@kanaries/graphic-walker/interfaces";
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
 import { parser_dsl_with_meta } from "@kanaries/gw-dsl-parser";
@@ -121,6 +121,7 @@ function initBatchGetDatas(action: string) {
 }
 
 const batchGetDatasBySql = initBatchGetDatas("batch_get_datas_by_sql");
+const batchGetImagesBySpec = initBatchGetDatas("batch_get_images_by_spec");
 const batchGetDatasByPayload = initBatchGetDatas("batch_get_datas_by_payload");
 const DEFAULT_LIMIT = 50_000;
 
@@ -165,4 +166,8 @@ export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
         notifyDataLimit();
     }
     return result as IRow[];
+}
+
+export async function getImageFromKernelBySpec(spec: IChart) {
+    return await batchGetImagesBySpec.getDatas(spec) ?? "";
 }
