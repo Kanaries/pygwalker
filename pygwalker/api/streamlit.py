@@ -21,6 +21,7 @@ from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.utils import fallback_value
 from pygwalker.services.streamlit_components import pygwalker_component
+from pygwalker.services.data_parsers import get_dataset_hash
 
 
 class PreFilter(BaseModel):
@@ -65,7 +66,14 @@ class StreamlitRenderer:
         default_tab: Literal["data", "vis"] = "vis",
         **kwargs
     ):
-        """Get pygwalker html render to streamlit
+        """Get pygwalker html render to streamlit.
+        In Streamlit, pygwalker calculates a somewhat inaccurate gid based on the dataset to 
+        distinguish between datasets and uses it as the key for the Streamlit component to
+        avoid redundant rendering.
+
+        In some use case, If user frequently use the same StreamlitRenderer to receive different dataframes,
+        and the differences between these dataframes are so small that pygwalker's gid calculation logic cannot distinguish between different datasets,
+        user should customize method to generate a gid to differentiate between datasets.
 
         Args:
             - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
@@ -87,7 +95,7 @@ class StreamlitRenderer:
         init_streamlit_comm()
 
         self.walker = PygWalker(
-            gid=gid,
+            gid=gid if gid is not None else get_dataset_hash(dataset),
             dataset=dataset,
             field_specs=field_specs if field_specs is not None else [],
             spec=spec,
