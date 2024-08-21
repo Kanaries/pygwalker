@@ -183,4 +183,4 @@ def table(
         **kwargs
     )
 
-    walker.display_on_jupyter_use_widgets("800px")
+    walker.display_on_jupyter_use_widgets(iframe_height="800px")
