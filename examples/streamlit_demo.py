@@ -23,8 +23,8 @@ renderer = get_pyg_renderer()
 
 st.subheader("Display Explore UI")
 
-tab1, tab2, tab3, tab4 = st.tabs(
-    ["graphic walker", "data profiling", "graphic renderer", "pure chart"]
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    ["graphic walker", "data profiling", "graphic renderer", "pure chart", "table"]
 )
 
 with tab1:
@@ -41,3 +41,6 @@ with tab4:
     renderer.chart(0)
     st.markdown("### registered per day")
     renderer.chart(1)
+
+with tab5:
+    renderer.table()

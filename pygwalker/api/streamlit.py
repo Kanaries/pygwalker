@@ -251,11 +251,20 @@ class StreamlitRenderer:
     def render_pure_chart(self, *args, **kwargs):
         return self.chart(*args, **kwargs)
 
+    def table(
+        self,
+        *,
+        key: str = "table",
+    ):
+        """Render pure table UI"""
+        key = f"{self.walker.gid}-{key}"
+        return self._component(key=key, mode="table")
+
     def _component(
         self,
         *,
         key: str,
-        mode: Literal["explore", "renderer", "filter_renderer"],
+        mode: Literal["explore", "renderer", "filter_renderer", "table"],
         vis_spec: Optional[List[Dict[str, Any]]] = None,
         **kwargs: Dict[str, Any]
     ):
@@ -283,7 +292,7 @@ def get_streamlit_html(
     show_cloud_tool: Optional[bool] = None,
     spec_io_mode: ISpecIOMode = "r",
     kanaries_api_key: str = "",
-    mode: Literal["explore", "filter_renderer"] = "explore",
+    mode: Literal["explore", "filter_renderer", "table"] = "explore",
     default_tab: Literal["data", "vis"] = "vis",
     **kwargs
 ) -> str:
