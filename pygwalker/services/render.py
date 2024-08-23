@@ -6,6 +6,7 @@ from typing import Dict, List, Any, Optional
 
 from jinja2 import Environment, PackageLoader
 
+from pygwalker._typing import IAppearance
 from pygwalker._constants import ROOT_DIR
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.estimate_tools import estimate_average_data_size
@@ -34,7 +35,8 @@ def render_gwalker_iframe(
     gid: int,
     html: str,
     width: Optional[str] = None,
-    height: Optional[str] = None
+    height: Optional[str] = None,
+    appearance: IAppearance = "media",
 ) -> str:
     if height is None:
         height = "960px"
@@ -46,6 +48,7 @@ def render_gwalker_iframe(
         srcdoc=m_html.escape(html),
         height=height,
         width=width,
+        appearance=appearance,
         component_url=GlobalVarManager.component_url
     )
 

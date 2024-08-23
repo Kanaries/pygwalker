@@ -577,7 +577,7 @@ class PygWalker:
         """Get render iframe html."""
         html = render_gwalker_html(self.gid, props)
         if return_iframe:
-            return render_gwalker_iframe(self.gid, html, iframe_width, iframe_height)
+            return render_gwalker_iframe(self.gid, html, iframe_width, iframe_height, self.appearance)
         else:
             return html
 
