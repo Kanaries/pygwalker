@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { reaction } from "mobx"
@@ -80,14 +80,24 @@ const getComputationCallback = (props: IAppProps) => {
     }
 }
 
-const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean}) => {
+const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean, gid?: string, sendMessage?: boolean}) => {
     const [portal, setPortal] = useState<HTMLDivElement | null>(null);
     const [selectedDarkMode, setSelectedDarkMode] = useState(props.darkMode);
     const [darkMode, setDarkMode] = useState(currentMediaTheme(props.darkMode));
 
+    const sendAppearanceMessageToParent = useCallback((appearance: IDarkMode) => {
+        if (!props.sendMessage) return;
+        window.parent.postMessage({
+            action: "changeAppearance",
+            gid: props.gid,
+            appearance: appearance
+        }, "*");
+    }, [props.gid, props.sendMessage]);
+
     useEffect(() => {
         if (selectedDarkMode === "media") {
             setDarkMode(currentMediaTheme(selectedDarkMode));
+            sendAppearanceMessageToParent(currentMediaTheme(selectedDarkMode));
             const media = window.matchMedia('(prefers-color-scheme: dark)');
             const listener = (e: MediaQueryListEvent) => {
                 setDarkMode(e.matches ? "dark" : "light");
@@ -95,6 +105,7 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
             media.addEventListener("change", listener);
             return () => media.removeEventListener("change", listener);
         } else {
+            sendAppearanceMessageToParent(selectedDarkMode);
             setDarkMode(selectedDarkMode);
         }
     }, [selectedDarkMode])
@@ -408,7 +419,7 @@ function GWalker(props: IAppProps, id: string) {
 
     preRender(props).then(() => {
         ReactDOM.render(
-            <MainApp darkMode={props.dark}>
+            <MainApp darkMode={props.dark} gid={props.id} sendMessage={props.env?.startsWith("jupyter")}>
                 <GWalkerComponent {...props} />
             </MainApp>,
             document.getElementById(id)

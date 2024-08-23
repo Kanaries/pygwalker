@@ -17,6 +17,7 @@ from pygwalker.services.render import (
     render_gwalker_html,
     render_gwalker_iframe,
     get_max_limited_datas,
+    render_iframe_messages_html
 )
 from pygwalker.services.config import set_config
 from pygwalker.services.preview_image import (
@@ -227,6 +228,7 @@ class PygWalker:
             )
         else:
             display_html(iframe_html)
+        display_html(render_iframe_messages_html(self.gid))
 
     def display_on_jupyter_use_widgets(self, iframe_width: Optional[str] = None, iframe_height: Optional[str] = None):
         """
@@ -251,6 +253,7 @@ class PygWalker:
         self._init_callback(comm, preview_tool)
 
         display_html(html_widgets)
+        display_html(render_iframe_messages_html(self.gid))
         preview_tool.init_display()
         preview_tool.async_render_gw_review(self._get_gw_preview_html())
 
