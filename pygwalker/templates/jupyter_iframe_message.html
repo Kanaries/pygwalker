@@ -1,0 +1,17 @@
+<script>
+    window.addEventListener("message", function(event) {
+        const backgroundMap = {
+            "dark": "hsl(240 10% 3.9%)",
+            "light": "hsl(0 0 100%)",
+        };
+        const colorMap = {
+            "dark": "hsl(0 0% 98%)",
+            "light": "hsl(240 10% 3.9%)",
+        };
+        if (event.data.action === "changeAppearance" && event.data.gid === "{{ gid }}") {
+            var iframe = document.getElementById("gwalker-{{ gid }}");
+            iframe.style.background  = backgroundMap[event.data.appearance];
+            iframe.style.color = colorMap[event.data.appearance];
+        }
+    });
+</script>
