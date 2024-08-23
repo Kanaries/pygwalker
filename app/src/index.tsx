@@ -104,32 +104,34 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
             portalContainerContext={portal}
             darkModeContext={darkMode}
         >
-            <div className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground p-2`}>
-                <style>{style}</style>
-                <div className='overflow-y-auto'>
-                    { props.children }
-                </div>
-                {!props.hideToolBar && (
-                    <div className="flex w-full mt-1 p-1 overflow-hidden border-t border-border">
-                        <ToggleGroup
-                            type="single"
-                            value={selectedDarkMode}
-                            onValueChange={(value) => {value && setSelectedDarkMode(value as IDarkMode)}}
-                        >
-                            <ToggleGroupItem value="dark">
-                                <MoonIcon className="h-4 w-4" />
-                            </ToggleGroupItem>
-                            <ToggleGroupItem value="light">
-                                <SunIcon className="h-4 w-4" />
-                            </ToggleGroupItem>
-                            <ToggleGroupItem value="media">
-                                <DesktopIcon className="h-4 w-4" />
-                            </ToggleGroupItem>
-                        </ToggleGroup>
+            <div className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground`}>
+                <div className="p-2">
+                    <style>{style}</style>
+                    <div className='overflow-y-auto'>
+                        { props.children }
                     </div>
-                )}
-                <InitModal />
-                <div ref={setPortal}></div>
+                    {!props.hideToolBar && (
+                        <div className="flex w-full mt-1 p-1 overflow-hidden border-t border-border">
+                            <ToggleGroup
+                                type="single"
+                                value={selectedDarkMode}
+                                onValueChange={(value) => {value && setSelectedDarkMode(value as IDarkMode)}}
+                            >
+                                <ToggleGroupItem value="dark">
+                                    <MoonIcon className="h-4 w-4" />
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value="light">
+                                    <SunIcon className="h-4 w-4" />
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value="media">
+                                    <DesktopIcon className="h-4 w-4" />
+                                </ToggleGroupItem>
+                            </ToggleGroup>
+                        </div>
+                    )}
+                    <InitModal />
+                    <div ref={setPortal}></div>
+                </div>
             </div>
         </AppContext>
     )

@@ -10,7 +10,15 @@
         srcdoc="{{ srcdoc }}"
         frameborder="0"
         allow="clipboard-read; clipboard-write"
-        allowfullscreen>
+        allowfullscreen
+        {% if appearance == "dark" %}
+            style=" background: hsl(240 10% 3.9%); color: hsl(0 0% 98%);"
+        {% elif appearance == "light" %}
+            style=" background: hsl(0 0 100%); color: hsl(240 10% 3.9%);"
+        {% else %}
+            style=""
+        {% endif %}
+    >
     </iframe>
 </div>
 {% endif %}
@@ -34,7 +42,15 @@
         src="{{ component_url }}"
         frameborder="0"
         allow="clipboard-read; clipboard-write"
-        allowfullscreen>
+        allowfullscreen
+        {% if appearance == "dark" %}
+            style=" background: hsl(240 10% 3.9%); color: hsl(0 0% 98%);"
+        {% elif appearance == "light" %}
+            style=" background: hsl(0 0 100%); color: hsl(240 10% 3.9%);"
+        {% else %}
+            style=""
+        {% endif %}
+    >
     </iframe>
 </div>
 {% endif %}
