@@ -30,7 +30,6 @@ import { formatExportedChartDatas } from "./utils/save";
 import { tracker } from "@/utils/tracker";
 import Notification from "./notify"
 import initDslParser from "@kanaries/gw-dsl-parser";
-import wasmPath from "@kanaries/gw-dsl-parser/gw_dsl_parser_bg.wasm?url";
 import {
     Select,
     SelectContent,
@@ -356,7 +355,7 @@ const initOnJupyter = async(props: IAppProps) => {
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
     }
-    await initDslParser(wasmPath);
+    await initDslParser();
 }
 
 const initOnHttpCommunication = async(props: IAppProps) => {
@@ -366,7 +365,7 @@ const initOnHttpCommunication = async(props: IAppProps) => {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
         props.visSpec = visSpecResp["data"]["visSpec"];
     }
-    await initDslParser(wasmPath);
+    await initDslParser();
 }
 
 const defaultInit = async(props: IAppProps) => {}
