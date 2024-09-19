@@ -1,7 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
-import pako from "pako";
-import { PureRenderer } from '@kanaries/graphic-walker';
+import { PureRenderer, IRow } from '@kanaries/graphic-walker';
 import type { IDarkMode, IThemeKey } from '@kanaries/graphic-walker/interfaces';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,45 +12,12 @@ interface IPreviewProps {
     dark: IDarkMode;
     charts: {
         visSpec: any;
-        data: string;
+        data: IRow[];
     }[];
-}
-
-const getInflateData = (dataStr: string) => {
-    let binaryString = atob(dataStr);
-    let compressed = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-        compressed[i] = binaryString.charCodeAt(i);
-    }
-    const inflated = pako.inflate(compressed, {to: "string"});
-
-    const datas = JSON.parse(inflated);
-    const keys = Object.keys(datas);
-    if (keys.length === 0) {
-        return [];
-    }
-    const count = datas[keys[0]].length;
-
-    const result = [] as any[];
-    for (let i = 0; i < count; i++) {
-        let item = {};
-        keys.forEach(key => {
-            item[key] = datas[key][i]
-        })
-        result.push(item);
-    }
-
-    return result;
 }
 
 const Preview: React.FC<IPreviewProps> = observer((props) => {
     const { charts, themeKey } = props;
-    const formatedCharts = charts.map((chart) => {
-        return {
-            ...chart,
-            data: getInflateData(chart.data)
-        }
-    })
 
     return (
         <React.StrictMode>
@@ -60,12 +26,12 @@ const Preview: React.FC<IPreviewProps> = observer((props) => {
                 <Tabs defaultValue="0" className="w-full">
                     <div className="overflow-x-auto max-w-full">
                         <TabsList>
-                            {formatedCharts.map((chart, index) => {
+                            {charts.map((chart, index) => {
                                 return <TabsTrigger key={index} value={index.toString()}>{chart.visSpec.name}</TabsTrigger>
                             })}
                         </TabsList>
                     </div>
-                    {formatedCharts.map((chart, index) => {
+                    {charts.map((chart, index) => {
                         return <TabsContent key={index} value={index.toString()}>
                             <PureRenderer
                                 vizThemeConfig={themeKey as IThemeKey}
@@ -89,13 +55,12 @@ interface IChartPreviewProps {
     themeKey: string;
     dark: IDarkMode;
     visSpec: any;
-    data: string;
+    data: IRow[];
     title: string;
     desc: string;
 }
 
 const ChartPreview: React.FC<IChartPreviewProps> = observer((props) => {
-    const formatedData = getInflateData(props.data);
 
     return (
         <React.StrictMode>
@@ -109,7 +74,7 @@ const ChartPreview: React.FC<IChartPreviewProps> = observer((props) => {
                     visualLayout={props.visSpec.layout}
                     visualState={props.visSpec.encodings}
                     type='remote'
-                    computation={async(_) => { return formatedData }}
+                    computation={async(_) => { return props.data }}
                     appearance={props.dark as IDarkMode}
                 />
             </div>
