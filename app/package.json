@@ -37,7 +37,6 @@
     "lucide-react": "^0.341.0",
     "mobx": "^6.9.0",
     "mobx-react-lite": "^3.4.3",
-    "pako": "^2.1.0",
     "postcss": "^8.3.7",
     "react": "^18.x",
     "react-dom": "^18.x",

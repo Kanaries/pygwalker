@@ -3,6 +3,7 @@ import json
 import base64
 import html as m_html
 from typing import Dict, List, Any, Optional
+import zlib
 
 from jinja2 import Environment, PackageLoader
 
@@ -17,9 +18,17 @@ jinja_env = Environment(
     autoescape=(()),  # select_autoescape()
 )
 
+
+def compress_data(data: str) -> str:
+    compress = zlib.compressobj(zlib.Z_BEST_COMPRESSION, zlib.DEFLATED, 15, 8, 0)
+    compressed_data = compress.compress(data.encode())
+    compressed_data += compress.flush()
+    return base64.b64encode(compressed_data).decode()
+
+
 with open(os.path.join(ROOT_DIR, 'templates', 'dist', 'pygwalker-app.iife.js'), 'r', encoding='utf8') as f:
     GWALKER_SCRIPT = f.read()
-    GWALKER_SCRIPT_BASE64 = base64.b64encode(GWALKER_SCRIPT.encode()).decode()
+    GWALKER_SCRIPT_BASE64 = compress_data(GWALKER_SCRIPT)
 
 
 def get_max_limited_datas(datas: List[Dict[str, Any]], byte_limit: int) -> List[Dict[str, Any]]:
@@ -65,7 +74,7 @@ def render_gwalker_html(gid: int, props: Dict[str, Any]) -> str:
             'id': container_id,
             'gw_script': GWALKER_SCRIPT_BASE64,
             "component_script": "PyGWalkerApp.GWalker(props, gw_id);",
-            "props": json.dumps(props, cls=DataFrameEncoder)
+            "props": compress_data(json.dumps(props, cls=DataFrameEncoder)),
         },
         component_url=GlobalVarManager.component_url
     )

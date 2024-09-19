@@ -10,7 +10,7 @@ from ipylab import JupyterFrontEnd
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import generate_hash_code
-from pygwalker.services.render import jinja_env, GWALKER_SCRIPT_BASE64
+from pygwalker.services.render import jinja_env, GWALKER_SCRIPT_BASE64, compress_data
 
 
 class ImgData(BaseModel):
@@ -31,20 +31,6 @@ class ChartData(BaseModel):
     title: str
 
 
-def _compress_data(data: List[List[Dict[str, Any]]]) -> str:
-    formated_data = {}
-    if data:
-        keys = list(data[0].keys())
-        formated_data = {key: [] for key in keys}
-        for item in data:
-            for key in keys:
-                formated_data[key].append(item[key])
-
-    data_json_str = json.dumps(formated_data, cls=DataFrameEncoder)
-    data_base64_str = base64.b64encode(zlib.compress(data_json_str.encode())).decode()
-    return data_base64_str
-
-
 def render_gw_preview_html(
     vis_spec_obj: List[Dict[str, Any]],
     datas: List[List[Dict[str, Any]]],
@@ -60,10 +46,9 @@ def render_gw_preview_html(
         vis_spec_obj,
         datas
     ):
-        data_base64_str = _compress_data(data)
         charts.append({
             "visSpec": vis_spec_item,
-            "data": data_base64_str
+            "data": data
         })
 
     props = {"charts": charts, "themeKey": theme_key, "dark": appearance, "gid": gid}
@@ -75,7 +60,7 @@ def render_gw_preview_html(
             'id': container_id,
             'gw_script': GWALKER_SCRIPT_BASE64,
             "component_script": "PyGWalkerApp.PreviewApp(props, gw_id);",
-            "props": json.dumps(props, cls=DataFrameEncoder)
+            "props": compress_data(json.dumps(props, cls=DataFrameEncoder))
         },
         component_url=""
     )
@@ -97,7 +82,7 @@ def render_gw_chart_preview_html(
 
     props = {
         "visSpec": single_vis_spec,
-        "data": _compress_data(data),
+        "data": data,
         "themeKey": theme_key,
         "title": title,
         "desc": desc,
@@ -111,7 +96,7 @@ def render_gw_chart_preview_html(
             'id': container_id,
             'gw_script': GWALKER_SCRIPT_BASE64,
             "component_script": "PyGWalkerApp.ChartPreviewApp(props, gw_id);",
-            "props": json.dumps(props, cls=DataFrameEncoder)
+            "props": compress_data(json.dumps(props, cls=DataFrameEncoder))
         },
         component_url=""
     )
