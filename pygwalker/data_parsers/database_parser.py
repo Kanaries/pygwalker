@@ -136,7 +136,7 @@ class DatabaseDataParser(BaseDataParser):
 
         sub_query = exp.Subquery(
             this=sqlglot.parse(self.conn.view_sql, read=sqlglot_dialect_name)[0],
-            alias="temp_view_name"
+            alias=exp.TableAlias(this="temp_view_name")
         )
         ast = sqlglot.parse(sql, read=DuckdbDialect)[0]
         for from_exp in ast.find_all(exp.From):
