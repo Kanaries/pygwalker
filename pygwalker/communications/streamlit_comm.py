@@ -14,7 +14,9 @@ from .base import BaseCommunication
 streamlit_comm_map = {}
 
 _STREAMLIT_PREFIX_URL = config.get_option("server.baseUrlPath").strip("/")
-BASE_URL_PATH = "/_stcore/_pygwalker/comm/".strip("/")
+
+""" Replaced it with .rstrip("/") to only remove the trailing slash:"""
+BASE_URL_PATH = "/_stcore/_pygwalker/comm/".rstrip("/")
 PYGWALKER_API_PATH = make_url_path_regex(
     _STREAMLIT_PREFIX_URL,
     r"/_stcore/_pygwalker/comm/(.+)"
