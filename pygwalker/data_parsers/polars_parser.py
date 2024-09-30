@@ -62,5 +62,5 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return "dimension"
 
     @property
-    def dataset_tpye(self) -> str:
+    def dataset_type(self) -> str:
         return "polars_dataframe"
