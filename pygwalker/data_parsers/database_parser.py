@@ -105,7 +105,8 @@ class Connector:
 class DatabaseDataParser(BaseDataParser):
     """data parser for database"""
     sqlglot_dialect_map = {
-        "postgresql": "postgres"
+        "postgresql": "postgres",
+        "mssql": "tsql",
     }
 
     def __init__(
