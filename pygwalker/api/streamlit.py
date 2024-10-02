@@ -268,7 +268,7 @@ class StreamlitRenderer:
         vis_spec: Optional[List[Dict[str, Any]]] = None,
         **kwargs: Dict[str, Any]
     ):
-        props = self.walker._get_props("streamlit")
+        props = self.walker._get_props("streamlit", [])
         props["gwMode"] = mode
         props["communicationUrl"] = BASE_URL_PATH
         if vis_spec is not None:

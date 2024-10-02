@@ -84,31 +84,66 @@ def get_parser(
     return parser
 
 
+def _get_pl_dataset_hash(dataset: DataFrame) -> str:
+    """Get polars dataset hash value."""
+    import polars as pl
+    row_count = dataset.shape[0]
+    other_info = str(dataset.shape) + "_polars"
+    if row_count > 4000:
+        dataset = pl.concat([dataset[:2000], dataset[-2000:]])
+    hash_bytes = dataset.hash_rows().to_numpy().tobytes() + other_info.encode()
+    return hashlib.md5(hash_bytes).hexdigest()
+
+
+def _get_pd_dataset_hash(dataset: DataFrame) -> str:
+    """Get pandas dataset hash value."""
+    row_count = dataset.shape[0]
+    other_info = str(dataset.shape) + "_pandas"
+    if row_count > 4000:
+        dataset = pd.concat([dataset[:2000], dataset[-2000:]])
+    hash_bytes = pd.util.hash_pandas_object(dataset).values.tobytes() + other_info.encode()
+    return hashlib.md5(hash_bytes).hexdigest()
+
+
+def _get_modin_dataset_hash(dataset: DataFrame) -> str:
+    """Get modin dataset hash value."""
+    import modin.pandas as mpd
+    row_count = dataset.shape[0]
+    other_info = str(dataset.shape) + "_modin"
+    if row_count > 4000:
+        dataset = mpd.concat([dataset[:2000], dataset[-2000:]])
+    dataset = dataset._to_pandas()
+    hash_bytes = pd.util.hash_pandas_object(dataset).values.tobytes() + other_info.encode()
+    return hashlib.md5(hash_bytes).hexdigest()
+
+
+def _get_spark_dataset_hash(dataset: DataFrame) -> str:
+    """Get pyspark dataset hash value."""
+    shape = ((dataset.count(), len(dataset.columns)))
+    row_count = shape[0]
+    other_info = str(shape) + "_pyspark"
+    if row_count > 4000:
+        dataset = dataset.limit(4000)
+    dataset_pd = dataset.toPandas()
+    hash_bytes = pd.util.hash_pandas_object(dataset_pd).values.tobytes() + other_info.encode()
+    return hashlib.md5(hash_bytes).hexdigest()
+
+
 def get_dataset_hash(dataset: Union[DataFrame, Connector, str]) -> str:
     """Just a less accurate way to get different dataset hash values."""
     _, dataset_type = _get_data_parser(dataset)
-    if dataset_type in ["pandas", "modin", "polars"]:
-        row_count = dataset.shape[0]
-        other_info = str(dataset.shape) + "_" + dataset_type
-        if row_count > 4000:
-            dataset = dataset[:2000] + dataset[-2000:]
-        if dataset_type == "modin":
-            dataset = dataset._to_pandas()
-        if dataset_type in ["pandas", "modin"]:
-            hash_bytes = pd.util.hash_pandas_object(dataset).values.tobytes() + other_info.encode()
-        else:
-            hash_bytes = dataset.hash_rows().to_numpy().tobytes() + other_info.encode()
-        return hashlib.md5(hash_bytes).hexdigest()
+
+    if dataset_type == "polars":
+        return _get_pl_dataset_hash(dataset)
+
+    if dataset_type == "pandas":
+        return _get_pd_dataset_hash(dataset)
+
+    if dataset_type == "modin":
+        return _get_modin_dataset_hash(dataset)
 
     if dataset_type == "pyspark":
-        shape = ((dataset.count(), len(dataset.columns)))
-        row_count = shape[0]
-        other_info = str(shape) + "_" + dataset_type
-        if row_count > 4000:
-            dataset = dataset.limit(4000)
-        dataset_pd = dataset.toPandas()
-        hash_bytes = pd.util.hash_pandas_object(dataset_pd).values.tobytes() + other_info.encode()
-        return hashlib.md5(hash_bytes).hexdigest()
+        return _get_spark_dataset_hash(dataset)
 
     if dataset_type == "connector":
         return hashlib.md5("_".join([dataset.url, dataset.view_sql, dataset_type]).encode()).hexdigest()
