@@ -22,7 +22,7 @@ raw_fields_result = [
     {'fid': 'date', 'name': 'date', 'semanticType': 'nominal', 'analyticType': 'dimension'}
 ]
 to_records_result = [{'name': 'padnas', 'count': 3, 'date': '2022-01-01'}]
-to_records_no_kernrl_result = [{'name': 'padnas', 'count': 3, 'date': '2022-01-01'}]
+to_records_no_kernel_result = [{'name': 'padnas', 'count': 3, 'date': '2022-01-01'}]
 
 
 def test_data_parser_on_padnas():
@@ -32,7 +32,7 @@ def test_data_parser_on_padnas():
     assert dataset_parser.raw_fields == raw_fields_result
     assert dataset_parser.to_records(1) == to_records_result
     dataset_parser = get_parser(df)
-    assert dataset_parser.to_records(1) == to_records_no_kernrl_result
+    assert dataset_parser.to_records(1) == to_records_no_kernel_result
 
 
 def test_data_parser_on_polars():
@@ -42,7 +42,7 @@ def test_data_parser_on_polars():
     assert dataset_parser.raw_fields == raw_fields_result
     assert dataset_parser.to_records(1) == to_records_result
     dataset_parser = get_parser(df)
-    assert dataset_parser.to_records(1) == to_records_no_kernrl_result
+    assert dataset_parser.to_records(1) == to_records_no_kernel_result
 
 
 try:
@@ -54,7 +54,7 @@ try:
         assert dataset_parser.raw_fields == raw_fields_result
         assert dataset_parser.to_records(1) == to_records_result
         dataset_parser = get_parser(df)
-        assert dataset_parser.to_records(1) == to_records_no_kernrl_result
+        assert dataset_parser.to_records(1) == to_records_no_kernel_result
 except ImportError:
     pass
 
