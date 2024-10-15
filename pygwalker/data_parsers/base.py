@@ -92,7 +92,7 @@ class BaseDataParser(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def dataset_tpye(self) -> str:
+    def dataset_type(self) -> str:
         """get dataset type"""
         raise NotImplementedError
 
@@ -215,7 +215,7 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         ]
 
     @property
-    def dataset_tpye(self) -> str:
+    def dataset_type(self) -> str:
         return "dataframe_default"
 
     @property

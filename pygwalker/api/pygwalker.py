@@ -96,7 +96,7 @@ class PygWalker:
         self.use_save_tool = use_save_tool
         self.parse_dsl_type = self._get_parse_dsl_type(self.data_parser)
         self.gw_mode = gw_mode
-        self.dataset_type = self.data_parser.dataset_tpye
+        self.dataset_type = self.data_parser.dataset_type
         self.is_export_dataframe = is_export_dataframe
         self._last_exported_dataframe = None
         self.default_tab = default_tab
@@ -147,9 +147,9 @@ class PygWalker:
         )
 
     def _get_parse_dsl_type(self, data_parser: BaseDataParser) -> Literal["server", "client"]:
-        if data_parser.dataset_tpye.startswith("connector"):
+        if data_parser.dataset_type.startswith("connector"):
             return "server"
-        if data_parser.dataset_tpye == "cloud_dataset":
+        if data_parser.dataset_type == "cloud_dataset":
             return "server"
         return "client"
 

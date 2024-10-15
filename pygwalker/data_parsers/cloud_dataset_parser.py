@@ -103,7 +103,7 @@ class CloudDatasetParser(BaseDataParser):
         ]
 
     @property
-    def dataset_tpye(self) -> str:
+    def dataset_type(self) -> str:
         return "cloud_dataset"
 
     @property

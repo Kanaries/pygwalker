@@ -105,7 +105,7 @@ class SparkDataFrameDataParser(BaseDataParser):
         return df.toDF(*new_columns)
 
     @property
-    def dataset_tpye(self) -> str:
+    def dataset_type(self) -> str:
         return "spark_dataframe"
 
     @property
