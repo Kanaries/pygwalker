@@ -71,5 +71,5 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         return "dimension"
 
     @property
-    def dataset_tpye(self) -> str:
+    def dataset_type(self) -> str:
         return "modin_dataframe"

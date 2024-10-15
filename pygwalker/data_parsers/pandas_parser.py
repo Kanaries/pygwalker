@@ -60,5 +60,5 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         return "dimension"
 
     @property
-    def dataset_tpye(self) -> str:
+    def dataset_type(self) -> str:
         return "pandas_dataframe"

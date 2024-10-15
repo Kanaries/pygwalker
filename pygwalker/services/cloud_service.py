@@ -364,10 +364,10 @@ class CloudService:
         if name is None:
             name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
 
-        if data_parser.dataset_tpye == "cloud_dataset":
+        if data_parser.dataset_type == "cloud_dataset":
             raise ValueError("dataset is already a cloud dataset")
 
-        if data_parser.dataset_tpye.startswith("connector"):
+        if data_parser.dataset_type.startswith("connector"):
             connector = data_parser.conn
             datasource_name = "pygwalker_" + hashlib.md5(connector.url.encode()).hexdigest()
             datasource_id = self.get_datasource_by_name(datasource_name)

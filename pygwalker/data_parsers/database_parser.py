@@ -224,7 +224,7 @@ class DatabaseDataParser(BaseDataParser):
         ]
 
     @property
-    def dataset_tpye(self) -> str:
+    def dataset_type(self) -> str:
         return f"connector_{self.conn.dialect_name}"
 
     @property
