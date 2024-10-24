@@ -17,7 +17,7 @@ export default defineConfig((config: ConfigEnv) => {
         entry: path.resolve(__dirname, './src/index.tsx'),
         name: 'PyGWalkerApp',
         fileName: (format) => `pygwalker-app.${format}.js`,
-        formats: ['iife']
+        formats: ['iife', "es"]
       },
       minify: 'esbuild',
       sourcemap: false,
@@ -77,6 +77,8 @@ export default defineConfig((config: ConfigEnv) => {
       rollupOptions: {
         external: modulesNotToBundle,
         output: {
+          manualChunks: undefined,
+          inlineDynamicImports: true,
           globals: {
             'react': 'React',
             'react-dom': 'ReactDOM',

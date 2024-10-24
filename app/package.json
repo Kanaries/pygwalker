@@ -15,6 +15,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@anywidget/react": "^0.0.8",
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.8",
     "@kanaries/graphic-walker": "0.4.70",
