@@ -255,5 +255,63 @@ const streamlitComponentCallback = (data: any) => {
     }
 }
 
+const initAnywidgetCommunication = async(gid: string, model: import("@anywidget/types").AnyModel) => {
+    const bufferMap = new Map<string, any>();
+
+    const onMessage = (msg: string) => {
+        const data = JSON.parse(msg);
+        const action = data.action;
+        if (action === "finish_request") {
+            bufferMap.set(data.rid, data.data);
+            document.dispatchEvent(new CustomEvent(getSignalName(data.rid)));
+            return
+        }
+    }
+
+    model.on("msg:custom", msg => {
+        if (msg.type !== "pyg_response") {
+            return;
+        }
+        onMessage(msg.data);
+    });
+
+    const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
+        const rid = uuidv4();
+        const promise = new Promise<any>((resolve, reject) => {
+            setTimeout(() => {
+                sendMsgAsync(action, data, rid);
+            }, 0);
+            const timer = setTimeout(() => {
+                raiseRequestError("communication timeout", 0);
+                reject(new Error("get result timeout"));
+            }, timeout);
+            document.addEventListener(getSignalName(rid), (_) => {
+                clearTimeout(timer);
+                const resp = bufferMap.get(rid);
+                if (resp.code !== 0) {
+                    raiseRequestError(resp.message, resp.code);
+                    reject(new Error(resp.message));
+                }
+                resolve(resp);
+            });
+        });
+
+        return promise;
+    }
+
+    const sendMsgAsync = (action: string, data: any, rid: string | null) => {
+        rid = rid ?? uuidv4();
+        model.send({type: "pyg_request", msg: { gid, rid, action, data }});
+    }
+
+    const registerEndpoint = (_: string, __: (data: any) => any) => {}
+
+    return {
+        sendMsg,
+        registerEndpoint,
+        sendMsgAsync,
+    }
+}
+
 export type { ICommunication };
-export { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback };
+export { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback, initAnywidgetCommunication };

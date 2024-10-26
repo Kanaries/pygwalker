@@ -7,6 +7,7 @@ import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStor
 import type { IGWHandler, IViewField, ISegmentKey, IDarkMode, IChatMessage, IRow } from '@kanaries/graphic-walker/interfaces';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Streamlit, withStreamlitConnection } from "streamlit-component-lib"
+import { createRender, useModel } from "@anywidget/react";
 
 import Options from './components/options';
 import { IAppProps } from './interfaces';
@@ -14,7 +15,7 @@ import { IAppProps } from './interfaces';
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
 import commonStore from "./store/common";
-import { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback } from "./utils/communication";
+import { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback, initAnywidgetCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig } from './utils/userConfig';
 import CodeExportModal from './components/codeExportModal';
@@ -209,7 +210,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const exportTool = getExportTool(setExportOpen);
 
     const tools = [exportTool];
-    if ((props.env === "jupyter_widgets" || props.env === "streamlit" || props.env === "gradio") && props.useSaveTool) {
+    if (props.env && ["jupyter_widgets", "streamlit", "gradio", "marimo"].indexOf(props.env) !== -1 && props.useSaveTool) {
         const saveTool = getSaveTool(props, gwRef, storeRef, isChanged, setIsChanged);
         tools.push(saveTool);
     }
@@ -360,6 +361,16 @@ const initOnJupyter = async(props: IAppProps) => {
 
 const initOnHttpCommunication = async(props: IAppProps) => {
     const comm = await initHttpCommunication(props.id, props.communicationUrl);
+    communicationStore.setComm(comm);
+    if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
+        const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
+        props.visSpec = visSpecResp["data"]["visSpec"];
+    }
+    await initDslParser();
+}
+
+const initOnAnywidgetCommunication = async(props: IAppProps, model: import("@anywidget/types").AnyModel) => {
+    const comm = await initAnywidgetCommunication(props.id, model);
     communicationStore.setComm(comm);
     if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
@@ -568,4 +579,29 @@ const StreamlitGWalker = () => {
     )
 }
 
-export default { GWalker, PreviewApp, ChartPreviewApp, StreamlitGWalker }
+function AnywidgetGWalkerApp() {
+    const [inited, setInited] = useState(false);
+    const model = useModel();
+    const props = JSON.parse(model.get("props")) as IAppProps;
+    props.visSpec = FormatSpec(props.visSpec, props.rawFields);
+
+    useEffect(() => {
+        initOnAnywidgetCommunication(props, model).then(() => {
+            setInited(true);
+        })
+    }, []);
+
+    return (
+        <React.StrictMode>
+            {!inited && <div>Loading...</div>}
+            {inited && (
+                <MainApp darkMode={props.dark}>
+                    <GWalkerComponent {...props} />
+                </MainApp>
+            )}
+        </React.StrictMode>
+    );
+}
+
+
+export default { GWalker, PreviewApp, ChartPreviewApp, StreamlitGWalker, render: createRender(AnywidgetGWalkerApp) }

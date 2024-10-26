@@ -36,6 +36,8 @@ dependencies = [
     "numpy<2.0.0",
     "ipylab<=1.0.0",
     "quickjs",
+    "traitlets",
+    "anywidget",
 ]
 [project.urls]
 homepage = "https://kanaries.net/pygwalker"

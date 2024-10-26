@@ -15,6 +15,18 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
+"@anywidget/react@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@anywidget/react/-/react-0.0.8.tgz#64b73cf9c9bad7bad180c8ba44134f09cc6eb44f"
+  integrity sha512-obr4EasXgWra485u+G4V3Msn7A1EOnowarvR62FRjpv2Rz6AyOoLMz2B03Z9j3DrWdD0634fMGu5ZAeRyjuV4w==
+  dependencies:
+    "@anywidget/types" "^0.2.0"
+
+"@anywidget/types@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@anywidget/types/-/types-0.2.0.tgz#6bae4e4fa36d193f565b0b78dc7eac50bb71beb4"
+  integrity sha512-+XtK4uwxRd4JpuevUMhirrbvC0V4yCA/i0lEjhmSAtOaxiXIg/vBKzaSonDuoZ1a9LEjUXTW2+m7w+ULgsJYvg==
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.22.13":
   version "7.22.13"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.22.13.tgz#e3c1c099402598483b7a8c46a721d1038803755e"
