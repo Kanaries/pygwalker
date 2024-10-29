@@ -18,7 +18,7 @@ import traitlets
 
 class _WalkerWidget(anywidget.AnyWidget):
     """WalkerWidget"""
-    _esm = (pathlib.Path(__file__).parent.parent / "templates" / "dist" / "pygwalker-app.es.js").read_text()
+    _esm = (pathlib.Path(__file__).parent.parent / "templates" / "dist" / "pygwalker-app.es.js").read_text(encoding="utf-8")
     props = traitlets.Unicode("").tag(sync=True)
 
 
