@@ -11,7 +11,6 @@ from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame, IAppearance, IThemeKey
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.communications.anywidget_comm import AnywidgetCommunication
-import marimo as mo
 import anywidget
 import traitlets
 
@@ -78,8 +77,8 @@ def walk(
     )
     comm = AnywidgetCommunication(walker.gid)
 
-    widget.props = json.dumps(walker._get_props("marimo", []))
+    widget.props = json.dumps(walker._get_props("anywidget", []))
     comm.register_widget(widget)
     walker._init_callback(comm)
 
-    return mo.ui.anywidget(widget)
+    return widget
