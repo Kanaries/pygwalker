@@ -210,7 +210,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const exportTool = getExportTool(setExportOpen);
 
     const tools = [exportTool];
-    if (props.env && ["jupyter_widgets", "streamlit", "gradio", "marimo"].indexOf(props.env) !== -1 && props.useSaveTool) {
+    if (props.env && ["jupyter_widgets", "streamlit", "gradio", "marimo", "anywidget"].indexOf(props.env) !== -1 && props.useSaveTool) {
         const saveTool = getSaveTool(props, gwRef, storeRef, isChanged, setIsChanged);
         tools.push(saveTool);
     }
