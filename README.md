@@ -65,7 +65,7 @@ pip install pygwalker
 ```
 > **Note**
 > 
-> For an early trial, you can install with `pip install pygwalker --upgrade` to keep your version up to date with the latest release or even `pip install pygwaler --upgrade --pre` to obtain latest features and bug-fixes.
+> For an early trial, you can install with `pip install pygwalker --upgrade` to keep your version up to date with the latest release or even `pip install pygwalker --upgrade --pre` to obtain latest features and bug-fixes.
 
 ### Conda-forge
 ```bash
