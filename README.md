@@ -38,12 +38,11 @@
      
 Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
+In addition to Jupyter, PyGWalker also works in [marimo notebooks](https://github.com/marimo-team/marimo) and [streamlit](https://github.com/streamlit/streamlit).
+
 > If you prefer using R, check [GWalkR](https://github.com/Kanaries/GWalkR), the R wrapper of Graphic Walker.
 
-
-
 https://github.com/Kanaries/pygwalker/assets/22167673/2b940e11-cf8b-4cde-b7f6-190fb10ee44b
-
 
 
 # Getting Started
@@ -145,8 +144,36 @@ walker = pyg.walk(
 * [Use PyGWalker in Kaggle](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
 * [Use PyGWalker in Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)
 
+## Use pygwalker in marimo notebooks
+
+[marimo](https://github.com/marimo-team/marimo) is an open-source reactive notebook for Python that lets you explore
+data and build web apps using interactive widgets. Use pygwalker in marimo
+similar to how you would in Jupyter:
+
+```python    
+import pandas as pd
+import pygwalker as pyg
+```
+
+Load a dataframe, then output the walker object:
+
+```python
+df = pd.read_csv('./bike_sharing_dc.csv')
+pyg.walk(df)
+```
+
+### Example in local notebook
+
+* Notebook Code: [Click Here](https://github.com/marimo-team/marimo/blob/6622b6a1925d6faf0ad438b505b2ac9caaab67b5/examples/third_party/pygwalker/example.py)
+* Run this example with
+
+```bash
+pip install marimo && marimo edit https://github.com/marimo-team/marimo/blob/6622b6a1925d6faf0ad438b505b2ac9caaab67b5/examples/third_party/pygwalker/example.py
+```
+
+
 ## Use pygwalker in Streamlit
-Streamlit allows you to host a web version of pygwalker without figuring out details of how web application works.
+[Streamlit](https://github.com/streamlit/streamlit) allows you to host a web version of pygwalker without figuring out details of how web application works.
 
 Here are some of the app examples build with pygwalker and streamlit:
 + [PyGWalker + streamlit for Bike sharing dataset](https://pygwalkerdemo-cxz7f7pt5oc.streamlit.app/)
@@ -215,6 +242,7 @@ Refer it: [local-development](https://docs.kanaries.net/pygwalker/installation#l
 - [x] Jupyter Extension for Visual Studio Code (Since version `0.1.4a0`)
 - [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4a0`)
 - [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
+- [x] **marimo (Since version `0.4.9.11`)**
 - [x] DataCamp Workspace (Since version `0.1.4a0`)
 - [ ] Hex Projects 
 - [ ] ...feel free to raise an issue for more environments.
