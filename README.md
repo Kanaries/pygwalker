@@ -216,6 +216,7 @@ Refer it: [local-development](https://docs.kanaries.net/pygwalker/installation#l
 - [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4a0`)
 - [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
 - [x] DataCamp Workspace (Since version `0.1.4a0`)
+- [x] Panel. See [panel-graphic-walker](https://github.com/panel-extensions/panel-graphic-walker).
 - [ ] Hex Projects 
 - [ ] ...feel free to raise an issue for more environments.
 
@@ -268,6 +269,7 @@ More details, refer it: [How to set your privacy configuration?](https://github.
 + [Youtube: How to explore data with PyGWalker in Python
 ](https://youtu.be/rprn79wfB9E?si=lAsJn1cAQnb-EklD)
 + [Use pygwalker to build visual analysis app in streamlit](https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit)
++ Use [panel-graphic-walker](https://github.com/panel-extensions/panel-graphic-walker) to build data visualization apps with Panel.
 + If you encounter any issues and need support, please join our [Discord](https://discord.gg/Z4ngFWXz2U) channel or raise an issue on github.
 + Share pygwalker on these social media platforms if you like it!
 [![Reddit](https://img.shields.io/badge/share%20on-reddit-red?style=flat-square&logo=reddit)](https://reddit.com/submit?url=https://github.com/Kanaries/pygwalker&title=Say%20Hello%20to%20pygwalker%3A%20Combining%20Jupyter%20Notebook%20with%20a%20Tableau-like%20UI)
