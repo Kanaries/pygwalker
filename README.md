@@ -217,6 +217,7 @@ Refer it: [local-development](https://docs.kanaries.net/pygwalker/installation#l
 - [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
 - [x] DataCamp Workspace (Since version `0.1.4a0`)
 - [x] Panel. See [panel-graphic-walker](https://github.com/panel-extensions/panel-graphic-walker).
+- [x] marimo (Since version `0.4.9.11`)
 - [ ] Hex Projects 
 - [ ] ...feel free to raise an issue for more environments.
 
