@@ -10,18 +10,6 @@ This folder contains example implementations of Pygwalker across different inter
 - [`streamlit_demo.py`](streamlit_demo.py): Embedding Pygwalker visualizations in Streamlit apps
 - [`web_server_demo.py`](web_server_demo.py): Setting up Pygwalker with a web server
 
-> [!TIP]
-> To run the Marimo example, use:
-> ```shell
-> uvx marimo run --sandbox marimo_demo.py
-> ```
-> if you have [`uv`](https://docs.astral.sh/uv/) installed, or
-> ```shell
-> marimo run marimo_demo.py
-> ```
-> if you don't have uv installed (you'll need to manually install its dependencies; easier through the package manager sidebar option in marimo).
-> To edit the notebook source code, replace `run` with `edit` in the above commands.
-
 ## Running examples
 Each example includes its own set of requirements and setup instructions within the file. Make sure you have Pygwalker installed:
 ```shell
