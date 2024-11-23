@@ -173,7 +173,7 @@ Daha ayrıntılı talimatlar için [Graphic Walker GitHub page](https://github.c
 - [x] DataCamp Workspace (Since version `0.1.4a0`)
 - [ ] ...feel free to raise an issue for more environments.
 
-## Yapılandırma ve Gizlilik Politikası(pygwlaker >= 0.3.10)
+## Yapılandırma ve Gizlilik Politikası(pygwalker >= 0.3.10)
 
 ```bash
 $ pygwalker config --help
