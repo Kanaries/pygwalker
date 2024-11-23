@@ -151,7 +151,7 @@ Graphic Walker로 수행할 수 있는 멋진 작업:
 - [x] DataCamp Workspace (버전 `0.1.4a0`부터)
 - [ ] ...더 많은 환경에 대한 이슈를 제기하십시오.
 
-## 구성 및 개인 정보 보호 정책(pygwlaker >= 0.3.10)
+## 구성 및 개인 정보 보호 정책(pygwalker >= 0.3.10)
 
 ```bash
 $ pygwalker config --help
