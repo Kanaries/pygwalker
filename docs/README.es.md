@@ -151,7 +151,7 @@ Para obtener instrucciones más detalladas, visite la [página de GitHub de Grap
 - [x] DataCamp Workspace (desde la versión `0.1.4a0`)
 - [ ] ...no dude en plantear un problema para obtener más entornos.
 
-## Configuración y política de privacidad(pygwlaker >= 0.3.10)
+## Configuración y política de privacidad(pygwalker >= 0.3.10)
 
 ```bash
 $ pygwalker config --help

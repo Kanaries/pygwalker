@@ -151,7 +151,7 @@ Für ausführlichere Anweisungen besuchen Sie die [Graphic Walker GitHub-Seite](
 - [x] DataCamp Workspace (Ab Version `0.1.4a0`)
 - [ ] ... zögern Sie nicht, ein Problem für weitere Umgebungen zu melden.
 
-## Konfigurations- und Datenschutzrichtlinie(pygwlaker >= 0.3.10)
+## Konfigurations- und Datenschutzrichtlinie(pygwalker >= 0.3.10)
 
 ```bash
 $ pygwalker config --help

@@ -216,7 +216,7 @@ Type:      function
 - [x] DataCamp Workspace (最低版本:  `0.1.4a0`)
 - [ ] 需要其他环境支持？请给我们提Issue！
 
-## 配置和隐私政策(pygwlaker >= 0.3.10)
+## 配置和隐私政策(pygwalker >= 0.3.10)
 
 ```bash
 $ pygwalker config --help

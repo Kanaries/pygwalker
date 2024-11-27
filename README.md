@@ -221,7 +221,7 @@ Refer it: [local-development](https://docs.kanaries.net/pygwalker/installation#l
 - [ ] Hex Projects 
 - [ ] ...feel free to raise an issue for more environments.
 
-## Configuration And Privacy Policy(pygwlaker >= 0.3.10)
+## Configuration And Privacy Policy(pygwalker >= 0.3.10)
 
 You can use `pygwalker config` to set your privacy configuration.
 
