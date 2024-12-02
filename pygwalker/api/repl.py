@@ -17,8 +17,8 @@ def start_server(walker: PygWalker):
     walker._init_callback(comm)
     app = Bottle()
     # api path and html path need to have the same prefix
-    @app.route("/comm/", methods=["POST"])
-    @app.route("/comm/<gid>", methods=["POST"])
+    @app.post("/comm/")
+    @app.post("/comm/<gid>")
     def pygwalker_comm(gid):       
         payload = request.json
         comm_obj = walker.comm
@@ -28,7 +28,7 @@ def start_server(walker: PygWalker):
 
 
     # api path and html path need to have the same prefix
-    @app.route("/")
+    @app.get("/")
     def pyg_html():
         props = walker._get_props("web_server")
         props["communicationUrl"] = "comm"
@@ -41,7 +41,7 @@ def start_server(walker: PygWalker):
             run(app, host='0.0.0.0', port=port)
             break
         except OSError as e:
-            if e.errno == 98:  # Address already in use
+            if e.errno == 48:  # Address already in use
                 port += 1
             else:
                 raise
