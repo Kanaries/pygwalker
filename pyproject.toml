@@ -38,6 +38,8 @@ dependencies = [
     "quickjs",
     "traitlets",
     "anywidget",
+    "bottle",
+    "pywebview",
 ]
 [project.urls]
 homepage = "https://kanaries.net/pygwalker"

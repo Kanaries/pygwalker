@@ -9,5 +9,7 @@ dependencies:
   - python>=3.5
   - pip
   - polars
+  - bottle
+  - pywebview
   - pip:
     - pygwalker>=0.1
