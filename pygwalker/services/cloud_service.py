@@ -67,7 +67,7 @@ class PrivateSession(requests.Session):
                 "If you are not kanaries user, please register it from 'https://kanaries.net/home/access' \n"
                 "Then refer 'https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F' to set kanaries_api_key. \n"
             ))
-            raise CloudFunctionError("no kanaries api key", code=ErrorCode.TOKEN_ERROR)
+            raise CloudFunctionError("no kanaries api key. visit: https://docs.kanaries.net/ for setup documentation.", code=ErrorCode.TOKEN_ERROR)
         resp = super().send(request, **kwargs)
         try:
             resp_json = resp.json()
