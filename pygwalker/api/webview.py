@@ -36,7 +36,7 @@ def start_webview(walker: PygWalker):
         html = walker._get_render_iframe(props, True)
         return html
 
-    webview.create_window('Pygwalker', app)
+    webview.create_window('Pygwalker', app, width=1280, height=960)
     webview.start(debug=True)
 
 
