@@ -1,4 +1,5 @@
 from typing import Generic, Dict, List, Any, Optional
+import pandas as pd
 from typing_extensions import Literal
 from functools import lru_cache
 from datetime import datetime, date
@@ -14,6 +15,7 @@ import arrow
 import pytz
 
 from pygwalker._typing import DataFrame
+from pygwalker.renderers.pyplot import render_image
 from pygwalker.utils.payload_to_sql import get_sql_from_payload
 from pygwalker.utils.estimate_tools import estimate_average_data_size
 
@@ -208,46 +210,18 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         return self.get_datas_by_sql(sql)
     
     def get_image_by_spec(self, payload: Dict[str, Any]) -> str:
-        my_stringIObytes = io.BytesIO()
         df = self.df
-        config = payload.get("config")
-        defaultAggregated = config.get("defaultAggregated")
-        mark = config.get("geoms")[0]
-        encodings = payload.get("encodings")
-
-        viewFields = encodings.get("rows") + encodings.get("columns") + encodings.get("color") + encodings.get("opacity") + encodings.get("size")
-        viewDims = [field for field in viewFields if field.get("analyticType") == "dimension"]
-        viewMeas = [field for field in viewFields if field.get("analyticType") == "measure"]
-        if defaultAggregated and len(viewDims) > 0:
-            df = df.groupby([field.get("fid") for field in viewDims]).agg({field.get("fid"): field.get("aggName") for field in viewMeas})
-        # type GWGeoms = 'auto' | 'bar' | 'line' | 'area' | 'trail' | 'point' | 'circle' | 'tick' | 'rect' | 'arc' | 'text' | 'boxplot' | 'table';
-        if len(encodings.get("columns")) > 0 and len(encodings.get("rows")) > 0:
-            c = None
-            if len(encodings.get("color")) > 0:
-                cat = ['#4c78a8', '#9ecae9', '#f58518', '#ffbf79', '#54a24b', '#88d27a', '#b79a20', '#f2cf5b', '#439894', '#83bcb6', '#e45756', '#ff9d98', '#79706e', '#bab0ac', '#d67195', '#fcbfd2', '#b279a2', '#d6a5c9', '#9e765f', '#d8b5a5']
-                colors = df[encodings.get("color")[0].get("fid")]
-                unique_items = colors.unique()
-                color_map = {
-                    item: cat[i] for (i, item) in enumerate(unique_items)
-                }
-                c = colors.map(color_map)
-                print(c)
-            plt.figure(figsize=(10, 6))
-            if mark == "auto" or mark == "bar":
-                plt.bar(df[encodings.get("columns")[0].get("fid")], df[encodings.get("rows")[0].get("fid")], c=c, alpha=df[encodings.get("opacity")[0].get("fid")] if len(encodings.get("opacity")) > 0 else 1)
-            if mark == "circle" or mark == "point":
-                plt.scatter(df[encodings.get("columns")[0].get("fid")], df[encodings.get("rows")[0].get("fid")], c=c, alpha=df[encodings.get("opacity")[0].get("fid")] if len(encodings.get("opacity")) > 0 else 1)
-            if mark == "line":
-                plt.plot(df[encodings.get("columns")[0].get("fid")], df[encodings.get("rows")[0].get("fid")], c=c, alpha=df[encodings.get("opacity")[0].get("fid")] if len(encodings.get("opacity")) > 0 else 1)
-            plt.savefig(my_stringIObytes, format='png')
-            plt.clf()
-            plt.cla()
-            my_stringIObytes.seek(0)
-            my_base64_pngData = base64.b64encode(my_stringIObytes.read()).decode()
-            
-            return "data:image/png;base64," + my_base64_pngData
-        print(payload)
-        return ""
+        spec = payload.get("spec")
+        size = payload.get("size")
+        workflow_payload = payload.get("workflow")
+        sql = get_sql_from_payload(
+            "pygwalker_mid_table",
+            workflow_payload,
+            {"pygwalker_mid_table": self.field_metas}
+        )
+        data = self.get_datas_by_sql(sql)
+        df = pd.DataFrame(data)
+        return render_image(df, spec, size)
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
         """batch get records"""

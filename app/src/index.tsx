@@ -46,6 +46,7 @@ import style from "./index.css?inline";
 import { currentMediaTheme } from "./utils/theme";
 import { AppContext, darkModeContext } from "./store/context";
 import FormatSpec from "./utils/formatSpec";
+import { specToWorkflow } from "@kanaries/graphic-walker/utils/workflow";
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
     if (props.needInitChart && props.env === "jupyter_widgets" && total !== 0) {
@@ -261,10 +262,19 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
         setMode(value);
     };
 
-    const onChartChange = React.useCallback(async (chart: IChart, setImage: (image: string) => void) => {
-        const image = await getImageFromKernelBySpec(chart);
-        setImage(image);
-    }, []);
+    const onChartChange = React.useCallback(
+        async (
+            chart: IChart,
+            size: { width: number; height: number },
+            setImage: (image: string, size?: { width: number; height: number } | undefined) => void
+        ) => {
+            const workflow = await specToWorkflow(chart);
+            const data = await getImageFromKernelBySpec(chart, size, workflow);
+            const { image, size: imageSize } = JSON.parse(data);
+            setImage(image, imageSize);
+        },
+        []
+    );
 
     return (
         <React.StrictMode>
@@ -284,7 +294,6 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
                     </SelectContent>
                 </Select>
             )}
-            aaaa
             <GraphicWalkerShell
                 {...props.extraConfig}
                 appearance={useContext(darkModeContext)}
