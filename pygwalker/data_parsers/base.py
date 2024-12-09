@@ -218,8 +218,9 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         workflows = workflow_payload.get("workflow")
         # raise NameError('data' + json.dumps(workflows))
         # [{"type": "view", "query": [{"op": "raw", "fields":[] }] }]
-        if workflows is not None and len(workflows) > 0 and len(workflows[0].get("query")) > 0 and not (workflows[0].get("query")[0].get("op") == "raw" and len(workflows[0].get("query")[0].get("fields")) == 0):
+        if workflows is not None and len(workflows) > 0 and not (len(workflows) == 1 and workflows[0].get("query")[0].get("op") == "raw" and len(workflows[0].get("query")[0].get("fields")) == 0):
             data = self.get_datas_by_payload(workflow_payload)
+            print(f"df = pd.DataFrame({json.dumps(data)})")
             df = pd.DataFrame(data)
         else:
             df = self.df

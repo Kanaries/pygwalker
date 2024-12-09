@@ -255,14 +255,21 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
         setMode(value);
     };
 
+    const loadingRef = React.useRef(0);
+
     const onChartChange = React.useCallback(
         async (
             chart: IChart,
             size: { width: number; height: number },
             setImage: (image: string, size?: { width: number; height: number } | undefined) => void
         ) => {
+            loadingRef.current += 1;
+            const id = loadingRef.current;
             const workflow = await specToWorkflow(chart);
             const data = await getImageFromKernelBySpec(chart, size, workflow);
+            if (id !== loadingRef.current) {
+                return;
+            }
             if (!data) {
                 return;
             }
