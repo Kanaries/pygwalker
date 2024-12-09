@@ -42,22 +42,27 @@ def render_image(df, payload, size):
         fid_x = get_fid_with_agg(x_channels[0], is_aggergated)
         fid_y = get_fid_with_agg(y_channels[0], is_aggergated)
         
-        x_string = f"x='{fid_x}', " if fid_x else ''
-        y_string = f"y='{fid_y}', " if fid_y else ''
+        x_string = f"df['{fid_x}'], " if fid_x else ''
+        y_string = f"df['{fid_y}'], " if fid_y else ''
 
-        code_storage.add_code(f"df.plot({x_string}{y_string}{color_string}{opacity_string}{size_string}{plot_func})")
+        # code_storage.add_code(f"df.plot({x_string}{y_string}{color_string}{opacity_string}{size_string}{plot_func})")
+        code_storage.add_code(f"plt.{plot_func}({x_string}{y_string}{color_string}{opacity_string}{size_string})")
         code_storage.add_code(f"plt.xlabel('{get_name_with_agg(x_channels[0], is_aggergated)}')")
         code_storage.add_code(f"plt.ylabel('{get_name_with_agg(y_channels[0], is_aggergated)}')")
 
 
+    # plot_types = {
+    #     'bar': 'kind="bar"',
+    #     'line': '',
+    #     'area': 'kind="area"',
+    #     'trail': 'kind="scatter"',
+    #     'point': 'kind="scatter", marker="."',
+    #     'circle': 'kind="scatter", marker="o"',
+    #     'tick': 'kind="scatter", marker="|"',
+    # }
     plot_types = {
-        'bar': 'kind="bar"',
-        'line': '',
-        'area': 'kind="area"',
-        'trail': 'kind="scatter"',
-        'point': 'kind="scatter", marker="."',
-        'circle': 'kind="scatter", marker="o"',
-        'tick': 'kind="scatter", marker="|"',
+        'bar': 'bar',
+        'line': 'plot'
     }
 
     if mark in plot_types:

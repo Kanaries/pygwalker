@@ -263,7 +263,9 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
         ) => {
             const workflow = await specToWorkflow(chart);
             const data = await getImageFromKernelBySpec(chart, size, workflow);
-            console.log(data);
+            if (!data) {
+                return;
+            }
             const { image, size: imageSize } = JSON.parse(data);
             setImage(image, imageSize);
         },
