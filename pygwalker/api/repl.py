@@ -38,7 +38,7 @@ def start_server(walker: PygWalker):
     port = 3000
     while True:
         try:
-            run(app, host='0.0.0.0', port=port)
+            run(app, host='0.0.0.0', port=port, debug=True)
             break
         except OSError as e:
             if e.errno == 48:  # Address already in use
