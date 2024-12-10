@@ -84,8 +84,59 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df'):
             colorbar_string = f'{instance_name}.legend([mpatches.Patch(color=color, label=label) for (label, color) in color_map.items()], unique_color)'
             color_type = 'category'
 
+    
+    def plot_bar_single():
+        fid_x = get_fid_with_agg(x_channels[0], is_aggergated)
+        fid_y = get_fid_with_agg(y_channels[0], is_aggergated)
+        x_string = f"{df_name}['{fid_x}'], " if fid_x else ''
+        y_string = f"{df_name}['{fid_y}'], " if fid_y else ''
 
-    opacity_string = f"alpha='{fid_opacity}', " if fid_opacity else ''
+    def plot_square_single(instance_name):
+        # imshow
+        fid_x = get_fid_with_agg(x_channels[0], is_aggergated)
+        fid_y = get_fid_with_agg(y_channels[0], is_aggergated)
+        color_string = ''
+        code_storage.add_code(f"ax = {instance_name}.subplot()")
+        instance_name = "ax"
+        colorbar_string = ""
+
+        if fid_color:
+            if color_type == 'category':
+                code_storage.add_code(f"data = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_color}', aggfunc=','.join)")
+            else:
+                code_storage.add_code(f"data = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_color}')")
+                color_string = f"cmap=color_map, "
+        else:
+            code_storage.add_code(f"data = {df_name}.groupby(['{fid_y}', '{fid_x}']).size().unstack(fill_value=0)")
+            code_storage.add_code(f"color_map = LinearSegmentedColormap.from_list('primary', ['{primary_color}', '{primary_color}'])")
+            color_string = f"cmap=color_map, "
+            
+        opacity_string = ''
+        if fid_opacity:
+            opacity_field = pick_first(opacity_channel)
+            semanticType = opacity_field.get("semanticType")
+            if semanticType == 'quantitative' or semanticType == 'temporal':
+                code_storage.add_code(f"alpha = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_opacity}')")
+                code_storage.add_code(f"alpha = (alpha - alpha.min()) / (alpha.max() - alpha.min()) * 0.7 + 0.3")
+                colorbar_string = f"{instance_name}.figure.colorbar(ScalarMappable(norm=Normalize(vmin={df_name}['{fid_opacity}'].min(), vmax={df_name}['{fid_opacity}'].max()), cmap='Greys'), ax={instance_name}, label='{get_name_with_agg(opacity_field, is_aggergated)}')"
+            else:
+                code_storage.add_code(f"alpha = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_opacity}', aggfunc=lambda x:x)")
+            opacity_string = f"alpha=alpha, "
+        code_storage.add_code(f"im = {instance_name}.imshow(data, aspect='equal', {color_string}{opacity_string})")
+        code_storage.add_code(f"{instance_name}.set_xticks(range(len(data.columns)), labels=data.columns)")
+        code_storage.add_code(f"{instance_name}.set_yticks(range(len(data.index)), labels=data.index)")
+        code_storage.add_code(f"{instance_name}.set_xticks([x - 0.5 for x in range(len(data.columns))], minor=True)")
+        code_storage.add_code(f"{instance_name}.set_yticks([x - 0.5 for x in range(len(data.index))], minor=True)")
+        code_storage.add_code(f"{instance_name}.grid(which='minor')")
+        code_storage.add_code(f"{instance_name}.set_ylabel('{get_name_with_agg(y_channels[0], is_aggergated)}')")
+        code_storage.add_code(f"{instance_name}.set_xlabel('{get_name_with_agg(x_channels[0], is_aggergated)}')")
+        if fid_color:
+            if color_type == 'category':
+                pass
+            else:
+                code_storage.add_code(f"{instance_name}.figure.colorbar(im, label='{get_name_with_agg(color_channel[0], is_aggergated)}')")
+        if colorbar_string:
+            code_storage.add_code(colorbar_string)
 
     def plot_single(plot_func, plot_options = ''):
         fid_x = get_fid_with_agg(x_channels[0], is_aggergated)
@@ -95,14 +146,15 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df'):
         y_string = f"{df_name}['{fid_y}'], " if fid_y else ''
         
         size_string = f"{'width' if mark == 'bar' else 's'}={df_name}['{fid_size}'], " if fid_size else ''
+        opacity_string = f"alpha='{fid_opacity}', " if fid_opacity else ''
 
-        code_storage.add_code(f"{instance_name}.{plot_func}({x_string}{y_string}{color_string}{opacity_string}{size_string}{plot_options})")
+        code_storage.add_code(f"{instance_name}.{plot_func}({x_string}{y_string}{change_color_string_key(color_string, 'color' if plot_func == 'bar' else 'c')}{opacity_string}{size_string}{plot_options})")
         if colorbar_string:
             code_storage.add_code(colorbar_string)
         code_storage.add_code(f"{instance_name}.xlabel('{get_name_with_agg(x_channels[0], is_aggergated)}')")
         code_storage.add_code(f"{instance_name}.ylabel('{get_name_with_agg(y_channels[0], is_aggergated)}')")
         if fid_text:
-            code_storage.add_code(f"{instance_name}.text({df_name}['{fid_x}'], {df_name}['{fid_y}'], {df_name}['{fid_text}'])")
+            code_storage.add_code(f"for i, txt in enumerate(df['{fid_text}']):" + f"\n    plt.text(df['{fid_x}'][i], df['{fid_y}'][i], txt)")
     
     def plot_box_single():
         fid_y = get_fid_with_agg(pick_first(y_channels), is_aggergated)
@@ -175,6 +227,8 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df'):
                 pass
         elif mark == 'arc':
             plot_arc_single_only(instance_name, colorbar_string)
+        elif mark == 'rect':
+            plot_square_single(instance_name)
         else:
             return ''
     return code_storage.output_all()
