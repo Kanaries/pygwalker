@@ -12,15 +12,15 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import itertools
 import matplotlib.patches as mpatches
+import numpy as np
 
 def change_color_string_key(color_string: str | None, new_key: str):
     if color_string:
         color_string = color_string.replace('c=', f'{new_key}=')
     return color_string
 
-def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df'):
+def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', numpy_name = 'np', instance_name='plt'):
     code_storage = CodeStorage()
-    instance_name = "plt"
     # code_storage.add_code(f"import matplotlib.pyplot as plt")
     config = payload.get("config")
     mark = config.get("geoms")[0]
@@ -76,12 +76,13 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df'):
             if color_palette is None:
                 color_palette = get_color_palette('category10')
             code_storage.add_code(f"cp = {json.dumps(color_palette)}")
-            code_storage.add_code(f"colors = {df_name}['{fid_color}']")
-            code_storage.add_code("unique_color = colors.unique()")
-            code_storage.add_code("color_map = dict(zip(unique_color, itertools.cycle(cp)))")
-            code_storage.add_code("c = colors.map(color_map)")
+            if mark != 'rect':
+                code_storage.add_code(f"colors = {df_name}['{fid_color}']")
+                code_storage.add_code("unique_color = colors.unique()")
+                code_storage.add_code("color_map = dict(zip(unique_color, itertools.cycle(cp)))")
+                code_storage.add_code("c = colors.map(color_map)")
             color_string = f"c=c,"
-            colorbar_string = f'{instance_name}.legend([mpatches.Patch(color=color, label=label) for (label, color) in color_map.items()], unique_color)'
+            colorbar_string = f'{instance_name}.legend([mpatches.Patch(color=color, label=label) for (label, color) in color_map.items()], unique_color, loc=1)'
             color_type = 'category'
 
     
@@ -98,31 +99,47 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df'):
         color_string = ''
         code_storage.add_code(f"ax = {instance_name}.subplot()")
         instance_name = "ax"
-        colorbar_string = ""
+        colorbar_string = ''
+        opacity_bar_string = ''
+        imdata = "data"
 
         if fid_color:
             if color_type == 'category':
-                code_storage.add_code(f"data = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_color}', aggfunc=','.join)")
+                code_storage.add_code(f"data = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_color}', aggfunc=lambda x: ','.join(sorted(set(x))))")
+                code_storage.add_code(f"unique_color = data.unstack().unique()")
+                code_storage.add_code(f"color_map = dict(itertools.chain(zip(unique_color, itertools.cycle(cp)), [({numpy_name}.nan, '#0000')]))")
+                code_storage.add_code(f"imdata = np.array(list(data.replace(color_map).map(plt.matplotlib.colors.to_rgb).map(list).values.flatten())).reshape(data.shape + (3,))")
+                colorbar_string = f"{instance_name}.legend([mpatches.Patch(color=color, label=label) for (label, color) in color_map.items() if isinstance(label, str)], unique_color, loc=1, title='{get_name_with_agg(color_channel[0], is_aggergated)}')"
+                imdata = "imdata"
             else:
                 code_storage.add_code(f"data = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_color}')")
                 color_string = f"cmap=color_map, "
+                colorbar_string = f"{instance_name}.figure.colorbar(im, label='{get_name_with_agg(color_channel[0], is_aggergated)}')"
         else:
             code_storage.add_code(f"data = {df_name}.groupby(['{fid_y}', '{fid_x}']).size().unstack(fill_value=0)")
-            code_storage.add_code(f"color_map = LinearSegmentedColormap.from_list('primary', ['{primary_color}', '{primary_color}'])")
-            color_string = f"cmap=color_map, "
+            code_storage.add_code(f"color_map = LinearSegmentedColormap.from_list('primary', ['#0000', '{primary_color}'])")
+            color_string = f"cmap=color_map, vmin=0, vmax=1,"
             
         opacity_string = ''
         if fid_opacity:
             opacity_field = pick_first(opacity_channel)
             semanticType = opacity_field.get("semanticType")
-            if semanticType == 'quantitative' or semanticType == 'temporal':
-                code_storage.add_code(f"alpha = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_opacity}')")
-                code_storage.add_code(f"alpha = (alpha - alpha.min()) / (alpha.max() - alpha.min()) * 0.7 + 0.3")
-                colorbar_string = f"{instance_name}.figure.colorbar(ScalarMappable(norm=Normalize(vmin={df_name}['{fid_opacity}'].min(), vmax={df_name}['{fid_opacity}'].max()), cmap='Greys'), ax={instance_name}, label='{get_name_with_agg(opacity_field, is_aggergated)}')"
-            else:
-                code_storage.add_code(f"alpha = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_opacity}', aggfunc=lambda x:x)")
             opacity_string = f"alpha=alpha, "
-        code_storage.add_code(f"im = {instance_name}.imshow(data, aspect='equal', {color_string}{opacity_string})")
+            if semanticType == 'quantitative' or semanticType == 'temporal':
+                code_storage.add_code(f"alpha = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_opacity}', fill_value=0)")
+                code_storage.add_code(f"alpha = (alpha - alpha.min()) / (alpha.max() - alpha.min()) * 0.7 + 0.3")
+                opacity_bar_string = f"{instance_name}.figure.colorbar(ScalarMappable(norm=Normalize(vmin={df_name}['{fid_opacity}'].min(), vmax={df_name}['{fid_opacity}'].max()), cmap='Greys'), ax={instance_name}, label='{get_name_with_agg(opacity_field, is_aggergated)}')"
+            else:
+                code_storage.add_code(f"alpha = {df_name}.pivot_table(index='{fid_y}', columns='{fid_x}', values='{fid_opacity}', aggfunc=lambda x: ','.join(sorted(set(x))))")
+                code_storage.add_code("unique_alpha = alpha.unstack().unique()")
+                code_storage.add_code(f"alpha_map = dict(itertools.chain(zip(unique_alpha, np.linspace(0.3, 1, len(unique_alpha))), [({numpy_name}.nan, '#0000')]))")
+                code_storage.add_code("alpha = alpha.replace(alpha_map)")
+                opacity_bar_string = f"opacity_legend = {instance_name}.legend([mpatches.Patch(color='white', label=label, alpha=alpha) for (label, alpha) in alpha_map.items() if isinstance(label, str)], unique_alpha, loc=4, title='{get_name_with_agg(opacity_field, is_aggergated)}')\n{instance_name}.add_artist(opacity_legend)"
+            if imdata == 'imdata':
+                opacity_string = ''
+                code_storage.add_code(f"imdata = np.dstack((imdata, alpha))")
+
+        code_storage.add_code(f"im = {instance_name}.imshow({imdata}, aspect='equal', {color_string}{opacity_string})")
         code_storage.add_code(f"{instance_name}.set_xticks(range(len(data.columns)), labels=data.columns)")
         code_storage.add_code(f"{instance_name}.set_yticks(range(len(data.index)), labels=data.index)")
         code_storage.add_code(f"{instance_name}.set_xticks([x - 0.5 for x in range(len(data.columns))], minor=True)")
@@ -130,11 +147,8 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df'):
         code_storage.add_code(f"{instance_name}.grid(which='minor')")
         code_storage.add_code(f"{instance_name}.set_ylabel('{get_name_with_agg(y_channels[0], is_aggergated)}')")
         code_storage.add_code(f"{instance_name}.set_xlabel('{get_name_with_agg(x_channels[0], is_aggergated)}')")
-        if fid_color:
-            if color_type == 'category':
-                pass
-            else:
-                code_storage.add_code(f"{instance_name}.figure.colorbar(im, label='{get_name_with_agg(color_channel[0], is_aggergated)}')")
+        if opacity_bar_string:
+            code_storage.add_code(opacity_bar_string)
         if colorbar_string:
             code_storage.add_code(colorbar_string)
 
@@ -240,6 +254,7 @@ def render_image(df: DataFrame, payload: Dict[str, any], size: Dict[str, int]):
         print(code)
         exec(code)
         my_stringIObytes = io.BytesIO()
+        plt.tight_layout()
         plt.savefig(my_stringIObytes, format='png')
         plt.clf()
         plt.cla()
