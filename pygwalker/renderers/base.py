@@ -1,9 +1,13 @@
 class CodeStorage:
     def __init__(self):
         self.code_snippets = []
+        self.indent_level = 0
+        
+    def set_indent_level(self, level):
+        self.indent_level = level
 
     def add_code(self, code):
-        self.code_snippets.append(code)
+        self.code_snippets.append(" " * (4 * self.indent_level) + code)
 
     def execute_all(self, context=None):
         if context is None:
