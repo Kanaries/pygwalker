@@ -1,7 +1,7 @@
 import type { IDataSourceProps } from "../interfaces";
-import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/interfaces";
+import type { IRow, IDataQueryPayload, IChart } from "@kanaries/graphic-walker/interfaces";
 import commonStore from "../store/common";
-import communicationStore from "../store/communication"
+import communicationStore from "../store/communication";
 import { parser_dsl_with_meta } from "@kanaries/gw-dsl-parser";
 
 interface MessagePayload extends IDataSourceProps {
@@ -65,7 +65,7 @@ export function postDataService(msg: ICommPostDataMessage) {
             data: msg.data,
         } as MessagePayload,
         "*"
-    )
+    );
 }
 
 export function finishDataService(msg: any) {
@@ -75,7 +75,7 @@ export function finishDataService(msg: any) {
             dataSourceId: msg.dataSourceId,
         } as MessagePayload,
         "*"
-    )
+    );
 }
 
 interface IBatchGetDatasTask {
@@ -87,12 +87,8 @@ interface IBatchGetDatasTask {
 function initBatchGetDatas(action: string) {
     const taskList = [] as IBatchGetDatasTask[];
 
-    const batchGetDatas = async(taskList: IBatchGetDatasTask[]) => {
-        const result = await communicationStore.comm?.sendMsg(
-            action,
-            {"queryList": taskList.map(task => task.query)},
-            60_000
-        );
+    const batchGetDatas = async (taskList: IBatchGetDatasTask[]) => {
+        const result = await communicationStore.comm?.sendMsg(action, { queryList: taskList.map((task) => task.query) }, 60_000);
         if (result) {
             for (let i = 0; i < taskList.length; i++) {
                 taskList[i].resolve(result["data"]["datas"][i]);
@@ -102,7 +98,7 @@ function initBatchGetDatas(action: string) {
                 taskList[i].reject("get result error");
             }
         }
-    }
+    };
 
     const getDatas = (query: any) => {
         return new Promise<any>((resolve, reject) => {
@@ -112,15 +108,16 @@ function initBatchGetDatas(action: string) {
                     batchGetDatas(taskList.splice(0, taskList.length));
                 }, 100);
             }
-        })
-    }
+        });
+    };
 
     return {
-        getDatas
-    }
+        getDatas,
+    };
 }
 
 const batchGetDatasBySql = initBatchGetDatas("batch_get_datas_by_sql");
+const batchGetImagesBySpec = initBatchGetDatas("batch_get_images_by_spec");
 const batchGetDatasByPayload = initBatchGetDatas("batch_get_datas_by_payload");
 const DEFAULT_LIMIT = 50_000;
 
@@ -146,17 +143,13 @@ function notifyDataLimit() {
 
 export function getDatasFromKernelBySql(fieldMetas: any) {
     return async (payload: IDataQueryPayload) => {
-        const sql = parser_dsl_with_meta(
-            "pygwalker_mid_table",
-            JSON.stringify({...payload, limit: payload.limit ?? DEFAULT_LIMIT}),
-            JSON.stringify({"pygwalker_mid_table": fieldMetas})
-        );
+        const sql = parser_dsl_with_meta("pygwalker_mid_table", JSON.stringify({...payload, limit: payload.limit ?? DEFAULT_LIMIT}), JSON.stringify({ pygwalker_mid_table: fieldMetas }));
         const result = await batchGetDatasBySql.getDatas(sql) ?? [];
         if (!payload.limit && result.length === DEFAULT_LIMIT) {
             notifyDataLimit();
         }
         return result as IRow[];
-    }
+    };
 }
 
 export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
@@ -165,4 +158,8 @@ export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
         notifyDataLimit();
     }
     return result as IRow[];
+}
+
+export async function getImageFromKernelBySpec(spec: IChart, size: { width: number; height: number }, workflow: IDataQueryPayload) {
+    return (await batchGetImagesBySpec.getDatas({ spec, size, workflow })) ?? "";
 }

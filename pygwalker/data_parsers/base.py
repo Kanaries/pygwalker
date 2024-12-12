@@ -1,10 +1,14 @@
+import json
 from typing import Generic, Dict, List, Any, Optional
+import pandas as pd
 from typing_extensions import Literal
 from functools import lru_cache
 from datetime import datetime, date
 from datetime import timedelta
 import abc
 import io
+import matplotlib.pyplot as plt
+import base64
 
 from pydantic import BaseModel
 import duckdb
@@ -12,6 +16,7 @@ import arrow
 import pytz
 
 from pygwalker._typing import DataFrame
+from pygwalker.renderers.pyplot import render_image
 from pygwalker.utils.payload_to_sql import get_sql_from_payload
 from pygwalker.utils.estimate_tools import estimate_average_data_size
 
@@ -77,6 +82,11 @@ class BaseDataParser(abc.ABC):
 
     @abc.abstractmethod
     def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+        """batch get records"""
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def batch_get_images_by_spec(self, payload_list: List[Dict[str, Any]]) -> str:
         """batch get records"""
         raise NotImplementedError
 
@@ -199,6 +209,22 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             {"pygwalker_mid_table": self.field_metas}
         )
         return self.get_datas_by_sql(sql)
+    
+    def get_image_by_spec(self, payload: Dict[str, Any]) -> str:
+        df = self.df
+        spec = payload.get("spec")
+        size = payload.get("size")
+        workflow_payload = payload.get("workflow")
+        workflows = workflow_payload.get("workflow")
+        # raise NameError('data' + json.dumps(workflows))
+        # [{"type": "view", "query": [{"op": "raw", "fields":[] }] }]
+        if workflows is not None and len(workflows) > 0 and not (len(workflows) == 1 and workflows[0].get("query")[0].get("op") == "raw" and len(workflows[0].get("query")[0].get("fields")) == 0):
+            data = self.get_datas_by_payload(workflow_payload)
+            df = pd.DataFrame(data)
+        else:
+            df = self.df
+            return ""
+        return render_image(df, spec, size)
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
@@ -211,6 +237,13 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         """batch get records"""
         return [
             self.get_datas_by_payload(payload)
+            for payload in payload_list
+        ]
+        
+    def batch_get_images_by_spec(self, payload_list: List[Dict[str, Any]]) -> str:
+        """batch get images"""
+        return [
+            self.get_image_by_spec(payload)
             for payload in payload_list
         ]
 
