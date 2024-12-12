@@ -433,6 +433,12 @@ class PygWalker:
             return {
                 "datas": result
             }
+            
+        def _batch_get_codes_by_spec(data: Dict[str, Any]):
+            result = self.data_parser.batch_get_codes_by_spec(data["queryList"])
+            return {
+                "datas": result
+            }
 
         def _get_spec_by_text(data: Dict[str, Any]):
             callback = self.other_props.get(
@@ -508,6 +514,7 @@ class PygWalker:
             comm.register("batch_get_datas_by_sql", _batch_get_datas_by_sql)
             comm.register("batch_get_datas_by_payload", _batch_get_datas_by_payload)
             comm.register("batch_get_images_by_spec", _batch_get_images_by_spec)
+            comm.register("batch_get_codes_by_spec", _batch_get_codes_by_spec)
 
         if self.is_export_dataframe:
             comm.register("export_dataframe_by_payload", _export_dataframe_by_payload)

@@ -16,7 +16,7 @@ import arrow
 import pytz
 
 from pygwalker._typing import DataFrame
-from pygwalker.renderers.pyplot import render_image
+from pygwalker.renderers.pyplot import render_image, build_code
 from pygwalker.utils.payload_to_sql import get_sql_from_payload
 from pygwalker.utils.estimate_tools import estimate_average_data_size
 
@@ -87,6 +87,11 @@ class BaseDataParser(abc.ABC):
     
     @abc.abstractmethod
     def batch_get_images_by_spec(self, payload_list: List[Dict[str, Any]]) -> str:
+        """batch get records"""
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def batch_get_codes_by_spec(self, payload_list: List[Dict[str, Any]]) -> str:
         """batch get records"""
         raise NotImplementedError
 
@@ -225,6 +230,9 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             df = self.df
             return ""
         return render_image(df, spec, size)
+        
+    def get_code_by_spec(self, spec: Dict[str, Any]) -> str:
+        return build_code(spec, None)
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
@@ -244,6 +252,13 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         """batch get images"""
         return [
             self.get_image_by_spec(payload)
+            for payload in payload_list
+        ]
+        
+    def batch_get_codes_by_spec(self, payload_list: List[Dict[str, Any]]) -> str:
+        """batch get images"""
+        return [
+            self.get_code_by_spec(payload)
             for payload in payload_list
         ]
 

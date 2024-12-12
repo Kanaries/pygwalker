@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { tracker } from "@/utils/tracker";
 
 import { usePythonCode } from "./usePythonCode";
+import { getCodesFromKernelBySpec } from "@/dataSource";
 
 SyntaxHighlighter.registerLanguage("json", json);
 SyntaxHighlighter.registerLanguage("python", py);
@@ -31,12 +32,9 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     const [visSpec, setVisSpec] = useState<IChart[]>([]);
     const [tips, setTips] = useState<string>("");
     const darkMode = React.useContext(darkModeContext);
+    const [pyCode, setPycode] = useState<string>("");
 
-    const { pyCode } = usePythonCode({
-        sourceCode,
-        visSpec,
-        version: commonStore.version,
-    });
+
 
     const closeModal = useCallback(() => {
         setOpen(false);
@@ -55,6 +53,9 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
         if (open && globalStore.current) {
             const res = globalStore.current.exportCode();
             setVisSpec(res);
+            getCodesFromKernelBySpec(res[0]).then((res) => {
+                setPycode(res);
+            });
         }
     }, [open]);
 

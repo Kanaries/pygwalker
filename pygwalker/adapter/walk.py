@@ -16,7 +16,7 @@ def walk(
     theme_key: IThemeKey = 'g2',
     appearance: IAppearance = 'media',
     spec: str = "",
-    use_kernel_calc: Optional[bool] = None,
+    use_kernel_calc: Optional[bool] = True,
     kernel_computation: Optional[bool] = None,
     cloud_computation: bool = False,
     show_cloud_tool: bool = True,

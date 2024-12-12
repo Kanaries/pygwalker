@@ -256,6 +256,7 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
     };
 
     const loadingRef = React.useRef(0);
+    const lastFetchRef = React.useRef(0);
 
     const onChartChange = React.useCallback(
         async (
@@ -263,6 +264,11 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
             size: { width: number; height: number },
             setImage: (image: string, size?: { width: number; height: number } | undefined) => void
         ) => {
+            const now = Date.now();
+            if (now - lastFetchRef.current < 200) {
+                return;
+            }
+            lastFetchRef.current = now;
             loadingRef.current += 1;
             const id = loadingRef.current;
             const workflow = await specToWorkflow(chart);
@@ -271,6 +277,7 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
                 return;
             }
             if (!data) {
+                setImage("", {width: 0, height: 0});
                 return;
             }
             const { image, size: imageSize } = JSON.parse(data);
@@ -306,13 +313,12 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
                 data={props.useKernelCalc ? undefined : props.dataSource}
                 storeRef={storeRefProxied}
                 ref={gwRef}
-                toolbar={toolbarConfig}
                 computation={computationCallback}
                 chart={visSpec.length === 0 ? undefined : visSpec}
                 experimentalFeatures={{ computedField: props.useKernelCalc }}
                 defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
             >
-                <GraphicWalkerEditor enhanceAPI={enhanceAPI}>
+                <GraphicWalkerEditor toolbar={toolbarConfig} enhanceAPI={enhanceAPI}>
                     <RemoteRenderer onChartChange={onChartChange} />
                 </GraphicWalkerEditor>
             </GraphicWalkerShell>

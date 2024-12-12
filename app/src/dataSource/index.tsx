@@ -118,6 +118,7 @@ function initBatchGetDatas(action: string) {
 
 const batchGetDatasBySql = initBatchGetDatas("batch_get_datas_by_sql");
 const batchGetImagesBySpec = initBatchGetDatas("batch_get_images_by_spec");
+const batchGetCodesBySpec = initBatchGetDatas("batch_get_codes_by_spec");
 const batchGetDatasByPayload = initBatchGetDatas("batch_get_datas_by_payload");
 const DEFAULT_LIMIT = 50_000;
 
@@ -162,4 +163,9 @@ export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
 
 export async function getImageFromKernelBySpec(spec: IChart, size: { width: number; height: number }, workflow: IDataQueryPayload) {
     return (await batchGetImagesBySpec.getDatas({ spec, size, workflow })) ?? "";
+}
+
+
+export async function getCodesFromKernelBySpec(spec: IChart) {
+    return (await batchGetCodesBySpec.getDatas(spec)) ?? [];
 }
