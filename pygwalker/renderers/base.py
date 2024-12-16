@@ -5,6 +5,12 @@ class CodeStorage:
         
     def set_indent_level(self, level):
         self.indent_level = level
+    
+    def increase_indent_level(self):
+        self.indent_level += 1
+    
+    def decrease_indent_level(self):
+        self.indent_level = max(0, self.indent_level - 1)
 
     def add_code(self, code):
         self.code_snippets.append(" " * (4 * self.indent_level) + code)
@@ -56,6 +62,8 @@ def get_fid_with_agg(field, is_aggergated):
     if field is None:
         return None
     fid = field.get("fid")
+    if fid == MEA_VAL_FID:
+        return fid
     analytic_type = field.get("analyticType")
     aggName = field.get("aggName")
     if is_aggergated and aggName and analytic_type == 'measure':
@@ -170,3 +178,31 @@ def get_primary_color(spec):
 
 def pick_first(list):
     return list[0] if list is not None and len(list) else None
+
+MEA_KEY_FID = 'gw_mea_key_fid'
+MEA_VAL_FID = 'gw_mea_val_fid'
+
+def get_view_encoding_keys(geom):
+    if geom == 'arc':
+        return ['theta', 'color', 'opacity']
+    if geom in ['bar', 'tick', 'line', 'area', 'boxplot']:
+        return ['columns', 'rows', 'color', 'opacity', 'size', 'text']
+    return ['columns', 'rows', 'color', 'opacity', 'size', 'details', 'shape']
+
+def get_fold_fields(payload):
+    config = payload.get("config")
+    encodings = payload.get("encodings")
+    view_fields = sum([encodings.get(keys) for keys in get_view_encoding_keys(config.get("geom"))], [])
+    mea_val_field = next((x for x in view_fields if x.get('fid') == MEA_VAL_FID), None)
+    if mea_val_field:
+        is_aggergated = config.get("defaultAggregated")
+        folds = config.get("folds")
+        if is_aggergated:
+            agg_name = mea_val_field.get("aggName")
+            fold_fids = [f"{f}_{agg_name}" for f in folds]
+        else:
+            fold_fids = folds
+        return fold_fids
+    return []
+
+         

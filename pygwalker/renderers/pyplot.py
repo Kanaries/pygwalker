@@ -4,7 +4,7 @@ import json
 from typing import Dict, List
 
 from pygwalker._typing import DataFrame
-from pygwalker.renderers.base import CodeStorage, auto_mark, get_color_palette, get_fid_with_agg, get_name_with_agg, get_primary_color, get_spec_color_palette, pick_first
+from pygwalker.renderers.base import MEA_KEY_FID, MEA_VAL_FID, CodeStorage, auto_mark, get_color_palette, get_fid_with_agg, get_fold_fields, get_name_with_agg, get_primary_color, get_spec_color_palette, pick_first
 import matplotlib
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.cm import ScalarMappable
@@ -85,8 +85,12 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
     text_channel = encodings.get("text")
     shape_channel = encodings.get("shape")
     
+    fold_fields = get_fold_fields(payload)
+    if (len(fold_fields) > 0):
+        code_storage.add_code(f"folded_df = {df_name}.melt(id_vars=list(set({df_name}.columns.to_list())-set({json.dumps(fold_fields)})), value_vars={json.dumps(fold_fields)}, var_name={with_quote(MEA_KEY_FID)}, value_name={with_quote(MEA_VAL_FID)})")
+        df_name = 'folded_df'
+    
     stack = layout.get("stack")
-    resolve = layout.get("resolve")
     zero_scale = layout.get("zeroScale")
 
     fid_color = get_fid_with_agg(pick_first(color_channel), is_aggergated)
@@ -572,6 +576,27 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             plot_square_single(ax_name, fig_name, df_name, x_field, y_field)
         else:
             return False
+        if zero_scale:
+            if x_field and x_field.get("analyticType") == 'measure':
+                code_storage.add_code(f"left, right = {ax_name}.get_xlim()")
+                code_storage.add_code(f"if left > 0:")
+                code_storage.increase_indent_level()
+                code_storage.add_code(f"{ax_name}.set_xlim(left=0)")
+                code_storage.decrease_indent_level()
+                code_storage.add_code(f"elif right < 0:")
+                code_storage.increase_indent_level()
+                code_storage.add_code(f"{ax_name}.set_xlim(right=0)")
+                code_storage.decrease_indent_level()
+            if y_field and y_field.get("analyticType") == 'measure':
+                code_storage.add_code(f"bottom, top = {ax_name}.get_ylim()")
+                code_storage.add_code(f"if bottom > 0:")
+                code_storage.increase_indent_level()
+                code_storage.add_code(f"{ax_name}.set_ylim(bottom=0)")
+                code_storage.decrease_indent_level()
+                code_storage.add_code(f"elif top < 0:")
+                code_storage.increase_indent_level()
+                code_storage.add_code(f"{ax_name}.set_ylim(top=0)")
+                code_storage.decrease_indent_level()
         return True
 
     if mark == 'arc':
