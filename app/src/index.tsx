@@ -20,7 +20,7 @@ import {
     getDatasFromKernelByPayload,
     getImageFromKernelBySpec,
 } from "./dataSource";
-
+import { debounce } from "lodash";
 import commonStore from "./store/common";
 import { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback, initAnywidgetCommunication } from "./utils/communication";
 import communicationStore from "./store/communication";
@@ -256,33 +256,33 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
     };
 
     const loadingRef = React.useRef(0);
-    const lastFetchRef = React.useRef(0);
 
     const onChartChange = React.useCallback(
-        async (
-            chart: IChart,
-            size: { width: number; height: number },
-            setImage: (image: string, size?: { width: number; height: number } | undefined) => void
-        ) => {
-            const now = Date.now();
-            if (now - lastFetchRef.current < 200) {
-                return;
-            }
-            lastFetchRef.current = now;
-            loadingRef.current += 1;
-            const id = loadingRef.current;
-            const workflow = await specToWorkflow(chart);
-            const data = await getImageFromKernelBySpec(chart, size, workflow);
-            if (id !== loadingRef.current) {
-                return;
-            }
-            if (!data) {
-                setImage("", {width: 0, height: 0});
-                return;
-            }
-            const { image, size: imageSize } = JSON.parse(data);
-            setImage(image, imageSize);
-        },
+        debounce(
+            async (
+                chart: IChart,
+                size: { width: number; height: number },
+                setImage: (image: string, size?: { width: number; height: number } | undefined) => void
+            ) => {
+                loadingRef.current += 1;
+                const id = loadingRef.current;
+                const workflow = await specToWorkflow(chart);
+                if (id !== loadingRef.current) {
+                    return;
+                }
+                const data = await getImageFromKernelBySpec(chart, size, workflow);
+                if (id !== loadingRef.current) {
+                    return;
+                }
+                if (!data) {
+                    setImage("", { width: 0, height: 0 });
+                    return;
+                }
+                const { image, size: imageSize } = JSON.parse(data);
+                setImage(image, imageSize);
+            },
+            150
+        ),
         []
     );
 
