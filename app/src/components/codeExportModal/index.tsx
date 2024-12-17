@@ -16,6 +16,18 @@ import { tracker } from "@/utils/tracker";
 
 import { usePythonCode } from "./usePythonCode";
 import { getCodesFromKernelBySpec } from "@/dataSource";
+import { specToWorkflow } from "@kanaries/graphic-walker/utils/workflow";
+
+const init =  `import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.cm import ScalarMappable
+import itertools
+import matplotlib.patches as mpatches
+import numpy as np
+from pygwalker.services.data_parsers import get_parser
+
+data_parser = get_parser(df)\n\n`;
 
 SyntaxHighlighter.registerLanguage("json", json);
 SyntaxHighlighter.registerLanguage("python", py);
@@ -34,8 +46,6 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
     const darkMode = React.useContext(darkModeContext);
     const [pyCode, setPycode] = useState<string>("");
 
-
-
     const closeModal = useCallback(() => {
         setOpen(false);
     }, [setOpen]);
@@ -44,7 +54,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
         try {
             navigator.clipboard.writeText(content);
             setOpen(false);
-        } catch(e) {
+        } catch (e) {
             setTips("The Clipboard API has been blocked in this environment. Please copy manully.");
         }
     };
@@ -53,8 +63,8 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
         if (open && globalStore.current) {
             const res = globalStore.current.exportCode();
             setVisSpec(res);
-            getCodesFromKernelBySpec(res[0]).then((res) => {
-                setPycode(res);
+            Promise.all(res.map(async (chart) => getCodesFromKernelBySpec(chart, await specToWorkflow(chart)))).then((res) => {
+                setPycode(init + res.join("\n\n"));
             });
         }
     }, [open]);
@@ -70,9 +80,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
             <DialogContent className="sm:max-w-[90%] lg:max-w-[900px]">
                 <DialogHeader>
                     <DialogTitle>Code Export</DialogTitle>
-                    <DialogDescription>
-                        Export the code of all charts in PyGWalker.
-                    </DialogDescription>
+                    <DialogDescription>Export the code of all charts in PyGWalker.</DialogDescription>
                 </DialogHeader>
                 <div className="text-sm max-h-64 overflow-auto p-1">
                     <Tabs defaultValue="python" className="w-full">
@@ -82,7 +90,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         </TabsList>
                         <TabsContent className="py-4" value="python">
                             <h3 className="text-sm font-medium mb-2">PyGWalker Code</h3>
-                            <SyntaxHighlighter showLineNumbers language="python" style={darkMode === 'dark' ? atomOneDark : atomOneLight}>
+                            <SyntaxHighlighter showLineNumbers language="python" style={darkMode === "dark" ? atomOneDark : atomOneLight}>
                                 {pyCode}
                             </SyntaxHighlighter>
                             <div className="text-xs max-h-56 mt-2">
@@ -103,7 +111,7 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                         </TabsContent>
                         <TabsContent value="json">
                             <h3 className="text-sm font-medium mb-2">Graphic Walker Specification</h3>
-                            <SyntaxHighlighter showLineNumbers language="json" style={darkMode === 'dark' ? atomOneDark : atomOneLight}>
+                            <SyntaxHighlighter showLineNumbers language="json" style={darkMode === "dark" ? atomOneDark : atomOneLight}>
                                 {JSON.stringify(visSpec, null, 2)}
                             </SyntaxHighlighter>
                             <div className="text-xs max-h-56 mt-2">
@@ -113,12 +121,14 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                                 <Button
                                     onClick={() => {
                                         copyToCliboard(JSON.stringify(visSpec, null, 2));
-                                        tracker.track("click", {"entity": "copy_code_button"});
+                                        tracker.track("click", { entity: "copy_code_button" });
                                     }}
                                 >
                                     Copy to Clipboard
                                 </Button>
-                                <Button variant="outline" onClick={closeModal}>Cancel</Button>
+                                <Button variant="outline" onClick={closeModal}>
+                                    Cancel
+                                </Button>
                             </div>
                         </TabsContent>
                     </Tabs>

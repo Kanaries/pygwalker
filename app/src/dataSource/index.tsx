@@ -166,6 +166,6 @@ export async function getImageFromKernelBySpec(spec: IChart, size: { width: numb
 }
 
 
-export async function getCodesFromKernelBySpec(spec: IChart) {
-    return (await batchGetCodesBySpec.getDatas(spec)) ?? [];
+export async function getCodesFromKernelBySpec(spec: IChart, workflow: IDataQueryPayload) {
+    return (await batchGetCodesBySpec.getDatas({ spec, workflow })) ?? [];
 }

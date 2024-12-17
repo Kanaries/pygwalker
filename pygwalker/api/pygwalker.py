@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional, Union
 import urllib
 import json
+import matplotlib
 
 from typing_extensions import Literal
 from duckdb import ParserException
@@ -109,6 +110,7 @@ class PygWalker:
                 self.data_parser.get_datas_by_sql("SELECT 1 FROM pygwalker_mid_table LIMIT 1")
             except Exception:
                 pass
+            matplotlib.use("agg")
         if GlobalVarManager.privacy == "offline":
             self.show_cloud_tool = False
 

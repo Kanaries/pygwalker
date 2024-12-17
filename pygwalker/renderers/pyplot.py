@@ -5,10 +5,8 @@ from typing import Dict, List
 
 from pygwalker._typing import DataFrame
 from pygwalker.renderers.base import MEA_KEY_FID, MEA_VAL_FID, CodeStorage, auto_mark, get_color_palette, get_fid_with_agg, get_fold_fields, get_name_with_agg, get_primary_color, get_spec_color_palette, pick_first
-import matplotlib
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.cm import ScalarMappable
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import itertools
 import matplotlib.patches as mpatches
@@ -641,6 +639,10 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
 
 
 def render_image(df: DataFrame, payload: Dict[str, any], size: Dict[str, int]):
+    """
+    Render a plot with the given DataFrame and payload.
+    You should change to a non-interactive backend before rendering the plot.
+    """
     code = build_code(payload, size)
     with plt.ioff():
         exec(code)

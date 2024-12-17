@@ -7,8 +7,6 @@ from datetime import datetime, date
 from datetime import timedelta
 import abc
 import io
-import matplotlib.pyplot as plt
-import base64
 
 from pydantic import BaseModel
 import duckdb
@@ -231,8 +229,14 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
             return ""
         return render_image(df, spec, size)
         
-    def get_code_by_spec(self, spec: Dict[str, Any]) -> str:
-        return build_code(spec, None)
+    def get_code_by_spec(self, payload: Dict[str, Any]) -> str:
+        spec = payload.get("spec")
+        workflow_payload = payload.get("workflow")
+        code = build_code(spec, None, "chart_data")
+        return f"""workflow = {json.dumps(workflow_payload)}
+chart_data = pd.DataFrame(data_parser.get_datas_by_payload(workflow))
+{code}
+plt.show()"""
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
