@@ -1057,9 +1057,9 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kanaries/graphic-walker@./lib/kanaries-graphic-walker-v0.4.73.6.tgz":
+"@kanaries/graphic-walker@./lib/kanaries-graphic-walker-v0.4.73.7.tgz":
   version "0.4.73"
-  resolved "./lib/kanaries-graphic-walker-v0.4.73.6.tgz#4275bce34b5270f39c8785b34cfca3f6737916d6"
+  resolved "./lib/kanaries-graphic-walker-v0.4.73.7.tgz#c71ca4af507d7393eaa7af9e9d143307980ec136"
   dependencies:
     "@headlessui-float/react" "^0.11.4"
     "@headlessui/react" "1.7.12"

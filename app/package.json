@@ -18,7 +18,7 @@
     "@anywidget/react": "^0.0.8",
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.8",
-    "@kanaries/graphic-walker": "./lib/kanaries-graphic-walker-v0.4.73.6.tgz",
+    "@kanaries/graphic-walker": "./lib/kanaries-graphic-walker-v0.4.73.7.tgz",
     "@kanaries/gw-dsl-parser": "0.1.49",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",

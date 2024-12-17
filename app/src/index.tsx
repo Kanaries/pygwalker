@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { observer } from "mobx-react-lite";
 import { reaction } from "mobx";
-import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker, GraphicWalkerShell, GraphicWalkerEditor, RemoteRenderer } from "@kanaries/graphic-walker";
+import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker, GraphicWalkerShell, GraphicWalkerEditor, RemoteRenderer, ReactVegaRenderer } from "@kanaries/graphic-walker";
 import type { VizSpecStore } from "@kanaries/graphic-walker/store/visualSpecStore";
 import type { IGWHandler, IViewField, ISegmentKey, IDarkMode, IChatMessage, IRow, IChart } from "@kanaries/graphic-walker/interfaces";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -319,7 +319,8 @@ const ExploreApp: React.FC<IAppProps & { initChartFlag: boolean }> = (props) => 
                 defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
             >
                 <GraphicWalkerEditor toolbar={toolbarConfig} enhanceAPI={enhanceAPI}>
-                    <RemoteRenderer onChartChange={onChartChange} />
+                    {props.useKernelCalc && <RemoteRenderer onChartChange={onChartChange} />}
+                    {!props.useKernelCalc && <ReactVegaRenderer />}
                 </GraphicWalkerEditor>
             </GraphicWalkerShell>
             <Options {...props} />
