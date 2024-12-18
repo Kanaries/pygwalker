@@ -1,3 +1,6 @@
+from typing import Dict, List
+
+
 class CodeStorage:
     def __init__(self):
         self.code_snippets = []
@@ -205,4 +208,9 @@ def get_fold_fields(payload):
         return fold_fids
     return []
 
-         
+def get_sort(x_fields: List[Dict[str, any]], y_fields: List[Dict[str, any]]):
+    if len(x_fields) > 0 and not any(field.get("analyticType") == 'measure' for field in x_fields):
+        return x_fields[-1].get("sort") or 'none', 'y'
+    if len(y_fields) > 0 and not any(field.get("analyticType") == 'measure' for field in y_fields):
+        return y_fields[-1].get("sort") or 'none', 'x'
+    return 'none', 'x'

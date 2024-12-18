@@ -4,7 +4,7 @@ import json
 from typing import Dict, List
 
 from pygwalker._typing import DataFrame
-from pygwalker.renderers.base import MEA_KEY_FID, MEA_VAL_FID, CodeStorage, auto_mark, get_color_palette, get_fid_with_agg, get_fold_fields, get_name_with_agg, get_primary_color, get_spec_color_palette, pick_first
+from pygwalker.renderers.base import MEA_KEY_FID, MEA_VAL_FID, CodeStorage, auto_mark, get_color_palette, get_fid_with_agg, get_fold_fields, get_name_with_agg, get_primary_color, get_sort, get_spec_color_palette, pick_first
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.cm import ScalarMappable
 import matplotlib.pyplot as plt
@@ -69,7 +69,9 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
     if mark == "auto":
         mark = auto_mark([field.get("semanticType") for field in encodings.get("rows") + encodings.get("columns")])
         
-    if size:
+    is_auto_size = layout.get("size") and layout['size'].get('mode') == 'auto'
+        
+    if size and not is_auto_size:
         width = size.get("width")
         height = size.get("height")
         if width > 0 and height > 0:
@@ -82,6 +84,18 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
     size_channel = encodings.get("size")
     text_channel = encodings.get("text")
     shape_channel = encodings.get("shape")
+    
+    all_channels = x_channels + y_channels + color_channel + opacity_channel + size_channel + text_channel + shape_channel
+    bin_fields = [field for field in all_channels if field.get("expression") and field['expression'].get("op") == "bin"]
+    bin_field_set = set(get_fid_with_agg(field, is_aggergated) for field in bin_fields)
+    if len(bin_fields) > 0:
+        bin_field_fids = [get_fid_with_agg(field, is_aggergated) for field in bin_fields]
+        code_storage.add_code(f"processed_df = {df_name}.copy()")
+        for bin_fid in bin_field_fids:
+            code_storage.add_code(f"processed_df[{with_quote(bin_fid + '_width')}] = processed_df[{with_quote(bin_fid)}].apply(lambda x: x[1]-x[0])")
+            code_storage.add_code(f"processed_df[{with_quote(bin_fid)}] = {df_name}[{with_quote(bin_fid)}].apply(lambda x: {numpy_name}.mean(x))")
+        df_name = "processed_df"
+    sort, sort_by = get_sort(x_channels, y_channels)
     
     fold_fields = get_fold_fields(payload)
     if (len(fold_fields) > 0):
@@ -97,7 +111,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
     fid_text = get_fid_with_agg(pick_first(text_channel), is_aggergated)
     fid_shape = get_fid_with_agg(pick_first(shape_channel), is_aggergated)
     color_palette = None
-    colorbar_string = ''
+    colorbar_string_func = lambda ax_name: ''
     primary_color = None
     color_type = 'category'
     if fid_color is None:
@@ -113,9 +127,13 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
         color_palette = get_spec_color_palette(payload)
         if color_field.get("semanticType") == "quantitative" or color_field.get("semanticType") == "temporal":
             if color_palette is None:
-                color_palette = get_color_palette('blues')
+                if mark == 'rect':
+                    color_palette = get_color_palette('plasma')
+                else:
+                    color_palette = get_color_palette('blues')
             code_storage.add_code(f"color_map = LinearSegmentedColormap.from_list('palette',{json.dumps(color_palette)})")
-            colorbar_string = f'{instance_name}.colorbar()'
+            code_storage.add_code(f"norm = Normalize(vmin={df_name}[{with_quote(fid_color)}].min(), vmax={df_name}[{with_quote(fid_color)}].max())")
+            colorbar_string_func = lambda ax_name: f'{instance_name}.colorbar(ScalarMappable(norm=norm, cmap=color_map), ax={ax_name})'
             color_type = 'linear'
         else:
             if color_palette is None:
@@ -125,7 +143,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                 # rect plot have a speical color map
                 code_storage.add_code(f"unique_color = {df_name}[{with_quote(fid_color)}].unique()")
                 code_storage.add_code(f"color_map = dict(zip(unique_color, itertools.cycle(cp)))")
-            colorbar_string = f"{instance_name}.legend([mpatches.Patch(color=color, label=label) for (label, color) in color_map.items()], unique_color, loc=1, title={with_quote(get_name_with_agg(color_channel[0], is_aggergated))})"
+            colorbar_string_func = lambda ax_name: f"{instance_name}.legend([mpatches.Patch(color=color, label=label) for (label, color) in color_map.items()], unique_color, loc=1, title={with_quote(get_name_with_agg(color_channel[0], is_aggergated))})"
             color_type = 'category'
     def get_color_string(df_name):
         if fid_color:
@@ -257,6 +275,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             code_storage.add_code(f"{ax_name}.scatter({x_string}{y_string}{color_string}{opacity_string}{size_string}{marker})")
             if opacity_bar_string:
                 code_storage.add_code(opacity_bar_string)
+        colorbar_string = colorbar_string_func(ax_name)
         if colorbar_string:
             code_storage.add_code(colorbar_string)
         if fid_x:
@@ -264,7 +283,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
         if fid_y:
             code_storage.add_code(f"{ax_name}.set_ylabel({with_quote(get_name_with_agg(y_field, is_aggergated))})")
         if fid_text:
-            code_storage.add_code(f"for i, txt in enumerate(df[{with_quote(fid_text)}]):" + f"\n    {ax_name}.text(df[{with_quote(fid_x)}][i], df[{with_quote(fid_y)}][i], txt)")
+            code_storage.add_code(f"for i, txt in enumerate({df_name}[{with_quote(fid_text)}]):" + f"\n    {ax_name}.text({df_name}[{with_quote(fid_x)}][i], {df_name}[{with_quote(fid_y)}][i], txt)")
 
     def plot_bar_single(ax_name, fig_name, df_name, x_field, y_field):
         if y_field and y_field.get("analyticType") == 'dimension':
@@ -324,7 +343,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                 bottom_string = ''
             
             if fid_color:
-                color_string = f"color=color_map[color_key], " if color_type == 'category' else f"color=color_map(color_key), "
+                color_string = f"color=color_map[color_key], " if color_type == 'category' else f"color=color_map(norm(color_key)), "
             else:
                 color_string = ''
                 
@@ -337,11 +356,16 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                 opacity_string = ''
             
             x_string = get_field_string('', 'group', x_field, is_aggergated, f'[1] * len(group)')
+            width_string= ""
+            if fid_x in bin_field_set and direction == 'v':
+                width_string = f"width=group[{with_quote(fid_x + '_width')}],"
             y_string = get_field_string('', 'group', y_field, is_aggergated, f'[1] * len(group)')
+            if fid_y in bin_field_set and direction == 'h':
+                width_string = f"height=group[{with_quote(fid_y + '_width')}],"
             if direction == 'h':
-                code_storage.add_code(f"{ax_name}.barh({y_string}{x_string}{bottom_string}{color_string}{opacity_string}{size_string})")
+                code_storage.add_code(f"{ax_name}.barh({y_string}{x_string}{width_string}{bottom_string}{color_string}{opacity_string}{size_string})")
             else:
-                code_storage.add_code(f"{ax_name}.bar({x_string}{y_string}{bottom_string}{color_string}{opacity_string}{size_string})")
+                code_storage.add_code(f"{ax_name}.bar({x_string}{y_string}{width_string}{bottom_string}{color_string}{opacity_string}{size_string})")
             if stack == 'stack':
                 if dimension_key:
                     code_storage.add_code(f"for dim in {get_field_string_simple('group', dimension_key)}:")
@@ -356,20 +380,26 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             code_storage.decrease_indent_level()
             if opacity_bar_string:
                 code_storage.add_code(opacity_bar_string)
+            colorbar_string = colorbar_string_func(ax_name)
             if colorbar_string:
                 code_storage.add_code(colorbar_string)
 
         else:
+            width_string= ""
+            if fid_x in bin_field_set and direction == 'v':
+                width_string = f"width={df_name}[{with_quote(fid_x + '_width')}],"
+            if fid_y in bin_field_set and direction == 'h':
+                width_string = f"height={df_name}[{with_quote(fid_y + '_width')}],"
             if direction == 'h':
-                code_storage.add_code(f"{ax_name}.barh({y_string}{x_string}{size_string}{get_color_string(df_name)})")
+                code_storage.add_code(f"{ax_name}.barh({y_string}{x_string}{width_string}{size_string}{get_color_string(df_name)})")
             else:
-                code_storage.add_code(f"{ax_name}.bar({x_string}{y_string}{size_string}{get_color_string(df_name)})")
+                code_storage.add_code(f"{ax_name}.bar({x_string}{y_string}{width_string}{size_string}{get_color_string(df_name)})")
         if fid_x:
             code_storage.add_code(f"{ax_name}.set_xlabel({with_quote(get_name_with_agg(x_field, is_aggergated))})")
         if fid_y:
             code_storage.add_code(f"{ax_name}.set_ylabel({with_quote(get_name_with_agg(y_field, is_aggergated))})")
         if fid_text:
-            code_storage.add_code(f"for i, txt in enumerate(df[{with_quote(fid_text)}]):" + f"\n    {ax_name}.text(df[{with_quote(fid_x)}][i], df[{with_quote(fid_y)}][i], txt)")
+            code_storage.add_code(f"for i, txt in enumerate({df_name}[{with_quote(fid_text)}]):" + f"\n    {ax_name}.text({df_name}[{with_quote(fid_x)}][i], {df_name}[{with_quote(fid_y)}][i], txt)")
             
     def plot_area_single(ax_name, fig_name, df_name, x_field, y_field):
         fid_x = get_fid_with_agg(x_field, is_aggergated)
@@ -428,7 +458,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                     code_storage.add_code(f"{','.join(group_keys)} = indexes")
                 
                 if fid_color:
-                    color_string = f"color=color_map[color_key], " if color_type == 'category' else f"color=color_map(color_key), "
+                    color_string = f"color=color_map[color_key], " if color_type == 'category' else f"color=color_map(norm(color_key)), "
                 else:
                     color_string = ''
                     
@@ -450,6 +480,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             x_string = get_field_string('', df_name, x_field, is_aggergated, f'[0] * len({df_name})')
             y_string = get_field_string('', df_name, y_field, is_aggergated, f'[1] * len({df_name})')
             code_storage.add_code(f"{ax_name}.fill_between({x_string}{y_string}{get_color_string(df_name)})")
+        colorbar_string = colorbar_string_func(ax_name)
         if colorbar_string:
             code_storage.add_code(colorbar_string)
         if fid_x:
@@ -457,7 +488,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
         if fid_y:
             code_storage.add_code(f"{ax_name}.set_ylabel({with_quote(get_name_with_agg(y_field, is_aggergated))})")
         if fid_text:
-            code_storage.add_code(f"for i, txt in enumerate(df[{with_quote(fid_text)}]):" + f"\n    {ax_name}.text(df[{with_quote(fid_x)}][i], df[{with_quote(fid_y)}][i], txt)")
+            code_storage.add_code(f"for i, txt in enumerate({df_name}[{with_quote(fid_text)}]):" + f"\n    {ax_name}.text({df_name}[{with_quote(fid_x)}][i], {df_name}[{with_quote(fid_y)}][i], txt)")
 
     def plot_line_single(ax_name, fig_name, df_name, x_field, y_field):
         fid_x = get_fid_with_agg(x_field, is_aggergated)
@@ -488,7 +519,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                 code_storage.add_code(f"{','.join(group_keys)} = indexes")
             
             if fid_color:
-                color_string = f"c=color_map[color_key], " if color_type == 'category' else f"c=color_map(color_key), "
+                color_string = f"c=color_map[color_key], " if color_type == 'category' else f"c=color_map(norm(color_key)), "
             else:
                 color_string = ''
                 
@@ -510,6 +541,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             x_string = get_field_string('', df_name, x_field, is_aggergated, f'[0] * len({df_name})')
             y_string = get_field_string('', df_name, y_field, is_aggergated, f'[0] * len({df_name})')
             code_storage.add_code(f"{ax_name}.plot({x_string}{y_string})")
+        colorbar_string = colorbar_string_func(ax_name)
         if colorbar_string:
             code_storage.add_code(colorbar_string)
         if fid_x:
@@ -517,7 +549,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
         if fid_y:
             code_storage.add_code(f"{ax_name}.set_ylabel({with_quote(get_name_with_agg(y_field, is_aggergated))})")
         if fid_text:
-            code_storage.add_code(f"for i, txt in enumerate(df[{with_quote(fid_text)}]):" + f"\n    {ax_name}.text(df[{with_quote(fid_x)}][i], df[{with_quote(fid_y)}][i], txt)")
+            code_storage.add_code(f"for i, txt in enumerate({df_name}[{with_quote(fid_text)}]):" + f"\n    {ax_name}.text({df_name}[{with_quote(fid_x)}][i], {df_name}[{with_quote(fid_y)}][i], txt)")
     
     def plot_box_single(ax_name, fig_name, df_name, x_field, y_field):
         fid_x = get_fid_with_agg(x_field, is_aggergated)
@@ -539,8 +571,8 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
         if color_type == 'category':
             color_string = f"colors=cp, " if fid_color else f'colors=["{primary_color}"]'
         elif fid_color:
-            code_storage.add_code(f"norm = Normalize(vmin=df[{with_quote(fid_color)}].min(), vmax=df[{with_quote(fid_color)}].max())")
-            code_storage.add_code(f"colors = color_map(norm(df[{with_quote(fid_color)}]))")
+            code_storage.add_code(f"norm = Normalize(vmin={df_name}[{with_quote(fid_color)}].min(), vmax={df_name}[{with_quote(fid_color)}].max())")
+            code_storage.add_code(f"colors = color_map(norm({df_name}[{with_quote(fid_color)}]))")
             color_string = 'colors=colors, '
             code_storage.add_code(f"ax = {instance_name}.subplot()")
             colorbar_string = f'{instance_name}.figure.colorbar(ScalarMappable(norm=norm, cmap=color_map), ax=ax)'
@@ -600,6 +632,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
 
     if mark == 'arc':
         if len(encodings.get("theta")) > 0:
+            colorbar_string = colorbar_string_func(f"{instance_name}.axes[0]")
             plot_arc_single_only(instance_name, colorbar_string)
         else:
             return ''
