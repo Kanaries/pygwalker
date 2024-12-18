@@ -37,9 +37,9 @@ def get_field_string_simple(df_name: str, fid: str, fallback = ""):
         return f"{df_name}[{with_quote(fid)}]"
     if fallback:
         return f"{fallback}"
-def get_dimension_count_string(df_name: str, id: str,fields: List[Dict[str, any]], is_agg: bool):
+def get_dimension_count_string(df_name: str, id: str, fields: List[Dict[str, any]], is_agg: bool):
     if len(fields) == 0:
-        return (f"{id} = []\n{id}_dims = 0\n{id}_nums = 1\n{id}_fields = [('','')]", [])
+        return (f"{id} = []\n{id}_dims = 0\n{id}_nums = 1", [], [None])
     dims = [field for field in fields if field.get("analyticType") == 'dimension']
     meas = [field for field in fields if field.get("analyticType") == 'measure']
     if len(meas) > 0:
@@ -237,13 +237,13 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             code_storage.add_code(f"shapes = ['o', 's', 'D', '^', 'v', '<', '>', 'p', 'h', '8', '*', 'H', 'd', 'P', 'X', '1', '2', '3', '4', 'x', '|', '_', 'o', 's', 'D', '^', 'v', '<', '>', 'p', 'h', '8', '*', 'H', 'd', 'P', 'X', '1', '2', '3', '4', 'x', '|', '_']")
             code_storage.add_code(f"shape_map = dict(zip({df_name}[{with_quote(fid_shape)}].unique(), itertools.cycle(shapes)))")
             code_storage.add_code(f"for (shape, marker) in shape_map.items():")
-            code_storage.set_indent_level(1)
+            code_storage.increase_indent_level()
             code_storage.add_code(f"sub_data = {df_name}[{df_name}[{with_quote(fid_shape)}] == shape]")
             color_string = get_color_string('sub_data')
             size_string = f"s=sub_data[{with_quote(fid_size)}], " if fid_size else ''
             opacity_string, opacity_bar_string, _ = get_opacity_string('sub_data', ax_name)
             code_storage.add_code(f"{ax_name}.scatter(sub_data[{with_quote(fid_x)}], sub_data[{with_quote(fid_y)}], {size_string}marker=marker, {color_string}{opacity_string})")
-            code_storage.set_indent_level(0)
+            code_storage.decrease_indent_level()
             
             code_storage.add_code(f"shape_legend = {ax_name}.legend(handles=[{instance_name}.Line2D([0], [0], marker=marker, label=shape) for shape, marker in shape_map.items()],loc=7, title={with_quote(get_name_with_agg(shape_channel[0], is_aggergated))})")
             code_storage.add_code(f"{ax_name}.add_artist(shape_legend)")
@@ -308,7 +308,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                 else:
                     code_storage.add_code(f"stack_map = dict([(0,0)])")
             code_storage.add_code(f"for indexes, group in groups:")
-            code_storage.set_indent_level(1)
+            code_storage.increase_indent_level()
             if len(group_keys) == 1:
                 code_storage.add_code(f"({group_keys[0]}) = indexes[0]")
             else:
@@ -345,14 +345,15 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             if stack == 'stack':
                 if dimension_key:
                     code_storage.add_code(f"for dim in {get_field_string_simple('group', dimension_key)}:")
-                    code_storage.set_indent_level(2)
+                    code_storage.increase_indent_level()
                     filtered_data = f"group[{get_field_string_simple('group', dimension_key)} == dim]"
                     value = get_field_string_simple(filtered_data, measure_key, '') + '.values[0]' if measure_key else '1'
                     code_storage.add_code(f"stack_map[dim] += {value}")
-                    code_storage.set_indent_level(1)
+                    code_storage.decrease_indent_level()
                 else:
-                    code_storage.add_code(f"stack_map[0] += 1")
-            code_storage.set_indent_level(0)
+                    value = get_field_string_simple("group", measure_key, '') + '.values[0]' if measure_key else '1'
+                    code_storage.add_code(f"stack_map[0] += {value}")
+            code_storage.decrease_indent_level()
             if opacity_bar_string:
                 code_storage.add_code(opacity_bar_string)
             if colorbar_string:
@@ -393,7 +394,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                 code_storage.add_code(f"unique_stack_items = data.columns.values")
                 code_storage.add_code(f"colors = []")
                 code_storage.add_code(f"for indexes in unique_stack_items:")
-                code_storage.set_indent_level(1)
+                code_storage.increase_indent_level()
                 if len(group_keys) == 1:
                     code_storage.add_code(f"({group_keys[0]}) = indexes")
                 else:
@@ -409,7 +410,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                         code_storage.add_code(f"colors[-1] = colors[-1] + (alpha_map[opacity_key],)")
                     
                         
-                code_storage.set_indent_level(0)
+                code_storage.decrease_indent_level()
                 index_data = ".astype('datetime64[s]')" if x_field.get("semanticType") == 'temporal' else ''
                 code_storage.add_code(f"{ax_name}.stackplot(data.index{index_data}, data.T, labels=data.columns, colors=colors)")
                 if opacity_bar_string:
@@ -420,7 +421,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                 code_storage.add_code(f"groups = {df_name}.groupby({json.dumps(groups)})")
                 _, opacity_bar_string, opacity_type = get_opacity_string(df_name, ax_name)
                 code_storage.add_code(f"for indexes, group in groups:")
-                code_storage.set_indent_level(1)
+                code_storage.increase_indent_level()
                 if len(group_keys) == 1:
                     code_storage.add_code(f"({group_keys[0]}) = indexes[0]")
                 else:
@@ -442,7 +443,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                 x_string = get_field_string('', 'group', x_field, is_aggergated, f'[0] * len(group)')
                 y_string = get_field_string('', 'group', y_field, is_aggergated, f'[1] * len(group)')
                 code_storage.add_code(f"{ax_name}.fill_between({x_string}{y_string}{color_string}{opacity_string})")
-                code_storage.set_indent_level(0)
+                code_storage.decrease_indent_level()
                 if opacity_bar_string:
                     code_storage.add_code(opacity_bar_string)
         else:
@@ -480,9 +481,9 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             if fid_opacity:
                 _, opacity_bar_string, opacity_type = get_opacity_string(df_name, ax_name)
             code_storage.add_code(f"for indexes, group in groups:")
-            code_storage.set_indent_level(1)
+            code_storage.increase_indent_level()
             if len(group_keys) == 1:
-                code_storage.add_code(f"({group_keys[0]}) = indexes[0]")
+                code_storage.add_code(f"{group_keys[0]} = indexes[0]")
             else:
                 code_storage.add_code(f"{','.join(group_keys)} = indexes")
             
@@ -502,7 +503,7 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
             x_string = get_field_string('', 'group', x_field, is_aggergated, f'[0] * len(group)')
             y_string = get_field_string('', 'group', y_field, is_aggergated, f'[0] * len(group)')
             code_storage.add_code(f"{ax_name}.plot({x_string}{y_string}{color_string}{opacity_string})")
-            code_storage.set_indent_level(0)
+            code_storage.decrease_indent_level()
             if opacity_bar_string:
                 code_storage.add_code(opacity_bar_string)
         else:
@@ -623,17 +624,17 @@ def build_code(payload: Dict[str, any], size: Dict[str, int], df_name = 'df', nu
                     code_storage.add_code(f"ax = axs[{i * len(col_fields) + j}]")
                     plot("ax", "fig", df_name, col_field, row_field)
         else:
-            code_storage.add_code(f"groups = {df_name}.groupby([{','.join([with_quote(get_fid_with_agg(field, is_aggergated)) for field in row_dims + col_dims])}])")
-            code_storage.add_code(f"for indexes, group in groups:")
-            code_storage.set_indent_level(1)
-            code_storage.add_code(f"row_index = row.index(indexes[:row_dims]) if row_dims > 0 else 0")
-            code_storage.add_code(f"col_index = col.index(indexes[row_dims:]) if col_dims > 0 else 0")
+            code_storage.add_code(f"facet_groups = {df_name}.groupby([{','.join([with_quote(get_fid_with_agg(field, is_aggergated)) for field in row_dims + col_dims])}])")
+            code_storage.add_code(f"for facet_indexes, facet_group in facet_groups:")
+            code_storage.increase_indent_level()
+            code_storage.add_code(f"row_index = row.index(facet_indexes[:row_dims]) if row_dims > 0 else 0")
+            code_storage.add_code(f"col_index = col.index(facet_indexes[row_dims:]) if col_dims > 0 else 0")
             for (i, row_field) in enumerate(row_fields):
                 for (j, col_field) in enumerate(col_fields):
                     code_storage.add_code(f"ax = axs[((row_index * {len(row_fields)} + {i}) * col_nums * {len(col_fields)} + (col_index * {len(col_fields)} + {j})) ]")
-                    code_storage.add_code(f"ax.set_title(indexes)")
-                    plot("ax", "fig", df_name, col_field, row_field)
-        code_storage.set_indent_level(0)
+                    code_storage.add_code(f"ax.set_title(facet_indexes)")
+                    plot("ax", "fig", "facet_group", col_field, row_field)
+        code_storage.decrease_indent_level()
 
     return code_storage.output_all()
 
