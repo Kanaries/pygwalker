@@ -7,7 +7,12 @@
 {% if component_url == "" %}
 <body>
     <div id="{{ gwalker.id }}" class="gwalker-container">
-        Loading Graphic-Walker UI...
+        <h3>
+            Loading Graphic-Walker UI...
+        </h3>
+        <p>If the loading process consistently fails to complete, install/upgarde the ipywidgets package using</p>
+        <code>pip install --upgrade ipywidgets</code>
+
     </div>
     <script>
         var gw_script = "{{ gwalker.gw_script }}";
