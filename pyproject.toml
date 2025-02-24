@@ -33,7 +33,7 @@ dependencies = [
     "kanaries_track==0.0.5",
     "cachetools",
     "packaging",
-    "numpy<2.0.0",
+    "numpy",
     "ipylab<=1.0.0",
     "quickjs",
     "traitlets",
