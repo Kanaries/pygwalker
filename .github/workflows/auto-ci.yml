@@ -21,11 +21,11 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
@@ -36,7 +36,7 @@ jobs:
           chmod u+x ./scripts/compile.sh
           ./scripts/compile.sh
       - name: Uploading dist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pygwalker-app
           path: ./pygwalker/templates/dist/*
@@ -52,9 +52,9 @@ jobs:
 
     runs-on: ${{ matrix.os-version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Download PyGWalkerApp
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         id: build-py
         with:
           name: pygwalker-app
@@ -81,7 +81,7 @@ jobs:
       - name: Try Running
         working-directory: ./tests/
         run: |
-          pip install ipykernel nbconvert "pandas<=2.0.3" polars
+          pip install ipykernel nbconvert pandas polars
           python -m ipykernel install --name python --user
           jupyter kernelspec list
           jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=python --to html *.ipynb
@@ -91,7 +91,7 @@ jobs:
           pip install pytest
           pytest tests
       - name: Uploading notebooks
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}
         with:
           name: notebook
