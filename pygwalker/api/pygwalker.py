@@ -346,6 +346,7 @@ class PygWalker:
             raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
         return self._chart_map[chart_name]
 
+    # TODO: using the better way to handle callback
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool = None):
         upload_tool = BatchUploadDatasToolOnWidgets(comm)
         self.comm = comm
