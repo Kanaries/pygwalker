@@ -10,10 +10,10 @@ from pygwalker.utils.execute_env_check import check_kaggle as __check_kaggle
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.kaggle import show_tips_user_kaggle as __show_tips_user_kaggle
 
-__version__ = "0.4.9.13"
+__version__ = "0.4.9.14a2"
 __hash__ = __rand_str()
 
-from pygwalker.api.jupyter import walk, render, table
+from pygwalker.api.adapter import walk, render, table
 from pygwalker.api.html import to_html
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.api.component import component
