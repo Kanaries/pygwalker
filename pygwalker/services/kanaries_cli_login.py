@@ -2,10 +2,10 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
 from urllib.parse import urlparse, parse_qs, quote
 from threading import Thread, Lock
-import socket
 import webbrowser
 
 from pygwalker.services.config import set_config
+from pygwalker.utils.free_port import find_free_port
 
 AUTH_HOST = "https://kanaries.net"
 auth_info = {}
@@ -47,15 +47,6 @@ class _CallbackHandler(BaseHTTPRequestHandler):
             self.wfile.write(bytes("auth error, please re-auth", "utf-8"))
 
 
-def _find_free_port() -> int:
-    """Find a free port on localhost"""
-    temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    temp_socket.bind(('localhost', 0))
-    _, port = temp_socket.getsockname()
-    temp_socket.close()
-    return port
-
-
 def _run_callback_server(port: int):
     server_address = ('localhost', port)
     httpd = HTTPServer(server_address, _CallbackHandler)
@@ -65,7 +56,7 @@ def _run_callback_server(port: int):
 def kanaries_login():
     wait_lock.acquire()
 
-    port = _find_free_port()
+    port = find_free_port()
     callback_server = Thread(target=_run_callback_server, args=(port,), daemon=True)
     callback_server.start()
 
