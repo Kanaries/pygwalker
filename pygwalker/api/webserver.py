@@ -18,7 +18,7 @@ from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.free_port import find_free_port
 from pygwalker.communications.base import BaseCommunication
 
-_MAX_HEALTH_TIMEOUT_SECONDS = 2
+_MAX_HEALTH_TIMEOUT_SECONDS = 3
 _SEND_HEALTH_JS_SCRIPT = """
 <script>
     setInterval(() => {
