@@ -44,6 +44,7 @@ def walk(
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         - cloud_computation(bool): Whether to use cloud compute for datas, it upload your data to kanaries cloud. Default to False.
+        - port(int): only works in web server mode. port to use for the server. Default to None, which means a random port will be used.
     """
     cur_env = get_current_env()
     if cur_env == "jupyter":
@@ -100,6 +101,7 @@ def render(
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
+        - port(int): only works in web server mode. port to use for the server. Default to None, which means a random port will be used.
     """
     cur_env = get_current_env()
     if cur_env == "jupyter":
@@ -142,6 +144,7 @@ def table(
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
+        - port(int): only works in web server mode. port to use for the server. Default to None, which means a random port will be used.
     """
     cur_env = get_current_env()
     if cur_env == "jupyter":
