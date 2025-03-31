@@ -100,13 +100,14 @@ def _create_handler_with_walker(walker: PygWalker, state: _GlobalState):
     return CustomPygWalkerHandler
 
 
-def _start_server(walker: PygWalker):
+def _start_server(walker: PygWalker, port: Optional[int]):
     """Start a server with walker"""
     state = _GlobalState()
     walker._init_callback(BaseCommunication(str(walker.gid)))
 
     handler = _create_handler_with_walker(walker, state)
-    port = find_free_port()
+    if port is None:
+        port = find_free_port()
     address = f"http://localhost:{port}"
 
     try:
@@ -144,6 +145,7 @@ def walk(
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
+    port: Optional[int] = None,
     **kwargs
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
@@ -161,6 +163,7 @@ def walk(
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         - cloud_computation(bool): Whether to use cloud compute for datas, it upload your data to kanaries cloud. Default to False.
+        - port (int): port to use for the server. Default to None, which means a random port will be used.
     """
     check_expired_params(kwargs)
 
@@ -186,7 +189,7 @@ def walk(
         cloud_computation=cloud_computation,
         **kwargs
     )
-    _start_server(walker)
+    _start_server(walker, port)
 
 
 def render(
@@ -197,6 +200,7 @@ def render(
     appearance: IAppearance = 'media',
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
+    port: Optional[int] = None,
     **kwargs
 ):
     """
@@ -209,6 +213,7 @@ def render(
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
+        - port (int): port to use for the server. Default to None, which means a random port will be used.
     """
 
     walker = PygWalker(
@@ -230,7 +235,7 @@ def render(
         cloud_computation=False,
         **kwargs
     )
-    _start_server(walker)
+    _start_server(walker, port)
 
 
 def table(
@@ -240,6 +245,7 @@ def table(
     appearance: IAppearance = 'media',
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
+    port: Optional[int] = None,
     **kwargs
 ):
     """
@@ -251,6 +257,7 @@ def table(
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
+        - port (int): port to use for the server. Default to None, which means a random port will be used.
     """
     walker = PygWalker(
         gid=None,
@@ -271,4 +278,4 @@ def table(
         cloud_computation=False,
         **kwargs
     )
-    _start_server(walker)
+    _start_server(walker, port)
