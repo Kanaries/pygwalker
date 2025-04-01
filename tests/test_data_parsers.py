@@ -1,8 +1,12 @@
+import os.path
+
+from sqlalchemy import create_engine
 import pandas as pd
 import polars as pl
 import pytest
 
 from pygwalker.services.data_parsers import get_parser
+from pygwalker.data_parsers.database_parser import Connector, text
 from pygwalker.data_parsers.database_parser import _check_view_sql
 from pygwalker.errors import ViewSqlSameColumnError
 
@@ -72,3 +76,35 @@ def test_check_view_sql():
         _check_view_sql("SELECT * FROM a left join b on a.id = b.id")
     with pytest.raises(ViewSqlSameColumnError):
         _check_view_sql("SELECT a.* FROM a left join b on a.id = b.id")
+
+
+def test_connector():
+    csv_file = os.path.join(os.path.dirname(__file__), "bike_sharing_dc.csv")
+    database_url = "duckdb:///:memory:"
+    view_sql = f"SELECT 1"
+    data_count = 17379
+
+    connector = Connector(database_url, view_sql)
+    result = connector.query_datas(f"SELECT COUNT(1) count FROM read_csv_auto('{csv_file}')")
+    assert result[0]["count"] == data_count
+    assert connector.dialect_name == "duckdb"
+    assert connector.view_sql == view_sql
+    assert connector.url == database_url
+
+    engine = create_engine(database_url)
+    connector = Connector.from_sqlalchemy_engine(engine, view_sql)
+    result = connector.query_datas(f"SELECT COUNT(1) count FROM read_csv_auto('{csv_file}')")
+    assert result[0]["count"] == data_count
+    assert connector.dialect_name == "duckdb"
+    assert connector.view_sql == view_sql
+    assert connector.url == database_url
+
+    engine = create_engine(database_url)
+    with engine.connect() as conn:
+        conn.execute(text(f"CREATE TABLE test_datas AS SELECT * FROM read_csv_auto('{csv_file}')"))
+        connector = Connector.from_sqlalchemy_connection(conn, view_sql)
+        result = connector.query_datas(f"SELECT COUNT(1) count FROM test_datas")
+        assert result[0]["count"] == data_count
+        assert connector.dialect_name == "duckdb"
+        assert connector.view_sql == view_sql
+        assert connector.url == database_url
