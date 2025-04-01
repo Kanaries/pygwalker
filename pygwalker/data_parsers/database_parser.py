@@ -6,7 +6,7 @@ import json
 import io
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, Connection
 import pandas as pd
 import sqlglot.expressions as exp
 import sqlglot
@@ -59,30 +59,62 @@ class Connector:
     }
 
     def __init__(self, url: str, view_sql: str, engine_params: Optional[Dict[str, Any]] = None) -> "Connector":
-        _check_view_sql(view_sql)
         if engine_params is None:
             engine_params = {}
 
-        self.url = url
-        self.engine = self._get_engine(engine_params)
+        self._init_instance(self._get_or_create_engine(url, engine_params), view_sql)
+
+    @classmethod
+    def from_sqlalchemy_engine(cls, engine: Engine, view_sql: str) -> "Connector":
+        """Create connector from engine"""
+        instance = cls.__new__(cls)
+        instance._init_instance(engine, view_sql)
+        return instance
+
+    @classmethod
+    def from_sqlalchemy_connection(cls, connection: Connection, view_sql: str) -> "Connector":
+        """
+        Create a Connector instance from an existing SQLAlchemy connection.  
+        This adapts the DuckDB connector.
+
+        Note:
+        - All subsequent queries will use the same connection.
+        - The caller is responsible for managing and closing the connection when no longer needed.
+        """
+        instance = cls.__new__(cls)
+        instance._init_instance(connection.engine, view_sql)
+        instance._existing_conn = connection
+        return instance
+
+    def _init_instance(self, engine: Engine, view_sql: str):
+        _check_view_sql(view_sql)
+        self.engine = engine
+        self.url = str(engine.url)
         self.view_sql = view_sql
         self._json_type_code_set = self.JSON_TYPE_CODE_SET_MAP.get(self.dialect_name, set())
+        self._existing_conn = None 
+        self._run_pre_init_sql(engine)
 
-    def _get_engine(self, engine_params: Dict[str, Any]) -> Engine:
-        if self.url not in self.engine_map:
-            engine = create_engine(self.url, **engine_params)
+    def _get_or_create_engine(self, url: str, engine_params: Dict[str, Any]) -> Engine:
+        if url not in self.engine_map:
+            engine = create_engine(url, **engine_params)
             engine.dialect.requires_name_normalize = False
-            self.engine_map[self.url] = engine
-            if engine.dialect.name in self.PRE_INIT_SQL_MAP:
-                pre_init_sql = self.PRE_INIT_SQL_MAP[engine.dialect.name]
-                with engine.connect(True) as connection:
-                    connection.execute(text(pre_init_sql))
+            self.engine_map[url] = engine
 
-        return self.engine_map[self.url]
+        return self.engine_map[url]
+
+    def _run_pre_init_sql(self, engine: Engine) -> None:
+        if engine.dialect.name in self.PRE_INIT_SQL_MAP:
+            pre_init_sql = self.PRE_INIT_SQL_MAP[engine.dialect.name]
+            with engine.connect(True) as connection:
+                connection.execute(text(pre_init_sql))
 
     def query_datas(self, sql: str) -> List[Dict[str, Any]]:
         field_type_map = {}
-        with self.engine.connect() as connection:
+        should_close_connection = self._existing_conn is None
+        connection = self._existing_conn or self.engine.connect()
+    
+        try:
             result = connection.execute(text(sql))
             if self.dialect_name in self.JSON_TYPE_CODE_SET_MAP:
                 field_type_map = {
@@ -96,6 +128,9 @@ class Connector:
                 }
                 for item in result.mappings()
             ]
+        finally:
+            if should_close_connection:
+                connection.close()
 
     @property
     def dialect_name(self) -> str:
