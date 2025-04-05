@@ -37,9 +37,10 @@ _SEND_HEALTH_JS_SCRIPT = """
 
 
 class _GlobalState:
-    def __init__(self):
+    def __init__(self, auto_shutdown: bool):
         # why +60? If page not auto open, user manually open page, we should give user more time to interact with page.
         self.last_health_time = time.time() + 60
+        self.auto_shutdown = auto_shutdown
 
 
 class _PygWalkerHandler(http.server.SimpleHTTPRequestHandler):
@@ -59,7 +60,11 @@ class _PygWalkerHandler(http.server.SimpleHTTPRequestHandler):
 
         props = self._walker._get_props("web_server")
         props["communicationUrl"] = "comm"
-        html = self._walker._get_render_iframe(props) + _SEND_HEALTH_JS_SCRIPT
+
+        html = self._walker._get_render_iframe(props)
+        if self._state.auto_shutdown:
+            html += _SEND_HEALTH_JS_SCRIPT
+
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
@@ -100,9 +105,30 @@ def _create_handler_with_walker(walker: PygWalker, state: _GlobalState):
     return CustomPygWalkerHandler
 
 
-def _start_server(walker: PygWalker, port: Optional[int]):
+def _open_browser(address: str, delay_ms: int = 1000):
+    """Open browser with address"""
+    time.sleep(delay_ms / 1000)
+
+    try:
+        opened = webbrowser.open(address)
+    except Exception:
+        opened = False
+    
+    if opened:
+        print(f"Run pygwalker at {address}, close page or press Ctrl+C to end.")
+    else:
+        print(f"Auto open browser failed, please open {address} manually, close page or press Ctrl+C to end.")
+
+
+def _start_server(
+    walker: PygWalker,
+    port: Optional[int],
+    *,
+    auto_open: bool,
+    auto_shutdown: bool,
+):
     """Start a server with walker"""
-    state = _GlobalState()
+    state = _GlobalState(auto_shutdown=auto_shutdown)
     walker._init_callback(BaseCommunication(str(walker.gid)))
 
     handler = _create_handler_with_walker(walker, state)
@@ -110,24 +136,20 @@ def _start_server(walker: PygWalker, port: Optional[int]):
         port = find_free_port()
     address = f"http://localhost:{port}"
 
+    def _listen_shutdown():
+        while 1:
+            time.sleep(1)
+            if time.time() - state.last_health_time > _MAX_HEALTH_TIMEOUT_SECONDS:
+                httpd.shutdown()
+                break
+
     try:
         with CustomTCPServer(("127.0.0.1", port), handler) as httpd:
-            threading.Thread(target=httpd.serve_forever, daemon=True).start()
-            try:
-                opened = webbrowser.open(address)
-            except Exception:
-                opened = False
-            
-            if opened:
-                print(f"Run pygwalker at {address}, close page or press Ctrl+C to end.")
-            else:
-                print(f"Auto open browser failed, please open {address} manually, close page or press Ctrl+C to end.")
-
-            while 1:
-                time.sleep(1)
-                if time.time() - state.last_health_time > _MAX_HEALTH_TIMEOUT_SECONDS:
-                    httpd.shutdown()
-                    break
+            if auto_open:
+                threading.Thread(target=_open_browser, args=(address,)).start()
+            if auto_shutdown:
+                threading.Thread(target=_listen_shutdown).start()
+            httpd.serve_forever()
     except KeyboardInterrupt:
         pass
 
@@ -146,9 +168,12 @@ def walk(
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
     port: Optional[int] = None,
+    auto_shutdown: bool = False,
+    auto_open: bool = False,
     **kwargs
 ):
-    """Walk through pandas.DataFrame df with Graphic Walker
+    """Walk through pandas.DataFrame df with Graphic Walker.
+    This function was originally designed solely to launch Pygwalker in script mode.
 
     Args:
         - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
@@ -164,6 +189,8 @@ def walk(
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         - cloud_computation(bool): Whether to use cloud compute for datas, it upload your data to kanaries cloud. Default to False.
         - port (int): port to use for the server. Default to None, which means a random port will be used.
+        - auto_shutdown (bool): Whether to shutdown the server when the page is closed. Default to False.
+        - auto_open (bool): Whether to open the browser automatically. Default to False.
     """
     check_expired_params(kwargs)
 
@@ -189,7 +216,7 @@ def walk(
         cloud_computation=cloud_computation,
         **kwargs
     )
-    _start_server(walker, port)
+    _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
 
 
 def render(
@@ -201,9 +228,13 @@ def render(
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     port: Optional[int] = None,
+    auto_shutdown: bool = False,
+    auto_open: bool = False,
     **kwargs
 ):
     """
+    This function was originally designed solely to launch Pygwalker in script mode.
+
     Args:
         - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
         - spec (str): chart config data. config id, json, remote file url
@@ -214,6 +245,8 @@ def render(
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - port (int): port to use for the server. Default to None, which means a random port will be used.
+        - auto_shutdown (bool): Whether to shutdown the server when the page is closed. Default to False.
+        - auto_open (bool): Whether to open the browser automatically. Default to False.
     """
 
     walker = PygWalker(
@@ -235,7 +268,7 @@ def render(
         cloud_computation=False,
         **kwargs
     )
-    _start_server(walker, port)
+    _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
 
 
 def table(
@@ -246,9 +279,13 @@ def table(
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     port: Optional[int] = None,
+    auto_shutdown: bool = False,
+    auto_open: bool = False,
     **kwargs
 ):
     """
+    This function was originally designed solely to launch Pygwalker in script mode.
+
     Args:
         - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
 
@@ -258,6 +295,8 @@ def table(
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - port (int): port to use for the server. Default to None, which means a random port will be used.
+        - auto_shutdown (bool): Whether to shutdown the server when the page is closed. Default to False.
+        - auto_open (bool): Whether to open the browser automatically. Default to False.
     """
     walker = PygWalker(
         gid=None,
@@ -278,4 +317,4 @@ def table(
         cloud_computation=False,
         **kwargs
     )
-    _start_server(walker, port)
+    _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)

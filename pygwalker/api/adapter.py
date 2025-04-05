@@ -77,6 +77,8 @@ def walk(
         show_cloud_tool=show_cloud_tool,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
+        auto_open=True,
+        auto_shutdown=True,
         **kwargs
     )
 
@@ -122,6 +124,8 @@ def render(
         appearance=appearance,
         kernel_computation=kernel_computation,
         kanaries_api_key=kanaries_api_key,
+        auto_open=True,
+        auto_shutdown=True,
         **kwargs
     )
 
@@ -163,5 +167,7 @@ def table(
         appearance=appearance,
         kernel_computation=kernel_computation,
         kanaries_api_key=kanaries_api_key,
+        auto_open=True,
+        auto_shutdown=True,
         **kwargs
     )
