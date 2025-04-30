@@ -1,6 +1,10 @@
+import base64
 from typing import List, Dict, Any, Optional, Union
 import urllib
 import json
+import os, sys, subprocess
+import urllib.parse
+import zlib
 
 from typing_extensions import Literal
 from duckdb import ParserException
@@ -482,9 +486,29 @@ class PygWalker:
             )
             return {"dashboardId": result["dashboard_id"], "datasetId": result["dataset_id"]}
 
+        def _open_protocol(link):
+            if sys.platform == "win32":
+                os.startfile(link)
+            else:
+                opener = "open" if sys.platform == "darwin" else "xdg-open"
+                subprocess.call([opener, link])
+
+        def compress_data(data: str) -> str:
+            compress = zlib.compressobj(zlib.Z_BEST_COMPRESSION, zlib.DEFLATED, 15, 8, 0)
+            compressed_data = compress.compress(data.encode())
+            compressed_data += compress.flush()
+            return urllib.parse.quote(base64.b64encode(compressed_data).decode())
+
+        def open_in_desktop(data: Dict[str, Any]):
+            spec = json.dumps(data['spec'])
+            fields = json.dumps(data['fields'])
+            data = json.dumps(self.data_parser.to_records(), default=lambda obj: obj.isoformat() if hasattr(obj, 'isoformat') else str(obj))
+            _open_protocol(f"gw://import?data={compress_data(data)}&spec={compress_data(spec)}&fields={compress_data(fields)}")
+
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
         comm.register("request_data", reuqest_data_callback)
         comm.register("ping", lambda _: {})
+        comm.register("open_in_desktop", open_in_desktop)
 
         if self.use_save_tool:
             comm.register("upload_spec_to_cloud", upload_spec_to_cloud)
