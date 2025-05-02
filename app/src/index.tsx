@@ -49,6 +49,7 @@ import style from './index.css?inline'
 import { currentMediaTheme } from './utils/theme';
 import { AppContext, darkModeContext } from './store/context';
 import FormatSpec from './utils/formatSpec';
+import { getOpenDesktopTool } from './tools/openDesktop';
 
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
@@ -208,8 +209,9 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     }, [mode]);
 
     const exportTool = getExportTool(setExportOpen);
+    const openInDesktopTool = getOpenDesktopTool(props, storeRef);
 
-    const tools = [exportTool];
+    const tools = [exportTool, openInDesktopTool];
     if (props.env && ["jupyter_widgets", "streamlit", "gradio", "marimo", "anywidget", "web_server"].indexOf(props.env) !== -1 && props.useSaveTool) {
         const saveTool = getSaveTool(props, gwRef, storeRef, isChanged, setIsChanged);
         tools.push(saveTool);
