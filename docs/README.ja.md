@@ -39,6 +39,7 @@
 [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)、[Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test)、または[Graphic Walker Online Demo](https://graphic-walker.kanaries.net/)を試すために訪れてみてください！
 
 > Rを使用する場合は、[GWalkR](https://github.com/Kanaries/GWalkR)をチェックしてみてください！
+> もしコーディングなしでオフラインで使用できるデスクトップアプリをお求めなら、[PyGWalker Desktop](https://kanaries.net/download?utm_source=pygwalker_github&utm_content=tip)をご覧ください。 (Japanese)
 
 # スタートガイド
 

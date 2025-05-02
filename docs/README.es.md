@@ -40,6 +40,8 @@ Visite [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-
 
 > Si prefiere usar R, puede consultar [GWalkR](https://github.com/Kanaries/GWalkR) ahora!
 
+> Si prefieres una aplicación de escritorio que se pueda usar sin conexión y sin necesidad de programación, consulta [PyGWalker Desktop](https://kanaries.net/download?utm_source=pygwalker_github&utm_content=tip).
+
 # Empezando
 
 | [Ejecutar en Kaggle](https://www.kaggle.com/asmdef/pygwalker-test) | [Ejecutar en Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing) |

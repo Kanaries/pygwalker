@@ -39,6 +39,7 @@
 Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test) or [Graphic Walker Online Demo](https://graphic-walker.kanaries.net/) to test it out!
 
 > R kullanmayı tercih ediyorsanız şimdi [GWalkR](https://github.com/Kanaries/GWalkR)'a göz atabilirsiniz!
+> Kod yazmadan ve çevrimdışı olarak kullanabileceğiniz bir masaüstü uygulamasını tercih ediyorsanız, [PyGWalker Desktop](https://kanaries.net/download?utm_source=pygwalker_github&utm_content=tip) uygulamasına göz atın. (Turkish)
 
 # Başlarken
 

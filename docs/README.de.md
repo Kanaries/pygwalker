@@ -39,6 +39,7 @@
 Besuchen Sie [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing), [Kaggle Code](https://www.kaggle.com/asmdef/pygwalker-test) oder [Graphic Walker Online-Demo](https://graphic-walker.kanaries.net/), um es auszuprobieren!
 
 > Wenn Sie lieber R verwenden möchten, können Sie jetzt [GWalkR](https://github.com/Kanaries/GWalkR) überprüfen!
+> Wenn Sie eine Desktop-App bevorzugen, die offline und ohne Programmierkenntnisse genutzt werden kann, sehen Sie sich [PyGWalker Desktop](https://kanaries.net/download?utm_source=pygwalker_github&utm_content=tip) an.
 
 # Erste Schritte
 
