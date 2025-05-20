@@ -52,7 +52,8 @@ class Connector:
     engine_map = {}
     JSON_TYPE_CODE_SET_MAP = {
         "snowflake": {9, 10},
-        "mysql": {245}
+        "mysql": {245},
+        "mariadb": {245},
     }
     PRE_INIT_SQL_MAP = {
         "snowflake": "ALTER SESSION SET WEEK_OF_YEAR_POLICY=1, WEEK_START=7, STRICT_JSON_OUTPUT=True;",
@@ -142,6 +143,7 @@ class DatabaseDataParser(BaseDataParser):
     sqlglot_dialect_map = {
         "postgresql": "postgres",
         "mssql": "tsql",
+        "mariadb": "mysql",
     }
 
     def __init__(
@@ -166,6 +168,42 @@ class DatabaseDataParser(BaseDataParser):
             if any(isinstance(val, Decimal) for val in example_df[column]):
                 example_df[column] = example_df[column].astype(float)
         return example_df
+    
+    def _patch_mariadb(self, ast):
+        select_expr = ast.find(exp.Select)
+        if not select_expr:
+            return ast
+        # Build a mapping from alias -> expression
+        alias_map = {}
+        for expr in select_expr.expressions:
+            if expr.alias:
+                alias_map[expr.alias] = expr.this
+        # Check if ORDER BY references any aliases
+        needs_fixing = False
+        if ast.args.get("order"):
+            for order in ast.args["order"].expressions:
+                if isinstance(order, exp.Ordered):
+                    order_expr = order.this
+                    if isinstance(order_expr, exp.Column) and order_expr.name in alias_map:
+                        needs_fixing = True
+                        break
+        if not needs_fixing:
+            return ast  # No fixing needed
+        # Create a subquery by wrapping the current query
+        subquery = ast.copy()
+        subquery.set("order", None)
+        subquery.set("limit", None)
+        subquery.set("offset", None)
+        subquery_alias = "subq_alias"
+        outer_select = exp.select("*").from_(subquery.subquery(subquery_alias))
+        # Copy ORDER BY, LIMIT, OFFSET to the outer query
+        if ast.args.get("order"):
+            outer_select.set("order", ast.args["order"])
+        if ast.args.get("limit"):
+            outer_select.set("limit", ast.args["limit"])
+        if ast.args.get("offset"):
+            outer_select.set("offset", ast.args["offset"])
+        return outer_select
 
     def _format_sql(self, sql: str) -> str:
         sqlglot_dialect_name = self.sqlglot_dialect_map.get(self.conn.dialect_name, self.conn.dialect_name)
@@ -178,6 +216,9 @@ class DatabaseDataParser(BaseDataParser):
         for from_exp in ast.find_all(exp.From):
             if str(from_exp.this).strip('"') == self.placeholder_table_name:
                 from_exp.this.replace(sub_query)
+
+        if self.conn.dialect_name == "mariadb":
+            ast = self._patch_mariadb(ast)
 
         sql = ast.sql(sqlglot_dialect_name)
         return sql
