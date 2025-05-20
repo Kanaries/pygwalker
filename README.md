@@ -166,6 +166,18 @@ walker = pyg.walk(
 * [Use PyGWalker in Kaggle](https://www.kaggle.com/code/lxy21495892/airbnb-eda-pygwalker-demo)
 * [Use PyGWalker in Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P9DQig7Md1kpXQ2?usp=sharing)
 
+### Programmatic Export of Charts
+
+After saving a chart from the UI, you can retrieve the image directly from Python.
+
+```python
+walker = pyg.walk(df, spec="./chart_meta_0.json")
+# edit the chart in the UI and click the save button
+walker.save_chart_to_file("Chart 1", "chart1.svg", save_type="svg")
+png_bytes = walker.export_chart_png("Chart 1")
+svg_bytes = walker.export_chart_svg("Chart 1")
+```
+
 ## Use pygwalker in Streamlit
 Streamlit allows you to host a web version of pygwalker without figuring out details of how web application works.
 

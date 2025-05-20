@@ -274,7 +274,7 @@ class PygWalker:
         """
         return list(self._chart_map.keys())
 
-    def save_chart_to_file(self, chart_name: str, path: str, save_type: Literal["html", "png"] = "png"):
+    def save_chart_to_file(self, chart_name: str, path: str, save_type: Literal["html", "png", "svg"] = "png"):
         """
         Save the chart to a file.
         """
@@ -286,8 +286,12 @@ class PygWalker:
             content = self.export_chart_png(chart_name)
             write_mode = "wb"
             encoding = None
+        elif save_type == "svg":
+            content = self.export_chart_svg(chart_name)
+            write_mode = "wb"
+            encoding = None
         else:
-            raise ValueError(f"save_type must be html or png, but got {save_type}")
+            raise ValueError(f"save_type must be html, png or svg, but got {save_type}")
 
         with open(path, write_mode, encoding=encoding) as f:
             f.write(content)
@@ -310,6 +314,20 @@ class PygWalker:
 
         with urllib.request.urlopen(chart_data.single_chart) as png_string:
             return png_string.read()
+
+    def export_chart_svg(self, chart_name: str) -> bytes:
+        """Export the chart as svg bytes."""
+        chart_data = self._get_chart_by_name(chart_name)
+        if len(chart_data.charts) == 0:
+            raise ValueError(f"chart_name: {chart_name} has no svg data")
+        svg_str = chart_data.charts[0].data
+        prefix = "data:image/svg+xml;base64,"
+        if isinstance(svg_str, str) and svg_str.startswith(prefix):
+            import base64
+            return base64.b64decode(svg_str[len(prefix):])
+        if isinstance(svg_str, str):
+            return svg_str.encode("utf-8")
+        return svg_str
 
     def display_chart(self, chart_name: str, *, title: Optional[str] = None, desc: str = ""):
         """
