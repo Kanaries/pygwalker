@@ -46,6 +46,25 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 
 https://github.com/Kanaries/pygwalker/assets/22167673/2b940e11-cf8b-4cde-b7f6-190fb10ee44b
 
+# Features
+PyGWalker is a Python library that simplifies data analysis and visualization workflows by turning pandas DataFrames into interactive visual interfaces.
+It offers a variety of features that make it a powerful tool for data exploration:
+- ##### Interactive Data Exploration:
+    - Drag-and-drop interface for easy visualization creation.   
+    - Real-time updates as you make changes to the visualization.
+    - Ability to zoom, pan, and filter the data.   
+- ##### Data Cleaning and Transformation:
+    - Visual data cleaning tools to identify and remove outliers or inconsistencies.   
+    - Ability to create new variables and features based on existing data.   
+- ##### Advanced Visualization Capabilities:
+    - Support for various chart types (bar charts, line charts, scatter plots, etc.). 
+    - Customization options for colors, labels, and other visual elements.   
+    - Interactive features like tooltips and drill-down capabilities.   
+- ##### Integration with Jupyter Notebooks:
+    - Seamless integration with Jupyter Notebooks for a smooth workflow.   
+- ##### Open-Source and Free:
+    - Available for free and allows for customization and extension.
+
 
 
 # Getting Started
@@ -260,6 +279,14 @@ More details, refer it: [How to set your privacy configuration?](https://github.
 # License
 
 [Apache License 2.0](https://github.com/Kanaries/pygwalker/blob/main/LICENSE)
+
+# Contribution Guideline
+You are encouraged to contribute to PyGWalker in any way that suits your interests. This may include:
+- Answering questions and providing support
+- Sharing ideas for new features
+- Reporting bugs and glitches
+- Contributing code to the project
+- Offering suggestions for website improvements and better documentation
 
 # Resources
 

@@ -1,0 +1,27 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: PyGWalker
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - website: 'https://kanaries.net/'
+    name: Kanaries Open Source Community
+repository-code: 'https://github.com/Kanaries/pygwalker'
+url: 'https://kanaries.net/pygwalker'
+abstract: >-
+  PyGWalker is a Python Library for Exploratory Data
+  Analysis with Visualization that can simplify your Jupyter
+  Notebook data analysis and data visualization workflow, by
+  turning your pandas dataframe into an interactive user
+  interface for visual exploration.
+keywords:
+  - Data Analysis
+  - Exploratory Data Analysis
+  - Data Visualization tools
+  - Python Library
+  - interactive
+license: Apache-2.0
