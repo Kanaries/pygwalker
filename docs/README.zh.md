@@ -96,9 +96,10 @@ import pygwalker as pyg
 df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(df)
 ```
-
-### 更佳实践
-
+### 如何在Jupyter中保存图片
+使用pygwalker库进行数据探索提供了一种查看和分析数据的交互式方式。但是，存储这些可视化对于将来的参考、演示或与共享至也关重要，我们将演示两种方式保存pygwalker图表的方式。
+#### 方法一使用本地json文件保存图标（推荐）
+##### 1.使用json spec初始化Walker，将pygwalker指向可以保存的本地json文件
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
@@ -127,6 +128,9 @@ walker = pyg.walk(
 范例：
 
 ![](https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/travel-ani-1-light.gif)
+
+##### 保存图表：当您完成数据分析，您就会注意到pygwalker界面中有一个“保存”按钮。点击它。此操作将把可视化的当前状态保存到指定的JSON文件中。
+![alt text](image.png)
 
 ## 使用PyGWalker制作数据可视化图
 
@@ -202,6 +206,41 @@ Type:      function
 
 更多参考： [PyGWalker 更新日志](https://docs.kanaries.net/zh/pygwalker/changelog/pygwalker-0-1-6)
 
+
+# 在 Streamlit 中使用 pygwalker
+ Streamlit允许您托管pygwalker的Web版本，而无需了解Web应用程序如何工作的细节。
+以下是一些使用pygwalker和streamlit构建的应用程序示例：
++ [PyGWalker + streamlit for Bike sharing dataset](https://pygwalkerdemo-cxz7f7pt5oc.streamlit.app/)
++ [Earthquake Dashboard](https://earthquake-dashboard-pygwalker.streamlit.app/)
+
+```
+from pygwalker.api.streamlit import StreamlitRenderer
+import pandas as pd
+import streamlit as st
+
+# Adjust the width of the Streamlit page
+st.set_page_config(
+    page_title="Use Pygwalker In Streamlit",
+    layout="wide"
+)
+
+# Add Title
+st.title("Use Pygwalker In Streamlit")
+
+# You should cache your pygwalker renderer, if you don't want your memory to explode
+@st.cache_resource
+def get_pyg_renderer() -> "StreamlitRenderer":
+    df = pd.read_csv("./bike_sharing_dc.csv")
+    # If you want to use feature of saving chart config, set `spec_io_mode="rw"`
+    return StreamlitRenderer(df, spec="./gw_config.json", spec_io_mode="rw")
+
+
+renderer = get_pyg_renderer()
+
+renderer.explorer()
+```
+
+
 ## 测试环境
 
 - [x] Jupyter Notebook
@@ -247,7 +286,73 @@ options:
   --list                List current used configuration.
 ```
 
+### 使用命令行工具配置隐私
+使用命令行工具将隐私设置写如配置文件
+##### 设置隐私
+```
+pygwalker config --set privacy=events
+```
+##### 重置隐私
+```
+pygwalker config --reset privacy
+```
+##### 查看所有配置
+```
+pygwalker config --list
+```
+##### 临时时改变pygwalker的隐私设置  
+如果你只想临时的改变你的隐私级别，可以通过GlobalVarManager进行配置
+##### 设置隐私
+```
+from pygwalker import GlobalVarManager
+
+GlobalVarManager.set_privacy("events")
+```
+##### 获取当前配置
+```
+from pygwalker import GlobalVarManager
+
+print(GlobalVarManager.privacy)
+```
+
 更多详情，请参考: [How to set your privacy configuration?](https://github.com/Kanaries/pygwalker/wiki/How-to-set-your-privacy-configuration%3F)
+
+# 本地部署
+### 克隆项目
+```
+git clone git@github.com:Kanaries/pygwalker.git
+cd pygwalker
+```
+### 启动web
+```
+# pygwalker/app
+cd app
+yarn install
+yarn dev
+```
+### 下载依赖
+```
+# pygwalker
+pip install -e .
+pip install jupyterlab jupyter_server_proxy
+```
+### 启动jupyterlab
+```
+# pygwalker
+jupyter lab --ServerProxy.servers="{'pyg_dev_app': {'absolute_url': True, 'port': 8769, 'timeout': 30}}"
+```
+### 在jupyterlab中启动pygwalker
+```
+# jupyterlab
+import pandas as pd
+import pygwalker as pyg
+ 
+pyg.GlobalVarManager.set_component_url("/pyg_dev_app/") # use dev frontend app
+ 
+df = pd.read_csv("xxxx")
+ 
+walker = pyg.walk(df)
+```
 
 # License
 
