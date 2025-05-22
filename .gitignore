@@ -141,3 +141,10 @@ pygwalker/templates/graphic-walker.umd.js
 pygwalker/templates/graphic-walker.iife.js
 
 tests/*.csv
+
+__pycache__/
+.states
+*.db
+.web
+*.py[cod]
+assets/external/

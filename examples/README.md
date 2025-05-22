@@ -8,6 +8,7 @@ This folder contains example implementations of Pygwalker across different inter
 - [`jupyter_demo.ipynb`](jupyter_demo.ipynb): Basic Pygwalker usage in Jupyter environments
 - [`marimo_demo.py`](marimo_demo.py): Interactive data exploration using Pygwalker in Marimo notebooks
 - [`streamlit_demo.py`](streamlit_demo.py): Embedding Pygwalker visualizations in Streamlit apps
+- [`reflex_demo.py`](reflex_demo.py): Example of using Pygwalker in a Reflex application
 - [`web_server_demo.py`](web_server_demo.py): Setting up Pygwalker with a web server
 
 ## Running examples
