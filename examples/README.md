@@ -18,3 +18,7 @@ pip install pygwalker
 ```
 
 Additional dependencies may be required based on the specific interface you're using (e.g., streamlit, dash, gradio).
+For the Reflex demo, install the optional Reflex plugin:
+```shell
+pip install "pygwalker[reflex]"
+```

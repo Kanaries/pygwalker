@@ -48,6 +48,7 @@ repository = "https://github.com/Kanaries/pygwalker"
 pandas = ["pandas"]
 polars = ["polars"]
 streamlit = ["streamlit"]
+reflex = ["reflex"]
 notebook = [
     "jupyter-client<=7.4.9,>6.0.0",
     "jupyter-server<=2.5.0",
@@ -65,7 +66,7 @@ labv4 = [
     "ipywidgets>=8.0.0"
 ]
 all = [
-    "pygwalker[pandas,polars,streamlit]",
+    "pygwalker[pandas,polars,streamlit,reflex]",
 ]
 dev = [
     "build",
