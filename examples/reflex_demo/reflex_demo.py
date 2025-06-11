@@ -4,8 +4,8 @@ PyGWalker + Reflex integration demo.
 This demo shows how to integrate PyGWalker with Reflex, a Python web framework.
 
 To run this demo:
-1. Make sure you have installed PyGWalker and Reflex:
-   pip install pygwalker reflex
+1. Make sure you have installed PyGWalker with the Reflex plugin:
+   pip install "pygwalker[reflex]"
 
 2. Run the app:
    cd examples
