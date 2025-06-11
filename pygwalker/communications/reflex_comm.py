@@ -1,5 +1,5 @@
 import json
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from starlette.routing import Route
 from starlette.responses import JSONResponse, Response
 from starlette.requests import Request
@@ -9,18 +9,36 @@ from .base import BaseCommunication
 
 reflex_comm_map = {}
 
-BASE_URL_PATH = "/_pygwalker/comm/".strip("/")
+# Fixed: Consistent path with leading slash to match mount point
+BASE_URL_PATH = "/_pygwalker/comm"
 
 
 async def _pygwalker_router(req: Request) -> Response:
+    """Legacy router function - kept for compatibility."""
     gid = req.path_params["gid"]
     comm_obj = reflex_comm_map.get(gid, None)
     if comm_obj is None:
         return JSONResponse({"success": False, "message": f"Unknown gid: {gid}"})
-    json_data = await req.json()
-    result = comm_obj._receive_msg(json_data["action"], json_data["data"])
-    result = json.dumps(result, cls=DataFrameEncoder)
-    return JSONResponse(json.loads(result))
+    
+    try:
+        json_data = await req.json()
+        
+        # Fixed: Input validation - check for required keys
+        if "action" not in json_data:
+            return JSONResponse({"success": False, "message": "Missing 'action' field in request"})
+        if "data" not in json_data:
+            return JSONResponse({"success": False, "message": "Missing 'data' field in request"})
+        
+        result = comm_obj._receive_msg(json_data["action"], json_data["data"])
+        
+        # Fixed: Proper JSON encoding with DataFrameEncoder
+        encoded_result = json.loads(json.dumps(result, cls=DataFrameEncoder))
+        return JSONResponse(encoded_result)
+        
+    except json.JSONDecodeError:
+        return JSONResponse({"success": False, "message": "Invalid JSON in request body"})
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Internal error: {str(e)}"})
 
 
 class ReflexCommunication(BaseCommunication):
@@ -38,17 +56,32 @@ def _create_pygwalker_app() -> FastAPI:
     
     @pygwalker_app.post("/{gid}")
     async def pygwalker_endpoint(gid: str, request: Request) -> Response:
-        """PyGWalker communication endpoint."""
+        """PyGWalker communication endpoint with proper error handling."""
         # Get the communication object for this gid
         comm_obj = reflex_comm_map.get(gid, None)
         if comm_obj is None:
             return JSONResponse({"success": False, "message": f"Unknown gid: {gid}"})
         
-        # Process the request
-        json_data = await request.json()
-        result = comm_obj._receive_msg(json_data["action"], json_data["data"])
-        result = json.dumps(result, cls=DataFrameEncoder)
-        return JSONResponse(json.loads(result))
+        try:
+            # Process the request with validation
+            json_data = await request.json()
+            
+            # Fixed: Input validation - check for required keys
+            if "action" not in json_data:
+                return JSONResponse({"success": False, "message": "Missing 'action' field in request"})
+            if "data" not in json_data:
+                return JSONResponse({"success": False, "message": "Missing 'data' field in request"})
+            
+            result = comm_obj._receive_msg(json_data["action"], json_data["data"])
+            
+            # Fixed: Proper JSON encoding with DataFrameEncoder
+            encoded_result = json.loads(json.dumps(result, cls=DataFrameEncoder))
+            return JSONResponse(encoded_result)
+            
+        except json.JSONDecodeError:
+            return JSONResponse({"success": False, "message": "Invalid JSON in request body"})
+        except Exception as e:
+            return JSONResponse({"success": False, "message": f"Internal error: {str(e)}"})
     
     return pygwalker_app
 
@@ -58,7 +91,7 @@ def register_pygwalker_api(app: FastAPI) -> FastAPI:
     # Create a sub-application for PyGWalker routes
     pygwalker_app = _create_pygwalker_app()
     
-    # Mount the sub-application at the PyGWalker API path
-    app.mount("/_pygwalker/comm", pygwalker_app)
+    # Fixed: Use consistent path (BASE_URL_PATH already has leading slash)
+    app.mount(BASE_URL_PATH, pygwalker_app)
     
     return app
