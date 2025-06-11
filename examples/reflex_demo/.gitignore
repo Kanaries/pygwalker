@@ -1,0 +1,41 @@
+.web
+.states
+assets/external/
+*.db
+*.py[cod]
+# Reflex generated files and directories
+.web/
+__pycache__/
+requirements.txt
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment files
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Database files
+reflex.db
