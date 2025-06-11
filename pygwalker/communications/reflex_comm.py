@@ -31,13 +31,34 @@ class ReflexCommunication(BaseCommunication):
         reflex_comm_map[gid] = self
 
 
-PYGWALKER_ROUTE = Route(
-    "/_pygwalker/comm/{gid}",
-    _pygwalker_router,
-    methods=["POST"],
-)
+# Create a FastAPI sub-application for PyGWalker API
+def _create_pygwalker_app() -> FastAPI:
+    """Create a FastAPI sub-application for PyGWalker API routes."""
+    pygwalker_app = FastAPI()
+    
+    @pygwalker_app.post("/{gid}")
+    async def pygwalker_endpoint(gid: str, request: Request) -> Response:
+        """PyGWalker communication endpoint."""
+        # Get the communication object for this gid
+        comm_obj = reflex_comm_map.get(gid, None)
+        if comm_obj is None:
+            return JSONResponse({"success": False, "message": f"Unknown gid: {gid}"})
+        
+        # Process the request
+        json_data = await request.json()
+        result = comm_obj._receive_msg(json_data["action"], json_data["data"])
+        result = json.dumps(result, cls=DataFrameEncoder)
+        return JSONResponse(json.loads(result))
+    
+    return pygwalker_app
 
 
-def register_pygwalker_api(app: FastAPI) -> None:
+def register_pygwalker_api(app: FastAPI) -> FastAPI:
     """Register pygwalker API route into Reflex app."""
-    app.router.routes.append(PYGWALKER_ROUTE)
+    # Create a sub-application for PyGWalker routes
+    pygwalker_app = _create_pygwalker_app()
+    
+    # Mount the sub-application at the PyGWalker API path
+    app.mount("/_pygwalker/comm", pygwalker_app)
+    
+    return app
