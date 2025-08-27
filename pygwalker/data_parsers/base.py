@@ -1,6 +1,7 @@
 from typing import Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
 from functools import lru_cache
+from threading import Lock
 from datetime import datetime, date
 from datetime import timedelta
 import abc
@@ -134,24 +135,33 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         self.other_params = other_params
         self._field_metas_cache = None
         self._raw_fields_cache = None
+        self._cache_lock = Lock()
 
     @property
     def field_metas(self) -> List[Dict[str, str]]:
-        if self._field_metas_cache is None:
-            duckdb.register("pygwalker_mid_table", self._duckdb_df)
-            result = duckdb.query("SELECT * FROM pygwalker_mid_table LIMIT 1")
-            data = result.fetchone()
-            self._field_metas_cache = get_data_meta_type(dict(zip(result.columns, data))) if data else []
-        return self._field_metas_cache
+        cache = self._field_metas_cache
+        if cache is not None:
+            return cache
+        with self._cache_lock:
+            if self._field_metas_cache is None:
+                duckdb.register("pygwalker_mid_table", self._duckdb_df)
+                result = duckdb.query("SELECT * FROM pygwalker_mid_table LIMIT 1")
+                data = result.fetchone()
+                self._field_metas_cache = get_data_meta_type(dict(zip(result.columns, data))) if data else []
+            return self._field_metas_cache
 
     @property
     def raw_fields(self) -> List[Dict[str, str]]:
-        if self._raw_fields_cache is None:
-            self._raw_fields_cache = [
-                self._infer_prop(col, self.field_specs)
-                for _, col in enumerate(self._example_df.columns)
-            ]
-        return self._raw_fields_cache
+        cache = self._raw_fields_cache
+        if cache is not None:
+            return cache
+        with self._cache_lock:
+            if self._raw_fields_cache is None:
+                self._raw_fields_cache = [
+                    self._infer_prop(col, self.field_specs)
+                    for _, col in enumerate(self._example_df.columns)
+                ]
+            return self._raw_fields_cache
 
     def _infer_prop(
         self, col: str, field_specs: List[FieldSpec] = None
