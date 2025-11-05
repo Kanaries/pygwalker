@@ -18,7 +18,7 @@ dependencies = [
     "typing_extensions",
     "ipywidgets",
     "pydantic",
-    "psutil",
+    "psutil; sys_platform != \"emscripten\"",
     "duckdb>=0.10.1,<2.0.0",
     "pyarrow",
     "sqlglot>=23.15.8",
