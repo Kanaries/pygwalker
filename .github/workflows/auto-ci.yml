@@ -70,6 +70,8 @@ jobs:
           python ./scripts/test-init.py
       - name: Try Installing
         working-directory: ./
+        env:
+          PIP_ONLY_BINARY: "duckdb"
         run: |
           pip install ./
       - name: Try Install Modin In Linux Os
