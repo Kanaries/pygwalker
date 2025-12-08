@@ -3,19 +3,39 @@ import os
 import json
 
 try:
-    from quickjs import Function
+    import dukpy
 except ImportError as exc:
-    raise ImportError("`quickjs` is not installed, please install it first. refer it: `pip install quickjs`.") from exc
+    raise ImportError("`dukpy` is not installed, please install it first. refer it: `pip install dukpy`.") from exc
 
 from pygwalker._constants import ROOT_DIR
 from .randoms import rand_str
 
 
+class _JSFunction:
+    """A wrapper to provide quickjs.Function-like API using dukpy.
+
+    This class loads JavaScript code and allows calling a named function
+    from that code with arguments.
+    """
+    def __init__(self, func_name: str, js_code: str):
+        self.func_name = func_name
+        self.interpreter = dukpy.JSInterpreter()
+        self.interpreter.evaljs(js_code)
+
+    def __call__(self, *args):
+        if len(args) == 0:
+            return self.interpreter.evaljs(f"{self.func_name}()")
+        elif len(args) == 1:
+            return self.interpreter.evaljs(f"{self.func_name}(dukpy.arg)", arg=args[0])
+        else:
+            return self.interpreter.evaljs(f"{self.func_name}.apply(null, dukpy.args)", args=list(args))
+
+
 with open(os.path.join(ROOT_DIR, 'templates', 'dist', 'dsl-to-workflow.umd.js'), 'r', encoding='utf8') as f:
-    _dsl_to_workflow_js = Function('main', f.read())
+    _dsl_to_workflow_js = _JSFunction('main', f.read())
 
 with open(os.path.join(ROOT_DIR, 'templates', 'dist', 'vega-to-dsl.umd.js'), 'r', encoding='utf8') as f:
-    _vega_to_dsl_js = Function('main', f.read())
+    _vega_to_dsl_js = _JSFunction('main', f.read())
 
 
 def dsl_to_workflow(dsl: Dict[str, Any]) -> Dict[str, Any]:

@@ -35,7 +35,7 @@ dependencies = [
     "packaging",
     "numpy",
     "ipylab<=1.0.0",
-    "quickjs",
+    "dukpy",
     "traitlets",
     "anywidget",
 ]
