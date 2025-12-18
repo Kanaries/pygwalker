@@ -14,6 +14,7 @@ interface IPreviewProps {
         visSpec: any;
         data: IRow[];
     }[];
+    gid?: string;
 }
 
 const Preview: React.FC<IPreviewProps> = observer((props) => {

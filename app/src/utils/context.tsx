@@ -1,4 +1,4 @@
-import React, { Context, ContextType } from 'react';
+import React, { JSX, Context, ContextType } from "react";
 
 export function composeContext<T extends Record<string, Context<any>>>(contexts: T) {
     return function (
