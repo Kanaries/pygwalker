@@ -595,6 +595,8 @@ class PygWalker:
             "specType": self.spec_type,
             "needLoadDatas": not self.kernel_computation and need_load_datas,
             "showCloudTool": self.show_cloud_tool,
+            "enableAskViz": GlobalVarManager.enable_askviz,
+            "enableVlChat": GlobalVarManager.enable_vlchat,
             "needInitChart": not self._chart_map,
             "useKernelCalc": self.kernel_computation,
             "useSaveTool": self.use_save_tool,

@@ -16,6 +16,9 @@ class GlobalVarManager:
     last_exported_dataframe = None
     max_data_length = 1000 * 1000
     component_url = ""
+    # Feature flags for AI features (disabled by default)
+    enable_askviz = os.getenv("PYGWALKER_ENABLE_ASKVIZ", "false").lower() == "true"
+    enable_vlchat = os.getenv("PYGWALKER_ENABLE_VLCHAT", "false").lower() == "true"
 
     @classmethod
     def set_env(cls, env: Literal['Jupyter', 'Streamlit']):
