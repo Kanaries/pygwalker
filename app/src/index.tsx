@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { observer } from "mobx-react-lite";
 import { reaction } from "mobx"
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
@@ -228,20 +228,25 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
 
     const enhanceAPI = React.useMemo(() => {
         if (props.showCloudTool) {
-            return {
-                features: {
-                    "askviz": async (metas: IViewField[], query: string) => {
-                        const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", { metas, query });
-                        return resp?.data.data;
-                    },
-                    "vlChat": async (metas: IViewField[], chats: IChatMessage[]) => {
-                        const resp = await communicationStore.comm?.sendMsg("get_chart_by_chats", { metas, chats });
-                        return resp?.data.data;
-                    }
-                }
+            const features: Record<string, any> = {};
+            if (props.enableAskViz) {
+                features["askviz"] = async (metas: IViewField[], query: string) => {
+                    const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", { metas, query });
+                    return resp?.data.data;
+                };
+            }
+            if (props.enableVlChat) {
+                features["vlChat"] = async (metas: IViewField[], chats: IChatMessage[]) => {
+                    const resp = await communicationStore.comm?.sendMsg("get_chart_by_chats", { metas, chats });
+                    return resp?.data.data;
+                };
+            }
+            if (Object.keys(features).length > 0) {
+                return { features };
             }
         }
-    }, [props.showCloudTool]);
+        return undefined;
+    }, [props.showCloudTool, props.enableAskViz, props.enableVlChat]);
 
     const computationCallback = React.useMemo(() => getComputationCallback(props), []);
 
@@ -430,12 +435,14 @@ function GWalker(props: IAppProps, id: string) {
     }
 
     preRender(props).then(() => {
-        ReactDOM.render(
-            <MainApp darkMode={props.dark} gid={props.id} sendMessage={props.env?.startsWith("jupyter")}>
-                <GWalkerComponent {...props} />
-            </MainApp>,
-            document.getElementById(id)
-        );
+        const container = document.getElementById(id);
+        if (container) {
+            createRoot(container).render(
+                <MainApp darkMode={props.dark} gid={props.id} sendMessage={props.env?.startsWith("jupyter")}>
+                    <GWalkerComponent {...props} />
+                </MainApp>
+            );
+        }
     })
 }
 
@@ -447,22 +454,26 @@ function PreviewApp(props: IPreviewProps, containerId: string) {
         window.document.getElementById(containerId)?.remove();
     }
 
-    ReactDOM.render(
-        <MainApp darkMode={props.dark} hideToolBar>
-            <Preview {...props} />
-        </MainApp>,
-        document.getElementById(containerId)
-    );
+    const container = document.getElementById(containerId);
+    if (container) {
+        createRoot(container).render(
+            <MainApp darkMode={props.dark} hideToolBar>
+                <Preview {...props} />
+            </MainApp>
+        );
+    }
 }
 
 function ChartPreviewApp(props: IChartPreviewProps, id: string) {
     props.visSpec = FormatSpec([props.visSpec], [])[0];
-    ReactDOM.render(
-        <MainApp darkMode={props.dark} hideToolBar>
-            <ChartPreview {...props} />
-        </MainApp>,
-        document.getElementById(id)
-    );
+    const container = document.getElementById(id);
+    if (container) {
+        createRoot(container).render(
+            <MainApp darkMode={props.dark} hideToolBar>
+                <ChartPreview {...props} />
+            </MainApp>
+        );
+    }
 }
 
 function GraphicRendererApp(props: IAppProps) {
@@ -572,13 +583,15 @@ function SteamlitGWalkerApp(streamlitProps: any) {
 };
 
 const StreamlitGWalker = () => {
-    const StreamlitGWalker = withStreamlitConnection(SteamlitGWalkerApp);
-    ReactDOM.render(
-        <React.StrictMode>
-            <StreamlitGWalker />
-        </React.StrictMode>,
-        document.getElementById("root")
-    )
+    const StreamlitGWalkerComponent = withStreamlitConnection(SteamlitGWalkerApp);
+    const container = document.getElementById("root");
+    if (container) {
+        createRoot(container).render(
+            <React.StrictMode>
+                <StreamlitGWalkerComponent />
+            </React.StrictMode>
+        );
+    }
 }
 
 function AnywidgetGWalkerApp() {

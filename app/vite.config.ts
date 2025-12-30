@@ -52,6 +52,9 @@ export default defineConfig((config: ConfigEnv) => {
     server: {
       port: 8769,
     },
+    optimizeDeps: {
+      exclude: ['@kanaries/gw-dsl-parser'],
+    },
     plugins: [
       react(),
       wasm(),
