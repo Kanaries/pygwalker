@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import style from '@/index.css?inline'
 
 interface IPreviewProps {
+    gid: string;
     themeKey: string;
     dark: IDarkMode;
     charts: {

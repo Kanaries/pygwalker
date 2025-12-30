@@ -27,6 +27,7 @@ import InitModal from './components/initModal';
 import { getSaveTool } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
+import { getRuncellTool } from './tools/runcellTool';
 import { formatExportedChartDatas } from "./utils/save";
 import { tracker } from "@/utils/tracker";
 import Notification from "./notify"
@@ -50,6 +51,7 @@ import { currentMediaTheme } from './utils/theme';
 import { AppContext, darkModeContext } from './store/context';
 import FormatSpec from './utils/formatSpec';
 import { getOpenDesktopTool } from './tools/openDesktop';
+import RuncellBanner from './components/runcellBanner';
 
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
@@ -208,10 +210,11 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
         }, 0);
     }, [mode]);
 
+    const runcellTool = getRuncellTool();
     const exportTool = getExportTool(setExportOpen);
     const openInDesktopTool = getOpenDesktopTool(props, storeRef);
 
-    const tools = [exportTool, openInDesktopTool];
+    const tools = [runcellTool, exportTool, openInDesktopTool];
     if (props.env && ["jupyter_widgets", "streamlit", "gradio", "marimo", "anywidget", "web_server"].indexOf(props.env) !== -1 && props.useSaveTool) {
         const saveTool = getSaveTool(props, gwRef, storeRef, isChanged, setIsChanged);
         tools.push(saveTool);
@@ -406,6 +409,7 @@ function GWalkerComponent(props: IAppProps) {
 
     return (
         <React.StrictMode>
+            <RuncellBanner env={props.env} />
             { props.gwMode === "explore"  && <ExploreApp {...props} dataSource={dataSource} initChartFlag={initChartFlag} /> }
             { props.gwMode === "renderer" && <PureRednererApp {...props} dataSource={dataSource}  /> }
             { props.gwMode === "filter_renderer" && <GraphicRendererApp {...props} dataSource={dataSource} /> }
@@ -550,7 +554,7 @@ function TableWalkerApp(props: IAppProps) {
 function SteamlitGWalkerApp(streamlitProps: any) {
     const props = streamlitProps.args as IAppProps;
     const [inited, setInited] = useState(false);
-    const container = React.useRef(null);
+    const container = React.useRef<HTMLDivElement>(null);
     props.visSpec = FormatSpec(props.visSpec, props.rawFields);
 
     useEffect(() => {
