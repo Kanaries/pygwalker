@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.12']
+        python-version: ['3.12', '3.13']
         os-version: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os-version }}
@@ -62,7 +62,7 @@ jobs:
       - name: Use Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version == '3.7' && matrix.os-version == 'macos-latest' && '3.7.16' || matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
       - name: Download test data
         working-directory: ./
         run: |
@@ -73,7 +73,7 @@ jobs:
         env:
           PIP_ONLY_BINARY: "duckdb"
         run: |
-          pip install ./
+          pip install ".[export]"
       - name: Try Install Modin In Linux Os
         if: ${{ matrix.os-version == 'ubuntu-latest' && matrix.python-version == '3.11' }}
         run: |
