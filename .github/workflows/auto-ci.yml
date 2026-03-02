@@ -94,9 +94,7 @@ jobs:
         run: |
           pip install duckdb_engine
           pip install pytest
-          echo "[CI] pytest start"
-          python -X faulthandler -m pytest -o faulthandler_timeout=300 tests
-          echo "[CI] pytest end"
+          python ./scripts/ci_run_pytest.py
       - name: Uploading notebooks
         uses: actions/upload-artifact@v4
         if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}
