@@ -43,6 +43,7 @@ jobs:
   
   build-py:
     needs: build-js
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
@@ -88,11 +89,14 @@ jobs:
           jupyter kernelspec list
           jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=python --to html *.ipynb
       - name: Try Pytest
+        timeout-minutes: 20
         working-directory: ./
         run: |
           pip install duckdb_engine
           pip install pytest
-          pytest tests
+          echo "[CI] pytest start"
+          python -X faulthandler -m pytest -o faulthandler_timeout=300 tests
+          echo "[CI] pytest end"
       - name: Uploading notebooks
         uses: actions/upload-artifact@v4
         if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}
