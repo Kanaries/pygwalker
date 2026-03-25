@@ -51,8 +51,8 @@ kanati_token_item = ConfigItem(
     ["your kanaries token"],
     default="empty string",
     description="""
-    your kanaries token, you can get it from https://kanaries.net.
-    refer: https://space.kanaries.net/t/how-to-get-api-key-of-kanaries.
+    your kanaries token, you can get it from https://kanaries.net/portal/apikey.
+    refer: https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F
     by kanaries token, you can use kanaries service in pygwalker, such as share chart, share config.
     """
 )
