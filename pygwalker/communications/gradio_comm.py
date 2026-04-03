@@ -1,5 +1,6 @@
 import json
 import gc
+import warnings
 
 from fastapi import FastAPI
 from starlette.routing import Route
@@ -36,6 +37,14 @@ class GradioCommunication(BaseCommunication):
     """
     def __init__(self, gid: str) -> None:
         super().__init__(gid)
+        if gid in gradio_comm_map:
+            warnings.warn(
+                f"GID collision detected: {gid}. "
+                f"Two different datasets produced the same identifier. "
+                f"Pass an explicit gid= parameter to avoid this.",
+                UserWarning,
+                stacklevel=2,
+            )
         gradio_comm_map[gid] = self
 
 

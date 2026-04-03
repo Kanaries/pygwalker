@@ -1,4 +1,5 @@
 import json
+import warnings
 from fastapi import FastAPI, HTTPException
 from starlette.routing import Route
 from starlette.responses import JSONResponse, Response
@@ -46,6 +47,14 @@ class ReflexCommunication(BaseCommunication):
 
     def __init__(self, gid: str) -> None:
         super().__init__(gid)
+        if gid in reflex_comm_map:
+            warnings.warn(
+                f"GID collision detected: {gid}. "
+                f"Two different datasets produced the same identifier. "
+                f"Pass an explicit gid= parameter to avoid this.",
+                UserWarning,
+                stacklevel=2,
+            )
         reflex_comm_map[gid] = self
 
 

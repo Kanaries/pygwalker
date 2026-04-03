@@ -5,7 +5,7 @@ import pandas as pd
 import polars as pl
 import pytest
 
-from pygwalker.services.data_parsers import get_parser
+from pygwalker.services.data_parsers import get_parser, get_dataset_hash
 from pygwalker.data_parsers.database_parser import Connector, text
 from pygwalker.data_parsers.database_parser import _check_view_sql
 from pygwalker.errors import ViewSqlSameColumnError
@@ -108,3 +108,38 @@ def test_connector():
         assert connector.dialect_name == "duckdb"
         assert connector.view_sql == view_sql
         assert connector.url == database_url
+
+
+def test_dataset_hash_no_interior_collision_pandas():
+    """Regression test: DataFrames differing only in interior rows must produce different hashes."""
+    base = pd.DataFrame({"value": range(10000)})
+
+    df_a = base.copy()
+    df_a.loc[2000:7999, "value"] = 0
+
+    df_b = base.copy()
+    df_b.loc[2000:7999, "value"] = 99999
+
+    assert df_a["value"].sum() != df_b["value"].sum()
+    assert get_dataset_hash(df_a) != get_dataset_hash(df_b)
+
+
+def test_dataset_hash_no_interior_collision_polars():
+    """Regression test: Polars DataFrames differing only in interior rows must produce different hashes."""
+    base = pl.DataFrame({"value": list(range(10000))})
+
+    df_a = base.with_columns(
+        pl.when(pl.arange(0, pl.count()).is_between(2000, 7999))
+        .then(pl.lit(0))
+        .otherwise(pl.col("value"))
+        .alias("value")
+    )
+    df_b = base.with_columns(
+        pl.when(pl.arange(0, pl.count()).is_between(2000, 7999))
+        .then(pl.lit(99999))
+        .otherwise(pl.col("value"))
+        .alias("value")
+    )
+
+    assert df_a["value"].sum() != df_b["value"].sum()
+    assert get_dataset_hash(df_a) != get_dataset_hash(df_b)
