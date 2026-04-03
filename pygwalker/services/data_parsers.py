@@ -127,11 +127,10 @@ def _get_spark_dataset_hash(dataset: DataFrame) -> str:
     row_count = shape[0]
     other_info = str(shape) + "_pyspark"
     if row_count > 4000:
-        dataset_pd = dataset.toPandas()
-        indices = np.linspace(0, row_count - 1, 4000, dtype=int)
-        dataset_pd = dataset_pd.iloc[indices]
-    else:
-        dataset_pd = dataset.toPandas()
+        # Sample uniformly in Spark before toPandas() to avoid pulling full dataset to driver (OOM)
+        fraction = min(4000 / row_count * 1.5, 1.0)
+        dataset = dataset.sample(fraction=fraction, seed=42).limit(4000)
+    dataset_pd = dataset.toPandas()
     hash_bytes = pd.util.hash_pandas_object(dataset_pd).values.tobytes() + other_info.encode()
     return hashlib.md5(hash_bytes).hexdigest()
 
