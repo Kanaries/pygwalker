@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional
-from functools import lru_cache
+from threading import Lock
 from decimal import Decimal
 import logging
 import io
@@ -31,6 +31,9 @@ class CloudDatasetParser(BaseDataParser):
         self.other_params = other_params
         self._cloud_service = CloudService(other_params.get("kanaries_api_key", ""))
         self.example_pandas_df = self._get_example_pandas_df()
+        self._field_metas_cache = None
+        self._raw_fields_cache = None
+        self._cache_lock = Lock()
 
     def _get_example_pandas_df(self) -> pd.DataFrame:
         datas = self._get_all_datas(1000)
@@ -41,25 +44,35 @@ class CloudDatasetParser(BaseDataParser):
         return example_df
 
     @property
-    @lru_cache()
     def field_metas(self) -> List[Dict[str, str]]:
-        data = self._get_all_datas(1)
-        return get_data_meta_type(data[0]) if data else []
+        cache = self._field_metas_cache
+        if cache is not None:
+            return cache
+        with self._cache_lock:
+            if self._field_metas_cache is None:
+                data = self._get_all_datas(1)
+                self._field_metas_cache = get_data_meta_type(data[0]) if data else []
+            return self._field_metas_cache
 
     @property
-    @lru_cache()
     def raw_fields(self) -> List[Dict[str, str]]:
-        pandas_parser = PandasDataFrameDataParser(
-            self.example_pandas_df,
-            self.field_specs,
-            self.infer_string_to_date,
-            self.infer_number_to_dimension,
-            self.other_params
-        )
-        return [
-            {**field, "fid": field["name"]}
-            for field in pandas_parser.raw_fields
-        ]
+        cache = self._raw_fields_cache
+        if cache is not None:
+            return cache
+        with self._cache_lock:
+            if self._raw_fields_cache is None:
+                pandas_parser = PandasDataFrameDataParser(
+                    self.example_pandas_df,
+                    self.field_specs,
+                    self.infer_string_to_date,
+                    self.infer_number_to_dimension,
+                    self.other_params
+                )
+                self._raw_fields_cache = [
+                    {**field, "fid": field["name"]}
+                    for field in pandas_parser.raw_fields
+                ]
+            return self._raw_fields_cache
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         if limit is None:
