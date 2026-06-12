@@ -1,5 +1,6 @@
 import sys
 import hashlib
+import numpy as np
 import pandas as pd
 from typing import Dict, Optional, Union, Any, List, Tuple
 from typing_extensions import Literal
@@ -90,7 +91,8 @@ def _get_pl_dataset_hash(dataset: DataFrame) -> str:
     row_count = dataset.shape[0]
     other_info = str(dataset.shape) + "_polars"
     if row_count > 4000:
-        dataset = pl.concat([dataset[:2000], dataset[-2000:]])
+        indices = np.linspace(0, row_count - 1, 4000, dtype=int)
+        dataset = dataset[indices.tolist()]
     hash_bytes = dataset.hash_rows().to_numpy().tobytes() + other_info.encode()
     return hashlib.md5(hash_bytes).hexdigest()
 
@@ -100,7 +102,8 @@ def _get_pd_dataset_hash(dataset: DataFrame) -> str:
     row_count = dataset.shape[0]
     other_info = str(dataset.shape) + "_pandas"
     if row_count > 4000:
-        dataset = pd.concat([dataset[:2000], dataset[-2000:]])
+        indices = np.linspace(0, row_count - 1, 4000, dtype=int)
+        dataset = dataset.iloc[indices]
     hash_bytes = pd.util.hash_pandas_object(dataset).values.tobytes() + other_info.encode()
     return hashlib.md5(hash_bytes).hexdigest()
 
@@ -111,7 +114,8 @@ def _get_modin_dataset_hash(dataset: DataFrame) -> str:
     row_count = dataset.shape[0]
     other_info = str(dataset.shape) + "_modin"
     if row_count > 4000:
-        dataset = mpd.concat([dataset[:2000], dataset[-2000:]])
+        indices = np.linspace(0, row_count - 1, 4000, dtype=int)
+        dataset = dataset.iloc[indices]
     dataset = dataset._to_pandas()
     hash_bytes = pd.util.hash_pandas_object(dataset).values.tobytes() + other_info.encode()
     return hashlib.md5(hash_bytes).hexdigest()
@@ -123,7 +127,9 @@ def _get_spark_dataset_hash(dataset: DataFrame) -> str:
     row_count = shape[0]
     other_info = str(shape) + "_pyspark"
     if row_count > 4000:
-        dataset = dataset.limit(4000)
+        # Sample uniformly in Spark before toPandas() to avoid pulling full dataset to driver (OOM)
+        fraction = min(4000 / row_count * 1.5, 1.0)
+        dataset = dataset.sample(fraction=fraction, seed=42).limit(4000)
     dataset_pd = dataset.toPandas()
     hash_bytes = pd.util.hash_pandas_object(dataset_pd).values.tobytes() + other_info.encode()
     return hashlib.md5(hash_bytes).hexdigest()

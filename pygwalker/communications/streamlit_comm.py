@@ -1,5 +1,6 @@
 import gc
 import json
+import warnings
 
 from tornado.web import Application
 from streamlit import config
@@ -66,4 +67,12 @@ class StreamlitCommunication(BaseCommunication):
     """
     def __init__(self, gid: str) -> None:
         super().__init__(gid)
+        if gid in streamlit_comm_map:
+            warnings.warn(
+                f"GID collision detected: {gid}. "
+                f"Two different datasets produced the same identifier. "
+                f"Pass an explicit gid= parameter to avoid this.",
+                UserWarning,
+                stacklevel=2,
+            )
         streamlit_comm_map[gid] = self
