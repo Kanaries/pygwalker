@@ -3,6 +3,7 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
+from pygwalker.api import adapter, html, jupyter
 from pygwalker.api import pygwalker as pygwalker_module
 from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
@@ -218,3 +219,92 @@ def test_pygwalker_export_dataframe_callback_stores_last_dataframe(monkeypatch):
         )
     finally:
         GlobalVarManager.last_exported_dataframe = previous_exported_dataframe
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected_kernel_computation"),
+    [
+        ({}, False),
+        ({"kernel_computation": True}, True),
+        ({"env": "JupyterConvert", "kernel_computation": True}, False),
+    ],
+)
+def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
+    monkeypatch,
+    kwargs,
+    expected_kernel_computation,
+):
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+    monkeypatch.setattr(PygWalker, "display_on_jupyter_use_widgets", lambda self: None)
+    monkeypatch.setattr(PygWalker, "display_on_jupyter", lambda self: None)
+    monkeypatch.setattr(PygWalker, "display_on_convert_html", lambda self: None)
+
+    walker = jupyter.walk(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="entry",
+        **kwargs,
+    )
+
+    assert walker.kernel_computation is expected_kernel_computation
+
+
+def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "test-user")
+
+    rendered = html.to_html(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="static",
+        appearance="light",
+        width="640px",
+        height="480px",
+    )
+
+    assert 'id="gwalker-static"' in rendered
+    assert 'width="640px"' in rendered
+    assert 'height="480px"' in rendered
+    assert "srcdoc=" in rendered
+
+
+@pytest.mark.parametrize(
+    ("runtime_env", "expected_backend"),
+    [
+        ("jupyter", "jupyter"),
+        ("script", "webserver"),
+    ],
+)
+def test_public_walk_routes_pygwalker_to_environment_backend(
+    monkeypatch,
+    runtime_env,
+    expected_backend,
+):
+    calls = []
+
+    def fake_jupyter_walk(*args, **kwargs):
+        calls.append(("jupyter", args, kwargs))
+        return "jupyter-walker"
+
+    def fake_webserver_walk(*args, **kwargs):
+        calls.append(("webserver", args, kwargs))
+        return "webserver-walker"
+
+    monkeypatch.setattr(adapter, "get_current_env", lambda: runtime_env)
+    monkeypatch.setattr(adapter.jupyter, "walk", fake_jupyter_walk)
+    monkeypatch.setattr(adapter.webserver, "walk", fake_webserver_walk)
+
+    result = adapter.walk(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="entry",
+        kernel_computation=True,
+    )
+
+    assert result == f"{expected_backend}-walker"
+    assert [call[0] for call in calls] == [expected_backend]
+    if expected_backend == "webserver":
+        assert calls[0][2]["auto_open"] is True
+        assert calls[0][2]["auto_shutdown"] is True
