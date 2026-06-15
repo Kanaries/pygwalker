@@ -62,12 +62,31 @@ class PrivateSession(requests.Session):
         kanaries_api_key = self.kanaries_api_key or GlobalVarManager.kanaries_api_key
         if not kanaries_api_key:
             logger.error((
-                "kanaries_api_key is not valid.\n"
-                "Please set kanaries_api_key first.\n"
-                "If you are not kanaries user, please register it from 'https://kanaries.net/home/access' \n"
-                "Then refer 'https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F' to set kanaries_api_key. \n"
+                "kanaries_api_key is not set or invalid.\n"
+                "To use Kanaries cloud features (e.g., AI Q&A, chart sharing), an API key is required.\n"
+                "\n"
+                "How to set up your API key:\n"
+                "  1. Sign up or log in at: https://kanaries.net\n"
+                "  2. Go to your API key manager at: https://kanaries.net/portal/apikey\n"
+                "  3. Copy your API key and set it using one of these methods:\n"
+                "     a. In Python: pygwalker.walk(df, kanaries_api_key='your_api_key')\n"
+                "     b. Via CLI: pygwalker config --set kanaries_token=your_api_key\n"
+                "     c. Via environment variable: set KANARIES_API_KEY=your_api_key\n"
+                "\n"
+                "For detailed instructions, see:\n"
+                "  https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F\n"
+                "  https://docs.kanaries.net/pygwalker\n"
             ))
-            raise CloudFunctionError("no kanaries api key. visit: https://docs.kanaries.net/ for setup documentation.", code=ErrorCode.TOKEN_ERROR)
+            raise CloudFunctionError(
+                "Kanaries API key is not set. "
+                "To use cloud features, please set your API key. "
+                "Get your key at: https://kanaries.net/portal/apikey -- "
+                "then set it via: pygwalker.walk(df, kanaries_api_key='your_key'), "
+                "or CLI: pygwalker config --set kanaries_token=your_key, "
+                "or env var: KANARIES_API_KEY. "
+                "Full guide: https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F",
+                code=ErrorCode.TOKEN_ERROR
+            )
         resp = super().send(request, **kwargs)
         try:
             resp_json = resp.json()
