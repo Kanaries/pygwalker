@@ -592,6 +592,18 @@ def test_base_communication_envelope_rejects_missing_action():
     assert "action" in response["message"]
 
 
+def test_base_communication_rejects_unknown_action_as_invalid_request():
+    comm = BaseCommunication("core")
+
+    response = comm._receive_msg("missing_endpoint", {})
+
+    assert response == {
+        "code": ErrorCode.INVALID_REQUEST,
+        "data": None,
+        "message": "Unknown action: missing_endpoint",
+    }
+
+
 def test_pygwalker_batch_payload_query_callback_validates_payload(monkeypatch):
     walker = _make_walker(monkeypatch, kernel_computation=True)
     comm = BaseCommunication("core")
