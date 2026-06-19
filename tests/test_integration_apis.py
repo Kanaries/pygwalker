@@ -103,7 +103,7 @@ def _reset_fake_walker():
     FakeWalker.instances = []
 
 
-def test_gradio_api_builds_walker_and_registers_comm(monkeypatch):
+def test_gradio_api_builds_walker_and_registers_comm(monkeypatch, tmp_path):
     from pygwalker.api import gradio
 
     _reset_fake_walker()
@@ -120,6 +120,7 @@ def test_gradio_api_builds_walker_and_registers_comm(monkeypatch):
     html = gradio.get_html_on_gradio(
         pd.DataFrame([{"city": "London"}]),
         gid="gradio",
+        spec_path=str(tmp_path / "gradio_spec.json"),
         spec_io_mode="rw",
         computation="browser",
         default_tab="data",
@@ -127,6 +128,7 @@ def test_gradio_api_builds_walker_and_registers_comm(monkeypatch):
 
     walker = FakeWalker.instances[0]
     assert walker.kwargs["gid"] == "gradio"
+    assert walker.kwargs["spec"] == str(tmp_path / "gradio_spec.json")
     assert walker.kwargs["use_save_tool"] is True
     assert walker.kwargs["kernel_computation"] is False
     assert walker.kwargs["default_tab"] == "data"
@@ -241,7 +243,7 @@ def test_marimo_api_wraps_anywidget(monkeypatch):
     assert result == {"wrapped": wrapped_widgets[0]}
 
 
-def test_streamlit_html_builds_renderer_and_component_html(monkeypatch):
+def test_streamlit_html_builds_renderer_and_component_html(monkeypatch, tmp_path):
     _install_streamlit_stubs(monkeypatch)
     streamlit = importlib.reload(importlib.import_module("pygwalker.api.streamlit"))
 
@@ -254,6 +256,7 @@ def test_streamlit_html_builds_renderer_and_component_html(monkeypatch):
     html = streamlit.get_streamlit_html(
         pd.DataFrame([{"city": "London"}]),
         gid=None,
+        spec_path=str(tmp_path / "streamlit_spec.json"),
         spec_io_mode="rw",
         computation="cloud",
         mode="table",
@@ -262,6 +265,7 @@ def test_streamlit_html_builds_renderer_and_component_html(monkeypatch):
 
     walker = FakeWalker.instances[0]
     assert walker.kwargs["gid"] == "dataset-hash"
+    assert walker.kwargs["spec"] == str(tmp_path / "streamlit_spec.json")
     assert walker.kwargs["use_save_tool"] is True
     assert walker.kwargs["kernel_computation"] is False
     assert walker.kwargs["cloud_computation"] is True

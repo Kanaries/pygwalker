@@ -19,6 +19,7 @@ def walk(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     spec: str = "",
+    spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
     use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
@@ -40,6 +41,7 @@ def walk(
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
@@ -57,6 +59,7 @@ def walk(
             theme_key=theme_key,
             appearance=appearance,
             spec=spec,
+            spec_path=spec_path,
             computation=computation,
             use_kernel_calc=use_kernel_calc,
             kernel_computation=kernel_computation,
@@ -74,6 +77,7 @@ def walk(
         theme_key=theme_key,
         appearance=appearance,
         spec=spec,
+        spec_path=spec_path,
         computation=computation,
         kernel_computation=kernel_computation,
         cloud_computation=cloud_computation,
@@ -88,10 +92,11 @@ def walk(
 
 def render(
     dataset: Union[DataFrame, Connector, str],
-    spec: str,
+    spec: str = "",
     *,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
+    spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
@@ -101,6 +106,7 @@ def render(
     Args:
         - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
@@ -117,6 +123,7 @@ def render(
             spec,
             theme_key=theme_key,
             appearance=appearance,
+            spec_path=spec_path,
             computation=computation,
             kernel_computation=kernel_computation,
             kanaries_api_key=kanaries_api_key,
@@ -128,6 +135,7 @@ def render(
         spec,
         theme_key=theme_key,
         appearance=appearance,
+        spec_path=spec_path,
         computation=computation,
         kernel_computation=kernel_computation,
         kanaries_api_key=kanaries_api_key,
@@ -142,6 +150,7 @@ def table(
     *,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
+    spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
@@ -154,6 +163,7 @@ def table(
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - spec_path (str): local chart configuration file path.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
@@ -165,6 +175,7 @@ def table(
             dataset,
             theme_key=theme_key,
             appearance=appearance,
+            spec_path=spec_path,
             computation=computation,
             kernel_computation=kernel_computation,
             kanaries_api_key=kanaries_api_key,
@@ -175,6 +186,7 @@ def table(
         dataset,
         theme_key=theme_key,
         appearance=appearance,
+        spec_path=spec_path,
         computation=computation,
         kernel_computation=kernel_computation,
         kanaries_api_key=kanaries_api_key,

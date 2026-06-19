@@ -874,6 +874,40 @@ def test_jupyter_walk_rejects_live_computation_for_convert_env(monkeypatch, kwar
         )
 
 
+def test_jupyter_walk_accepts_explicit_spec_path(monkeypatch, tmp_path):
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+    monkeypatch.setattr(PygWalker, "display_on_jupyter_use_widgets", lambda self: None)
+
+    spec_path = tmp_path / "gw_config.json"
+    spec_path.write_text(json.dumps({"config": [], "chart_map": {}, "workflow_list": [], "version": "0.5.0"}))
+
+    walker = jupyter.walk(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="spec-path",
+        spec_path=str(spec_path),
+    )
+
+    assert walker.spec_manager.spec == str(spec_path)
+    assert walker.spec_manager.spec_type == "json_file"
+
+
+def test_jupyter_walk_rejects_spec_and_spec_path(monkeypatch, tmp_path):
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+
+    with pytest.raises(ValueError, match="Pass only one of `spec` or `spec_path`"):
+        jupyter.walk(
+            pd.DataFrame([{"city": "London", "value": 1}]),
+            spec="{}",
+            spec_path=str(tmp_path / "gw_config.json"),
+        )
+
+
 def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
     monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
@@ -956,11 +990,13 @@ def test_public_walk_routes_pygwalker_to_environment_backend(
     result = adapter.walk(
         pd.DataFrame([{"city": "London", "value": 1}]),
         gid="entry",
+        spec_path="adapter_spec.json",
         computation="kernel",
     )
 
     assert result == f"{expected_backend}-walker"
     assert [call[0] for call in calls] == [expected_backend]
+    assert calls[0][2]["spec_path"] == "adapter_spec.json"
     assert calls[0][2]["computation"] == "kernel"
     if expected_backend == "webserver":
         assert calls[0][2]["auto_open"] is True

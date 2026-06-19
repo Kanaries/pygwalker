@@ -12,6 +12,7 @@ from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.communications.anywidget_comm import AnywidgetCommunication
 from pygwalker.utils.computation import resolve_computation_mode
+from pygwalker.utils.spec import resolve_spec_input
 import anywidget
 import traitlets
 
@@ -33,6 +34,7 @@ def walk(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     spec: str = "",
+    spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
     show_cloud_tool: bool = False,
     kanaries_api_key: str = "",
@@ -50,6 +52,7 @@ def walk(
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "kernel".
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -60,6 +63,7 @@ def walk(
     source_invoke_code = get_formated_spec_params_code_from_frame(inspect.stack()[1].frame)
 
     widget = _WalkerWidget()
+    resolved_spec = resolve_spec_input(spec, spec_path)
     resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
         dataset,
         computation=computation,
@@ -69,7 +73,7 @@ def walk(
         gid=gid,
         dataset=dataset,
         field_specs=field_specs,
-        spec=spec,
+        spec=resolved_spec,
         source_invoke_code=source_invoke_code,
         theme_key=theme_key,
         appearance=appearance,

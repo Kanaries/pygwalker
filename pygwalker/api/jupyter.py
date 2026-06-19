@@ -12,6 +12,7 @@ from pygwalker.services.kaggle import auto_set_kanaries_api_key_on_kaggle, adjus
 from pygwalker.utils.execute_env_check import check_convert, get_kaggle_run_type, check_kaggle
 from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.utils.computation import resolve_computation_mode
+from pygwalker.utils.spec import resolve_spec_input
 
 
 def walk(
@@ -23,6 +24,7 @@ def walk(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     spec: str = "",
+    spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
     use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
@@ -44,6 +46,7 @@ def walk(
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
@@ -66,6 +69,7 @@ def walk(
     elif check_convert():
         env = "JupyterConvert"
 
+    resolved_spec = resolve_spec_input(spec, spec_path)
     resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
         dataset,
         computation=computation,
@@ -96,7 +100,7 @@ def walk(
         gid=gid,
         dataset=dataset,
         field_specs=field_specs,
-        spec=spec,
+        spec=resolved_spec,
         source_invoke_code=source_invoke_code,
         theme_key=theme_key,
         appearance=appearance,
@@ -127,10 +131,11 @@ def walk(
 
 def render(
     dataset: Union[DataFrame, Connector, str],
-    spec: str,
+    spec: str = "",
     *,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
+    spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
@@ -140,6 +145,7 @@ def render(
     Args:
         - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
@@ -148,6 +154,7 @@ def render(
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
+    resolved_spec = resolve_spec_input(spec, spec_path)
     resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
         dataset,
         computation=computation,
@@ -158,7 +165,7 @@ def render(
         gid=None,
         dataset=dataset,
         field_specs=[],
-        spec=spec,
+        spec=resolved_spec,
         source_invoke_code="",
         theme_key=theme_key,
         appearance=appearance,
@@ -182,6 +189,7 @@ def table(
     *,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
+    spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
@@ -194,10 +202,12 @@ def table(
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - spec_path (str): local chart configuration file path.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
+    resolved_spec = resolve_spec_input("", spec_path)
     resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
         dataset,
         computation=computation,
@@ -207,7 +217,7 @@ def table(
         gid=None,
         dataset=dataset,
         field_specs=[],
-        spec="",
+        spec=resolved_spec,
         source_invoke_code="",
         theme_key=theme_key,
         appearance=appearance,

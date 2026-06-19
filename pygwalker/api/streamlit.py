@@ -16,6 +16,7 @@ from pygwalker._typing import DataFrame, IAppearance, IComputation, ISpecIOMode,
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.utils.computation import resolve_computation_mode
+from pygwalker.utils.spec import resolve_spec_input
 from pygwalker.services.streamlit_components import pygwalker_component
 from pygwalker.services.data_parsers import get_dataset_hash
 
@@ -56,6 +57,7 @@ class StreamlitRenderer:
         theme_key: IThemeKey = "g2",
         appearance: IAppearance = "media",
         spec: str = "",
+        spec_path: Optional[str] = None,
         spec_io_mode: ISpecIOMode = "r",
         computation: Optional[IComputation] = None,
         kernel_computation: Optional[bool] = None,
@@ -83,6 +85,7 @@ class StreamlitRenderer:
             - theme_key ('vega' | 'g2'): theme type.
             - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
             - spec (str): chart config data. config id, json, remote file url
+            - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
             - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
             - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
             - kernel_computation(bool): Whether to use kernel compute for datas, Default to True.
@@ -94,6 +97,7 @@ class StreamlitRenderer:
 
         init_streamlit_comm()
 
+        resolved_spec = resolve_spec_input(spec, spec_path)
         resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
             dataset,
             computation=computation,
@@ -106,7 +110,7 @@ class StreamlitRenderer:
             gid=gid if gid is not None else get_dataset_hash(dataset),
             dataset=dataset,
             field_specs=field_specs if field_specs is not None else [],
-            spec=spec,
+            spec=resolved_spec,
             source_invoke_code="",
             theme_key=theme_key,
             appearance=appearance,
@@ -277,6 +281,7 @@ def get_streamlit_html(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     spec: str = "",
+    spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
     use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
@@ -298,6 +303,7 @@ def get_streamlit_html(
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - use_kernel_calc(bool): Deprecated, use kernel_computation instead.
@@ -315,6 +321,7 @@ def get_streamlit_html(
         spec=spec,
         theme_key=theme_key,
         appearance=appearance,
+        spec_path=spec_path,
         spec_io_mode=spec_io_mode,
         computation=computation,
         use_kernel_calc=use_kernel_calc,

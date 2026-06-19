@@ -11,6 +11,7 @@ from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.utils.check_walker_params import check_expired_params
+from pygwalker.utils.spec import resolve_spec_input
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ def _to_html(
     gid: Union[int, str] = None,
     *,
     spec: str = "",
+    spec_path: Optional[str] = None,
     field_specs: Optional[List[FieldSpec]] = None,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
@@ -65,6 +67,8 @@ def _to_html(
     check_expired_params(kwargs)
     _pop_static_html_computation_kwargs(kwargs, computation)
 
+    resolved_spec = resolve_spec_input(spec, spec_path)
+
     if gid is None:
         gid = generate_hash_code()
 
@@ -75,7 +79,7 @@ def _to_html(
         gid=gid,
         dataset=df,
         field_specs=field_specs,
-        spec=spec,
+        spec=resolved_spec,
         source_invoke_code="",
         theme_key=theme_key,
         appearance=appearance,
@@ -99,6 +103,7 @@ def to_html(
     gid: Union[int, str] = None,
     *,
     spec: str = "",
+    spec_path: Optional[str] = None,
     field_specs: Optional[List[FieldSpec]] = None,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
@@ -116,6 +121,7 @@ def to_html(
     Kargs:
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - theme_key ('vega' | 'g2'): theme type.
         - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -125,6 +131,7 @@ def to_html(
         df,
         gid,
         spec=spec,
+        spec_path=spec_path,
         field_specs=field_specs,
         theme_key=theme_key,
         appearance=appearance,
@@ -137,6 +144,7 @@ def to_html(
 def to_table_html(
     df: DataFrame,
     *,
+    spec_path: Optional[str] = None,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     computation: Optional[IComputation] = None,
@@ -156,6 +164,7 @@ def to_table_html(
         df,
         None,
         spec="",
+        spec_path=spec_path,
         field_specs=[],
         theme_key=theme_key,
         appearance=appearance,
@@ -168,8 +177,9 @@ def to_table_html(
 
 def to_render_html(
     df: DataFrame,
-    spec: str,
+    spec: str = "",
     *,
+    spec_path: Optional[str] = None,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     computation: Optional[IComputation] = None,
@@ -188,6 +198,7 @@ def to_render_html(
         df,
         None,
         spec=spec,
+        spec_path=spec_path,
         field_specs=[],
         theme_key=theme_key,
         appearance=appearance,

@@ -12,6 +12,7 @@ from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.computation import resolve_computation_mode
 from pygwalker.utils.randoms import rand_str
+from pygwalker.utils.spec import resolve_spec_input
 
 
 GRAPHIC_WALKER_AGG_FUNCS = {
@@ -425,6 +426,7 @@ def component(
     *,
     field_specs: Optional[List[FieldSpec]] = None,
     spec: str = "",
+    spec_path: Optional[str] = None,
     spec_io_mode: ISpecIOMode = "rw",
     theme_key: IThemeKey = "vega",
     appearance: IAppearance = "media",
@@ -443,6 +445,7 @@ def component(
     Kargs:
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
@@ -450,6 +453,7 @@ def component(
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
+    resolved_spec = resolve_spec_input(spec, spec_path)
     resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
         dataset,
         computation=computation,
@@ -460,7 +464,7 @@ def component(
         gid=None,
         dataset=dataset,
         field_specs=field_specs,
-        spec=spec,
+        spec=resolved_spec,
         source_invoke_code="",
         theme_key=theme_key,
         appearance=appearance,

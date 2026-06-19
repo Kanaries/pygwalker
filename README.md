@@ -156,7 +156,8 @@ Cool things you can do with PyGwalker:
 
 There are some important parameters you should know when using pygwalker:
 
-+ `spec`: for save/load chart config (json string or file path)
++ `spec_path`: local file path for saving/loading chart config.
++ `spec`: chart config object, JSON string, config ID, or remote URL.
 + `computation`: choose where data queries run. Use `"browser"` for frontend-only computation, `"kernel"` for local DuckDB-backed Python computation, `"cloud"` for Kanaries cloud computation, or omit it for the default automatic behavior.
 + `kernel_computation`: legacy boolean for using DuckDB as computing engine. Prefer `computation="kernel"`.
 + `use_kernel_calc`: Deprecated, use `computation="kernel"` or `kernel_computation` instead.
@@ -165,7 +166,7 @@ There are some important parameters you should know when using pygwalker:
 df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
-    spec="./chart_meta_0.json",    # this json file will save your chart state, you need to click save button in ui mannual when you finish a chart, 'autosave' will be supported in the future.
+    spec_path="./chart_meta_0.json",  # local file used to load and save chart state.
     computation="kernel",          # use DuckDB in the Python kernel for larger datasets.
 )
 ```
@@ -185,7 +186,7 @@ walker = pyg.walk(
 After saving a chart from the UI, you can retrieve the image directly from Python.
 
 ```python
-walker = pyg.walk(df, spec="./chart_meta_0.json")
+walker = pyg.walk(df, spec_path="./chart_meta_0.json")
 # edit the chart in the UI and click the save button
 walker.save_chart_to_file("Chart 1", "chart1.svg", save_type="svg")
 png_bytes = walker.export_chart_png("Chart 1")
@@ -220,7 +221,7 @@ st.title("Use Pygwalker In Streamlit")
 def get_pyg_renderer() -> "StreamlitRenderer":
     df = pd.read_csv("./bike_sharing_dc.csv")
     # If you want to use feature of saving chart config, set `spec_io_mode="rw"`
-    return StreamlitRenderer(df, spec="./gw_config.json", spec_io_mode="rw")
+    return StreamlitRenderer(df, spec_path="./gw_config.json", spec_io_mode="rw")
 
 
 renderer = get_pyg_renderer()
@@ -242,6 +243,7 @@ renderer.explorer()
 | theme_key          | Literal['vega', 'g2', 'streamlit']                        | 'g2'            | Theme type for Graphic Walker.                                                                                                     |
 | appearance         | Literal['media', 'light', 'dark']                         | 'media'         | Theme appearance. `media` follows the operating system preference.                                                                 |
 | spec               | str                                                       | ""              | Chart configuration data. Can be a configuration ID, JSON string, local file path, or remote file URL.                             |
+| spec_path          | Optional[str]                                             | None            | Local chart configuration file path. Prefer this over passing a local file path through `spec`.                                    |
 | computation        | Optional[Literal['auto', 'browser', 'kernel', 'cloud']]   | None            | Computation backend. Omit it for automatic behavior; use `browser`, `kernel`, or `cloud` to choose explicitly.                     |
 | use_kernel_calc    | Optional[bool]                                            | None            | Deprecated. Use `computation="kernel"` or `kernel_computation` instead.                                                           |
 | kernel_computation | Optional[bool]                                            | None            | Legacy boolean for local DuckDB-backed kernel computation. Prefer `computation="kernel"` or `computation="browser"`.              |
