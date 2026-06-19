@@ -772,6 +772,37 @@ def test_pygwalker_loads_saved_chart_map_from_spec(monkeypatch):
     assert walker._get_chart_by_name("Saved chart").title == "Saved chart"
 
 
+def test_pygwalker_to_code_exports_current_spec_state(monkeypatch):
+    walker = _make_walker(monkeypatch)
+    walker.vis_spec = [{"name": "Bob's chart", "encodings": {}}]
+    walker.workflow_list = [{"workflow": [{"type": "view"}]}]
+    walker.spec_version = "0.6.0"
+
+    code = walker.to_code(dataset_name="source_df", variable_name="explorer")
+
+    assert code.startswith("import pygwalker as pyg\n\n")
+    assert code.endswith("explorer = pyg.walk(source_df, spec=spec)")
+
+    namespace = {}
+    exec(code.splitlines()[2], {}, namespace)
+    assert json.loads(namespace["spec"]) == {
+        "config": [{"name": "Bob's chart", "encodings": {}}],
+        "chart_map": {},
+        "version": "0.6.0",
+        "workflow_list": [{"workflow": [{"type": "view"}]}],
+    }
+
+
+def test_pygwalker_to_code_can_omit_import_and_rejects_invalid_variable_name(monkeypatch):
+    walker = _make_walker(monkeypatch)
+
+    assert walker.to_code(include_import=False).startswith("spec = ")
+    with pytest.raises(ValueError, match="variable_name"):
+        walker.to_code(variable_name="not valid")
+    with pytest.raises(ValueError, match="variable_name"):
+        walker.to_code(variable_name="class")
+
+
 def test_pygwalker_export_dataframe_callback_stores_last_dataframe(monkeypatch):
     previous_exported_dataframe = GlobalVarManager.last_exported_dataframe
     walker = _make_walker(monkeypatch, is_export_dataframe=True)

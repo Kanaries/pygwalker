@@ -180,6 +180,13 @@ html = walker.to_html()
 html = pyg.to_html(walker)
 ```
 
+After exploring in the UI, export the current chart state as reproducible Python code:
+
+```python
+code = walker.to_code(dataset_name="df")
+print(code)
+```
+
 ### Example in local notebook
 
 * Notebook Code: [Click Here](https://github.com/Kanaries/pygwalker-offline-example)

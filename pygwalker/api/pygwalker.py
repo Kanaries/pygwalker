@@ -1,4 +1,6 @@
 from typing import List, Dict, Any, Optional, Union
+import json
+import keyword
 
 from typing_extensions import Literal
 import pandas as pd
@@ -225,6 +227,22 @@ class PygWalker:
     def to_html_without_iframe(self) -> str:
         props = self._get_props()
         return self._get_render_iframe(props, return_iframe=False)
+
+    def to_code(self, dataset_name: str = "df", variable_name: str = "walker", include_import: bool = True) -> str:
+        """Export a reproducible Python snippet for the current spec state."""
+        if not variable_name.isidentifier() or keyword.iskeyword(variable_name):
+            raise ValueError("variable_name must be a valid Python identifier")
+
+        from pygwalker import __version__
+
+        spec_obj = self.spec_manager.build_spec_obj(self.spec_version or __version__)
+        spec_json = json.dumps(spec_obj, ensure_ascii=False, separators=(",", ":"))
+        lines = []
+        if include_import:
+            lines.extend(["import pygwalker as pyg", ""])
+        lines.append(f"spec = {spec_json!r}")
+        lines.append(f"{variable_name} = pyg.walk({dataset_name}, spec=spec)")
+        return "\n".join(lines)
 
     def display_on_convert_html(self):
         """
