@@ -68,12 +68,6 @@ class BatchPayloadQueryRequest(CommBaseModel):
     query_list: List[DataQueryPayload] = Field(..., alias="queryList")
 
 
-class UpdateSpecRequest(CommBaseModel):
-    vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
-    chart_data: Dict[str, Any] = Field(..., alias="chartData")
-    workflow_list: List[Dict[str, Any]] = Field(default_factory=list, alias="workflowList")
-
-
 class UploadSpecToCloudRequest(CommBaseModel):
     file_name: str = Field(..., alias="fileName")
     new_token: str = Field("", alias="newToken")
@@ -95,6 +89,12 @@ class SaveChartRequest(CommBaseModel):
     n_rows: int = Field(..., alias="nRows")
     n_cols: int = Field(..., alias="nCols")
     title: str
+
+
+class UpdateSpecRequest(CommBaseModel):
+    vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
+    chart_data: SaveChartRequest = Field(..., alias="chartData")
+    workflow_list: List[Dict[str, Any]] = Field(default_factory=list, alias="workflowList")
 
 
 class AskSpecRequest(CommBaseModel):

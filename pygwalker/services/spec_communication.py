@@ -33,7 +33,7 @@ class SpecCommunicationService:
         self.walker.spec_manager.update_runtime_state(
             vis_spec=request.vis_spec,
             workflow_list=request.workflow_list,
-            chart_data=request.chart_data,
+            chart_data=model_dump(request.chart_data, by_alias=True),
             version=__version__,
         )
 

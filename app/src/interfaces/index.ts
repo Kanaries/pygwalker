@@ -62,7 +62,7 @@ export interface ICommBatchQueryRequest<TQuery> {
 
 export interface ICommUpdateSpecRequest {
     visSpec: any[];
-    chartData: any;
+    chartData: ICommSaveChartRequest;
     workflowList?: any[];
 }
 

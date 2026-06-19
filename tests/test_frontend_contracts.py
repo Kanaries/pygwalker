@@ -112,3 +112,12 @@ def test_frontend_modals_are_lazy_loaded_from_entrypoint():
         assert f'import "{modal_path}"' not in app_source
         assert f"import '{modal_path}'" not in app_source
         assert f'import("{modal_path}")' in app_source
+
+
+def test_frontend_save_payload_strips_graphic_walker_export_fields():
+    repo_root = Path(__file__).resolve().parents[1]
+    save_source = (repo_root / "app/src/utils/save.ts").read_text(encoding="utf-8")
+
+    assert "Promise<ICommSaveChartRequest>" in save_source
+    assert "...chartData" not in save_source
+    assert "canvas: () => null" not in save_source

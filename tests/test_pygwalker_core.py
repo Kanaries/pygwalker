@@ -820,6 +820,42 @@ def test_pygwalker_update_spec_callback_validates_payload(monkeypatch):
     assert "chartData" in response["message"] or "chart_data" in response["message"]
 
 
+def test_pygwalker_update_spec_callback_validates_chart_data_shape(monkeypatch):
+    walker = _make_walker(monkeypatch, use_save_tool=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg(
+        "update_spec",
+        {
+            "visSpec": [{"name": "Broken chart", "encodings": {}}],
+            "chartData": {"title": "Broken chart"},
+        },
+    )
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "singleChart" in response["message"] or "single_chart" in response["message"]
+
+
+def test_pygwalker_update_spec_callback_rejects_extra_chart_data_fields(monkeypatch):
+    walker = _make_walker(monkeypatch, use_save_tool=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+    chart_data = _chart_payload("Extra chart")
+    chart_data["mode"] = "explore"
+
+    response = comm._receive_msg(
+        "update_spec",
+        {
+            "visSpec": [{"name": "Extra chart", "encodings": {}}],
+            "chartData": chart_data,
+        },
+    )
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "mode" in response["message"]
+
+
 def test_pygwalker_update_spec_callback_defaults_missing_workflow_list(monkeypatch):
     walker = _make_walker(monkeypatch, use_save_tool=True)
     comm = BaseCommunication("core")
