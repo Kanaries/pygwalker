@@ -48,6 +48,10 @@ class CommMessageRequest(CommBaseModel):
     gid: Optional[str] = None
 
 
+class EmptyRequest(CommBaseModel):
+    pass
+
+
 class SqlQueryRequest(CommBaseModel):
     sql: str
 

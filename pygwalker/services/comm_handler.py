@@ -8,6 +8,7 @@ from pygwalker.communications.protocol import (
     BatchPayloadQueryRequest,
     BatchSqlQueryRequest,
     ChatChartRequest,
+    EmptyRequest,
     OpenDesktopRequest,
     PayloadQueryRequest,
     SaveChartRequest,
@@ -65,9 +66,9 @@ class CommHandler:
     def register(self) -> None:
         self.walker.comm = self.comm
 
-        self.comm.register("get_latest_vis_spec", self.spec_communication.get_latest_vis_spec)
-        self.comm.register("request_data", self.data_upload_communication.request_data)
-        self.comm.register("ping", lambda _: {})
+        self._register_request("get_latest_vis_spec", EmptyRequest, self.spec_communication.get_latest_vis_spec)
+        self._register_request("request_data", EmptyRequest, self.data_upload_communication.request_data)
+        self._register_request("ping", EmptyRequest, lambda _: {})
         self._register_request("open_in_desktop", OpenDesktopRequest, self.desktop_communication.open_in_desktop)
 
         if self.walker.use_save_tool:

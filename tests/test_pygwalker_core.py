@@ -644,6 +644,17 @@ def test_base_communication_envelope_defaults_missing_data(monkeypatch):
     assert response == {"code": 0, "data": {}, "message": "success"}
 
 
+def test_ping_callback_rejects_unknown_fields(monkeypatch):
+    walker = _make_walker(monkeypatch)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("ping", {"unexpected": True})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "unexpected" in response["message"]
+
+
 def test_base_communication_envelope_rejects_missing_action():
     comm = BaseCommunication("core")
 
@@ -701,6 +712,17 @@ def test_pygwalker_browser_callbacks_do_not_register_data_query_endpoints(monkey
     assert "get_datas_by_payload" not in comm._endpoint_map
 
 
+def test_pygwalker_get_latest_vis_spec_callback_rejects_unknown_fields(monkeypatch):
+    walker = _make_walker(monkeypatch, kernel_computation=False)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("get_latest_vis_spec", {"unexpected": True})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "unexpected" in response["message"]
+
+
 def test_pygwalker_request_data_callback_uploads_current_records(monkeypatch):
     upload_calls = []
 
@@ -729,6 +751,28 @@ def test_pygwalker_request_data_callback_uploads_current_records(monkeypatch):
             "data_source_id": walker.data_source_id,
         }
     ]
+
+
+def test_pygwalker_request_data_callback_rejects_unknown_fields(monkeypatch):
+    upload_calls = []
+
+    class FakeUploadTool:
+        def __init__(self, comm):
+            self.comm = comm
+
+        def run(self, **kwargs):
+            upload_calls.append(kwargs)
+
+    monkeypatch.setattr(pygwalker_module, "BatchUploadDatasToolOnWidgets", FakeUploadTool)
+    walker = _make_walker(monkeypatch, kernel_computation=False)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("request_data", {"unexpected": True})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "unexpected" in response["message"]
+    assert upload_calls == []
 
 
 def test_pygwalker_update_spec_callback_updates_runtime_state(monkeypatch):
