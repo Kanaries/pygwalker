@@ -206,6 +206,53 @@ def test_anywidget_api_builds_widget_props_and_registers_comm(monkeypatch):
     assert walker.init_callback_calls == [(comms[0], None)]
 
 
+def test_anywidget_api_accepts_public_walker_object(monkeypatch):
+    _install_anywidget_stubs(monkeypatch)
+    anywidget_api = importlib.reload(importlib.import_module("pygwalker.api.anywidget"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    comms = []
+
+    class FakeAnywidgetCommunication:
+        def __init__(self, gid):
+            self.gid = gid
+            self.widgets = []
+            comms.append(self)
+
+        def register_widget(self, widget):
+            self.widgets.append(widget)
+
+    monkeypatch.setattr(anywidget_api, "AnywidgetCommunication", FakeAnywidgetCommunication)
+
+    public_walker = walker_api.Walker(
+        pd.DataFrame([{"city": "London"}]),
+        gid="anywidget-core",
+        computation="browser",
+    )
+    widget = anywidget_api.walk(public_walker)
+
+    assert len(FakeWalker.instances) == 1
+    assert public_walker.core.use_preview is False
+    assert json.loads(widget.props)["env"] == "anywidget"
+    assert comms[0].widgets == [widget]
+    assert public_walker.core.init_callback_calls == [(comms[0], None)]
+
+
+def test_anywidget_api_rejects_rebuilding_public_walker_object(monkeypatch, tmp_path):
+    _install_anywidget_stubs(monkeypatch)
+    anywidget_api = importlib.reload(importlib.import_module("pygwalker.api.anywidget"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: spec_path"):
+        anywidget_api.walk(public_walker, spec_path=str(tmp_path / "other.json"))
+
+
 def test_marimo_api_wraps_anywidget(monkeypatch):
     wrapped_widgets = []
     _install_anywidget_stubs(monkeypatch)
@@ -241,6 +288,63 @@ def test_marimo_api_wraps_anywidget(monkeypatch):
     assert comms[0].widgets == wrapped_widgets
     assert walker.init_callback_calls == [(comms[0], None)]
     assert result == {"wrapped": wrapped_widgets[0]}
+
+
+def test_marimo_api_accepts_public_walker_object(monkeypatch):
+    wrapped_widgets = []
+    _install_anywidget_stubs(monkeypatch)
+    monkeypatch.setitem(
+        sys.modules,
+        "marimo",
+        SimpleNamespace(
+            ui=SimpleNamespace(anywidget=lambda widget: wrapped_widgets.append(widget) or {"wrapped": widget})
+        ),
+    )
+    marimo_api = importlib.reload(importlib.import_module("pygwalker.api.marimo"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    comms = []
+
+    class FakeAnywidgetCommunication:
+        def __init__(self, gid):
+            self.gid = gid
+            self.widgets = []
+            comms.append(self)
+
+        def register_widget(self, widget):
+            self.widgets.append(widget)
+
+    monkeypatch.setattr(marimo_api, "AnywidgetCommunication", FakeAnywidgetCommunication)
+
+    public_walker = walker_api.Walker(
+        pd.DataFrame([{"city": "London"}]),
+        gid="marimo-core",
+        computation="browser",
+    )
+    result = marimo_api.walk(public_walker)
+
+    assert len(FakeWalker.instances) == 1
+    assert public_walker.core.use_preview is False
+    assert json.loads(wrapped_widgets[0].props)["env"] == "marimo"
+    assert comms[0].widgets == wrapped_widgets
+    assert public_walker.core.init_callback_calls == [(comms[0], None)]
+    assert result == {"wrapped": wrapped_widgets[0]}
+
+
+def test_marimo_api_rejects_rebuilding_public_walker_object(monkeypatch, tmp_path):
+    _install_anywidget_stubs(monkeypatch)
+    monkeypatch.setitem(sys.modules, "marimo", SimpleNamespace(ui=SimpleNamespace(anywidget=lambda widget: widget)))
+    marimo_api = importlib.reload(importlib.import_module("pygwalker.api.marimo"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: spec_path"):
+        marimo_api.walk(public_walker, spec_path=str(tmp_path / "other.json"))
 
 
 def test_streamlit_html_builds_renderer_and_component_html(monkeypatch, tmp_path):
@@ -502,18 +606,12 @@ def test_webserver_table_builds_table_renderer(monkeypatch):
 
 
 def _install_anywidget_stubs(monkeypatch):
-    class FakeAnyWidget:
+    import traitlets
+
+    class FakeAnyWidget(traitlets.HasTraits):
         pass
 
-    class FakeUnicode:
-        def __init__(self, value=""):
-            self.value = value
-
-        def tag(self, **_kwargs):
-            return ""
-
     monkeypatch.setitem(sys.modules, "anywidget", SimpleNamespace(AnyWidget=FakeAnyWidget))
-    monkeypatch.setitem(sys.modules, "traitlets", SimpleNamespace(Unicode=FakeUnicode))
 
 
 def _install_streamlit_stubs(monkeypatch):

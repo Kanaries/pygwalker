@@ -1,4 +1,4 @@
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Any, Dict, TYPE_CHECKING
 import inspect
 import json
 
@@ -16,6 +16,9 @@ from pygwalker.utils.spec import resolve_spec_input
 import anywidget
 import traitlets
 
+if TYPE_CHECKING:
+    from pygwalker.api.walker import Walker
+
 
 class _WalkerWidget(anywidget.AnyWidget):
     """WalkerWidget"""
@@ -24,8 +27,59 @@ class _WalkerWidget(anywidget.AnyWidget):
     props = traitlets.Unicode("").tag(sync=True)
 
 
+def _is_public_walker(value: Any) -> bool:
+    from pygwalker.api.walker import Walker
+
+    return isinstance(value, Walker)
+
+
+def _reject_walker_construction_params(
+    *,
+    gid: Union[int, str],
+    field_specs: Optional[List[FieldSpec]],
+    theme_key: IThemeKey,
+    appearance: IAppearance,
+    spec: str,
+    spec_path: Optional[str],
+    computation: Optional[IComputation],
+    show_cloud_tool: bool,
+    kanaries_api_key: str,
+    default_tab: Literal["data", "vis"],
+    kwargs: Dict[str, Any],
+) -> None:
+    conflicting_options = []
+    if gid is not None:
+        conflicting_options.append("gid")
+    if field_specs is not None:
+        conflicting_options.append("field_specs")
+    if theme_key != "g2":
+        conflicting_options.append("theme_key")
+    if appearance != "media":
+        conflicting_options.append("appearance")
+    if spec not in ("", None):
+        conflicting_options.append("spec")
+    if spec_path is not None:
+        conflicting_options.append("spec_path")
+    if computation is not None:
+        conflicting_options.append("computation")
+    if show_cloud_tool is not False:
+        conflicting_options.append("show_cloud_tool")
+    if kanaries_api_key:
+        conflicting_options.append("kanaries_api_key")
+    if default_tab != "vis":
+        conflicting_options.append("default_tab")
+    if kwargs:
+        conflicting_options.extend(sorted(kwargs))
+    if conflicting_options:
+        params = ", ".join(conflicting_options)
+        raise ValueError(
+            f"anywidget.walk() received a Walker object and cannot apply construction parameters: {params}. "
+            "Pass those options when creating pygwalker.Walker instead."
+        )
+
+
 def walk(
-    dataset: Union[DataFrame, Connector, str],
+    dataset: Union[DataFrame, Connector, str, "Walker"],
     gid: Union[int, str] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
@@ -55,6 +109,29 @@ def walk(
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
+    if _is_public_walker(dataset):
+        _reject_walker_construction_params(
+            gid=gid,
+            field_specs=field_specs,
+            theme_key=theme_key,
+            appearance=appearance,
+            spec=spec,
+            spec_path=spec_path,
+            computation=computation,
+            show_cloud_tool=show_cloud_tool,
+            kanaries_api_key=kanaries_api_key,
+            default_tab=default_tab,
+            kwargs=kwargs,
+        )
+        widget = _WalkerWidget()
+        walker = dataset.core
+        walker.use_preview = False
+        comm = AnywidgetCommunication(walker.gid)
+        widget.props = json.dumps(walker._get_props("anywidget", []))
+        comm.register_widget(widget)
+        walker._init_callback(comm)
+        return widget
+
     if field_specs is None:
         field_specs = []
 
