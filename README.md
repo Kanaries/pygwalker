@@ -238,6 +238,17 @@ renderer = get_pyg_renderer()
 renderer.explorer()
 ```
 
+If you already created a reusable `Walker`, Streamlit can render it directly:
+
+```python
+import pygwalker as pyg
+from pygwalker.api.streamlit import StreamlitRenderer
+
+walker = pyg.Walker(df, spec_path="./gw_config.json", computation="kernel")
+renderer = StreamlitRenderer(walker)
+renderer.explorer()
+```
+
 ## [API Reference](https://pygwalker-docs.vercel.app/api-reference/jupyter)
 
 ### [pygwalker.walk](https://pygwalker-docs.vercel.app/api-reference/jupyter#walk)

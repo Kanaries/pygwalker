@@ -1,4 +1,4 @@
-from typing import Union, Dict, Optional, List, Any, Tuple
+from typing import Union, Dict, Optional, List, Any, Tuple, TYPE_CHECKING
 from packaging.version import Version
 from copy import deepcopy
 import json
@@ -19,6 +19,69 @@ from pygwalker.utils.computation import resolve_computation_mode
 from pygwalker.utils.spec import resolve_spec_input
 from pygwalker.services.streamlit_components import pygwalker_component
 from pygwalker.services.data_parsers import get_dataset_hash
+
+if TYPE_CHECKING:
+    from pygwalker.api.walker import Walker
+
+
+def _is_public_walker(value: Any) -> bool:
+    from pygwalker.api.walker import Walker
+
+    return isinstance(value, Walker)
+
+
+def _reject_walker_construction_params(
+    *,
+    gid: Union[int, str],
+    field_specs: Optional[List[FieldSpec]],
+    theme_key: IThemeKey,
+    appearance: IAppearance,
+    spec: str,
+    spec_path: Optional[str],
+    spec_io_mode: ISpecIOMode,
+    computation: Optional[IComputation],
+    kernel_computation: Optional[bool],
+    use_kernel_calc: Optional[bool],
+    show_cloud_tool: Optional[bool],
+    kanaries_api_key: str,
+    default_tab: Literal["data", "vis"],
+    kwargs: Dict[str, Any],
+) -> None:
+    conflicting_options = []
+    if gid is not None:
+        conflicting_options.append("gid")
+    if field_specs is not None:
+        conflicting_options.append("field_specs")
+    if theme_key != "g2":
+        conflicting_options.append("theme_key")
+    if appearance != "media":
+        conflicting_options.append("appearance")
+    if spec not in ("", None):
+        conflicting_options.append("spec")
+    if spec_path is not None:
+        conflicting_options.append("spec_path")
+    if spec_io_mode != "r":
+        conflicting_options.append("spec_io_mode")
+    if computation is not None:
+        conflicting_options.append("computation")
+    if kernel_computation is not None:
+        conflicting_options.append("kernel_computation")
+    if use_kernel_calc is not None:
+        conflicting_options.append("use_kernel_calc")
+    if show_cloud_tool is not None:
+        conflicting_options.append("show_cloud_tool")
+    if kanaries_api_key:
+        conflicting_options.append("kanaries_api_key")
+    if default_tab != "vis":
+        conflicting_options.append("default_tab")
+    if kwargs:
+        conflicting_options.extend(sorted(kwargs))
+    if conflicting_options:
+        params = ", ".join(conflicting_options)
+        raise ValueError(
+            f"StreamlitRenderer received a Walker object and cannot apply construction parameters: {params}. "
+            "Pass those options when creating pygwalker.Walker instead."
+        )
 
 
 class PreFilter(BaseModel):
@@ -50,7 +113,7 @@ class StreamlitRenderer:
 
     def __init__(
         self,
-        dataset: Union[DataFrame, Connector],
+        dataset: Union[DataFrame, Connector, "Walker"],
         gid: Union[int, str] = None,
         *,
         field_specs: Optional[List[FieldSpec]] = None,
@@ -77,7 +140,7 @@ class StreamlitRenderer:
         user should customize method to generate a gid to differentiate between datasets.
 
         Args:
-            - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+            - dataset (pl.DataFrame | pd.DataFrame | Connector | pygwalker.Walker, optional): dataframe or Walker object.
             - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
         Kargs:
@@ -96,6 +159,31 @@ class StreamlitRenderer:
         check_expired_params(kwargs)
 
         init_streamlit_comm()
+
+        if _is_public_walker(dataset):
+            _reject_walker_construction_params(
+                gid=gid,
+                field_specs=field_specs,
+                theme_key=theme_key,
+                appearance=appearance,
+                spec=spec,
+                spec_path=spec_path,
+                spec_io_mode=spec_io_mode,
+                computation=computation,
+                kernel_computation=kernel_computation,
+                use_kernel_calc=use_kernel_calc,
+                show_cloud_tool=show_cloud_tool,
+                kanaries_api_key=kanaries_api_key,
+                default_tab=default_tab,
+                kwargs=kwargs,
+            )
+            self.walker = dataset.core
+            self.walker.use_preview = False
+            self.walker.is_export_dataframe = False
+            comm = StreamlitCommunication(str(self.walker.gid))
+            self.walker._init_callback(comm)
+            self.global_pre_filters = None
+            return
 
         resolved_spec = resolve_spec_input(spec, spec_path)
         resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
@@ -274,7 +362,7 @@ class StreamlitRenderer:
 
 
 def get_streamlit_html(
-    dataset: Union[DataFrame, Connector],
+    dataset: Union[DataFrame, Connector, "Walker"],
     gid: Union[int, str] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
@@ -295,7 +383,7 @@ def get_streamlit_html(
     """Get pygwalker html render to streamlit
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pl.DataFrame | pd.DataFrame | Connector | pygwalker.Walker, optional): dataframe or Walker object.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
@@ -311,7 +399,7 @@ def get_streamlit_html(
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
-    if field_specs is None:
+    if field_specs is None and not _is_public_walker(dataset):
         field_specs = []
 
     renderer = StreamlitRenderer(

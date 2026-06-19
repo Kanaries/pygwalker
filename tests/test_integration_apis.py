@@ -277,6 +277,72 @@ def test_streamlit_html_builds_renderer_and_component_html(monkeypatch, tmp_path
     assert rendered_props["gwMode"] == "table"
 
 
+def test_streamlit_renderer_accepts_public_walker_object(monkeypatch):
+    _install_streamlit_stubs(monkeypatch)
+    streamlit = importlib.reload(importlib.import_module("pygwalker.api.streamlit"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    monkeypatch.setattr(streamlit, "init_streamlit_comm", lambda: None)
+    monkeypatch.setattr(streamlit, "StreamlitCommunication", lambda gid: {"gid": gid})
+
+    public_walker = walker_api.Walker(
+        pd.DataFrame([{"city": "London"}]),
+        gid="streamlit-core",
+        computation="browser",
+    )
+    renderer = streamlit.StreamlitRenderer(public_walker)
+    html = renderer._get_html(mode="table")
+
+    assert len(FakeWalker.instances) == 1
+    assert renderer.walker is public_walker.core
+    assert public_walker.core.use_preview is False
+    assert public_walker.core.is_export_dataframe is False
+    assert public_walker.core.init_callback_calls == [({"gid": "streamlit-core"}, None)]
+    rendered_props = json.loads(html)
+    assert rendered_props["env"] == "streamlit"
+    assert rendered_props["gwMode"] == "table"
+
+
+def test_streamlit_renderer_rejects_rebuilding_public_walker_object(monkeypatch, tmp_path):
+    _install_streamlit_stubs(monkeypatch)
+    streamlit = importlib.reload(importlib.import_module("pygwalker.api.streamlit"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    monkeypatch.setattr(streamlit, "init_streamlit_comm", lambda: None)
+
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: spec_path"):
+        streamlit.StreamlitRenderer(public_walker, spec_path=str(tmp_path / "other.json"))
+
+
+def test_streamlit_html_accepts_public_walker_object(monkeypatch):
+    _install_streamlit_stubs(monkeypatch)
+    streamlit = importlib.reload(importlib.import_module("pygwalker.api.streamlit"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    monkeypatch.setattr(streamlit, "init_streamlit_comm", lambda: None)
+    monkeypatch.setattr(streamlit, "StreamlitCommunication", lambda gid: {"gid": gid})
+
+    public_walker = walker_api.Walker(
+        pd.DataFrame([{"city": "London"}]),
+        gid="streamlit-html",
+        computation="browser",
+    )
+    html = streamlit.get_streamlit_html(public_walker, mode="table")
+
+    assert len(FakeWalker.instances) == 1
+    rendered_props = json.loads(html)
+    assert rendered_props["env"] == "streamlit"
+    assert rendered_props["gwMode"] == "table"
+
+
 def test_webserver_walk_builds_walker_and_starts_server(monkeypatch):
     from pygwalker.api import webserver
 
