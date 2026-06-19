@@ -260,7 +260,7 @@ class PygWalker:
 
     def display_on_jupyter_use_widgets(self, iframe_width: Optional[str] = None, iframe_height: Optional[str] = None):
         """
-        use ipywidgets, Display on jupyter notebook/lab.
+        use the legacy ipywidgets text bridge, Display on jupyter notebook/lab.
         When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
         """
         comm = HackerCommunication(self.gid)
@@ -279,6 +279,17 @@ class PygWalker:
         display_html(render_iframe_messages_html(self.gid))
         preview_tool.init_display()
         preview_tool.async_render_gw_review(self._get_gw_preview_html())
+
+    def display_on_jupyter_use_anywidget(self):
+        """
+        Display on Jupyter notebook/lab using the cross-notebook anywidget transport.
+        """
+        from pygwalker.services.anywidget_widget import create_anywidget_for_walker
+
+        self.use_preview = False
+        data_source = [] if self.kernel_computation else self.origin_data_source
+        widget = create_anywidget_for_walker(self, env="anywidget", data_source=data_source)
+        display_html(widget)
 
     def display_preview_on_jupyter(self):
         """

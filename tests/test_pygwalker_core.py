@@ -838,6 +838,7 @@ def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+    monkeypatch.setattr(PygWalker, "display_on_jupyter_use_anywidget", lambda self: None)
     monkeypatch.setattr(PygWalker, "display_on_jupyter_use_widgets", lambda self: None)
     monkeypatch.setattr(PygWalker, "display_on_jupyter", lambda self: None)
     monkeypatch.setattr(PygWalker, "display_on_convert_html", lambda self: None)
@@ -880,7 +881,7 @@ def test_jupyter_walk_accepts_explicit_spec_path(monkeypatch, tmp_path):
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
-    monkeypatch.setattr(PygWalker, "display_on_jupyter_use_widgets", lambda self: None)
+    monkeypatch.setattr(PygWalker, "display_on_jupyter_use_anywidget", lambda self: None)
 
     spec_path = tmp_path / "gw_config.json"
     spec_path.write_text(json.dumps({"config": [], "chart_map": {}, "workflow_list": [], "version": "0.5.0"}))
@@ -920,10 +921,8 @@ def test_jupyter_walk_accepts_public_walker_object(monkeypatch):
     display_calls = []
     monkeypatch.setattr(
         PygWalker,
-        "display_on_jupyter_use_widgets",
-        lambda self, iframe_width=None, iframe_height=None: display_calls.append(
-            (self.gid, iframe_width, iframe_height)
-        ),
+        "display_on_jupyter_use_anywidget",
+        lambda self: display_calls.append(self.gid),
     )
 
     public_walker = Walker(
@@ -934,7 +933,89 @@ def test_jupyter_walk_accepts_public_walker_object(monkeypatch):
     result = jupyter.walk(public_walker)
 
     assert result is public_walker.core
-    assert display_calls == [("public-jupyter", None, None)]
+    assert display_calls == ["public-jupyter"]
+
+
+def test_jupyter_walk_legacy_widget_env_uses_ipywidgets_transport(monkeypatch):
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+
+    display_calls = []
+    monkeypatch.setattr(
+        PygWalker,
+        "display_on_jupyter_use_widgets",
+        lambda self, iframe_width=None, iframe_height=None: display_calls.append(
+            (self.gid, iframe_width, iframe_height)
+        ),
+    )
+
+    walker = jupyter.walk(pd.DataFrame([{"city": "London", "value": 1}]), gid="legacy-widget", env="JupyterWidget")
+
+    assert walker.gid == "legacy-widget"
+    assert display_calls == [("legacy-widget", None, None)]
+
+
+def test_display_on_jupyter_anywidget_sends_browser_data(monkeypatch):
+    from pygwalker.services import anywidget_widget
+
+    displayed = []
+    created = []
+    monkeypatch.setattr(pygwalker_module, "display_html", lambda widget: displayed.append(widget))
+    monkeypatch.setattr(
+        anywidget_widget,
+        "create_anywidget_for_walker",
+        lambda walker, *, env, data_source: created.append((walker, env, data_source)) or "widget",
+    )
+
+    walker = _make_walker(monkeypatch, kernel_computation=False, cloud_computation=False, use_preview=True)
+    walker.display_on_jupyter_use_anywidget()
+
+    assert walker.use_preview is False
+    assert created == [(walker, "anywidget", walker.origin_data_source)]
+    assert displayed == ["widget"]
+
+
+def test_display_on_jupyter_anywidget_uses_comm_data_for_live_computation(monkeypatch):
+    from pygwalker.services import anywidget_widget
+
+    displayed = []
+    created = []
+    monkeypatch.setattr(pygwalker_module, "display_html", lambda widget: displayed.append(widget))
+    monkeypatch.setattr(
+        anywidget_widget,
+        "create_anywidget_for_walker",
+        lambda walker, *, env, data_source: created.append((walker, env, data_source)) or "widget",
+    )
+
+    walker = _make_walker(monkeypatch, kernel_computation=True, cloud_computation=False, use_preview=True)
+    walker.display_on_jupyter_use_anywidget()
+
+    assert walker.use_preview is False
+    assert created == [(walker, "anywidget", [])]
+    assert displayed == ["widget"]
+
+
+def test_display_on_jupyter_anywidget_sends_cloud_mode_data(monkeypatch):
+    from pygwalker.services import anywidget_widget
+
+    displayed = []
+    created = []
+    monkeypatch.setattr(pygwalker_module, "display_html", lambda widget: displayed.append(widget))
+    monkeypatch.setattr(
+        anywidget_widget,
+        "create_anywidget_for_walker",
+        lambda walker, *, env, data_source: created.append((walker, env, data_source)) or "widget",
+    )
+
+    walker = _make_walker(monkeypatch, kernel_computation=False, cloud_computation=True, use_preview=True)
+    walker.display_on_jupyter_use_anywidget()
+
+    assert walker.use_preview is False
+    assert created == [(walker, "anywidget", walker.origin_data_source)]
+    assert displayed == ["widget"]
 
 
 def test_jupyter_walk_public_walker_rejects_rebuilding_params(monkeypatch, tmp_path):

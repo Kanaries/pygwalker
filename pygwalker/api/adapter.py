@@ -17,7 +17,7 @@ def walk(
     dataset: Union[DataFrame, Connector, str, "Walker"],
     gid: Union[int, str] = None,
     *,
-    env: Literal["Jupyter", "JupyterWidget"] = "JupyterWidget",
+    env: Literal["JupyterAnywidget", "Jupyter", "JupyterWidget"] = "JupyterAnywidget",
     field_specs: Optional[List[FieldSpec]] = None,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
@@ -39,7 +39,7 @@ def walk(
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
-        - env: (Literal['Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterWidget'
+        - env: (Literal['JupyterAnywidget' | 'Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterAnywidget'
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.

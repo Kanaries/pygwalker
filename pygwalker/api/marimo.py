@@ -1,6 +1,5 @@
 from typing import Union, List, Optional, TYPE_CHECKING
 import inspect
-import json
 
 from typing_extensions import Literal
 
@@ -11,26 +10,17 @@ from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.communications.anywidget_comm import AnywidgetCommunication
 from pygwalker.utils.computation import resolve_computation_mode
-from pygwalker.utils.frontend_assets import read_frontend_asset
 from pygwalker.utils.spec import resolve_spec_input
 from pygwalker.api._walker_reuse import (
     collect_walker_construction_conflicts,
     is_public_walker,
     reject_walker_construction_params,
 )
+from pygwalker.services.anywidget_widget import create_anywidget_for_walker
 import marimo as mo
-import anywidget
-import traitlets
 
 if TYPE_CHECKING:
     from pygwalker.api.walker import Walker
-
-
-class _WalkerWidget(anywidget.AnyWidget):
-    """WalkerWidget"""
-
-    _esm = read_frontend_asset("pygwalker-app.es.js", encoding="utf-8")
-    props = traitlets.Unicode("").tag(sync=True)
 
 
 def _reject_walker_construction_params(
@@ -125,13 +115,14 @@ def walk(
             default_tab=default_tab,
             kwargs=kwargs,
         )
-        widget = _WalkerWidget()
         walker = dataset.core
         walker.use_preview = False
-        comm = AnywidgetCommunication(walker.gid)
-        widget.props = json.dumps(walker._get_props("marimo", []))
-        comm.register_widget(widget)
-        walker._init_callback(comm)
+        widget = create_anywidget_for_walker(
+            walker,
+            env="marimo",
+            data_source=[],
+            communication_cls=AnywidgetCommunication,
+        )
         return mo.ui.anywidget(widget)
 
     if field_specs is None:
@@ -139,7 +130,6 @@ def walk(
 
     source_invoke_code = get_formated_spec_params_code_from_frame(inspect.stack()[1].frame)
 
-    widget = _WalkerWidget()
     resolved_spec = resolve_spec_input(spec, spec_path)
     resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
         dataset,
@@ -165,10 +155,11 @@ def walk(
         cloud_computation=resolved_cloud_computation,
         **kwargs,
     )
-    comm = AnywidgetCommunication(walker.gid)
-
-    widget.props = json.dumps(walker._get_props("marimo", []))
-    comm.register_widget(widget)
-    walker._init_callback(comm)
+    widget = create_anywidget_for_walker(
+        walker,
+        env="marimo",
+        data_source=[],
+        communication_cls=AnywidgetCommunication,
+    )
 
     return mo.ui.anywidget(widget)

@@ -15,12 +15,14 @@ from pygwalker.utils.spec import resolve_spec_input
 
 IWalkerShowEnv = Literal[
     "auto",
+    "jupyter-anywidget",
     "jupyter",
     "jupyter-widget",
     "jupyter-inline",
     "jupyter-convert",
     "jupyter-preview",
     "webserver",
+    "JupyterAnywidget",
     "Jupyter",
     "JupyterWidget",
     "JupyterConvert",
@@ -121,6 +123,7 @@ class Walker:
     ) -> "Walker":
         """Display this walker in the current environment."""
         env_aliases = {
+            "JupyterAnywidget": "jupyter-anywidget",
             "Jupyter": "jupyter-inline",
             "JupyterWidget": "jupyter-widget",
             "JupyterConvert": "jupyter-convert",
@@ -128,8 +131,9 @@ class Walker:
         }
         resolved_env = get_current_env() if env == "auto" else env_aliases.get(env, env)
         if resolved_env == "jupyter":
-            resolved_env = "jupyter-widget"
+            resolved_env = "jupyter-anywidget"
         elif resolved_env not in (
+            "jupyter-anywidget",
             "jupyter-widget",
             "jupyter-inline",
             "jupyter-convert",
@@ -138,7 +142,9 @@ class Walker:
         ):
             resolved_env = "webserver"
 
-        if resolved_env == "jupyter-widget":
+        if resolved_env == "jupyter-anywidget":
+            self._walker.display_on_jupyter_use_anywidget()
+        elif resolved_env == "jupyter-widget":
             self._walker.display_on_jupyter_use_widgets(iframe_width, iframe_height)
         elif resolved_env == "jupyter-inline":
             self._walker.display_on_jupyter()

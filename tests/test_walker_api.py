@@ -23,6 +23,9 @@ class FakeCoreWalker:
     def display_on_jupyter_use_widgets(self, iframe_width=None, iframe_height=None):
         self.display_calls.append(("jupyter-widget", iframe_width, iframe_height))
 
+    def display_on_jupyter_use_anywidget(self):
+        self.display_calls.append(("jupyter-anywidget",))
+
     def display_on_jupyter(self):
         self.display_calls.append(("jupyter-inline",))
 
@@ -81,6 +84,15 @@ def test_walker_show_auto_uses_current_notebook_env(monkeypatch):
     result = walker.show(iframe_width="640px", iframe_height="480px")
 
     assert result is walker
+    assert FakeCoreWalker.instances[0].display_calls == [("jupyter-anywidget",)]
+
+
+def test_walker_show_accepts_legacy_jupyter_widget_alias(monkeypatch):
+    monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
+
+    walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+    walker.show("JupyterWidget", iframe_width="640px", iframe_height="480px")
+
     assert FakeCoreWalker.instances[0].display_calls == [("jupyter-widget", "640px", "480px")]
 
 

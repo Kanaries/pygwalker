@@ -22,6 +22,7 @@ _OPTIONAL_INTEGRATION_MODULES = [
     "pygwalker.api.streamlit",
     "pygwalker.communications.anywidget_comm",
     "pygwalker.communications.streamlit_comm",
+    "pygwalker.services.anywidget_widget",
     "pygwalker.services.streamlit_components",
 ]
 
@@ -32,6 +33,7 @@ _OPTIONAL_PARENT_ATTRS = [
     ("pygwalker.api", "streamlit"),
     ("pygwalker.communications", "anywidget_comm"),
     ("pygwalker.communications", "streamlit_comm"),
+    ("pygwalker.services", "anywidget_widget"),
     ("pygwalker.services", "streamlit_components"),
     ("streamlit", "components"),
     ("streamlit.components", "v1"),
@@ -264,6 +266,50 @@ def test_anywidget_api_rejects_show_cloud_tool_false_alias_for_public_walker(mon
 
     with pytest.raises(ValueError, match="cannot apply construction parameters: show_cloud_tool"):
         anywidget_api.walk(public_walker, show_cloud_tool=0)
+
+
+def test_anywidget_widget_service_registers_comm(monkeypatch):
+    _install_anywidget_stubs(monkeypatch)
+    anywidget_widget = importlib.reload(importlib.import_module("pygwalker.services.anywidget_widget"))
+
+    class FakeWalkerForWidget:
+        gid = "widget-core"
+
+        def __init__(self):
+            self.props_calls = []
+            self.init_callback_calls = []
+
+        def _get_props(self, env, data_source):
+            self.props_calls.append((env, data_source))
+            return {"id": self.gid, "env": env, "dataSource": data_source}
+
+        def _init_callback(self, comm):
+            self.init_callback_calls.append(comm)
+
+    comms = []
+
+    class FakeAnywidgetCommunication:
+        def __init__(self, gid):
+            self.gid = gid
+            self.widgets = []
+            comms.append(self)
+
+        def register_widget(self, widget):
+            self.widgets.append(widget)
+
+    walker = FakeWalkerForWidget()
+    widget = anywidget_widget.create_anywidget_for_walker(
+        walker,
+        env="anywidget",
+        data_source=[],
+        communication_cls=FakeAnywidgetCommunication,
+    )
+
+    assert json.loads(widget.props) == {"id": "widget-core", "env": "anywidget", "dataSource": []}
+    assert walker.props_calls == [("anywidget", [])]
+    assert comms[0].gid == "widget-core"
+    assert comms[0].widgets == [widget]
+    assert walker.init_callback_calls == [comms[0]]
 
 
 def test_marimo_api_wraps_anywidget(monkeypatch):
