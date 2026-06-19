@@ -55,3 +55,14 @@ export interface ICommPayloadQueryRequest {
 export interface ICommBatchQueryRequest<TQuery> {
     queryList: TQuery[];
 }
+
+export interface ICommUpdateSpecRequest {
+    visSpec: any[];
+    chartData: any;
+    workflowList?: any[];
+}
+
+export interface ICommUploadSpecToCloudRequest {
+    fileName: string;
+    newToken?: string;
+}

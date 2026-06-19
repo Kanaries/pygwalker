@@ -16,6 +16,8 @@ from pygwalker.communications.protocol import (
     BatchSqlQueryRequest,
     PayloadQueryRequest,
     SqlQueryRequest,
+    UpdateSpecRequest,
+    UploadSpecToCloudRequest,
     validate_request,
 )
 from pygwalker.services.config import set_config
@@ -87,10 +89,11 @@ class CommHandler:
         self.walker.spec_manager.save_chart_payload(data)
 
     def update_spec(self, data: Dict[str, Any]):
+        request = validate_request(UpdateSpecRequest, data)
         self.walker.spec_manager.update_runtime_state(
-            vis_spec=data["visSpec"],
-            workflow_list=data.get("workflowList", []),
-            chart_data=data["chartData"],
+            vis_spec=request.vis_spec,
+            workflow_list=request.workflow_list,
+            chart_data=request.chart_data,
             version=__version__,
         )
 
@@ -100,13 +103,13 @@ class CommHandler:
         self.walker.spec_manager.write_back(self.walker.cloud_service, __version__)
 
     def upload_spec_to_cloud(self, data: Dict[str, Any]):
-        if data["newToken"]:
-            set_config({"kanaries_token": data["newToken"]})
-            GlobalVarManager.kanaries_api_key = data["newToken"]
+        request = validate_request(UploadSpecToCloudRequest, data)
+        if request.new_token:
+            set_config({"kanaries_token": request.new_token})
+            GlobalVarManager.kanaries_api_key = request.new_token
         spec_obj = self.walker.spec_manager.build_spec_obj(__version__)
-        file_name = data["fileName"]
         workspace_name = self.walker.cloud_service.get_kanaries_user_info()["workspaceName"]
-        path = f"{workspace_name}/{file_name}"
+        path = f"{workspace_name}/{request.file_name}"
         self.walker.cloud_service.write_config_to_cloud(path, json.dumps(spec_obj))
         return {"specFilePath": path}
 

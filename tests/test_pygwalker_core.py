@@ -424,6 +424,36 @@ def test_pygwalker_update_spec_callback_updates_runtime_state(monkeypatch):
     assert walker._chart_map["Updated chart"].title == "Updated chart"
 
 
+def test_pygwalker_update_spec_callback_validates_payload(monkeypatch):
+    walker = _make_walker(monkeypatch, use_save_tool=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("update_spec", {"visSpec": []})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "chartData" in response["message"] or "chart_data" in response["message"]
+
+
+def test_pygwalker_update_spec_callback_defaults_missing_workflow_list(monkeypatch):
+    walker = _make_walker(monkeypatch, use_save_tool=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+    vis_spec = [{"name": "Default workflow chart", "encodings": {}}]
+
+    response = comm._receive_msg(
+        "update_spec",
+        {
+            "visSpec": vis_spec,
+            "chartData": _chart_payload("Default workflow chart"),
+        },
+    )
+
+    assert response == {"code": 0, "data": None, "message": "success"}
+    assert walker.vis_spec == vis_spec
+    assert walker.workflow_list == []
+
+
 def test_pygwalker_runtime_spec_properties_remain_writable(monkeypatch):
     walker = _make_walker(monkeypatch)
     vis_spec = [{"name": "Manual chart", "encodings": {}}]
@@ -573,6 +603,17 @@ def test_pygwalker_upload_spec_to_cloud_callback_writes_workspace_path(monkeypat
             },
         )
     ]
+
+
+def test_pygwalker_upload_spec_to_cloud_callback_validates_payload(monkeypatch):
+    walker = _make_walker(monkeypatch, use_save_tool=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("upload_spec_to_cloud", {"newToken": ""})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "fileName" in response["message"] or "file_name" in response["message"]
 
 
 def test_pygwalker_open_in_desktop_callback_encodes_payload(monkeypatch):

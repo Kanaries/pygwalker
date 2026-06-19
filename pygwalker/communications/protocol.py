@@ -34,3 +34,14 @@ class BatchSqlQueryRequest(BaseModel):
 
 class BatchPayloadQueryRequest(BaseModel):
     query_list: List[DataQueryPayload] = Field(..., alias="queryList")
+
+
+class UpdateSpecRequest(BaseModel):
+    vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
+    chart_data: Dict[str, Any] = Field(..., alias="chartData")
+    workflow_list: List[Dict[str, Any]] = Field(default_factory=list, alias="workflowList")
+
+
+class UploadSpecToCloudRequest(BaseModel):
+    file_name: str = Field(..., alias="fileName")
+    new_token: str = Field("", alias="newToken")
