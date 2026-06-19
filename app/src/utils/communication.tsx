@@ -1,7 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import commonStore from '../store/common';
 import { Streamlit } from "streamlit-component-lib"
-import type { ICommAction, ICommRequestMap, ICommResponse, ICommResponseMap } from '../interfaces';
+import type {
+    ICommAction,
+    ICommEnvelope,
+    ICommRequestEnvelope,
+    ICommRequestMap,
+    ICommResponse,
+    ICommResponseEnvelope,
+    ICommResponseMap,
+} from '../interfaces';
 
 interface ICommunication {
     sendMsg: <TAction extends ICommAction>(
@@ -85,9 +93,12 @@ const initJupyterCommunication = (gid: string) => {
     }
 
     const onMessage = (msg: string) => {
-        const data = JSON.parse(msg);
+        const data = JSON.parse(msg) as ICommEnvelope<string, any>;
         const action = data.action;
         if (action === "finish_request") {
+            if (!data.rid) {
+                return;
+            }
             bufferMap.set(data.rid, data.data);
             document.dispatchEvent(new CustomEvent(getSignalName(data.rid)));
             return
@@ -127,9 +138,10 @@ const initJupyterCommunication = (gid: string) => {
         return promise;
     }
 
-    const sendRawMsgAsync = (action: string, data: any, rid: string | null = null) => {
-        rid = rid ?? uuidv4();
-        fetchOnJupyter(JSON.stringify({ gid, rid, action, data }));
+    const sendRawMsgAsync = <TAction extends string, TData>(action: TAction, data: TData, rid: string | null = null) => {
+        const messageRid = rid ?? uuidv4();
+        const message: ICommEnvelope<TAction, TData> = { gid, rid: messageRid, action, data };
+        fetchOnJupyter(JSON.stringify(message));
     }
 
     const sendMsgAsync = <TAction extends ICommAction>(
@@ -195,12 +207,13 @@ const getRealApiUrl = async(basePath: string, baseApiUrl: string) => {
 
     return (await Promise.all(possibleApiUrls.map(async(url) => {
         try {
+            const pingMessage: ICommRequestEnvelope<"ping"> = { action: "ping", data: {} };
             const resp = await fetch(
                 url,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "ping", data: {} }),
+                    body: JSON.stringify(pingMessage),
                 }
             )
             const respJson = await resp.json();
@@ -249,12 +262,13 @@ const initHttpCommunication = async(gid: string, baseUrl: string) => {
 
     const sendMsgAsync = async<TAction extends ICommAction>(action: TAction, data: ICommRequestMap[TAction]) => {
         const rid = uuidv4();
+        const message: ICommRequestEnvelope<TAction> = { action, data, rid, gid };
         return await (await fetch(
             url,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action, data, rid, gid }),
+                body: JSON.stringify(message),
             }
         )).json();
     }
@@ -278,9 +292,12 @@ const initAnywidgetCommunication = async(gid: string, model: import("@anywidget/
     const bufferMap = new Map<string, any>();
 
     const onMessage = (msg: string) => {
-        const data = JSON.parse(msg);
+        const data = JSON.parse(msg) as ICommResponseEnvelope;
         const action = data.action;
         if (action === "finish_request") {
+            if (!data.rid) {
+                return;
+            }
             bufferMap.set(data.rid, data.data);
             document.dispatchEvent(new CustomEvent(getSignalName(data.rid)));
             return
@@ -327,8 +344,9 @@ const initAnywidgetCommunication = async(gid: string, model: import("@anywidget/
         data: ICommRequestMap[TAction],
         rid: string | null = null
     ) => {
-        rid = rid ?? uuidv4();
-        model.send({type: "pyg_request", msg: { gid, rid, action, data }});
+        const messageRid = rid ?? uuidv4();
+        const message: ICommRequestEnvelope<TAction> = { gid, rid: messageRid, action, data };
+        model.send({type: "pyg_request", msg: message});
     }
 
     const registerEndpoint = (_: string, __: (data: any) => any) => {}

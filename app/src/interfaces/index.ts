@@ -123,6 +123,13 @@ export interface ICommResponse<TData = any> {
     code: number;
 }
 
+export interface ICommEnvelope<TAction extends string = string, TData = any> {
+    gid?: string;
+    rid?: string;
+    action: TAction;
+    data: TData;
+}
+
 export interface ICommEmptyResponse {}
 
 export interface ICommLatestVisSpecResponse {
@@ -196,3 +203,7 @@ export interface ICommResponseMap {
 }
 
 export type ICommAction = keyof ICommRequestMap;
+
+export type ICommRequestEnvelope<TAction extends ICommAction> = ICommEnvelope<TAction, ICommRequestMap[TAction]>;
+
+export type ICommResponseEnvelope<TData = any> = ICommEnvelope<"finish_request", ICommResponse<TData>>;
