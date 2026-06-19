@@ -1,4 +1,4 @@
-from typing import Union, List, Optional
+from typing import Union, List, Optional, TYPE_CHECKING
 
 from typing_extensions import Literal
 
@@ -9,9 +9,12 @@ from pygwalker.utils.runtime_env import get_current_env
 from pygwalker.api import jupyter
 from pygwalker.api import webserver
 
+if TYPE_CHECKING:
+    from pygwalker.api.walker import Walker
+
 
 def walk(
-    dataset: Union[DataFrame, Connector, str],
+    dataset: Union[DataFrame, Connector, str, "Walker"],
     gid: Union[int, str] = None,
     *,
     env: Literal["Jupyter", "JupyterWidget"] = "JupyterWidget",

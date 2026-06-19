@@ -1,4 +1,4 @@
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Any, Dict, TYPE_CHECKING
 import inspect
 
 from typing_extensions import Literal
@@ -14,9 +14,72 @@ from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.utils.computation import resolve_computation_mode
 from pygwalker.utils.spec import resolve_spec_input
 
+if TYPE_CHECKING:
+    from pygwalker.api.walker import Walker
+
+
+def _is_public_walker(value: Any) -> bool:
+    from pygwalker.api.walker import Walker
+
+    return isinstance(value, Walker)
+
+
+def _reject_walker_construction_params(
+    *,
+    gid: Union[int, str],
+    field_specs: Optional[List[FieldSpec]],
+    theme_key: IThemeKey,
+    appearance: IAppearance,
+    spec: str,
+    spec_path: Optional[str],
+    computation: Optional[IComputation],
+    use_kernel_calc: Optional[bool],
+    kernel_computation: Optional[bool],
+    cloud_computation: bool,
+    show_cloud_tool: bool,
+    kanaries_api_key: str,
+    default_tab: Literal["data", "vis"],
+    kwargs: Dict[str, Any],
+) -> None:
+    conflicting_options = []
+    if gid is not None:
+        conflicting_options.append("gid")
+    if field_specs is not None:
+        conflicting_options.append("field_specs")
+    if theme_key != "g2":
+        conflicting_options.append("theme_key")
+    if appearance != "media":
+        conflicting_options.append("appearance")
+    if spec not in ("", None):
+        conflicting_options.append("spec")
+    if spec_path is not None:
+        conflicting_options.append("spec_path")
+    if computation is not None:
+        conflicting_options.append("computation")
+    if use_kernel_calc is not None:
+        conflicting_options.append("use_kernel_calc")
+    if kernel_computation is not None:
+        conflicting_options.append("kernel_computation")
+    if cloud_computation:
+        conflicting_options.append("cloud_computation")
+    if show_cloud_tool is not True:
+        conflicting_options.append("show_cloud_tool")
+    if kanaries_api_key:
+        conflicting_options.append("kanaries_api_key")
+    if default_tab != "vis":
+        conflicting_options.append("default_tab")
+    if kwargs:
+        conflicting_options.extend(sorted(kwargs))
+    if conflicting_options:
+        params = ", ".join(conflicting_options)
+        raise ValueError(
+            f"jupyter.walk() received a Walker object and cannot apply construction parameters: {params}. "
+            "Pass those options when creating pygwalker.Walker instead."
+        )
+
 
 def walk(
-    dataset: Union[DataFrame, Connector, str],
+    dataset: Union[DataFrame, Connector, str, "Walker"],
     gid: Union[int, str] = None,
     *,
     env: Literal["Jupyter", "JupyterWidget"] = "JupyterWidget",
@@ -55,11 +118,6 @@ def walk(
     """
     check_expired_params(kwargs)
 
-    if field_specs is None:
-        field_specs = []
-
-    source_invoke_code = get_formated_spec_params_code_from_frame(inspect.stack()[1].frame)
-
     if check_kaggle():
         auto_set_kanaries_api_key_on_kaggle()
 
@@ -68,6 +126,31 @@ def walk(
         env = "JupyterPreview"
     elif check_convert():
         env = "JupyterConvert"
+
+    if _is_public_walker(dataset):
+        _reject_walker_construction_params(
+            gid=gid,
+            field_specs=field_specs,
+            theme_key=theme_key,
+            appearance=appearance,
+            spec=spec,
+            spec_path=spec_path,
+            computation=computation,
+            use_kernel_calc=use_kernel_calc,
+            kernel_computation=kernel_computation,
+            cloud_computation=cloud_computation,
+            show_cloud_tool=show_cloud_tool,
+            kanaries_api_key=kanaries_api_key,
+            default_tab=default_tab,
+            kwargs=kwargs,
+        )
+        dataset.show(env)
+        return dataset.core
+
+    if field_specs is None:
+        field_specs = []
+
+    source_invoke_code = get_formated_spec_params_code_from_frame(inspect.stack()[1].frame)
 
     resolved_spec = resolve_spec_input(spec, spec_path)
     resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(

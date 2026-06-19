@@ -19,10 +19,12 @@ IWalkerShowEnv = Literal[
     "jupyter-widget",
     "jupyter-inline",
     "jupyter-convert",
+    "jupyter-preview",
     "webserver",
     "Jupyter",
     "JupyterWidget",
     "JupyterConvert",
+    "JupyterPreview",
 ]
 
 
@@ -122,11 +124,18 @@ class Walker:
             "Jupyter": "jupyter-inline",
             "JupyterWidget": "jupyter-widget",
             "JupyterConvert": "jupyter-convert",
+            "JupyterPreview": "jupyter-preview",
         }
         resolved_env = get_current_env() if env == "auto" else env_aliases.get(env, env)
         if resolved_env == "jupyter":
             resolved_env = "jupyter-widget"
-        elif resolved_env not in ("jupyter-widget", "jupyter-inline", "jupyter-convert", "webserver"):
+        elif resolved_env not in (
+            "jupyter-widget",
+            "jupyter-inline",
+            "jupyter-convert",
+            "jupyter-preview",
+            "webserver",
+        ):
             resolved_env = "webserver"
 
         if resolved_env == "jupyter-widget":
@@ -136,6 +145,8 @@ class Walker:
         elif resolved_env == "jupyter-convert":
             self._raise_if_live_computation("JupyterConvert/static HTML output")
             self._walker.display_on_convert_html()
+        elif resolved_env == "jupyter-preview":
+            self._walker.display_preview_on_jupyter()
         else:
             webserver._start_server(
                 self._walker,

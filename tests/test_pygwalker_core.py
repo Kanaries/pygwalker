@@ -908,6 +908,89 @@ def test_jupyter_walk_rejects_spec_and_spec_path(monkeypatch, tmp_path):
         )
 
 
+def test_jupyter_walk_accepts_public_walker_object(monkeypatch):
+    from pygwalker.api.walker import Walker
+
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+
+    display_calls = []
+    monkeypatch.setattr(
+        PygWalker,
+        "display_on_jupyter_use_widgets",
+        lambda self, iframe_width=None, iframe_height=None: display_calls.append(
+            (self.gid, iframe_width, iframe_height)
+        ),
+    )
+
+    public_walker = Walker(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="public-jupyter",
+        computation="browser",
+    )
+    result = jupyter.walk(public_walker)
+
+    assert result is public_walker.core
+    assert display_calls == [("public-jupyter", None, None)]
+
+
+def test_jupyter_walk_public_walker_rejects_rebuilding_params(monkeypatch, tmp_path):
+    from pygwalker.api.walker import Walker
+
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+
+    public_walker = Walker(pd.DataFrame([{"city": "London", "value": 1}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: spec_path"):
+        jupyter.walk(public_walker, spec_path=str(tmp_path / "other.json"))
+
+
+def test_jupyter_walk_public_walker_uses_convert_guard(monkeypatch):
+    from pygwalker.api.walker import Walker
+
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: True)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+
+    public_walker = Walker(pd.DataFrame([{"city": "London", "value": 1}]), computation="kernel")
+
+    with pytest.raises(ValueError, match="JupyterConvert/static HTML output does not support kernel computation"):
+        jupyter.walk(public_walker)
+
+
+def test_jupyter_walk_public_walker_uses_preview_env(monkeypatch):
+    from pygwalker.api.walker import Walker
+
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "batch")
+    monkeypatch.setattr(jupyter, "adjust_kaggle_default_font_size", lambda: None)
+
+    display_calls = []
+    monkeypatch.setattr(PygWalker, "display_preview_on_jupyter", lambda self: display_calls.append(self.gid))
+
+    public_walker = Walker(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="public-preview",
+        computation="browser",
+    )
+    result = jupyter.walk(public_walker)
+
+    assert result is public_walker.core
+    assert display_calls == ["public-preview"]
+
+
 def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
     monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)

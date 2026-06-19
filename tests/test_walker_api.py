@@ -93,6 +93,21 @@ def test_walker_show_accepts_legacy_jupyter_env_alias(monkeypatch):
     assert FakeCoreWalker.instances[0].display_calls == [("jupyter-inline",)]
 
 
+def test_walker_show_accepts_jupyter_preview_alias(monkeypatch):
+    monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
+    monkeypatch.setattr(
+        FakeCoreWalker,
+        "display_preview_on_jupyter",
+        lambda self: self.display_calls.append(("jupyter-preview",)),
+        raising=False,
+    )
+
+    walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+    walker.show("JupyterPreview")
+
+    assert FakeCoreWalker.instances[0].display_calls == [("jupyter-preview",)]
+
+
 def test_walker_show_auto_uses_webserver_outside_notebooks(monkeypatch):
     starts = []
     monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
