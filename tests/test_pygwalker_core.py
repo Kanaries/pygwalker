@@ -1359,6 +1359,11 @@ def test_to_html_rejects_live_computation_modes(kwargs):
         html.to_html(pd.DataFrame([{"city": "London", "value": 1}]), **kwargs)
 
 
+def test_to_html_rejects_invalid_computation_mode():
+    with pytest.raises(ValueError, match="`computation` must be one of"):
+        html.to_html(pd.DataFrame([{"city": "London", "value": 1}]), computation="server")
+
+
 def test_to_html_allows_disabled_computation_kwargs(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
     monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
