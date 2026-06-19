@@ -20,6 +20,7 @@ from pygwalker.services.comm_handler import CommHandler
 from pygwalker.services.data_bridge import DataBridge
 from pygwalker.services.jupyter_display import JupyterDisplayManager
 from pygwalker.services.props_builder import PropsBuilder
+from pygwalker.services.props_tracker import PropsTracker
 from pygwalker.services.render_manager import RenderManager
 from pygwalker.services.spec_manager import SpecManager
 from pygwalker.services.cloud_service import CloudService
@@ -86,6 +87,7 @@ class PygWalker:
         self.cloud_computation = cloud_computation
         self.comm = None
         self.props_builder = PropsBuilder(self, lambda: get_local_user_id())
+        self.props_tracker = PropsTracker(self, lambda event, props: track_event(event, props))
         self.render_manager = RenderManager(self)
         self.jupyter_display_manager = JupyterDisplayManager(self, lambda content: display_html(content))
         self.chart_export_manager = ChartExportManager(self, lambda content: display_html(content))
@@ -317,6 +319,12 @@ class PygWalker:
             export_manager = ChartExportManager(self, lambda content: display_html(content))
         return export_manager
 
+    def _get_props_tracker(self) -> PropsTracker:
+        props_tracker = getattr(self, "props_tracker", None)
+        if props_tracker is None:
+            props_tracker = PropsTracker(self, lambda event, props: track_event(event, props))
+        return props_tracker
+
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool = None):
         CommHandler(
             self,
@@ -325,30 +333,6 @@ class PygWalker:
             upload_tool_cls=BatchUploadDatasToolOnWidgets,
         ).register()
 
-    def _send_props_track(self, props: Dict[str, Any]):
-        needed_fields = {
-            "id",
-            "version",
-            "hashcode",
-            "themeKey",
-            "dark",
-            "env",
-            "specType",
-            "needLoadDatas",
-            "showCloudTool",
-            "useKernelCalc",
-            "useSaveTool",
-            "parseDslType",
-            "gwMode",
-            "datasetType",
-            "defaultTab",
-            "useCloudCalc",
-        }
-        event_info = {key: value for key, value in props.items() if key in needed_fields}
-        event_info["hasKanariesToken"] = bool(self.kanaries_api_key)
-
-        track_event("invoke_props", event_info)
-
     def _get_props(
         self, env: str = "", data_source: Optional[Dict[str, Any]] = None, need_load_datas: bool = False
     ) -> Dict[str, Any]:
@@ -356,7 +340,7 @@ class PygWalker:
         if props_builder is None:
             props_builder = PropsBuilder(self, lambda: get_local_user_id())
         props = props_builder.build(env, data_source, need_load_datas)
-        self._send_props_track(props)
+        self._get_props_tracker().track_invocation(props)
 
         return props
 

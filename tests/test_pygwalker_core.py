@@ -17,6 +17,7 @@ from pygwalker.errors import ErrorCode
 from pygwalker.services import chart_export as chart_export_module
 from pygwalker.services import comm_handler as comm_handler_module
 from pygwalker.services import jupyter_display as jupyter_display_module
+from pygwalker.services import props_tracker as props_tracker_module
 from pygwalker.services import render_manager as render_manager_module
 from pygwalker.services.global_var import GlobalVarManager
 
@@ -143,6 +144,62 @@ def test_pygwalker_get_props_falls_back_without_props_builder(monkeypatch):
     assert props["dataSource"] == [{"city": "London"}]
     assert props["rawFields"] == [{"fid": "city", "offset": 0}]
     assert track_calls[0][0][0] == "invoke_props"
+
+
+def test_props_tracker_tracks_expected_invocation_fields():
+    track_calls = []
+    tracker = props_tracker_module.PropsTracker(
+        SimpleNamespace(kanaries_api_key="secret-token"),
+        lambda event, props: track_calls.append((event, props)),
+    )
+
+    tracker.track_invocation(
+        {
+            "id": "core",
+            "version": "0.5",
+            "hashcode": "user",
+            "themeKey": "g2",
+            "dark": "light",
+            "env": "jupyter",
+            "specType": "empty",
+            "needLoadDatas": True,
+            "showCloudTool": False,
+            "useKernelCalc": False,
+            "useSaveTool": True,
+            "parseDslType": "client",
+            "gwMode": "explore",
+            "datasetType": "pandas_dataframe",
+            "defaultTab": "vis",
+            "useCloudCalc": False,
+            "dataSource": [{"city": "London"}],
+            "rawFields": [{"fid": "city"}],
+        }
+    )
+
+    assert track_calls == [
+        (
+            "invoke_props",
+            {
+                "id": "core",
+                "version": "0.5",
+                "hashcode": "user",
+                "themeKey": "g2",
+                "dark": "light",
+                "env": "jupyter",
+                "specType": "empty",
+                "needLoadDatas": True,
+                "showCloudTool": False,
+                "useKernelCalc": False,
+                "useSaveTool": True,
+                "parseDslType": "client",
+                "gwMode": "explore",
+                "datasetType": "pandas_dataframe",
+                "defaultTab": "vis",
+                "useCloudCalc": False,
+                "hasKanariesToken": True,
+            },
+        )
+    ]
 
 
 def test_render_manager_preview_handles_parser_exception_and_manual_gid(monkeypatch):
