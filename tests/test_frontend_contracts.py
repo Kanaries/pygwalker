@@ -31,7 +31,47 @@ def _app_props_keys(repo_root: Path) -> set[str]:
     return set(re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\??:", match.group(1), re.MULTILINE))
 
 
+def _comm_handler_endpoints(repo_root: Path) -> set[str]:
+    source = (repo_root / "pygwalker/services/comm_handler.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+
+    for class_node in module.body:
+        if not isinstance(class_node, ast.ClassDef) or class_node.name != "CommHandler":
+            continue
+        for method_node in class_node.body:
+            if not isinstance(method_node, ast.FunctionDef) or method_node.name != "register":
+                continue
+            endpoints = set()
+            for node in ast.walk(method_node):
+                if not isinstance(node, ast.Call):
+                    continue
+                if not isinstance(node.func, ast.Attribute):
+                    continue
+                if node.func.attr not in {"register", "_register_request"}:
+                    continue
+                if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+                    endpoints.add(node.args[0].value)
+            return endpoints
+    raise AssertionError("Could not find CommHandler.register endpoints")
+
+
+def _typescript_interface_keys(repo_root: Path, interface_name: str) -> set[str]:
+    source = (repo_root / "app/src/interfaces/index.ts").read_text(encoding="utf-8")
+    match = re.search(rf"export interface {interface_name} \{{([\s\S]*?)\n\}}", source)
+    if match is None:
+        raise AssertionError(f"Could not find {interface_name} interface")
+    return set(re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\??:", match.group(1), re.MULTILINE))
+
+
 def test_frontend_props_interface_covers_python_props_builder():
     repo_root = Path(__file__).resolve().parents[1]
 
     assert _props_builder_keys(repo_root) - _app_props_keys(repo_root) == set()
+
+
+def test_frontend_comm_maps_cover_python_comm_handler_endpoints():
+    repo_root = Path(__file__).resolve().parents[1]
+    endpoints = _comm_handler_endpoints(repo_root)
+
+    assert _typescript_interface_keys(repo_root, "ICommRequestMap") == endpoints
+    assert _typescript_interface_keys(repo_root, "ICommResponseMap") == endpoints
