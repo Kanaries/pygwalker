@@ -1,4 +1,4 @@
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Any, Dict, TYPE_CHECKING
 import threading
 import socketserver
 import http.server
@@ -19,6 +19,9 @@ from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.free_port import find_free_port
 from pygwalker.utils.spec import resolve_spec_input
 from pygwalker.communications.base import BaseCommunication
+
+if TYPE_CHECKING:
+    from pygwalker.api.walker import Walker
 
 _MAX_HEALTH_TIMEOUT_SECONDS = 3
 _SEND_HEALTH_JS_SCRIPT = """
@@ -108,6 +111,63 @@ def _create_handler_with_walker(walker: PygWalker, state: _GlobalState):
     return CustomPygWalkerHandler
 
 
+def _is_public_walker(value: Any) -> bool:
+    from pygwalker.api.walker import Walker
+
+    return isinstance(value, Walker)
+
+
+def _reject_walker_construction_params(
+    *,
+    gid: Optional[Union[int, str]],
+    field_specs: Optional[List[FieldSpec]],
+    theme_key: IThemeKey,
+    appearance: IAppearance,
+    spec: str,
+    spec_path: Optional[str],
+    computation: Optional[IComputation],
+    kernel_computation: Optional[bool],
+    cloud_computation: bool,
+    show_cloud_tool: bool,
+    kanaries_api_key: str,
+    default_tab: Literal["data", "vis"],
+    kwargs: Dict[str, Any],
+) -> None:
+    conflicting_options = []
+    if gid is not None:
+        conflicting_options.append("gid")
+    if field_specs is not None:
+        conflicting_options.append("field_specs")
+    if theme_key != "g2":
+        conflicting_options.append("theme_key")
+    if appearance != "media":
+        conflicting_options.append("appearance")
+    if spec not in ("", None):
+        conflicting_options.append("spec")
+    if spec_path is not None:
+        conflicting_options.append("spec_path")
+    if computation is not None:
+        conflicting_options.append("computation")
+    if kernel_computation is not None:
+        conflicting_options.append("kernel_computation")
+    if cloud_computation:
+        conflicting_options.append("cloud_computation")
+    if show_cloud_tool is not True:
+        conflicting_options.append("show_cloud_tool")
+    if kanaries_api_key:
+        conflicting_options.append("kanaries_api_key")
+    if default_tab != "vis":
+        conflicting_options.append("default_tab")
+    if kwargs:
+        conflicting_options.extend(sorted(kwargs))
+    if conflicting_options:
+        params = ", ".join(conflicting_options)
+        raise ValueError(
+            f"webserver.walk() received a Walker object and cannot apply construction parameters: {params}. "
+            "Pass those options when creating pygwalker.Walker instead."
+        )
+
+
 def _open_browser(address: str, delay_ms: int = 1000):
     """Open browser with address"""
     time.sleep(delay_ms / 1000)
@@ -132,6 +192,7 @@ def _start_server(
 ):
     """Start a server with walker"""
     state = _GlobalState(auto_shutdown=auto_shutdown)
+    walker.use_preview = False
     walker._init_callback(BaseCommunication(str(walker.gid)))
 
     handler = _create_handler_with_walker(walker, state)
@@ -158,7 +219,7 @@ def _start_server(
 
 
 def walk(
-    dataset: Union[DataFrame, Connector, str],
+    dataset: Union[DataFrame, Connector, str, "Walker"],
     gid: Optional[Union[int, str]] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
@@ -200,6 +261,25 @@ def walk(
         - auto_open (bool): Whether to open the browser automatically. Default to False.
     """
     check_expired_params(kwargs)
+
+    if _is_public_walker(dataset):
+        _reject_walker_construction_params(
+            gid=gid,
+            field_specs=field_specs,
+            theme_key=theme_key,
+            appearance=appearance,
+            spec=spec,
+            spec_path=spec_path,
+            computation=computation,
+            kernel_computation=kernel_computation,
+            cloud_computation=cloud_computation,
+            show_cloud_tool=show_cloud_tool,
+            kanaries_api_key=kanaries_api_key,
+            default_tab=default_tab,
+            kwargs=kwargs,
+        )
+        _start_server(dataset.core, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
+        return
 
     if field_specs is None:
         field_specs = []

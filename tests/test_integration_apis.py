@@ -374,6 +374,74 @@ def test_webserver_walk_builds_walker_and_starts_server(monkeypatch):
     assert starts == [(walker, 8765, True, True)]
 
 
+def test_webserver_walk_accepts_public_walker_object(monkeypatch):
+    from pygwalker.api import webserver
+    from pygwalker.api import walker as walker_api
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    starts = []
+    monkeypatch.setattr(
+        webserver,
+        "_start_server",
+        lambda walker, port, *, auto_open, auto_shutdown: starts.append((walker, port, auto_open, auto_shutdown)),
+    )
+
+    public_walker = walker_api.Walker(
+        pd.DataFrame([{"city": "London"}]),
+        gid="server-core",
+        computation="browser",
+    )
+    webserver.walk(public_walker, port=8768, auto_open=True, auto_shutdown=True)
+
+    assert len(FakeWalker.instances) == 1
+    assert starts == [(public_walker.core, 8768, True, True)]
+
+
+def test_webserver_walk_rejects_rebuilding_public_walker_object(monkeypatch, tmp_path):
+    from pygwalker.api import webserver
+    from pygwalker.api import walker as walker_api
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: spec_path"):
+        webserver.walk(public_walker, spec_path=str(tmp_path / "other.json"))
+
+
+def test_webserver_start_server_disables_preview(monkeypatch):
+    from pygwalker.api import webserver
+
+    class FakeServer:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def serve_forever(self):
+            return None
+
+    walker = SimpleNamespace(
+        gid="server-preview",
+        use_preview=True,
+        init_callback_calls=[],
+    )
+    walker._init_callback = lambda comm, preview_tool=None: walker.init_callback_calls.append((comm, preview_tool))
+
+    monkeypatch.setattr(webserver, "CustomTCPServer", FakeServer)
+
+    webserver._start_server(walker, 8769, auto_open=False, auto_shutdown=False)
+
+    assert walker.use_preview is False
+    assert len(walker.init_callback_calls) == 1
+    assert walker.init_callback_calls[0][1] is None
+
+
 def test_webserver_render_builds_filter_renderer(monkeypatch):
     from pygwalker.api import webserver
 
