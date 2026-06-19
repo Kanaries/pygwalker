@@ -6,7 +6,7 @@ import polars as pl
 import pytest
 
 from pygwalker.services.data_parsers import get_parser
-from pygwalker.data_parsers.database_parser import Connector, text
+from pygwalker.data_parsers.database_parser import Connector, DatabaseDataParser, text
 from pygwalker.data_parsers.database_parser import _check_view_sql
 from pygwalker.errors import ViewSqlSameColumnError
 
@@ -120,3 +120,21 @@ def test_connector():
         assert connector.dialect_name == "duckdb"
         assert connector.view_sql == view_sql
         assert connector.url == database_url
+
+
+def test_database_parser_get_datas_by_sql_queries_connector_view():
+    engine = create_engine("duckdb:///:memory:")
+    with engine.connect() as conn:
+        conn.execute(text("CREATE TABLE test_datas AS SELECT 1 AS id, 'London' AS city UNION ALL SELECT 2, 'Tokyo'"))
+        connector = Connector.from_sqlalchemy_connection(conn, "SELECT * FROM test_datas")
+        parser = DatabaseDataParser(connector, [], False, True, {})
+
+        assert parser.get_datas_by_sql("SELECT city FROM ___pygwalker_temp_view_name___ WHERE id = 2") == [
+            {"city": "Tokyo"}
+        ]
+        assert parser.batch_get_datas_by_sql(
+            [
+                "SELECT COUNT(1) AS total FROM ___pygwalker_temp_view_name___",
+                "SELECT city FROM ___pygwalker_temp_view_name___ WHERE id = 1",
+            ]
+        ) == [[{"total": 2}], [{"city": "London"}]]

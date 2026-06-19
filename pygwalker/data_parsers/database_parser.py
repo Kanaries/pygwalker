@@ -214,7 +214,7 @@ class DatabaseDataParser(BaseDataParser):
         return result
 
     def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
-        pass
+        return self._get_datas_by_sql(sql)
 
     def _get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
         """a private method for get_datas_by_sql"""
