@@ -78,3 +78,20 @@ class ChatChartRequest(BaseModel):
 class OpenDesktopRequest(BaseModel):
     spec: List[Dict[str, Any]]
     fields: List[Dict[str, Any]]
+
+
+class UploadCloudChartRequest(BaseModel):
+    chart_name: str = Field(..., alias="chartName")
+    dataset_name: str = Field(..., alias="datasetName")
+    is_public: bool = Field(..., alias="isPublic")
+    vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
+    workflow: List[Dict[str, Any]]
+
+
+class UploadCloudDashboardRequest(BaseModel):
+    chart_name: str = Field(..., alias="chartName")
+    dataset_name: str = Field(..., alias="datasetName")
+    is_public: bool = Field(..., alias="isPublic")
+    is_create_dashboard: bool = Field(..., alias="isCreateDashboard")
+    vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
+    workflow_list: List[List[Dict[str, Any]]] = Field(..., alias="workflowList")

@@ -20,6 +20,8 @@ from pygwalker.communications.protocol import (
     PayloadQueryRequest,
     SaveChartRequest,
     SqlQueryRequest,
+    UploadCloudChartRequest,
+    UploadCloudDashboardRequest,
     UpdateSpecRequest,
     UploadSpecToCloudRequest,
     validate_request,
@@ -163,25 +165,27 @@ class CommHandler:
         self.walker._last_exported_dataframe = df
 
     def upload_to_cloud_charts(self, data: Dict[str, Any]):
+        request = validate_request(UploadCloudChartRequest, data)
         result = self.walker.cloud_service.upload_cloud_chart(
             data_parser=self.walker.data_parser,
-            chart_name=data["chartName"],
-            dataset_name=data["datasetName"],
-            workflow=data["workflow"],
-            spec_list=data["visSpec"],
-            is_public=data["isPublic"],
+            chart_name=request.chart_name,
+            dataset_name=request.dataset_name,
+            workflow=request.workflow,
+            spec_list=request.vis_spec,
+            is_public=request.is_public,
         )
         return {"chartId": result["chart_id"], "datasetId": result["dataset_id"]}
 
     def upload_to_cloud_dashboard(self, data: Dict[str, Any]):
+        request = validate_request(UploadCloudDashboardRequest, data)
         result = self.walker.cloud_service.upload_cloud_dashboard(
             data_parser=self.walker.data_parser,
-            dashboard_name=data["chartName"],
-            dataset_name=data["datasetName"],
-            workflow_list=data["workflowList"],
-            spec_list=data["visSpec"],
-            is_public=data["isPublic"],
-            create_dashboard_flag=data["isCreateDashboard"],
+            dashboard_name=request.chart_name,
+            dataset_name=request.dataset_name,
+            workflow_list=request.workflow_list,
+            spec_list=request.vis_spec,
+            is_public=request.is_public,
+            create_dashboard_flag=request.is_create_dashboard,
             appearance=self.walker.appearance,
         )
         return {"dashboardId": result["dashboard_id"], "datasetId": result["dataset_id"]}

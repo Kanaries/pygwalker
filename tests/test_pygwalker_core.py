@@ -666,6 +666,110 @@ def test_pygwalker_cloud_text_callbacks_validate_payloads(monkeypatch):
     assert "query" in invalid_response["message"]
 
 
+def test_pygwalker_upload_cloud_chart_callback_validates_and_uploads(monkeypatch):
+    upload_calls = []
+    walker = _make_walker(monkeypatch, show_cloud_tool=True)
+    walker.cloud_service = SimpleNamespace(
+        upload_cloud_chart=lambda **kwargs: (
+            upload_calls.append(kwargs) or {"chart_id": "chart-id", "dataset_id": "dataset-id"}
+        )
+    )
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg(
+        "upload_to_cloud_charts",
+        {
+            "chartName": "Cloud chart",
+            "datasetName": "Dataset",
+            "isPublic": True,
+            "visSpec": [{"name": "Cloud chart"}],
+            "workflow": [{"type": "view"}],
+        },
+    )
+    invalid_response = comm._receive_msg(
+        "upload_to_cloud_charts",
+        {
+            "chartName": "Cloud chart",
+            "datasetName": "Dataset",
+            "isPublic": True,
+            "visSpec": [{"name": "Cloud chart"}],
+        },
+    )
+
+    assert response == {
+        "code": 0,
+        "data": {"chartId": "chart-id", "datasetId": "dataset-id"},
+        "message": "success",
+    }
+    assert upload_calls == [
+        {
+            "data_parser": walker.data_parser,
+            "chart_name": "Cloud chart",
+            "dataset_name": "Dataset",
+            "workflow": [{"type": "view"}],
+            "spec_list": [{"name": "Cloud chart"}],
+            "is_public": True,
+        }
+    ]
+    assert invalid_response["code"] == ErrorCode.INVALID_REQUEST
+    assert "workflow" in invalid_response["message"]
+
+
+def test_pygwalker_upload_cloud_dashboard_callback_validates_and_uploads(monkeypatch):
+    upload_calls = []
+    walker = _make_walker(monkeypatch, show_cloud_tool=True)
+    walker.cloud_service = SimpleNamespace(
+        upload_cloud_dashboard=lambda **kwargs: (
+            upload_calls.append(kwargs) or {"dashboard_id": "dashboard-id", "dataset_id": "dataset-id"}
+        )
+    )
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg(
+        "upload_to_cloud_dashboard",
+        {
+            "chartName": "Dashboard",
+            "datasetName": "Dataset",
+            "isPublic": False,
+            "isCreateDashboard": True,
+            "visSpec": [{"name": "Chart A"}],
+            "workflowList": [[{"type": "view"}]],
+        },
+    )
+    invalid_response = comm._receive_msg(
+        "upload_to_cloud_dashboard",
+        {
+            "chartName": "Dashboard",
+            "datasetName": "Dataset",
+            "isPublic": False,
+            "visSpec": [{"name": "Chart A"}],
+            "workflowList": [[{"type": "view"}]],
+        },
+    )
+
+    assert response == {
+        "code": 0,
+        "data": {"dashboardId": "dashboard-id", "datasetId": "dataset-id"},
+        "message": "success",
+    }
+    assert upload_calls == [
+        {
+            "data_parser": walker.data_parser,
+            "dashboard_name": "Dashboard",
+            "dataset_name": "Dataset",
+            "workflow_list": [[{"type": "view"}]],
+            "spec_list": [{"name": "Chart A"}],
+            "is_public": False,
+            "create_dashboard_flag": True,
+            "appearance": walker.appearance,
+        }
+    ]
+    assert invalid_response["code"] == ErrorCode.INVALID_REQUEST
+    assert "isCreateDashboard" in invalid_response["message"] or "is_create_dashboard" in invalid_response["message"]
+
+
 def test_pygwalker_open_in_desktop_callback_encodes_payload(monkeypatch):
     links = []
     monkeypatch.setattr(comm_handler_module.CommHandler, "_open_protocol", lambda _self, link: links.append(link))

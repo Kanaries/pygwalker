@@ -99,3 +99,20 @@ export interface ICommOpenDesktopRequest {
     spec: any[];
     fields: any[];
 }
+
+export interface ICommUploadCloudChartRequest {
+    chartName: string;
+    datasetName: string;
+    isPublic: boolean;
+    visSpec: any[];
+    workflow: any[];
+}
+
+export interface ICommUploadCloudDashboardRequest {
+    chartName: string;
+    datasetName: string;
+    isPublic: boolean;
+    isCreateDashboard: boolean;
+    visSpec: any[];
+    workflowList: any[][];
+}

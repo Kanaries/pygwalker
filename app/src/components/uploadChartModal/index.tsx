@@ -4,6 +4,7 @@ import type { IGWHandler } from "@kanaries/graphic-walker/interfaces";
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 import { chartToWorkflow } from "@kanaries/graphic-walker"
 import { tracker } from "@/utils/tracker";
+import type { ICommUploadCloudChartRequest, ICommUploadCloudDashboardRequest } from "@/interfaces";
 
 import communicationStore from "../../store/communication";
 import commonStore from "../../store/common";
@@ -92,29 +93,31 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
         const visSpec = props.storeRef.current?.exportCode()!;
         try {
             if (instanceType === "dashboard") {
+                const request: ICommUploadCloudDashboardRequest = {
+                    chartName,
+                    datasetName,
+                    isPublic,
+                    isCreateDashboard,
+                    visSpec,
+                    workflowList: visSpec.map((spec) => chartToWorkflow(spec).workflow),
+                };
                 const resp = await communicationStore.comm?.sendMsg(
                     "upload_to_cloud_dashboard",
-                    {
-                        chartName: chartName,
-                        datasetName: datasetName,
-                        isPublic: isPublic,
-                        isCreateDashboard: isCreateDashboard,
-                        visSpec: visSpec,
-                        workflowList: visSpec.map(spec => chartToWorkflow(spec).workflow),
-                    },
+                    request,
                     120_000
                 );
                 uploadSuccess(instanceType, resp?.data.dashboardId, resp?.data.datasetId);
             } else {
+                const request: ICommUploadCloudChartRequest = {
+                    chartName,
+                    datasetName,
+                    isPublic,
+                    visSpec,
+                    workflow: chartToWorkflow(visSpec[0]).workflow,
+                };
                 const resp = await communicationStore.comm?.sendMsg(
                     "upload_to_cloud_charts",
-                    {
-                        chartName: chartName,
-                        datasetName: datasetName,
-                        isPublic: isPublic,
-                        visSpec: visSpec,
-                        workflow: chartToWorkflow(visSpec[0]).workflow,
-                    },
+                    request,
                     120_000
                 );
                 uploadSuccess(instanceType, resp?.data.chartId, resp?.data.datasetId);
