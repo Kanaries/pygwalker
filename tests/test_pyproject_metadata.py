@@ -56,6 +56,7 @@ def test_project_metadata_declares_supported_python_and_bounded_dependencies():
     assert "sqlalchemy>=1.4,<3" in dependencies
     assert "pydantic>=1.10,<3" in dependencies
     assert "duckdb>=0.10.4,<2.0.0" in dependencies
+    assert "pyarrow>=10,<25" in dependencies
 
 
 def test_dev_extra_contains_ci_quality_tools():

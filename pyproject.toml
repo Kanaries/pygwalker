@@ -20,7 +20,7 @@ dependencies = [
     "pydantic>=1.10,<3",
     "psutil",
     "duckdb>=0.10.4,<2.0.0",
-    "pyarrow",
+    "pyarrow>=10,<25",
     "sqlglot>=23.15.8",
     "requests>=2.31,<3",
     "arrow",
