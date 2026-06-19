@@ -30,7 +30,7 @@ def track_event(event: str, properties: Optional[Dict[str, Any]] = None):
     - pygwalker's mode: 'light', 'dark' or 'auto'
     - pygwalker's spec type: 'json', 'file', 'url'. We won't collect the exact value of spec. No DATA YOU ANALYZE OR THEIR METADATA IS COLLECTED.
 
-    - privacy  ['offline', 'update-only', 'events'] (default: events).
+    - privacy  ['offline', 'update-only', 'events'] (default: update-only).
         "offline": fully offline, no data is send or api is requested
         "update-only": only check whether this is a new version of pygwalker to update
         "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYZE IS SENT.

@@ -9,7 +9,7 @@ from appdirs import user_config_dir
 
 
 DEFAULT_CONFIG = {
-    "privacy": "events",
+    "privacy": "update-only",
     "kanaries_token": "",
 }
 CONFIG_KEYS = list(DEFAULT_CONFIG.keys())
@@ -35,7 +35,7 @@ class ConfigItem:
 privacy_item = ConfigItem(
     "privacy",
     ["offline", "update-only", "events"],
-    default="events",
+    default="update-only",
     description="""
     "offline": fully offline, no data is send or api is requested
     "update-only": only check whether this is a new version of pygwalker to update

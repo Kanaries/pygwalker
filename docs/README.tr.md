@@ -187,7 +187,7 @@ usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--rese
 Modify configuration file. (default: /Users/douding/Library/Application Support/pygwalker/config.json) 
 Available configurations:
 
-- privacy  ['offline', 'update-only', 'events'] (default: events).
+- privacy  ['offline', 'update-only', 'events'] (default: update-only).
     "offline": fully offline, no data is send or api is requested
     "update-only": only check whether this is a new version of pygwalker to update
     "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.

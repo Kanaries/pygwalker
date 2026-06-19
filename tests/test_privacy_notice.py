@@ -2,6 +2,11 @@ from pygwalker.services import config, track
 from pygwalker.services.global_var import GlobalVarManager
 
 
+def test_default_privacy_is_update_only():
+    assert config.DEFAULT_CONFIG["privacy"] == "update-only"
+    assert config.privacy_item.default == "update-only"
+
+
 def test_privacy_notice_sentinel_is_written_once(monkeypatch, tmp_path):
     notice_path = tmp_path / "privacy_notice_shown"
     monkeypatch.setattr(config, "PRIVACY_NOTICE_PATH", str(notice_path))
