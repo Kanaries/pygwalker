@@ -8,6 +8,7 @@ from pygwalker.communications.protocol import (
     BatchPayloadQueryRequest,
     BatchSqlQueryRequest,
     ChatChartRequest,
+    EmptyResponse,
     EmptyRequest,
     OpenDesktopRequest,
     PayloadQueryRequest,
@@ -17,6 +18,7 @@ from pygwalker.communications.protocol import (
     UploadCloudDashboardRequest,
     UpdateSpecRequest,
     UploadSpecToCloudRequest,
+    dump_response,
     validate_request,
 )
 from pygwalker.services.cloud_communication import CloudCommunicationService
@@ -68,7 +70,7 @@ class CommHandler:
 
         self._register_request("get_latest_vis_spec", EmptyRequest, self.spec_communication.get_latest_vis_spec)
         self._register_request("request_data", EmptyRequest, self.data_upload_communication.request_data)
-        self._register_request("ping", EmptyRequest, lambda _: {})
+        self._register_request("ping", EmptyRequest, self._ping)
         self._register_request("open_in_desktop", OpenDesktopRequest, self.desktop_communication.open_in_desktop)
 
         if self.walker.use_save_tool:
@@ -124,3 +126,6 @@ class CommHandler:
             return handler(validate_request(request_model, data))
 
         self.comm.register(endpoint, _handle)
+
+    def _ping(self, _: EmptyRequest) -> Dict[str, Any]:
+        return dump_response(EmptyResponse())
