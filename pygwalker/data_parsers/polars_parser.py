@@ -51,12 +51,13 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return df
 
     def _infer_semantic(self, s: pl.Series, field_name: str):
-        example_value = s[0]
         kind = s.dtype
 
         if _is_numeric_dtype(kind) or is_geo_field(field_name):
             return "quantitative"
-        if _is_temporal_dtype(kind) or is_temporal_field(example_value, self.infer_string_to_date):
+        if _is_temporal_dtype(kind):
+            return "temporal"
+        if len(s) > 0 and is_temporal_field(s[0], self.infer_string_to_date):
             return "temporal"
 
         return "nominal"

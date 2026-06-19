@@ -6,6 +6,9 @@ from .encode import DataFrameEncoder
 
 def estimate_average_data_size(datas: List[Dict[str, Any]]) -> int:
     """Estimate average data bytes size"""
+    if not datas:
+        return 0
+
     smp0 = datas[:: max(len(datas) // 32, 1)]
     smp1 = datas[:: max(len(datas) // 37, 1)]
     avg_size = len(json.dumps(smp0, cls=DataFrameEncoder)) / len(smp0)

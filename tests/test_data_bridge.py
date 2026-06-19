@@ -58,6 +58,26 @@ def test_data_bridge_initializes_pyarrow_table_path():
     assert [field["fid"] for field in bridge.field_specs] == ["city", "value"]
 
 
+def test_data_bridge_initializes_empty_dataframe_path():
+    bridge = DataBridge(
+        dataset=pd.DataFrame({"city": pd.Series(dtype="object"), "value": pd.Series(dtype="int64")}),
+        field_specs=[],
+        cloud_computation=False,
+        kernel_computation=None,
+        kanaries_api_key="",
+        cloud_service=FakeCloudService(),
+    )
+
+    assert bridge.kernel_computation is False
+    assert bridge.origin_data_source == []
+    assert bridge.dataset_type == "pandas_dataframe"
+    assert bridge.parse_dsl_type == "client"
+    assert bridge.field_specs == [
+        {"fid": "city", "name": "city", "semanticType": "nominal", "analyticType": "dimension"},
+        {"fid": "value", "name": "value", "semanticType": "quantitative", "analyticType": "dimension"},
+    ]
+
+
 def test_data_bridge_initializes_kernel_sample_path():
     bridge = DataBridge(
         dataset=pd.DataFrame([{"city": "London", "value": 1}]),

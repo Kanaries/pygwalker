@@ -63,6 +63,25 @@ def test_data_parser_on_pyarrow_table():
     assert get_dataset_hash(table) == get_dataset_hash(table)
 
 
+@pytest.mark.parametrize(
+    "dataset",
+    [
+        pd.DataFrame({"city": pd.Series(dtype="object"), "value": pd.Series(dtype="int64")}),
+        pl.DataFrame({"city": pl.Series([], dtype=pl.String), "value": pl.Series([], dtype=pl.Int64)}),
+        pa.table({"city": pa.array([], type=pa.string()), "value": pa.array([], type=pa.int64())}),
+    ],
+)
+def test_data_parser_accepts_empty_tabular_inputs(dataset):
+    dataset_parser = get_parser(dataset)
+
+    assert dataset_parser.data_size == 0
+    assert dataset_parser.to_records() == []
+    assert dataset_parser.raw_fields == [
+        {"fid": "city", "name": "city", "semanticType": "nominal", "analyticType": "dimension"},
+        {"fid": "value", "name": "value", "semanticType": "quantitative", "analyticType": "dimension"},
+    ]
+
+
 def test_get_parser_reports_supported_inputs_for_unsupported_dataset():
     with pytest.raises(TypeError) as exc_info:
         get_parser(object())
