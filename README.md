@@ -60,7 +60,7 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 
 
 # Features
-PyGWalker is a Python library that simplifies data analysis and visualization workflows by turning pandas DataFrames into interactive visual interfaces.
+PyGWalker is a Python library that simplifies data analysis and visualization workflows by turning pandas, polars, and pyarrow table data into interactive visual interfaces.
 It offers a variety of features that make it a powerful tool for data exploration:
 - ##### Interactive Data Exploration:
     - Drag-and-drop interface for easy visualization creation.   
@@ -269,7 +269,7 @@ renderer.explorer()
 
 | Parameter          | Type                                                      | Default         | Description                                                                                                                       |
 |--------------------|-----------------------------------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| dataset            | Union[DataFrame, Connector, str, Walker]                  | -               | DataFrame, database connector, SQL/data source string, or reusable Walker object to explore.                                       |
+| dataset            | Union[DataFrame, pyarrow.Table, Connector, str, Walker]   | -               | DataFrame, pyarrow table, database connector, SQL/data source string, or reusable Walker object to explore.                        |
 | gid                | Union[int, str]                                           | None            | ID for the GraphicWalker container div, formatted as `gwalker-{gid}`.                                                              |
 | env                | Literal['JupyterAnywidget', 'Jupyter', 'JupyterWidget']   | 'JupyterAnywidget' | Notebook rendering environment. Use `JupyterAnywidget` or omit `env`; `Jupyter` and `JupyterWidget` are deprecated legacy transports kept for compatibility. |
 | field_specs        | Optional[List[FieldSpec]]                                 | None            | Field specifications. They will be inferred from `dataset` if not specified.                                                       |

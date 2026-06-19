@@ -10,11 +10,12 @@ from pygwalker._typing import DataFrame
 
 __classname2method = {}
 
-DatasetType = Literal["pandas", "polars", "modin", "pyspark", "connector", "cloud_dataset"]
+DatasetType = Literal["pandas", "polars", "pyarrow", "modin", "pyspark", "connector", "cloud_dataset"]
 
 SUPPORTED_DATASET_INPUTS = (
     "pandas.DataFrame",
     "polars.DataFrame",
+    "pyarrow.Table",
     "modin.pandas.DataFrame",
     "pyspark.sql.DataFrame",
     "pygwalker.data_parsers.database_parser.Connector",
@@ -50,6 +51,15 @@ def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> Tuple[BaseDat
 
             __classname2method[pl.DataFrame] = (PolarsDataFrameDataParser, "polars")
             return __classname2method[pl.DataFrame]
+
+    if "pyarrow" in sys.modules:
+        import pyarrow as pa
+
+        if isinstance(dataset, pa.Table):
+            from pygwalker.data_parsers.pyarrow_parser import PyArrowTableDataParser
+
+            __classname2method[pa.Table] = (PyArrowTableDataParser, "pyarrow")
+            return __classname2method[pa.Table]
 
     if "modin.pandas" in sys.modules:
         from modin import pandas as mpd
@@ -126,6 +136,17 @@ def _get_pd_dataset_hash(dataset: DataFrame) -> str:
     return hashlib.md5(hash_bytes).hexdigest()
 
 
+def _get_pyarrow_dataset_hash(dataset: DataFrame) -> str:
+    """Get pyarrow table hash value."""
+    table_shape = (dataset.num_rows, dataset.num_columns)
+    dataset = dataset.to_pandas()
+    other_info = str(table_shape) + "_pyarrow"
+    if len(dataset) > 4000:
+        dataset = pd.concat([dataset[:2000], dataset[-2000:]])
+    hash_bytes = pd.util.hash_pandas_object(dataset).values.tobytes() + other_info.encode()
+    return hashlib.md5(hash_bytes).hexdigest()
+
+
 def _get_modin_dataset_hash(dataset: DataFrame) -> str:
     """Get modin dataset hash value."""
     import modin.pandas as mpd
@@ -160,6 +181,9 @@ def get_dataset_hash(dataset: Union[DataFrame, Connector, str]) -> str:
 
     if dataset_type == "pandas":
         return _get_pd_dataset_hash(dataset)
+
+    if dataset_type == "pyarrow":
+        return _get_pyarrow_dataset_hash(dataset)
 
     if dataset_type == "modin":
         return _get_modin_dataset_hash(dataset)

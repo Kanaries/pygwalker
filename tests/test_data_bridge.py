@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pandas as pd
+import pyarrow as pa
 
 from pygwalker.services import data_bridge as data_bridge_module
 from pygwalker.services.data_bridge import DataBridge
@@ -36,6 +37,23 @@ def test_data_bridge_initializes_browser_dataframe_path():
     assert bridge.kernel_computation is False
     assert bridge.origin_data_source == [{"city": "London", "value": 1}]
     assert bridge.dataset_type == "pandas_dataframe"
+    assert bridge.parse_dsl_type == "client"
+    assert [field["fid"] for field in bridge.field_specs] == ["city", "value"]
+
+
+def test_data_bridge_initializes_pyarrow_table_path():
+    bridge = DataBridge(
+        dataset=pa.table({"city": ["London"], "value": [1]}),
+        field_specs=[],
+        cloud_computation=False,
+        kernel_computation=False,
+        kanaries_api_key="",
+        cloud_service=FakeCloudService(),
+    )
+
+    assert bridge.kernel_computation is False
+    assert bridge.origin_data_source == [{"city": "London", "value": 1}]
+    assert bridge.dataset_type == "pyarrow_table"
     assert bridge.parse_dsl_type == "client"
     assert [field["fid"] for field in bridge.field_specs] == ["city", "value"]
 

@@ -5,9 +5,10 @@ import sys
 from sqlalchemy import create_engine
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 import pytest
 
-from pygwalker.services.data_parsers import get_parser
+from pygwalker.services.data_parsers import get_dataset_hash, get_parser
 from pygwalker.data_parsers.database_parser import Connector, DatabaseDataParser, text
 from pygwalker.data_parsers.database_parser import _check_view_sql
 from pygwalker.errors import ViewSqlSameColumnError
@@ -51,6 +52,17 @@ def test_data_parser_on_polars():
     assert dataset_parser.to_records(1) == to_records_no_kernel_result
 
 
+def test_data_parser_on_pyarrow_table():
+    table = pa.table({key: [row[key] for row in datas] for key in datas[0]})
+    dataset_parser = get_parser(table)
+
+    assert dataset_parser.dataset_type == "pyarrow_table"
+    assert dataset_parser.get_datas_by_sql(sql) == sql_result
+    assert dataset_parser.raw_fields == raw_fields_result
+    assert dataset_parser.to_records(1) == to_records_result
+    assert get_dataset_hash(table) == get_dataset_hash(table)
+
+
 def test_get_parser_reports_supported_inputs_for_unsupported_dataset():
     with pytest.raises(TypeError) as exc_info:
         get_parser(object())
@@ -58,6 +70,7 @@ def test_get_parser_reports_supported_inputs_for_unsupported_dataset():
     message = str(exc_info.value)
     assert "Unsupported dataset type: builtins.object" in message
     assert "pandas.DataFrame" in message
+    assert "pyarrow.Table" in message
     assert "pygwalker.data_parsers.database_parser.Connector" in message
     assert "cloud dataset id string" in message
 
