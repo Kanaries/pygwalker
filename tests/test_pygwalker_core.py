@@ -349,6 +349,45 @@ def test_pygwalker_kernel_data_query_callback_validates_payload(monkeypatch):
     assert "sql" in response["message"]
 
 
+def test_base_communication_envelope_routes_valid_message(monkeypatch):
+    walker = _make_walker(monkeypatch, kernel_computation=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg_envelope(
+        {
+            "action": "get_datas",
+            "data": {"sql": "SELECT SUM(value) AS total FROM pygwalker_mid_table"},
+            "rid": "request-1",
+        }
+    )
+
+    assert response == {
+        "code": 0,
+        "data": {"datas": [{"total": 3}]},
+        "message": "success",
+    }
+
+
+def test_base_communication_envelope_defaults_missing_data(monkeypatch):
+    walker = _make_walker(monkeypatch)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg_envelope({"action": "ping"})
+
+    assert response == {"code": 0, "data": {}, "message": "success"}
+
+
+def test_base_communication_envelope_rejects_missing_action():
+    comm = BaseCommunication("core")
+
+    response = comm._receive_msg_envelope({"data": {}})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "action" in response["message"]
+
+
 def test_pygwalker_batch_payload_query_callback_validates_payload(monkeypatch):
     walker = _make_walker(monkeypatch, kernel_computation=True)
     comm = BaseCommunication("core")

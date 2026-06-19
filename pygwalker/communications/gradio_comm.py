@@ -22,7 +22,7 @@ async def _pygwalker_router(req: Request) -> Response:
     json_data = await req.json()
 
     # pylint: disable=protected-access
-    result = comm_obj._receive_msg(json_data["action"], json_data["data"])
+    result = comm_obj._receive_msg_envelope(json_data)
     # pylint: enable=protected-access
 
     result = json.dumps(result, cls=DataFrameEncoder)

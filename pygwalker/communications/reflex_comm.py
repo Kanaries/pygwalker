@@ -22,13 +22,7 @@ async def _pygwalker_router(req: Request) -> Response:
     try:
         json_data = await req.json()
 
-        # Fixed: Input validation - check for required keys
-        if "action" not in json_data:
-            return JSONResponse({"success": False, "message": "Missing 'action' field in request"})
-        if "data" not in json_data:
-            return JSONResponse({"success": False, "message": "Missing 'data' field in request"})
-
-        result = comm_obj._receive_msg(json_data["action"], json_data["data"])
+        result = comm_obj._receive_msg_envelope(json_data)
 
         # Fixed: Proper JSON encoding with DataFrameEncoder
         encoded_result = json.loads(json.dumps(result, cls=DataFrameEncoder))
@@ -65,13 +59,7 @@ def _create_pygwalker_app() -> FastAPI:
             # Process the request with validation
             json_data = await request.json()
 
-            # Fixed: Input validation - check for required keys
-            if "action" not in json_data:
-                return JSONResponse({"success": False, "message": "Missing 'action' field in request"})
-            if "data" not in json_data:
-                return JSONResponse({"success": False, "message": "Missing 'data' field in request"})
-
-            result = comm_obj._receive_msg(json_data["action"], json_data["data"])
+            result = comm_obj._receive_msg_envelope(json_data)
 
             # Fixed: Proper JSON encoding with DataFrameEncoder
             encoded_result = json.loads(json.dumps(result, cls=DataFrameEncoder))

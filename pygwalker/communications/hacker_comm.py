@@ -46,14 +46,12 @@ class HackerCommunication(BaseCommunication):
     def _on_mesage(self, info: Dict[str, Any]):
         self.__increase += 1
         msg_json = json.loads(info["new"])
-        action = msg_json["action"]
-        data = msg_json["data"]
-        rid = msg_json["rid"]
 
-        if action == "finish_request":
+        if isinstance(msg_json, dict) and msg_json.get("action") == "finish_request":
             return
 
-        resp = self._receive_msg(action, data)
+        rid = msg_json.get("rid") if isinstance(msg_json, dict) else None
+        resp = self._receive_msg_envelope(msg_json)
         self.send_msg_async("finish_request", resp, rid)
 
     def _get_html_widget(self) -> Text:

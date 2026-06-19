@@ -27,12 +27,10 @@ class AnywidgetCommunication(BaseCommunication):
         if data.get("type", "") != "pyg_request":
             return
 
-        msg = data["msg"]
-        action = msg["action"]
-        rid = msg["rid"]
-
-        if action == "finish_request":
+        msg = data.get("msg", {})
+        if isinstance(msg, dict) and msg.get("action") == "finish_request":
             return
 
-        resp = self._receive_msg(action, msg["data"])
+        rid = msg.get("rid") if isinstance(msg, dict) else None
+        resp = self._receive_msg_envelope(msg)
         self.send_msg_async("finish_request", resp, rid)

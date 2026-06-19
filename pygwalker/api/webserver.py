@@ -91,7 +91,7 @@ class _PygWalkerHandler(http.server.SimpleHTTPRequestHandler):
         content_length = int(self.headers["Content-Length"])
         post_data = self.rfile.read(content_length).decode("utf-8")
         payload = json.loads(post_data)
-        result = self._walker.comm._receive_msg(payload["action"], payload["data"])
+        result = self._walker.comm._receive_msg_envelope(payload)
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()

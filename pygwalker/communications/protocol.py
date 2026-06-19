@@ -24,6 +24,12 @@ class DataQueryPayload(BaseModel):
     offset: Optional[int] = None
 
 
+class CommMessageRequest(BaseModel):
+    action: str
+    data: Dict[str, Any] = Field(default_factory=dict)
+    rid: Optional[str] = None
+
+
 class SqlQueryRequest(BaseModel):
     sql: str
 
