@@ -1,4 +1,3 @@
-import json
 from typing import Any, Callable, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
 import pandas as pd
@@ -12,7 +11,6 @@ from pygwalker.communications.protocol import (
     BatchPayloadQueryRequest,
     BatchSqlQueryRequest,
     ChatChartRequest,
-    CloudCallbackResponse,
     DataRowsResponse,
     EmptyResponse,
     LatestVisSpecResponse,
@@ -20,17 +18,14 @@ from pygwalker.communications.protocol import (
     PayloadQueryRequest,
     SaveChartRequest,
     SqlQueryRequest,
-    UploadCloudChartResponse,
-    UploadCloudDashboardResponse,
     UploadCloudChartRequest,
     UploadCloudDashboardRequest,
-    UploadSpecToCloudResponse,
     UpdateSpecRequest,
     UploadSpecToCloudRequest,
     dump_response,
     validate_request,
 )
-from pygwalker.services.config import set_config
+from pygwalker.services.cloud_communication import CloudCommunicationService
 from pygwalker.services.desktop_import import DesktopImportService
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.preview_image import PreviewImageTool
@@ -54,12 +49,14 @@ class CommHandler:
         preview_tool: Optional[PreviewImageTool] = None,
         upload_tool_cls: Callable[[BaseCommunication], BatchUploadDatasToolOnWidgets] = BatchUploadDatasToolOnWidgets,
         desktop_import: Optional[DesktopImportService] = None,
+        cloud_communication: Optional[CloudCommunicationService] = None,
     ):
         self.walker = walker
         self.comm = comm
         self.preview_tool = preview_tool
         self.upload_tool = upload_tool_cls(comm)
         self.desktop_import = desktop_import or DesktopImportService()
+        self.cloud_communication = cloud_communication or CloudCommunicationService(walker)
 
     def register(self) -> None:
         self.walker.comm = self.comm
@@ -70,17 +67,23 @@ class CommHandler:
         self._register_request("open_in_desktop", OpenDesktopRequest, self.open_in_desktop)
 
         if self.walker.use_save_tool:
-            self._register_request("upload_spec_to_cloud", UploadSpecToCloudRequest, self.upload_spec_to_cloud)
+            self._register_request(
+                "upload_spec_to_cloud", UploadSpecToCloudRequest, self.cloud_communication.upload_spec_to_cloud
+            )
             self._register_request("update_spec", UpdateSpecRequest, self.update_spec)
             self._register_request("save_chart", SaveChartRequest, self.save_chart)
 
         if self.walker.show_cloud_tool:
-            self._register_request("upload_to_cloud_charts", UploadCloudChartRequest, self.upload_to_cloud_charts)
             self._register_request(
-                "upload_to_cloud_dashboard", UploadCloudDashboardRequest, self.upload_to_cloud_dashboard
+                "upload_to_cloud_charts", UploadCloudChartRequest, self.cloud_communication.upload_to_cloud_charts
             )
-            self._register_request("get_spec_by_text", AskSpecRequest, self.get_spec_by_text)
-            self._register_request("get_chart_by_chats", ChatChartRequest, self.get_chart_by_chats)
+            self._register_request(
+                "upload_to_cloud_dashboard",
+                UploadCloudDashboardRequest,
+                self.cloud_communication.upload_to_cloud_dashboard,
+            )
+            self._register_request("get_spec_by_text", AskSpecRequest, self.cloud_communication.get_spec_by_text)
+            self._register_request("get_chart_by_chats", ChatChartRequest, self.cloud_communication.get_chart_by_chats)
 
         if self.walker.kernel_computation:
             self._register_request("get_datas", SqlQueryRequest, self.get_datas)
@@ -134,16 +137,6 @@ class CommHandler:
         self.walker.spec_manager.write_back(self.walker.cloud_service, __version__)
         return dump_response(EmptyResponse())
 
-    def upload_spec_to_cloud(self, request: UploadSpecToCloudRequest):
-        if request.new_token:
-            set_config({"kanaries_token": request.new_token})
-            GlobalVarManager.kanaries_api_key = request.new_token
-        spec_obj = self.walker.spec_manager.build_spec_obj(__version__)
-        workspace_name = self.walker.cloud_service.get_kanaries_user_info()["workspaceName"]
-        path = f"{workspace_name}/{request.file_name}"
-        self.walker.cloud_service.write_config_to_cloud(path, json.dumps(spec_obj))
-        return dump_response(UploadSpecToCloudResponse(specFilePath=path))
-
     def get_datas(self, request: SqlQueryRequest):
         datas = self.walker.data_parser.get_datas_by_sql(request.sql)
         return dump_response(DataRowsResponse(datas=datas))
@@ -162,14 +155,6 @@ class CommHandler:
         )
         return dump_response(BatchDataRowsResponse(datas=result))
 
-    def get_spec_by_text(self, request: AskSpecRequest):
-        callback = self.walker.other_props.get("custom_ask_callback", self.walker.cloud_service.get_spec_by_text)
-        return dump_response(CloudCallbackResponse(data=callback(request.metas, request.query)))
-
-    def get_chart_by_chats(self, request: ChatChartRequest):
-        callback = self.walker.other_props.get("custom_chat_callback", self.walker.cloud_service.get_chart_by_chats)
-        return dump_response(CloudCallbackResponse(data=callback(request.metas, request.chats)))
-
     def export_dataframe_by_payload(self, request: PayloadQueryRequest):
         df = pd.DataFrame(self.walker.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True)))
         GlobalVarManager.set_last_exported_dataframe(df)
@@ -181,32 +166,6 @@ class CommHandler:
         GlobalVarManager.set_last_exported_dataframe(df)
         self.walker._last_exported_dataframe = df
         return dump_response(EmptyResponse())
-
-    def upload_to_cloud_charts(self, request: UploadCloudChartRequest):
-        result = self.walker.cloud_service.upload_cloud_chart(
-            data_parser=self.walker.data_parser,
-            chart_name=request.chart_name,
-            dataset_name=request.dataset_name,
-            workflow=request.workflow,
-            spec_list=request.vis_spec,
-            is_public=request.is_public,
-        )
-        return dump_response(UploadCloudChartResponse(chartId=result["chart_id"], datasetId=result["dataset_id"]))
-
-    def upload_to_cloud_dashboard(self, request: UploadCloudDashboardRequest):
-        result = self.walker.cloud_service.upload_cloud_dashboard(
-            data_parser=self.walker.data_parser,
-            dashboard_name=request.chart_name,
-            dataset_name=request.dataset_name,
-            workflow_list=request.workflow_list,
-            spec_list=request.vis_spec,
-            is_public=request.is_public,
-            create_dashboard_flag=request.is_create_dashboard,
-            appearance=self.walker.appearance,
-        )
-        return dump_response(
-            UploadCloudDashboardResponse(dashboardId=result["dashboard_id"], datasetId=result["dataset_id"])
-        )
 
     def open_in_desktop(self, request: OpenDesktopRequest):
         self.desktop_import.import_to_desktop(
