@@ -106,8 +106,9 @@ def _check_update() -> Dict[str, Any]:
         if isinstance(result, Coroutine):
             result = _sync_get_async_result(result)
         return result
-    finally:
-        pass
+    except Exception as exc:
+        logger.debug("Failed to check for PyGWalker updates: %s", exc)
+        return {}
 
 
 def check_update() -> None:

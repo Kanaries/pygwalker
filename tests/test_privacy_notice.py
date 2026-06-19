@@ -99,3 +99,71 @@ track_event("invoke_props", {"mode": "test"})
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_analytics_clients_are_configured_without_background_workers(monkeypatch):
+    fake_analytics = SimpleNamespace(
+        write_key=None,
+        sync_mode=False,
+        timeout=15,
+        max_retries=10,
+        track=lambda **_kwargs: None,
+    )
+    fake_kanaries_track = SimpleNamespace(
+        config=SimpleNamespace(
+            auth_token=None,
+            proxies=None,
+            sync_send=False,
+            timeout=15,
+            max_retries=5,
+            thread=1,
+        ),
+        track=lambda _payload: None,
+    )
+
+    previous_analytics_client = track._analytics_client
+    previous_kanaries_track_client = track._kanaries_track_client
+    monkeypatch.setitem(sys.modules, "segment", SimpleNamespace(analytics=fake_analytics))
+    monkeypatch.setitem(sys.modules, "segment.analytics", fake_analytics)
+    monkeypatch.setitem(sys.modules, "kanaries_track", fake_kanaries_track)
+    track._analytics_client = None
+    track._kanaries_track_client = None
+
+    try:
+        assert track._get_analytics_client() is fake_analytics
+        assert track._get_kanaries_track_client() is fake_kanaries_track
+    finally:
+        track._analytics_client = previous_analytics_client
+        track._kanaries_track_client = previous_kanaries_track_client
+
+    assert fake_analytics.sync_mode is True
+    assert fake_analytics.timeout == 1
+    assert fake_analytics.max_retries == 0
+    assert fake_kanaries_track.config.sync_send is True
+    assert fake_kanaries_track.config.timeout == 1
+    assert fake_kanaries_track.config.max_retries == 1
+    assert fake_kanaries_track.config.thread == 0
+
+
+def test_kanaries_track_single_retry_setting_does_not_loop(monkeypatch):
+    from kanaries_track.request import RequestClient
+
+    calls = []
+    client = RequestClient(
+        host="https://example.invalid",
+        auth_token="test-token",
+        max_retries=1,
+        timeout=1,
+        verify=True,
+        proxy={},
+    )
+
+    def fail_post(*_args, **_kwargs):
+        calls.append(True)
+        raise OSError("network unavailable")
+
+    monkeypatch.setattr(client.session, "post", fail_post)
+
+    client.track([{"event": "test"}])
+
+    assert calls == [True]

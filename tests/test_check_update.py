@@ -72,3 +72,12 @@ def test_check_update_does_not_start_thread_in_offline_mode(monkeypatch):
         GlobalVarManager.privacy = previous_privacy
 
     assert started_threads == []
+
+
+def test_check_update_suppresses_background_request_errors(monkeypatch):
+    def fail_request(_url):
+        raise OSError("network unavailable")
+
+    monkeypatch.setattr(check_update, "_request_on_python", fail_request)
+
+    assert check_update._check_update() == {}

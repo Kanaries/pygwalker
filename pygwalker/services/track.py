@@ -21,6 +21,9 @@ def _get_analytics_client():
         import segment.analytics as analytics
 
         analytics.write_key = SEGMENT_WRITE_KEY
+        analytics.sync_mode = True
+        analytics.timeout = 1
+        analytics.max_retries = 0
         _analytics_client = analytics
     return _analytics_client
 
@@ -32,7 +35,10 @@ def _get_kanaries_track_client():
 
         kanaries_track.config.auth_token = KANARIES_PUBLIC_KEY
         kanaries_track.config.proxies = {}
-        kanaries_track.config.max_retries = 2
+        kanaries_track.config.sync_send = True
+        kanaries_track.config.timeout = 1
+        kanaries_track.config.max_retries = 1
+        kanaries_track.config.thread = 0
         _kanaries_track_client = kanaries_track
     return _kanaries_track_client
 
