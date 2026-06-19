@@ -553,6 +553,17 @@ def test_pygwalker_kernel_data_query_callback_validates_payload(monkeypatch):
     assert "sql" in response["message"]
 
 
+def test_pygwalker_kernel_data_query_callback_rejects_unknown_fields(monkeypatch):
+    walker = _make_walker(monkeypatch, kernel_computation=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("get_datas", {"sql": "SELECT 1", "unexpected": True})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "unexpected" in response["message"]
+
+
 def test_base_communication_envelope_routes_valid_message(monkeypatch):
     walker = _make_walker(monkeypatch, kernel_computation=True)
     comm = BaseCommunication("core")
@@ -562,6 +573,7 @@ def test_base_communication_envelope_routes_valid_message(monkeypatch):
         {
             "action": "get_datas",
             "data": {"sql": "SELECT SUM(value) AS total FROM pygwalker_mid_table"},
+            "gid": "core",
             "rid": "request-1",
         }
     )
@@ -613,6 +625,20 @@ def test_pygwalker_batch_payload_query_callback_validates_payload(monkeypatch):
 
     assert response["code"] == ErrorCode.INVALID_REQUEST
     assert "queryList" in response["message"] or "query_list" in response["message"]
+
+
+def test_pygwalker_payload_query_callback_rejects_unknown_nested_fields(monkeypatch):
+    walker = _make_walker(monkeypatch, kernel_computation=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg(
+        "get_datas_by_payload",
+        {"payload": {"workflow": [{"type": "view"}], "unexpected": True}},
+    )
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "unexpected" in response["message"]
 
 
 def test_pygwalker_browser_callbacks_do_not_register_data_query_endpoints(monkeypatch):

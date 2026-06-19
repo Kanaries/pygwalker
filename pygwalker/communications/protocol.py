@@ -2,6 +2,11 @@ from typing import Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel, Field, ValidationError
 
+try:
+    from pydantic import ConfigDict
+except ImportError:  # pragma: no cover - only exercised on pydantic v1
+    ConfigDict = None
+
 from pygwalker.errors import CommProtocolError
 from pygwalker.utils.pydantic_compat import model_dump, model_validate
 
@@ -17,47 +22,60 @@ def dump_response(response: BaseModel) -> Dict[str, Any]:
     return model_dump(response, by_alias=True, exclude_none=True)
 
 
-class DataQueryPayload(BaseModel):
+if ConfigDict is not None:
+
+    class CommBaseModel(BaseModel):
+        model_config = ConfigDict(extra="forbid")
+
+else:
+
+    class CommBaseModel(BaseModel):
+        class Config:
+            extra = "forbid"
+
+
+class DataQueryPayload(CommBaseModel):
     workflow: List[Dict[str, Any]]
     tag: Optional[str] = None
     limit: Optional[int] = None
     offset: Optional[int] = None
 
 
-class CommMessageRequest(BaseModel):
+class CommMessageRequest(CommBaseModel):
     action: str
     data: Dict[str, Any] = Field(default_factory=dict)
     rid: Optional[str] = None
+    gid: Optional[str] = None
 
 
-class SqlQueryRequest(BaseModel):
+class SqlQueryRequest(CommBaseModel):
     sql: str
 
 
-class PayloadQueryRequest(BaseModel):
+class PayloadQueryRequest(CommBaseModel):
     payload: DataQueryPayload
 
 
-class BatchSqlQueryRequest(BaseModel):
+class BatchSqlQueryRequest(CommBaseModel):
     query_list: List[str] = Field(..., alias="queryList")
 
 
-class BatchPayloadQueryRequest(BaseModel):
+class BatchPayloadQueryRequest(CommBaseModel):
     query_list: List[DataQueryPayload] = Field(..., alias="queryList")
 
 
-class UpdateSpecRequest(BaseModel):
+class UpdateSpecRequest(CommBaseModel):
     vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
     chart_data: Dict[str, Any] = Field(..., alias="chartData")
     workflow_list: List[Dict[str, Any]] = Field(default_factory=list, alias="workflowList")
 
 
-class UploadSpecToCloudRequest(BaseModel):
+class UploadSpecToCloudRequest(CommBaseModel):
     file_name: str = Field(..., alias="fileName")
     new_token: str = Field("", alias="newToken")
 
 
-class ChartImageRequest(BaseModel):
+class ChartImageRequest(CommBaseModel):
     row_index: int = Field(..., alias="rowIndex")
     col_index: int = Field(..., alias="colIndex")
     data: str
@@ -67,7 +85,7 @@ class ChartImageRequest(BaseModel):
     canvas_width: int = Field(..., alias="canvasWidth")
 
 
-class SaveChartRequest(BaseModel):
+class SaveChartRequest(CommBaseModel):
     charts: List[ChartImageRequest]
     single_chart: str = Field(..., alias="singleChart")
     n_rows: int = Field(..., alias="nRows")
@@ -75,22 +93,22 @@ class SaveChartRequest(BaseModel):
     title: str
 
 
-class AskSpecRequest(BaseModel):
+class AskSpecRequest(CommBaseModel):
     metas: List[Dict[str, Any]]
     query: str
 
 
-class ChatChartRequest(BaseModel):
+class ChatChartRequest(CommBaseModel):
     metas: List[Dict[str, Any]]
     chats: List[Dict[str, Any]]
 
 
-class OpenDesktopRequest(BaseModel):
+class OpenDesktopRequest(CommBaseModel):
     spec: List[Dict[str, Any]]
     fields: List[Dict[str, Any]]
 
 
-class UploadCloudChartRequest(BaseModel):
+class UploadCloudChartRequest(CommBaseModel):
     chart_name: str = Field(..., alias="chartName")
     dataset_name: str = Field(..., alias="datasetName")
     is_public: bool = Field(..., alias="isPublic")
@@ -98,7 +116,7 @@ class UploadCloudChartRequest(BaseModel):
     workflow: List[Dict[str, Any]]
 
 
-class UploadCloudDashboardRequest(BaseModel):
+class UploadCloudDashboardRequest(CommBaseModel):
     chart_name: str = Field(..., alias="chartName")
     dataset_name: str = Field(..., alias="datasetName")
     is_public: bool = Field(..., alias="isPublic")
@@ -107,35 +125,35 @@ class UploadCloudDashboardRequest(BaseModel):
     workflow_list: List[List[Dict[str, Any]]] = Field(..., alias="workflowList")
 
 
-class EmptyResponse(BaseModel):
+class EmptyResponse(CommBaseModel):
     pass
 
 
-class LatestVisSpecResponse(BaseModel):
+class LatestVisSpecResponse(CommBaseModel):
     vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
 
 
-class DataRowsResponse(BaseModel):
+class DataRowsResponse(CommBaseModel):
     datas: List[Dict[str, Any]]
 
 
-class BatchDataRowsResponse(BaseModel):
+class BatchDataRowsResponse(CommBaseModel):
     datas: List[List[Dict[str, Any]]]
 
 
-class UploadSpecToCloudResponse(BaseModel):
+class UploadSpecToCloudResponse(CommBaseModel):
     spec_file_path: str = Field(..., alias="specFilePath")
 
 
-class CloudCallbackResponse(BaseModel):
+class CloudCallbackResponse(CommBaseModel):
     data: Any
 
 
-class UploadCloudChartResponse(BaseModel):
+class UploadCloudChartResponse(CommBaseModel):
     chart_id: str = Field(..., alias="chartId")
     dataset_id: str = Field(..., alias="datasetId")
 
 
-class UploadCloudDashboardResponse(BaseModel):
+class UploadCloudDashboardResponse(CommBaseModel):
     dashboard_id: str = Field(..., alias="dashboardId")
     dataset_id: str = Field(..., alias="datasetId")
