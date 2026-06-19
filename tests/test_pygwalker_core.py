@@ -1,4 +1,5 @@
 import base64
+from contextlib import nullcontext
 import json
 from types import SimpleNamespace
 import urllib.parse
@@ -21,6 +22,16 @@ from pygwalker.services import jupyter_display as jupyter_display_module
 from pygwalker.services import props_tracker as props_tracker_module
 from pygwalker.services import render_manager as render_manager_module
 from pygwalker.services.global_var import GlobalVarManager
+
+
+def _expected_legacy_computation_warning(kwargs):
+    if (
+        kwargs.get("kernel_computation") is not None
+        or kwargs.get("use_kernel_calc") is not None
+        or kwargs.get("cloud_computation") is True
+    ):
+        return pytest.warns(DeprecationWarning, match="deprecated")
+    return nullcontext()
 
 
 def _make_walker(monkeypatch, **kwargs):
@@ -1257,11 +1268,12 @@ def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
     monkeypatch.setattr(PygWalker, "display_on_convert_html", lambda self: None)
     cloud_uploads = _patch_cloud_computation_parser(monkeypatch) if kwargs.get("computation") == "cloud" else []
 
-    walker = jupyter.walk(
-        pd.DataFrame([{"city": "London", "value": 1}]),
-        gid="entry",
-        **kwargs,
-    )
+    with _expected_legacy_computation_warning(kwargs):
+        walker = jupyter.walk(
+            pd.DataFrame([{"city": "London", "value": 1}]),
+            gid="entry",
+            **kwargs,
+        )
 
     assert walker.kernel_computation is expected_kernel_computation
     if kwargs.get("computation") == "cloud":
@@ -1285,12 +1297,13 @@ def test_jupyter_walk_rejects_live_computation_for_convert_env(monkeypatch, kwar
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
 
-    with pytest.raises(ValueError, match="JupyterConvert/static HTML output does not support"):
-        jupyter.walk(
-            pd.DataFrame([{"city": "London", "value": 1}]),
-            env="JupyterConvert",
-            **kwargs,
-        )
+    with _expected_legacy_computation_warning(kwargs):
+        with pytest.raises(ValueError, match="JupyterConvert/static HTML output does not support"):
+            jupyter.walk(
+                pd.DataFrame([{"city": "London", "value": 1}]),
+                env="JupyterConvert",
+                **kwargs,
+            )
 
 
 def test_jupyter_walk_accepts_explicit_spec_path(monkeypatch, tmp_path):

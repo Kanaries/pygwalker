@@ -223,14 +223,16 @@ def test_walker_to_streamlit_maps_legacy_cloud_computation_and_drops_kernel_flag
         SimpleNamespace(StreamlitRenderer=FakeStreamlitRenderer),
     )
 
-    walker = walker_api.Walker(
-        pd.DataFrame([{"city": "London"}]),
-        cloud_computation=True,
-        kernel_computation=True,
-        use_kernel_calc=True,
-    )
+    with pytest.warns(DeprecationWarning, match="deprecated") as warnings:
+        walker = walker_api.Walker(
+            pd.DataFrame([{"city": "London"}]),
+            cloud_computation=True,
+            kernel_computation=True,
+            use_kernel_calc=True,
+        )
     walker.to_streamlit()
 
+    assert len(warnings) == 3
     assert renderer_calls[0][2]["computation"] == "cloud"
     assert renderer_calls[0][2]["kernel_computation"] is None
     assert renderer_calls[0][2]["use_kernel_calc"] is None

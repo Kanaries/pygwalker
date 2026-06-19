@@ -679,13 +679,14 @@ def test_webserver_table_builds_table_renderer(monkeypatch):
         lambda walker, port, *, auto_open, auto_shutdown: starts.append((walker, port, auto_open, auto_shutdown)),
     )
 
-    webserver.table(
-        pd.DataFrame([{"city": "London"}]),
-        port=8767,
-        auto_open=True,
-        auto_shutdown=False,
-        kernel_computation=False,
-    )
+    with pytest.warns(DeprecationWarning, match="kernel_computation"):
+        webserver.table(
+            pd.DataFrame([{"city": "London"}]),
+            port=8767,
+            auto_open=True,
+            auto_shutdown=False,
+            kernel_computation=False,
+        )
 
     walker = FakeWalker.instances[0]
     assert walker.kwargs["spec"] == ""
