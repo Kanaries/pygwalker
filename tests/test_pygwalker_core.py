@@ -99,6 +99,48 @@ def test_pygwalker_props_expose_kernel_data_path(monkeypatch):
     assert props["useKernelCalc"] is True
 
 
+def test_pygwalker_get_props_falls_back_without_props_builder(monkeypatch):
+    track_calls = []
+    monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "fallback-user")
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *args, **kwargs: track_calls.append((args, kwargs)))
+    walker = PygWalker.__new__(PygWalker)
+    walker.gid = "fallback"
+    walker.data_bridge = SimpleNamespace(
+        origin_data_source=[{"city": "London"}],
+        field_specs=[{"fid": "city"}],
+        kernel_computation=False,
+        parse_dsl_type="client",
+        dataset_type="pandas_dataframe",
+        data_parser=SimpleNamespace(field_metas=[]),
+    )
+    walker.spec_manager = SimpleNamespace(
+        vis_spec=[],
+        spec_type="empty",
+        chart_map={},
+    )
+    walker.theme_key = "g2"
+    walker.appearance = "light"
+    walker.source_invoke_code = ""
+    walker.tunnel_id = "tunnel"
+    walker.data_source_id = "data-source"
+    walker.show_cloud_tool = False
+    walker.use_save_tool = False
+    walker.gw_mode = "explore"
+    walker.other_props = {}
+    walker.is_export_dataframe = False
+    walker.default_tab = "vis"
+    walker.cloud_computation = False
+    walker.kanaries_api_key = ""
+
+    props = walker._get_props("fallback-env")
+
+    assert props["id"] == "fallback"
+    assert props["hashcode"] == "fallback-user"
+    assert props["dataSource"] == [{"city": "London"}]
+    assert props["rawFields"] == [{"fid": "city", "offset": 0}]
+    assert track_calls[0][0][0] == "invoke_props"
+
+
 @pytest.mark.parametrize(
     ("dataset_type", "expected_parse_dsl_type"),
     [

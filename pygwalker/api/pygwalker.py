@@ -28,6 +28,7 @@ from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets, BatchU
 from pygwalker.services.config import get_local_user_id
 from pygwalker.services.comm_handler import CommHandler
 from pygwalker.services.data_bridge import DataBridge
+from pygwalker.services.props_builder import PropsBuilder
 from pygwalker.services.spec_manager import SpecManager
 from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
@@ -35,7 +36,6 @@ from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
-from pygwalker import __version__
 
 
 class PygWalker:
@@ -94,6 +94,7 @@ class PygWalker:
         self.default_tab = default_tab
         self.cloud_computation = cloud_computation
         self.comm = None
+        self.props_builder = PropsBuilder(self, lambda: get_local_user_id())
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.kernel_computation:
@@ -419,47 +420,10 @@ class PygWalker:
     def _get_props(
         self, env: str = "", data_source: Optional[Dict[str, Any]] = None, need_load_datas: bool = False
     ) -> Dict[str, Any]:
-        if data_source is None:
-            data_source = self.origin_data_source
-        props = {
-            "id": self.gid,
-            "dataSource": data_source,
-            "len": len(data_source),
-            "version": __version__,
-            "hashcode": get_local_user_id(),
-            "userConfig": {
-                "privacy": GlobalVarManager.privacy,
-            },
-            "visSpec": self.vis_spec,
-            "rawFields": [{**field, "offset": 0} for field in self.field_specs],
-            "fieldkeyGuard": False,
-            "themeKey": self.theme_key,
-            "dark": self.appearance,
-            "sourceInvokeCode": self.source_invoke_code,
-            "dataSourceProps": {
-                "tunnelId": self.tunnel_id,
-                "dataSourceId": self.data_source_id,
-            },
-            "env": env,
-            "specType": self.spec_type,
-            "needLoadDatas": not self.kernel_computation and need_load_datas,
-            "showCloudTool": self.show_cloud_tool,
-            "enableAskViz": GlobalVarManager.enable_askviz,
-            "enableVlChat": GlobalVarManager.enable_vlchat,
-            "needInitChart": not self._chart_map,
-            "useKernelCalc": self.kernel_computation,
-            "useSaveTool": self.use_save_tool,
-            "parseDslType": self.parse_dsl_type,
-            "gwMode": self.gw_mode,
-            "needLoadLastSpec": True,
-            "datasetType": self.dataset_type,
-            "extraConfig": self.other_props,
-            "fieldMetas": self.data_parser.field_metas,
-            "isExportDataFrame": self.is_export_dataframe,
-            "defaultTab": self.default_tab,
-            "useCloudCalc": self.cloud_computation,
-        }
-
+        props_builder = getattr(self, "props_builder", None)
+        if props_builder is None:
+            props_builder = PropsBuilder(self, lambda: get_local_user_id())
+        props = props_builder.build(env, data_source, need_load_datas)
         self._send_props_track(props)
 
         return props
