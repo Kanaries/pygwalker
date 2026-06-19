@@ -8,6 +8,7 @@ FORBIDDEN_TRACKED_PATH_PARTS = (
     "__pycache__/",
     ".pytest_cache/",
     ".ipynb_checkpoints/",
+    "pygwalker/templates/dist/",
 )
 FORBIDDEN_TRACKED_SUFFIXES = (
     ".pyc",
