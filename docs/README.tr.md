@@ -1,5 +1,8 @@
 > Eğer mevcut dilin anadiliyseniz, bu belgenin çevirisini güncel tutmamıza yardımcı olmaya hoş geldiniz. Bir PR [buradan](https://github.com/Kanaries/pygwalker/pulls) yapabilirsiniz.
 
+> [!IMPORTANT]
+> This translation is community-maintained and may lag behind the [English README](../README.md). Treat the English README as the source of truth for API reference, installation, and development instructions.
+
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/Kanaries/pygwalker/assets/22167673/bed8b3db-fda8-43e7-8ad2-71f6afb9dddd"></a></p>
 
 <h2 align="center">PyGWalker: Görselleştirmeyle Keşif Amaçlı Veri Analizi için Python Kütüphanesi</h2>

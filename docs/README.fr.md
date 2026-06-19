@@ -1,5 +1,8 @@
 > Si vous êtes un locuteur natif de la langue actuelle, nous vous invitons à nous aider à maintenir la traduction de ce document. Vous pouvez faire une PR [ici](https://github.com/Kanaries/pygwalker/pulls)
 
+> [!IMPORTANT]
+> This translation is community-maintained and may lag behind the [English README](../README.md). Treat the English README as the source of truth for API reference, installation, and development instructions.
+
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/Kanaries/pygwalker/assets/22167673/bed8b3db-fda8-43e7-8ad2-71f6afb9dddd"></a></p>
 
 <h2 align="center">Une Bibliothèque Python pour l'Analyse Exploratoire de Données avec Visualisation.</h2>

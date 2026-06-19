@@ -1,5 +1,8 @@
 [English](README.md) | [Español](./docs/README.es.md) | [Français](./docs/README.fr.md) | [Deutsch](./docs/README.de.md) | [中文](./docs/README.zh.md) | [Türkçe](./docs/README.tr.md) | [日本語](./docs/README.ja.md) | [한국어](./docs/README.ko.md) | [Русский](./docs/README.ru.md)
 
+> [!NOTE]
+> The English README is the source of truth for the API reference, installation, and development instructions. Translated READMEs are community-maintained and may lag behind this file.
+
 
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/user-attachments/assets/f90db669-6e5a-45d3-942e-547c9d0471c9" /></a></p>
 
