@@ -1,12 +1,20 @@
 import { v4 as uuidv4 } from 'uuid';
 import commonStore from '../store/common';
 import { Streamlit } from "streamlit-component-lib"
-import type { ICommResponse } from '../interfaces';
+import type { ICommAction, ICommRequestMap, ICommResponse, ICommResponseMap } from '../interfaces';
 
 interface ICommunication {
-    sendMsg: <TData = any>(action: string, data: any, timeout?: number) => Promise<ICommResponse<TData>>;
+    sendMsg: <TAction extends ICommAction>(
+        action: TAction,
+        data: ICommRequestMap[TAction],
+        timeout?: number
+    ) => Promise<ICommResponse<ICommResponseMap[TAction]>>;
     registerEndpoint: (action: string, callback: (data: any) => any) => void;
-    sendMsgAsync: (action: string, data: any, rid: string | null) => void;
+    sendMsgAsync: <TAction extends ICommAction>(
+        action: TAction,
+        data: ICommRequestMap[TAction],
+        rid?: string | null
+    ) => void;
 }
 
 const getSignalName = (rid: string) => {
@@ -87,15 +95,19 @@ const initJupyterCommunication = (gid: string) => {
         const callback = endpoints.get(action);
         if (callback) {
             const resp = callback(data.data) ?? {};
-            sendMsgAsync("finish_request", resp, data.rid);
+            sendRawMsgAsync("finish_request", resp, data.rid);
         }
     }
 
-    const sendMsg = async<TData = any>(action: string, data: any, timeout: number = 30_000): Promise<ICommResponse<TData>> => {
+    const sendMsg = async<TAction extends ICommAction>(
+        action: TAction,
+        data: ICommRequestMap[TAction],
+        timeout: number = 30_000
+    ): Promise<ICommResponse<ICommResponseMap[TAction]>> => {
         const rid = uuidv4();
-        const promise = new Promise<ICommResponse<TData>>((resolve, reject) => {
+        const promise = new Promise<ICommResponse<ICommResponseMap[TAction]>>((resolve, reject) => {
             setTimeout(() => {
-                sendMsgAsync(action, data, rid);
+                sendRawMsgAsync(action, data, rid);
             }, 0);
             const timer = setTimeout(() => {
                 raiseRequestError("communication timeout", 0);
@@ -115,9 +127,17 @@ const initJupyterCommunication = (gid: string) => {
         return promise;
     }
 
-    const sendMsgAsync = (action: string, data: any, rid: string | null) => {
+    const sendRawMsgAsync = (action: string, data: any, rid: string | null = null) => {
         rid = rid ?? uuidv4();
         fetchOnJupyter(JSON.stringify({ gid, rid, action, data }));
+    }
+
+    const sendMsgAsync = <TAction extends ICommAction>(
+        action: TAction,
+        data: ICommRequestMap[TAction],
+        rid: string | null = null
+    ) => {
+        sendRawMsgAsync(action, data, rid);
     }
 
     const registerEndpoint = (action: string, callback: (data: any) => any) => {
@@ -206,7 +226,11 @@ const initHttpCommunication = async(gid: string, baseUrl: string) => {
     }
    url = "/" + url.replace(new RegExp(`/*`), "");
 
-    const sendMsg = async<TData = any>(action: string, data: any, timeout: number = 30_000): Promise<ICommResponse<TData>> => {
+    const sendMsg = async<TAction extends ICommAction>(
+        action: TAction,
+        data: ICommRequestMap[TAction],
+        timeout: number = 30_000
+    ): Promise<ICommResponse<ICommResponseMap[TAction]>> => {
         const timer = setTimeout(() => {
             raiseRequestError("communication timeout", 0);
             throw(new Error("get result timeout"));
@@ -223,7 +247,7 @@ const initHttpCommunication = async(gid: string, baseUrl: string) => {
         }
     }
 
-    const sendMsgAsync = async(action: string, data: any) => {
+    const sendMsgAsync = async<TAction extends ICommAction>(action: TAction, data: ICommRequestMap[TAction]) => {
         const rid = uuidv4();
         return await (await fetch(
             url,
@@ -270,9 +294,13 @@ const initAnywidgetCommunication = async(gid: string, model: import("@anywidget/
         onMessage(msg.data);
     });
 
-    const sendMsg = async<TData = any>(action: string, data: any, timeout: number = 30_000): Promise<ICommResponse<TData>> => {
+    const sendMsg = async<TAction extends ICommAction>(
+        action: TAction,
+        data: ICommRequestMap[TAction],
+        timeout: number = 30_000
+    ): Promise<ICommResponse<ICommResponseMap[TAction]>> => {
         const rid = uuidv4();
-        const promise = new Promise<ICommResponse<TData>>((resolve, reject) => {
+        const promise = new Promise<ICommResponse<ICommResponseMap[TAction]>>((resolve, reject) => {
             setTimeout(() => {
                 sendMsgAsync(action, data, rid);
             }, 0);
@@ -294,7 +322,11 @@ const initAnywidgetCommunication = async(gid: string, model: import("@anywidget/
         return promise;
     }
 
-    const sendMsgAsync = (action: string, data: any, rid: string | null) => {
+    const sendMsgAsync = <TAction extends ICommAction>(
+        action: TAction,
+        data: ICommRequestMap[TAction],
+        rid: string | null = null
+    ) => {
         rid = rid ?? uuidv4();
         model.send({type: "pyg_request", msg: { gid, rid, action, data }});
     }

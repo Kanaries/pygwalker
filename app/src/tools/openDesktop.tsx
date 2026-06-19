@@ -4,7 +4,7 @@ import { tracker } from "@/utils/tracker";
 import { ComputerDesktopIcon } from "@heroicons/react/24/outline";
 
 import type { ToolbarButtonItem } from "@kanaries/graphic-walker/components/toolbar/toolbar-button";
-import type { IAppProps, ICommEmptyResponse, ICommOpenDesktopRequest } from "@/interfaces";
+import type { IAppProps, ICommOpenDesktopRequest } from "@/interfaces";
 import { VizSpecStore } from "@kanaries/graphic-walker";
 import communicationStore from "@/store/communication";
 
@@ -15,7 +15,7 @@ export function getOpenDesktopTool(props: IAppProps, storeRef: React.MutableRefO
             spec: JSON.parse(JSON.stringify(storeRef.current?.visList)),
             fields: JSON.parse(JSON.stringify(storeRef.current?.meta)),
         };
-        await communicationStore.comm?.sendMsg<ICommEmptyResponse>("open_in_desktop", request);
+        await communicationStore.comm?.sendMsg("open_in_desktop", request);
     };
     return {
         key: "open_in_desktop",

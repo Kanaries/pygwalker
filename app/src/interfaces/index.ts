@@ -154,3 +154,45 @@ export interface ICommUploadCloudDashboardResponse {
     dashboardId: string;
     datasetId: string;
 }
+
+export interface ICommRequestMap {
+    ping: ICommEmptyResponse;
+    request_data: ICommEmptyResponse;
+    get_latest_vis_spec: ICommEmptyResponse;
+    save_chart: ICommSaveChartRequest;
+    update_spec: ICommUpdateSpecRequest;
+    upload_spec_to_cloud: ICommUploadSpecToCloudRequest;
+    get_datas: ICommSqlQueryRequest;
+    get_datas_by_payload: ICommPayloadQueryRequest;
+    batch_get_datas_by_sql: ICommBatchQueryRequest<string>;
+    batch_get_datas_by_payload: ICommBatchQueryRequest<IDataQueryPayload>;
+    get_spec_by_text: ICommAskSpecRequest;
+    get_chart_by_chats: ICommChatChartRequest;
+    export_dataframe_by_payload: ICommPayloadQueryRequest;
+    export_dataframe_by_sql: ICommSqlQueryRequest;
+    upload_to_cloud_charts: ICommUploadCloudChartRequest;
+    upload_to_cloud_dashboard: ICommUploadCloudDashboardRequest;
+    open_in_desktop: ICommOpenDesktopRequest;
+}
+
+export interface ICommResponseMap {
+    ping: ICommEmptyResponse;
+    request_data: ICommEmptyResponse;
+    get_latest_vis_spec: ICommLatestVisSpecResponse;
+    save_chart: ICommEmptyResponse;
+    update_spec: ICommEmptyResponse;
+    upload_spec_to_cloud: ICommUploadSpecToCloudResponse;
+    get_datas: ICommDataRowsResponse;
+    get_datas_by_payload: ICommDataRowsResponse;
+    batch_get_datas_by_sql: ICommBatchDataRowsResponse;
+    batch_get_datas_by_payload: ICommBatchDataRowsResponse;
+    get_spec_by_text: ICommCloudCallbackResponse;
+    get_chart_by_chats: ICommCloudCallbackResponse;
+    export_dataframe_by_payload: ICommEmptyResponse;
+    export_dataframe_by_sql: ICommEmptyResponse;
+    upload_to_cloud_charts: ICommUploadCloudChartResponse;
+    upload_to_cloud_dashboard: ICommUploadCloudDashboardResponse;
+    open_in_desktop: ICommEmptyResponse;
+}
+
+export type ICommAction = keyof ICommRequestMap;

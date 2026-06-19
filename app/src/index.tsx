@@ -14,9 +14,6 @@ import type {
     IAppProps,
     ICommAskSpecRequest,
     ICommChatChartRequest,
-    ICommCloudCallbackResponse,
-    ICommEmptyResponse,
-    ICommLatestVisSpecResponse,
     ICommSaveChartRequest,
 } from './interfaces';
 
@@ -72,7 +69,7 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
         });
         for await (const chart of gwRef.current?.exportChartList("data-url")!) {
             const request = await formatExportedChartDatas(chart.data) as ICommSaveChartRequest;
-            await communicationStore.comm?.sendMsg<ICommEmptyResponse>("save_chart", request);
+            await communicationStore.comm?.sendMsg("save_chart", request);
             commonStore.setInitModalInfo({
                 title: "Recover Charts",
                 curIndex: chart.index + 1,
@@ -244,14 +241,14 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
             if (props.enableAskViz) {
                 features["askviz"] = async (metas: IViewField[], query: string) => {
                     const request: ICommAskSpecRequest = { metas, query };
-                    const resp = await communicationStore.comm?.sendMsg<ICommCloudCallbackResponse>("get_spec_by_text", request);
+                    const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", request);
                     return resp?.data?.data;
                 };
             }
             if (props.enableVlChat) {
                 features["vlChat"] = async (metas: IViewField[], chats: IChatMessage[]) => {
                     const request: ICommChatChartRequest = { metas, chats };
-                    const resp = await communicationStore.comm?.sendMsg<ICommCloudCallbackResponse>("get_chart_by_chats", request);
+                    const resp = await communicationStore.comm?.sendMsg("get_chart_by_chats", request);
                     return resp?.data?.data;
                 };
             }
@@ -371,7 +368,7 @@ const initOnJupyter = async(props: IAppProps) => {
     comm.registerEndpoint("finishData", finishDataService);
     communicationStore.setComm(comm);
     if (props.needLoadLastSpec) {
-        const visSpecResp = await comm.sendMsg<ICommLatestVisSpecResponse>("get_latest_vis_spec", {});
+        const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
         props.visSpec = FormatSpec(visSpecResp.data?.visSpec ?? [], props.rawFields);
     }
     if (props.needLoadDatas) {
@@ -384,7 +381,7 @@ const initOnHttpCommunication = async(props: IAppProps) => {
     const comm = await initHttpCommunication(props.id, props.communicationUrl);
     communicationStore.setComm(comm);
     if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
-        const visSpecResp = await comm.sendMsg<ICommLatestVisSpecResponse>("get_latest_vis_spec", {});
+        const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
         props.visSpec = visSpecResp.data?.visSpec ?? [];
     }
     await initDslParser();
@@ -394,7 +391,7 @@ const initOnAnywidgetCommunication = async(props: IAppProps, model: import("@any
     const comm = await initAnywidgetCommunication(props.id, model);
     communicationStore.setComm(comm);
     if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
-        const visSpecResp = await comm.sendMsg<ICommLatestVisSpecResponse>("get_latest_vis_spec", {});
+        const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
         props.visSpec = visSpecResp.data?.visSpec ?? [];
     }
     await initDslParser();

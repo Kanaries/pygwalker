@@ -6,9 +6,7 @@ import { chartToWorkflow } from "@kanaries/graphic-walker"
 import { tracker } from "@/utils/tracker";
 import type {
     ICommUploadCloudChartRequest,
-    ICommUploadCloudChartResponse,
     ICommUploadCloudDashboardRequest,
-    ICommUploadCloudDashboardResponse,
 } from "@/interfaces";
 
 import communicationStore from "../../store/communication";
@@ -106,7 +104,7 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
                     visSpec,
                     workflowList: visSpec.map((spec) => chartToWorkflow(spec).workflow),
                 };
-                const resp = await communicationStore.comm?.sendMsg<ICommUploadCloudDashboardResponse>(
+                const resp = await communicationStore.comm?.sendMsg(
                     "upload_to_cloud_dashboard",
                     request,
                     120_000
@@ -120,7 +118,7 @@ const UploadChartModal: React.FC<IUploadChartModal> = observer((props) => {
                     visSpec,
                     workflow: chartToWorkflow(visSpec[0]).workflow,
                 };
-                const resp = await communicationStore.comm?.sendMsg<ICommUploadCloudChartResponse>(
+                const resp = await communicationStore.comm?.sendMsg(
                     "upload_to_cloud_charts",
                     request,
                     120_000

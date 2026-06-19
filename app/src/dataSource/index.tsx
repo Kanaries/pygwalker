@@ -1,5 +1,4 @@
 import type { IDataSourceProps } from "../interfaces";
-import type { ICommBatchDataRowsResponse, ICommBatchQueryRequest } from "../interfaces";
 import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/interfaces";
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
@@ -85,18 +84,21 @@ interface IBatchGetDatasTask<TQuery> {
     reject: (reason?: any) => void;
 }
 
-function initBatchGetDatas<TQuery>(action: string) {
+function initBatchGetDatas<TQuery>(action: "batch_get_datas_by_sql" | "batch_get_datas_by_payload") {
     const taskList = [] as IBatchGetDatasTask<TQuery>[];
 
     const batchGetDatas = async(taskList: IBatchGetDatasTask<TQuery>[]) => {
-        const request: ICommBatchQueryRequest<TQuery> = {
-            queryList: taskList.map(task => task.query)
-        };
-        const result = await communicationStore.comm?.sendMsg<ICommBatchDataRowsResponse>(
-            action,
-            request,
-            60_000
-        );
+        const result = action === "batch_get_datas_by_sql"
+            ? await communicationStore.comm?.sendMsg(
+                action,
+                { queryList: taskList.map(task => task.query as string) },
+                60_000
+            )
+            : await communicationStore.comm?.sendMsg(
+                action,
+                { queryList: taskList.map(task => task.query as IDataQueryPayload) },
+                60_000
+            );
         if (result?.data?.datas) {
             for (let i = 0; i < taskList.length; i++) {
                 taskList[i].resolve(result.data.datas[i]);

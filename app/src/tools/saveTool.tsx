@@ -9,7 +9,7 @@ import { chartToWorkflow } from "@kanaries/graphic-walker"
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import { Loader2 } from "lucide-react"
 
-import type { IAppProps, ICommEmptyResponse, ICommUpdateSpecRequest } from '../interfaces';
+import type { IAppProps, ICommUpdateSpecRequest } from '../interfaces';
 import { Button } from "@/components/ui/button"
 import type { IGWHandler } from '@kanaries/graphic-walker/interfaces';
 import type { ToolbarButtonItem } from "@kanaries/graphic-walker/components/toolbar/toolbar-button"
@@ -77,7 +77,7 @@ export function getSaveTool(
                 chartData: await formatExportedChartDatas(chartData),
                 workflowList: visSpec.map((spec) => chartToWorkflow(spec)),
             };
-            await communicationStore.comm?.sendMsg<ICommEmptyResponse>("update_spec", request);
+            await communicationStore.comm?.sendMsg("update_spec", request);
         } finally {
             setSaving(false);
         }
