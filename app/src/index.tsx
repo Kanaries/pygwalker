@@ -161,7 +161,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const [hideModeOption, _] = useState(true);
     const [isChanged, setIsChanged] = useState(false);
     const storeRef = React.useRef<VizSpecStore|null>(null);
-    const disposerRef = React.useRef<() => void>();
+    const disposerRef = React.useRef<(() => void) | undefined>(undefined);
     const storeRefProxied = React.useMemo(
         () =>
             new Proxy(storeRef, {

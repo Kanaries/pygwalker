@@ -10,4 +10,4 @@ APP=$file_dir/app
 
 ret=$?
 cd $cur_dir
-exit $?
+exit $ret
