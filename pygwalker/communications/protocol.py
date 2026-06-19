@@ -22,6 +22,10 @@ def dump_response(response: BaseModel) -> Dict[str, Any]:
     return model_dump(response, by_alias=True, exclude_none=True)
 
 
+def dump_comm_response(response: BaseModel) -> Dict[str, Any]:
+    return model_dump(response, by_alias=True)
+
+
 if ConfigDict is not None:
 
     class CommBaseModel(BaseModel):
@@ -46,6 +50,12 @@ class CommMessageRequest(CommBaseModel):
     data: Dict[str, Any] = Field(default_factory=dict)
     rid: Optional[str] = None
     gid: Optional[str] = None
+
+
+class CommResponse(CommBaseModel):
+    code: int
+    data: Any = None
+    message: str
 
 
 class EmptyRequest(CommBaseModel):
