@@ -134,6 +134,8 @@ export interface ICommEnvelope<TAction extends string = string, TData = any> {
     data: TData;
 }
 
+export type ICommEmptyRequest = Record<string, never>;
+
 export interface ICommEmptyResponse {}
 
 export interface ICommLatestVisSpecResponse {
@@ -167,9 +169,9 @@ export interface ICommUploadCloudDashboardResponse {
 }
 
 export interface ICommRequestMap {
-    ping: ICommEmptyResponse;
-    request_data: ICommEmptyResponse;
-    get_latest_vis_spec: ICommEmptyResponse;
+    ping: ICommEmptyRequest;
+    request_data: ICommEmptyRequest;
+    get_latest_vis_spec: ICommEmptyRequest;
     save_chart: ICommSaveChartRequest;
     update_spec: ICommUpdateSpecRequest;
     upload_spec_to_cloud: ICommUploadSpecToCloudRequest;
