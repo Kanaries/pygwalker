@@ -103,7 +103,7 @@ def _to_html(
     Generate embeddable HTML code of Graphic Walker with data of `df`.
 
     Args:
-        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - df (pandas.DataFrame | polars.DataFrame | pyarrow.Table, optional): dataframe.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
@@ -163,7 +163,7 @@ def to_html(
     Generate embeddable HTML code of Graphic Walker with data of `df`.
 
     Args:
-        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - df (pandas.DataFrame | polars.DataFrame | pyarrow.Table | pygwalker.Walker, optional): dataframe or reusable Walker object.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
@@ -216,7 +216,7 @@ def to_table_html(
     Generate embeddable HTML code of Graphic Walker with data of `df`.
 
     Args:
-        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - df (pandas.DataFrame | polars.DataFrame | pyarrow.Table, optional): dataframe.
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
@@ -249,7 +249,7 @@ def to_render_html(
 ) -> str:
     """
     Args:
-        - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - df (pandas.DataFrame | polars.DataFrame | pyarrow.Table, optional): dataframe.
         - spec (str): chart config data. config id, json, remote file url
 
     Kargs:
@@ -282,7 +282,7 @@ def to_chart_html(
     Generate HTML code of a chart by graphic-walker or vega spec.
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataset.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | str, optional): dataset.
         - spec (Dict[str, Any]): chart config data.
 
     Kargs:

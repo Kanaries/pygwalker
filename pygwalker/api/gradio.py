@@ -31,7 +31,7 @@ def get_html_on_gradio(
     """Get pygwalker html render to gradio
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector, optional): dataset.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:

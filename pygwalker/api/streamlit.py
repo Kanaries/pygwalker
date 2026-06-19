@@ -141,7 +141,7 @@ class StreamlitRenderer:
         user should customize method to generate a gid to differentiate between datasets.
 
         Args:
-            - dataset (pl.DataFrame | pd.DataFrame | Connector | pygwalker.Walker, optional): dataframe or Walker object.
+            - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | pygwalker.Walker, optional): dataset or reusable Walker object.
             - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
         Kargs:
@@ -384,7 +384,7 @@ def get_streamlit_html(
     """Get pygwalker html render to streamlit
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector | pygwalker.Walker, optional): dataframe or Walker object.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | pygwalker.Walker, optional): dataset or reusable Walker object.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:

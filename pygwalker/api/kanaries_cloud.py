@@ -20,7 +20,7 @@ def create_cloud_dataset(
     Create a dataset in kanaries cloud
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataset.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector, optional): dataset.
 
     Kargs:
         - name (str): dataset name in kanaries cloud.
@@ -51,7 +51,7 @@ def create_cloud_walker(
     Create a pygwalker in kanaries cloud
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table, optional): dataframe.
 
     Kargs:
         - chart_name (str): pygwalker chart name in kanaries cloud.

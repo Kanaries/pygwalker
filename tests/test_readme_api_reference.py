@@ -1,5 +1,8 @@
+import ast
 import inspect
 from pathlib import Path
+
+import pytest
 
 from pygwalker.api import jupyter
 
@@ -10,8 +13,11 @@ TRANSLATED_README_NOTICE = (
 )
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
 def _read_walk_api_table_rows() -> list[dict[str, str]]:
-    readme = Path(__file__).resolve().parents[1] / "README.md"
+    readme = REPO_ROOT / "README.md"
     lines = readme.read_text(encoding="utf-8").splitlines()
 
     heading_index = lines.index("### [pygwalker.walk](https://pygwalker-docs.vercel.app/api-reference/jupyter#walk)")
@@ -50,6 +56,29 @@ def _format_signature_default(parameter: inspect.Parameter) -> str:
     return repr(parameter.default)
 
 
+def _read_source_docstring(relative_path: str, qualified_name: str) -> str:
+    source = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+    module = ast.parse(source)
+    parts = qualified_name.split(".")
+
+    if len(parts) == 1:
+        for node in module.body:
+            if isinstance(node, ast.FunctionDef) and node.name == parts[0]:
+                docstring = ast.get_docstring(node)
+                assert docstring is not None
+                return docstring
+    elif len(parts) == 2:
+        for node in module.body:
+            if isinstance(node, ast.ClassDef) and node.name == parts[0]:
+                for child in node.body:
+                    if isinstance(child, ast.FunctionDef) and child.name == parts[1]:
+                        docstring = ast.get_docstring(child)
+                        assert docstring is not None
+                        return docstring
+
+    raise AssertionError(f"Could not find docstring for {qualified_name} in {relative_path}")
+
+
 def test_readme_walk_api_table_matches_jupyter_walk_signature():
     signature_params = []
     for parameter in inspect.signature(jupyter.walk).parameters.values():
@@ -76,6 +105,40 @@ def test_readme_walk_api_table_documents_reusable_walker_input():
 
     assert "Walker" in dataset_row["type"]
     assert "pyarrow.Table" in dataset_row["type"]
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "qualified_name", "expected_fragments"),
+    [
+        ("pygwalker/api/adapter.py", "walk", ("pyarrow.Table", "pygwalker.Walker")),
+        ("pygwalker/api/adapter.py", "render", ("pyarrow.Table",)),
+        ("pygwalker/api/adapter.py", "table", ("pyarrow.Table",)),
+        ("pygwalker/api/anywidget.py", "walk", ("pyarrow.Table", "pygwalker.Walker")),
+        ("pygwalker/api/jupyter.py", "walk", ("pyarrow.Table", "pygwalker.Walker")),
+        ("pygwalker/api/jupyter.py", "render", ("pyarrow.Table",)),
+        ("pygwalker/api/jupyter.py", "table", ("pyarrow.Table",)),
+        ("pygwalker/api/marimo.py", "walk", ("pyarrow.Table", "pygwalker.Walker")),
+        ("pygwalker/api/webserver.py", "walk", ("pyarrow.Table", "pygwalker.Walker")),
+        ("pygwalker/api/webserver.py", "render", ("pyarrow.Table",)),
+        ("pygwalker/api/webserver.py", "table", ("pyarrow.Table",)),
+        ("pygwalker/api/streamlit.py", "StreamlitRenderer.__init__", ("pyarrow.Table", "pygwalker.Walker")),
+        ("pygwalker/api/streamlit.py", "get_streamlit_html", ("pyarrow.Table", "pygwalker.Walker")),
+        ("pygwalker/api/gradio.py", "get_html_on_gradio", ("pyarrow.Table",)),
+        ("pygwalker/api/component.py", "component", ("pyarrow.Table",)),
+        ("pygwalker/api/kanaries_cloud.py", "create_cloud_dataset", ("pyarrow.Table",)),
+        ("pygwalker/api/kanaries_cloud.py", "create_cloud_walker", ("pyarrow.Table",)),
+        ("pygwalker/api/html.py", "to_html", ("pyarrow.Table", "pygwalker.Walker")),
+        ("pygwalker/api/html.py", "to_table_html", ("pyarrow.Table",)),
+        ("pygwalker/api/html.py", "to_render_html", ("pyarrow.Table",)),
+        ("pygwalker/api/html.py", "to_chart_html", ("pyarrow.Table",)),
+    ],
+)
+def test_public_api_docstrings_document_current_dataset_inputs(relative_path, qualified_name, expected_fragments):
+    docstring = _read_source_docstring(relative_path, qualified_name)
+
+    assert "pl.DataFrame | pd.DataFrame" not in docstring
+    for fragment in expected_fragments:
+        assert fragment in docstring
 
 
 def test_readme_walk_api_table_marks_legacy_jupyter_envs_deprecated():

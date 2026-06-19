@@ -244,11 +244,11 @@ def walk(
     auto_open: bool = False,
     **kwargs,
 ):
-    """Walk through pandas.DataFrame df with Graphic Walker.
+    """Walk through a tabular dataset with Graphic Walker.
     This function was originally designed solely to launch Pygwalker in script mode.
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | str | pygwalker.Walker, optional): dataset or reusable Walker object.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
@@ -342,7 +342,7 @@ def render(
     This function was originally designed solely to launch Pygwalker in script mode.
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | str, optional): dataset.
         - spec (str): chart config data. config id, json, remote file url
         - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
 
@@ -403,7 +403,7 @@ def table(
     This function was originally designed solely to launch Pygwalker in script mode.
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | str, optional): dataset.
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
