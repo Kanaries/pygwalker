@@ -1,4 +1,4 @@
-from typing import Union, List, Optional, Any, Dict, TYPE_CHECKING
+from typing import Union, List, Optional, TYPE_CHECKING
 import inspect
 import json
 
@@ -13,6 +13,11 @@ from pygwalker.communications.anywidget_comm import AnywidgetCommunication
 from pygwalker.utils.computation import resolve_computation_mode
 from pygwalker.utils.frontend_assets import read_frontend_asset
 from pygwalker.utils.spec import resolve_spec_input
+from pygwalker.api._walker_reuse import (
+    collect_walker_construction_conflicts,
+    is_public_walker,
+    reject_walker_construction_params,
+)
 import marimo as mo
 import anywidget
 import traitlets
@@ -28,12 +33,6 @@ class _WalkerWidget(anywidget.AnyWidget):
     props = traitlets.Unicode("").tag(sync=True)
 
 
-def _is_public_walker(value: Any) -> bool:
-    from pygwalker.api.walker import Walker
-
-    return isinstance(value, Walker)
-
-
 def _reject_walker_construction_params(
     *,
     gid: Union[int, str],
@@ -46,37 +45,39 @@ def _reject_walker_construction_params(
     show_cloud_tool: bool,
     kanaries_api_key: str,
     default_tab: Literal["data", "vis"],
-    kwargs: Dict[str, Any],
+    kwargs,
 ) -> None:
-    conflicting_options = []
-    if gid is not None:
-        conflicting_options.append("gid")
-    if field_specs is not None:
-        conflicting_options.append("field_specs")
-    if theme_key != "g2":
-        conflicting_options.append("theme_key")
-    if appearance != "media":
-        conflicting_options.append("appearance")
-    if spec not in ("", None):
-        conflicting_options.append("spec")
-    if spec_path is not None:
-        conflicting_options.append("spec_path")
-    if computation is not None:
-        conflicting_options.append("computation")
-    if show_cloud_tool is not False:
-        conflicting_options.append("show_cloud_tool")
-    if kanaries_api_key:
-        conflicting_options.append("kanaries_api_key")
-    if default_tab != "vis":
-        conflicting_options.append("default_tab")
-    if kwargs:
-        conflicting_options.extend(sorted(kwargs))
-    if conflicting_options:
-        params = ", ".join(conflicting_options)
-        raise ValueError(
-            f"marimo.walk() received a Walker object and cannot apply construction parameters: {params}. "
-            "Pass those options when creating pygwalker.Walker instead."
-        )
+    conflicts = collect_walker_construction_conflicts(
+        {
+            "gid": gid,
+            "field_specs": field_specs,
+            "theme_key": theme_key,
+            "appearance": appearance,
+            "spec": spec,
+            "spec_path": spec_path,
+            "computation": computation,
+            "show_cloud_tool": show_cloud_tool,
+            "kanaries_api_key": kanaries_api_key,
+            "default_tab": default_tab,
+        },
+        {
+            "gid": None,
+            "field_specs": None,
+            "theme_key": "g2",
+            "appearance": "media",
+            "spec": "",
+            "spec_path": None,
+            "computation": None,
+            "show_cloud_tool": False,
+            "kanaries_api_key": "",
+            "default_tab": "vis",
+        },
+        conflict_predicates={
+            "show_cloud_tool": lambda value: value is not False,
+        },
+        extra_kwargs=kwargs,
+    )
+    reject_walker_construction_params("marimo.walk()", conflicts)
 
 
 def walk(
@@ -110,7 +111,7 @@ def walk(
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
-    if _is_public_walker(dataset):
+    if is_public_walker(dataset):
         _reject_walker_construction_params(
             gid=gid,
             field_specs=field_specs,

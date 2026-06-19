@@ -253,6 +253,19 @@ def test_anywidget_api_rejects_rebuilding_public_walker_object(monkeypatch, tmp_
         anywidget_api.walk(public_walker, spec_path=str(tmp_path / "other.json"))
 
 
+def test_anywidget_api_rejects_show_cloud_tool_false_alias_for_public_walker(monkeypatch):
+    _install_anywidget_stubs(monkeypatch)
+    anywidget_api = importlib.reload(importlib.import_module("pygwalker.api.anywidget"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: show_cloud_tool"):
+        anywidget_api.walk(public_walker, show_cloud_tool=0)
+
+
 def test_marimo_api_wraps_anywidget(monkeypatch):
     wrapped_widgets = []
     _install_anywidget_stubs(monkeypatch)
@@ -512,6 +525,37 @@ def test_webserver_walk_rejects_rebuilding_public_walker_object(monkeypatch, tmp
 
     with pytest.raises(ValueError, match="cannot apply construction parameters: spec_path"):
         webserver.walk(public_walker, spec_path=str(tmp_path / "other.json"))
+
+
+def test_webserver_walk_allows_none_cloud_computation_for_public_walker(monkeypatch):
+    from pygwalker.api import webserver
+    from pygwalker.api import walker as walker_api
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    starts = []
+    monkeypatch.setattr(
+        webserver,
+        "_start_server",
+        lambda walker, port, *, auto_open, auto_shutdown: starts.append((walker, port, auto_open, auto_shutdown)),
+    )
+
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+    webserver.walk(public_walker, cloud_computation=None)
+
+    assert starts == [(public_walker.core, None, False, False)]
+
+
+def test_webserver_walk_rejects_show_cloud_tool_true_alias_for_public_walker(monkeypatch):
+    from pygwalker.api import webserver
+    from pygwalker.api import walker as walker_api
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: show_cloud_tool"):
+        webserver.walk(public_walker, show_cloud_tool=1)
 
 
 def test_webserver_start_server_disables_preview(monkeypatch):
