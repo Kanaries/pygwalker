@@ -4,6 +4,12 @@ from pathlib import Path
 from pygwalker.api import jupyter
 
 
+TRANSLATED_README_NOTICE = (
+    "This translation is community-maintained and may lag behind the [English README](../README.md). "
+    "Treat the English README as the source of truth for API reference, installation, and development instructions."
+)
+
+
 def _read_walk_api_table_rows() -> list[dict[str, str]]:
     readme = Path(__file__).resolve().parents[1] / "README.md"
     lines = readme.read_text(encoding="utf-8").splitlines()
@@ -76,3 +82,12 @@ def test_readme_walk_api_table_marks_legacy_jupyter_envs_deprecated():
 
     assert "JupyterAnywidget" in env_row["description"]
     assert "deprecated legacy transports" in env_row["description"]
+
+
+def test_translated_readmes_defer_api_reference_to_english_readme():
+    docs_dir = Path(__file__).resolve().parents[1] / "docs"
+
+    translated_readmes = sorted(docs_dir.glob("README.*.md"))
+    assert translated_readmes
+    for readme in translated_readmes:
+        assert TRANSLATED_README_NOTICE in readme.read_text(encoding="utf-8")
