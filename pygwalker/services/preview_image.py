@@ -1,7 +1,5 @@
 from typing import List, Dict, Any
 from concurrent.futures.thread import ThreadPoolExecutor
-import base64
-import zlib
 import json
 
 from pydantic import BaseModel, Field

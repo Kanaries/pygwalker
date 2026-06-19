@@ -4,7 +4,7 @@ This guide explains how to set up a local development environment for PyGWalker 
 
 ## Prerequisites
 
-- Python 3.7+
+- Python 3.10+
 - Node.js 16+
 - Yarn
 
@@ -149,5 +149,4 @@ yarn build  # Builds all variants (iife, es, dsl-to-workflow, vega-to-dsl)
 ```
 
 The built files are placed in `pygwalker/templates/dist/`.
-
 

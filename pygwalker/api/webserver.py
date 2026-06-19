@@ -146,9 +146,9 @@ def _start_server(
     try:
         with CustomTCPServer(("127.0.0.1", port), handler) as httpd:
             if auto_open:
-                threading.Thread(target=_open_browser, args=(address,)).start()
+                threading.Thread(target=_open_browser, args=(address,), daemon=True).start()
             if auto_shutdown:
-                threading.Thread(target=_listen_shutdown).start()
+                threading.Thread(target=_listen_shutdown, daemon=True).start()
             httpd.serve_forever()
     except KeyboardInterrupt:
         pass

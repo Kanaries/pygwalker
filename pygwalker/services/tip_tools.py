@@ -21,7 +21,7 @@ class TipOnStartTool:
         self.gid = gid
         self.slot_id = f"user-tips-{gid}"
         self.tips = TIPS_MAP.get(tip_name, "")
-        Thread(target=self.hide).start()
+        Thread(target=self.hide, daemon=True).start()
 
     def show(self):
         display_html(self.tips, slot_id=self.slot_id)

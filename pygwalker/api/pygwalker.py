@@ -2,7 +2,9 @@ import base64
 from typing import List, Dict, Any, Optional, Union
 import urllib
 import json
-import os, sys, subprocess
+import os
+import sys
+import subprocess
 import urllib.parse
 import zlib
 
@@ -44,6 +46,18 @@ from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__
+
+
+def _model_dump_jsonable(model, **kwargs):
+    if hasattr(model, "model_dump"):
+        return model.model_dump(**kwargs)
+    return model.dict(**kwargs)
+
+
+def _model_validate(model_cls, data):
+    if hasattr(model_cls, "model_validate"):
+        return model_cls.model_validate(data)
+    return model_cls.parse_obj(data)
 
 
 class PygWalker:
@@ -178,13 +192,13 @@ class PygWalker:
 
     def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
         return {
-            key: value.dict(by_alias=True)
+            key: _model_dump_jsonable(value, by_alias=True)
             for key, value in chart_map.items()
         }
 
     def _parse_chart_map_dict(self, chart_map_dict: Dict[str, Any]) -> Dict[str, ChartData]:
         return {
-            key: ChartData.parse_obj(value)
+            key: _model_validate(ChartData, value)
             for key, value in chart_map_dict.items()
         }
 
@@ -385,7 +399,7 @@ class PygWalker:
             return {"visSpec": self.vis_spec}
 
         def save_chart_endpoint(data: Dict[str, Any]):
-            chart_data = ChartData.parse_obj(data)
+            chart_data = _model_validate(ChartData, data)
             self._chart_map[data["title"]] = chart_data
 
         def update_spec(data: Dict[str, Any]):

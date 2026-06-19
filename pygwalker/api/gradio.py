@@ -4,8 +4,7 @@ from typing_extensions import Literal
 from .pygwalker import PygWalker
 from pygwalker.communications.gradio_comm import (
     BASE_URL_PATH,
-    GradioCommunication,
-    PYGWALKER_ROUTE
+    GradioCommunication
 )
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector

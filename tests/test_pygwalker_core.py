@@ -269,6 +269,8 @@ def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
     assert 'width="640px"' in rendered
     assert 'height="480px"' in rendered
     assert "srcdoc=" in rendered
+    assert "eval(script)" not in rendered
+    assert "URL.createObjectURL" in rendered
 
 
 @pytest.mark.parametrize(

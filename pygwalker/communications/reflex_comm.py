@@ -1,6 +1,5 @@
 import json
-from fastapi import FastAPI, HTTPException
-from starlette.routing import Route
+from fastapi import FastAPI
 from starlette.responses import JSONResponse, Response
 from starlette.requests import Request
 

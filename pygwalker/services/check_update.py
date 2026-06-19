@@ -119,4 +119,4 @@ def check_update() -> None:
 
     """
     if GlobalVarManager.privacy != "offline":
-        Thread(target=_check_update).start()
+        Thread(target=_check_update, daemon=True).start()

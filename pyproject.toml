@@ -1,7 +1,7 @@
 [project]
 name = "pygwalker"
 dynamic = ["version"]
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 description = "pygwalker: turn your data into an interactive UI for data exploration and visualization"
 authors = [ { name = "kanaries", email = "support@kanaries.net" } ]
 license-files = { paths = ["LICENSE"] }
@@ -16,15 +16,15 @@ dependencies = [
     "ipython",
     "astor",
     "typing_extensions",
-    "ipywidgets",
-    "pydantic",
+    "ipywidgets>=7.0.0",
+    "pydantic>=1.10,<3",
     "psutil",
     "duckdb>=0.10.4,<2.0.0",
     "pyarrow",
     "sqlglot>=23.15.8",
-    "requests",
+    "requests>=2.31,<3",
     "arrow",
-    "sqlalchemy",
+    "sqlalchemy>=1.4,<3",
     "gw_dsl_parser==0.1.49.1",
     "appdirs",
     "segment-analytics-python==2.2.3",
@@ -70,6 +70,8 @@ all = [
 ]
 dev = [
     "build",
+    "pytest",
+    "ruff",
     "twine",
     "jupyterlab",
     "jupyter_server_proxy",
@@ -128,3 +130,18 @@ include = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+extend-exclude = [
+    "*.ipynb",
+    "app",
+    "pygwalker/templates/dist",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+"pygwalker/__init__.py" = ["E402"]

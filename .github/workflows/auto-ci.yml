@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         os-version: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os-version }}
@@ -75,6 +75,10 @@ jobs:
           PIP_ONLY_BINARY: "duckdb"
         run: |
           pip install ".[export]"
+      - name: Pin Pydantic v1 compatibility leg
+        if: ${{ matrix.os-version == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+        run: |
+          pip install "pydantic==1.10.15"
       - name: Try Install Modin In Linux Os
         if: ${{ matrix.os-version == 'ubuntu-latest' && matrix.python-version == '3.11' }}
         run: |
@@ -93,8 +97,9 @@ jobs:
         working-directory: ./
         run: |
           pip install duckdb_engine
-          pip install pytest
-          python ./scripts/ci_run_pytest.py
+          pip install pytest ruff
+          ruff check pygwalker tests scripts bin
+          python -X faulthandler -m pytest -o faulthandler_timeout=300 tests
       - name: Uploading notebooks
         uses: actions/upload-artifact@v4
         if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}

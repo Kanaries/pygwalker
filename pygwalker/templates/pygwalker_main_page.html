@@ -21,7 +21,14 @@
         async function runGwScript() {
             const script_stream = await fetch('data:application/octet-stream;base64,' + gw_script).then((res) => res.body.pipeThrough(new DecompressionStream('deflate')));
             const script = await new Response(script_stream).text();
-            eval(script);
+            const script_url = URL.createObjectURL(new Blob([script], {type: "text/javascript"}));
+            await new Promise((resolve, reject) => {
+                const script_element = document.createElement("script");
+                script_element.src = script_url;
+                script_element.onload = resolve;
+                script_element.onerror = reject;
+                document.body.appendChild(script_element);
+            }).finally(() => URL.revokeObjectURL(script_url));
             const props_stream = await fetch('data:application/octet-stream;base64,' + props_data).then((res) => res.body.pipeThrough(new DecompressionStream('deflate')));
             const props = await new Response(props_stream).json();
             try{
