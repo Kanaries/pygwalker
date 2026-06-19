@@ -5,9 +5,10 @@ import subprocess
 import sys
 import urllib.parse
 import zlib
-from typing import Any, Callable, Dict, Optional, TYPE_CHECKING
+from typing import Any, Callable, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
 import pandas as pd
+from pydantic import BaseModel
 
 from pygwalker import __version__
 from pygwalker.communications.base import BaseCommunication
@@ -45,6 +46,9 @@ if TYPE_CHECKING:
     from pygwalker.api.pygwalker import PygWalker
 
 
+RequestT = TypeVar("RequestT", bound=BaseModel)
+
+
 class CommHandler:
     """Register and serve frontend communication callbacks for a walker."""
 
@@ -66,28 +70,43 @@ class CommHandler:
         self.comm.register("get_latest_vis_spec", self.get_latest_vis_spec)
         self.comm.register("request_data", self.request_data)
         self.comm.register("ping", lambda _: {})
-        self.comm.register("open_in_desktop", self.open_in_desktop)
+        self._register_request("open_in_desktop", OpenDesktopRequest, self.open_in_desktop)
 
         if self.walker.use_save_tool:
-            self.comm.register("upload_spec_to_cloud", self.upload_spec_to_cloud)
-            self.comm.register("update_spec", self.update_spec)
-            self.comm.register("save_chart", self.save_chart)
+            self._register_request("upload_spec_to_cloud", UploadSpecToCloudRequest, self.upload_spec_to_cloud)
+            self._register_request("update_spec", UpdateSpecRequest, self.update_spec)
+            self._register_request("save_chart", SaveChartRequest, self.save_chart)
 
         if self.walker.show_cloud_tool:
-            self.comm.register("upload_to_cloud_charts", self.upload_to_cloud_charts)
-            self.comm.register("upload_to_cloud_dashboard", self.upload_to_cloud_dashboard)
-            self.comm.register("get_spec_by_text", self.get_spec_by_text)
-            self.comm.register("get_chart_by_chats", self.get_chart_by_chats)
+            self._register_request("upload_to_cloud_charts", UploadCloudChartRequest, self.upload_to_cloud_charts)
+            self._register_request(
+                "upload_to_cloud_dashboard", UploadCloudDashboardRequest, self.upload_to_cloud_dashboard
+            )
+            self._register_request("get_spec_by_text", AskSpecRequest, self.get_spec_by_text)
+            self._register_request("get_chart_by_chats", ChatChartRequest, self.get_chart_by_chats)
 
         if self.walker.kernel_computation:
-            self.comm.register("get_datas", self.get_datas)
-            self.comm.register("get_datas_by_payload", self.get_datas_by_payload)
-            self.comm.register("batch_get_datas_by_sql", self.batch_get_datas_by_sql)
-            self.comm.register("batch_get_datas_by_payload", self.batch_get_datas_by_payload)
+            self._register_request("get_datas", SqlQueryRequest, self.get_datas)
+            self._register_request("get_datas_by_payload", PayloadQueryRequest, self.get_datas_by_payload)
+            self._register_request("batch_get_datas_by_sql", BatchSqlQueryRequest, self.batch_get_datas_by_sql)
+            self._register_request(
+                "batch_get_datas_by_payload", BatchPayloadQueryRequest, self.batch_get_datas_by_payload
+            )
 
         if self.walker.is_export_dataframe:
-            self.comm.register("export_dataframe_by_payload", self.export_dataframe_by_payload)
-            self.comm.register("export_dataframe_by_sql", self.export_dataframe_by_sql)
+            self._register_request("export_dataframe_by_payload", PayloadQueryRequest, self.export_dataframe_by_payload)
+            self._register_request("export_dataframe_by_sql", SqlQueryRequest, self.export_dataframe_by_sql)
+
+    def _register_request(
+        self,
+        endpoint: str,
+        request_model: Type[RequestT],
+        handler: Callable[[RequestT], Dict[str, Any]],
+    ) -> None:
+        def _handle(data: Dict[str, Any]) -> Dict[str, Any]:
+            return handler(validate_request(request_model, data))
+
+        self.comm.register(endpoint, _handle)
 
     def request_data(self, _):
         self.upload_tool.run(
@@ -100,13 +119,11 @@ class CommHandler:
     def get_latest_vis_spec(self, _):
         return dump_response(LatestVisSpecResponse(visSpec=self.walker.vis_spec))
 
-    def save_chart(self, data: Dict[str, Any]):
-        request = validate_request(SaveChartRequest, data)
+    def save_chart(self, request: SaveChartRequest):
         self.walker.spec_manager.save_chart_payload(model_dump(request, by_alias=True))
         return dump_response(EmptyResponse())
 
-    def update_spec(self, data: Dict[str, Any]):
-        request = validate_request(UpdateSpecRequest, data)
+    def update_spec(self, request: UpdateSpecRequest):
         self.walker.spec_manager.update_runtime_state(
             vis_spec=request.vis_spec,
             workflow_list=request.workflow_list,
@@ -120,8 +137,7 @@ class CommHandler:
         self.walker.spec_manager.write_back(self.walker.cloud_service, __version__)
         return dump_response(EmptyResponse())
 
-    def upload_spec_to_cloud(self, data: Dict[str, Any]):
-        request = validate_request(UploadSpecToCloudRequest, data)
+    def upload_spec_to_cloud(self, request: UploadSpecToCloudRequest):
         if request.new_token:
             set_config({"kanaries_token": request.new_token})
             GlobalVarManager.kanaries_api_key = request.new_token
@@ -131,54 +147,45 @@ class CommHandler:
         self.walker.cloud_service.write_config_to_cloud(path, json.dumps(spec_obj))
         return dump_response(UploadSpecToCloudResponse(specFilePath=path))
 
-    def get_datas(self, data: Dict[str, Any]):
-        request = validate_request(SqlQueryRequest, data)
+    def get_datas(self, request: SqlQueryRequest):
         datas = self.walker.data_parser.get_datas_by_sql(request.sql)
         return dump_response(DataRowsResponse(datas=datas))
 
-    def get_datas_by_payload(self, data: Dict[str, Any]):
-        request = validate_request(PayloadQueryRequest, data)
+    def get_datas_by_payload(self, request: PayloadQueryRequest):
         datas = self.walker.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True))
         return dump_response(DataRowsResponse(datas=datas))
 
-    def batch_get_datas_by_sql(self, data: Dict[str, Any]):
-        request = validate_request(BatchSqlQueryRequest, data)
+    def batch_get_datas_by_sql(self, request: BatchSqlQueryRequest):
         result = self.walker.data_parser.batch_get_datas_by_sql(request.query_list)
         return dump_response(BatchDataRowsResponse(datas=result))
 
-    def batch_get_datas_by_payload(self, data: Dict[str, Any]):
-        request = validate_request(BatchPayloadQueryRequest, data)
+    def batch_get_datas_by_payload(self, request: BatchPayloadQueryRequest):
         result = self.walker.data_parser.batch_get_datas_by_payload(
             [model_dump(query, exclude_none=True) for query in request.query_list]
         )
         return dump_response(BatchDataRowsResponse(datas=result))
 
-    def get_spec_by_text(self, data: Dict[str, Any]):
-        request = validate_request(AskSpecRequest, data)
+    def get_spec_by_text(self, request: AskSpecRequest):
         callback = self.walker.other_props.get("custom_ask_callback", self.walker.cloud_service.get_spec_by_text)
         return dump_response(CloudCallbackResponse(data=callback(request.metas, request.query)))
 
-    def get_chart_by_chats(self, data: Dict[str, Any]):
-        request = validate_request(ChatChartRequest, data)
+    def get_chart_by_chats(self, request: ChatChartRequest):
         callback = self.walker.other_props.get("custom_chat_callback", self.walker.cloud_service.get_chart_by_chats)
         return dump_response(CloudCallbackResponse(data=callback(request.metas, request.chats)))
 
-    def export_dataframe_by_payload(self, data: Dict[str, Any]):
-        request = validate_request(PayloadQueryRequest, data)
+    def export_dataframe_by_payload(self, request: PayloadQueryRequest):
         df = pd.DataFrame(self.walker.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True)))
         GlobalVarManager.set_last_exported_dataframe(df)
         self.walker._last_exported_dataframe = df
         return dump_response(EmptyResponse())
 
-    def export_dataframe_by_sql(self, data: Dict[str, Any]):
-        request = validate_request(SqlQueryRequest, data)
+    def export_dataframe_by_sql(self, request: SqlQueryRequest):
         df = pd.DataFrame(self.walker.data_parser.get_datas_by_sql(request.sql))
         GlobalVarManager.set_last_exported_dataframe(df)
         self.walker._last_exported_dataframe = df
         return dump_response(EmptyResponse())
 
-    def upload_to_cloud_charts(self, data: Dict[str, Any]):
-        request = validate_request(UploadCloudChartRequest, data)
+    def upload_to_cloud_charts(self, request: UploadCloudChartRequest):
         result = self.walker.cloud_service.upload_cloud_chart(
             data_parser=self.walker.data_parser,
             chart_name=request.chart_name,
@@ -189,8 +196,7 @@ class CommHandler:
         )
         return dump_response(UploadCloudChartResponse(chartId=result["chart_id"], datasetId=result["dataset_id"]))
 
-    def upload_to_cloud_dashboard(self, data: Dict[str, Any]):
-        request = validate_request(UploadCloudDashboardRequest, data)
+    def upload_to_cloud_dashboard(self, request: UploadCloudDashboardRequest):
         result = self.walker.cloud_service.upload_cloud_dashboard(
             data_parser=self.walker.data_parser,
             dashboard_name=request.chart_name,
@@ -205,8 +211,7 @@ class CommHandler:
             UploadCloudDashboardResponse(dashboardId=result["dashboard_id"], datasetId=result["dataset_id"])
         )
 
-    def open_in_desktop(self, data: Dict[str, Any]):
-        request = validate_request(OpenDesktopRequest, data)
+    def open_in_desktop(self, request: OpenDesktopRequest):
         spec = json.dumps(request.spec)
         fields = json.dumps(request.fields)
         records = json.dumps(
