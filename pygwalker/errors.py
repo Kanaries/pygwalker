@@ -6,6 +6,7 @@ from enum import Enum
 
 class ErrorCode(int, Enum):
     UNKNOWN_ERROR = -1
+    INVALID_REQUEST = 10001
     TOKEN_ERROR = 20001
     CLOUD_CONFIG_LIMIT = 20002
     CLOUD_CHART_NOT_FOUND = 20003
@@ -41,6 +42,12 @@ class CsvFileTooLargeError(BaseError):
 class ViewSqlSameColumnError(BaseError):
     """Raised when the view sql is invalid."""
     pass
+
+
+class CommProtocolError(BaseError):
+    """Raised when a frontend communication payload is invalid."""
+    def __init__(self, *args) -> None:
+        super().__init__(*args, code=ErrorCode.INVALID_REQUEST)
 
 
 class StreamlitPygwalkerApiError(BaseError):

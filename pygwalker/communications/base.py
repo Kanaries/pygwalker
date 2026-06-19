@@ -1,10 +1,12 @@
 from typing import Any, Callable, Dict
 
-from pygwalker.errors import BaseError, ErrorCode
+from pygwalker.errors import BaseError, CommProtocolError, ErrorCode
 from pygwalker.services.track import track_event
 
 
 def _upload_error_info(gid: str, action: str, error: Exception):
+    if isinstance(error, CommProtocolError):
+        return
     try:
         track_event("pygwalker_error", {
             "gid": gid,

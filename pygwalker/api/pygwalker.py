@@ -43,21 +43,17 @@ from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
+from pygwalker.utils.pydantic_compat import model_dump, model_validate
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
+from pygwalker.communications.protocol import (
+    BatchPayloadQueryRequest,
+    BatchSqlQueryRequest,
+    PayloadQueryRequest,
+    SqlQueryRequest,
+    validate_request,
+)
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
 from pygwalker import __version__
-
-
-def _model_dump_jsonable(model, **kwargs):
-    if hasattr(model, "model_dump"):
-        return model.model_dump(**kwargs)
-    return model.dict(**kwargs)
-
-
-def _model_validate(model_cls, data):
-    if hasattr(model_cls, "model_validate"):
-        return model_cls.model_validate(data)
-    return model_cls.parse_obj(data)
 
 
 class PygWalker:
@@ -192,13 +188,13 @@ class PygWalker:
 
     def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
         return {
-            key: _model_dump_jsonable(value, by_alias=True)
+            key: model_dump(value, by_alias=True)
             for key, value in chart_map.items()
         }
 
     def _parse_chart_map_dict(self, chart_map_dict: Dict[str, Any]) -> Dict[str, ChartData]:
         return {
-            key: _model_validate(ChartData, value)
+            key: model_validate(ChartData, value)
             for key, value in chart_map_dict.items()
         }
 
@@ -399,7 +395,7 @@ class PygWalker:
             return {"visSpec": self.vis_spec}
 
         def save_chart_endpoint(data: Dict[str, Any]):
-            chart_data = _model_validate(ChartData, data)
+            chart_data = model_validate(ChartData, data)
             self._chart_map[data["title"]] = chart_data
 
         def update_spec(data: Dict[str, Any]):
@@ -441,26 +437,32 @@ class PygWalker:
             return {"specFilePath": path}
 
         def _get_datas(data: Dict[str, Any]):
-            sql = data["sql"]
-            datas = self.data_parser.get_datas_by_sql(sql)
+            request = validate_request(SqlQueryRequest, data)
+            datas = self.data_parser.get_datas_by_sql(request.sql)
             return {
                 "datas": datas
             }
 
         def _get_datas_by_payload(data: Dict[str, Any]):
-            datas = self.data_parser.get_datas_by_payload(data["payload"])
+            request = validate_request(PayloadQueryRequest, data)
+            datas = self.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True))
             return {
                 "datas": datas
             }
 
         def _batch_get_datas_by_sql(data: Dict[str, Any]):
-            result = self.data_parser.batch_get_datas_by_sql(data["queryList"])
+            request = validate_request(BatchSqlQueryRequest, data)
+            result = self.data_parser.batch_get_datas_by_sql(request.query_list)
             return {
                 "datas": result
             }
 
         def _batch_get_datas_by_payload(data: Dict[str, Any]):
-            result = self.data_parser.batch_get_datas_by_payload(data["queryList"])
+            request = validate_request(BatchPayloadQueryRequest, data)
+            result = self.data_parser.batch_get_datas_by_payload([
+                model_dump(query, exclude_none=True)
+                for query in request.query_list
+            ])
             return {
                 "datas": result
             }
@@ -484,13 +486,14 @@ class PygWalker:
             }
 
         def _export_dataframe_by_payload(data: Dict[str, Any]):
-            df = pd.DataFrame(self.data_parser.get_datas_by_payload(data["payload"]))
+            request = validate_request(PayloadQueryRequest, data)
+            df = pd.DataFrame(self.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True)))
             GlobalVarManager.set_last_exported_dataframe(df)
             self._last_exported_dataframe = df
 
         def _export_dataframe_by_sql(data: Dict[str, Any]):
-            sql = data["sql"]
-            df = pd.DataFrame(self.data_parser.get_datas_by_sql(sql))
+            request = validate_request(SqlQueryRequest, data)
+            df = pd.DataFrame(self.data_parser.get_datas_by_sql(request.sql))
             GlobalVarManager.set_last_exported_dataframe(df)
             self._last_exported_dataframe = df
 

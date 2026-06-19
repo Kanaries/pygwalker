@@ -1,4 +1,5 @@
 import type { IDataSourceProps } from "../interfaces";
+import type { ICommBatchQueryRequest } from "../interfaces";
 import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/interfaces";
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
@@ -78,19 +79,22 @@ export function finishDataService(msg: any) {
     )
 }
 
-interface IBatchGetDatasTask {
-    query: any;
-    resolve: (value: any) => void;
+interface IBatchGetDatasTask<TQuery> {
+    query: TQuery;
+    resolve: (value: IRow[]) => void;
     reject: (reason?: any) => void;
 }
 
-function initBatchGetDatas(action: string) {
-    const taskList = [] as IBatchGetDatasTask[];
+function initBatchGetDatas<TQuery>(action: string) {
+    const taskList = [] as IBatchGetDatasTask<TQuery>[];
 
-    const batchGetDatas = async(taskList: IBatchGetDatasTask[]) => {
+    const batchGetDatas = async(taskList: IBatchGetDatasTask<TQuery>[]) => {
+        const request: ICommBatchQueryRequest<TQuery> = {
+            queryList: taskList.map(task => task.query)
+        };
         const result = await communicationStore.comm?.sendMsg(
             action,
-            {"queryList": taskList.map(task => task.query)},
+            request,
             60_000
         );
         if (result) {
@@ -104,8 +108,8 @@ function initBatchGetDatas(action: string) {
         }
     }
 
-    const getDatas = (query: any) => {
-        return new Promise<any>((resolve, reject) => {
+    const getDatas = (query: TQuery) => {
+        return new Promise<IRow[]>((resolve, reject) => {
             taskList.push({ query, resolve, reject });
             if (taskList.length === 1) {
                 setTimeout(() => {
@@ -120,8 +124,8 @@ function initBatchGetDatas(action: string) {
     }
 }
 
-const batchGetDatasBySql = initBatchGetDatas("batch_get_datas_by_sql");
-const batchGetDatasByPayload = initBatchGetDatas("batch_get_datas_by_payload");
+const batchGetDatasBySql = initBatchGetDatas<string>("batch_get_datas_by_sql");
+const batchGetDatasByPayload = initBatchGetDatas<IDataQueryPayload>("batch_get_datas_by_payload");
 const DEFAULT_LIMIT = 50_000;
 
 function notifyDataLimit() {

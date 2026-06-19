@@ -1,4 +1,4 @@
-import type { IRow, IMutField } from '@kanaries/graphic-walker/interfaces'
+import type { IRow, IMutField, IDataQueryPayload } from '@kanaries/graphic-walker/interfaces'
 import type { IDarkMode, IThemeKey, IComputationFunction } from '@kanaries/graphic-walker/interfaces';
 
 export interface IAppProps {
@@ -42,4 +42,16 @@ export interface IDataSourceProps {
 export interface IUserConfig {
     [key: string]: any;
     privacy: 'events' | 'update-only' | 'offline';
+}
+
+export interface ICommSqlQueryRequest {
+    sql: string;
+}
+
+export interface ICommPayloadQueryRequest {
+    payload: IDataQueryPayload;
+}
+
+export interface ICommBatchQueryRequest<TQuery> {
+    queryList: TQuery[];
 }

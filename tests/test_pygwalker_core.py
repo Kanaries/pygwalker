@@ -7,6 +7,7 @@ from pygwalker.api import adapter, html, jupyter
 from pygwalker.api import pygwalker as pygwalker_module
 from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
+from pygwalker.errors import ErrorCode
 from pygwalker.services.global_var import GlobalVarManager
 
 
@@ -114,6 +115,28 @@ def test_pygwalker_kernel_data_query_callback_returns_records(monkeypatch):
         "data": {"datas": [{"total": 3}]},
         "message": "success",
     }
+
+
+def test_pygwalker_kernel_data_query_callback_validates_payload(monkeypatch):
+    walker = _make_walker(monkeypatch, kernel_computation=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("get_datas", {})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "sql" in response["message"]
+
+
+def test_pygwalker_batch_payload_query_callback_validates_payload(monkeypatch):
+    walker = _make_walker(monkeypatch, kernel_computation=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("batch_get_datas_by_payload", {"queryList": ["not-a-payload"]})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "queryList" in response["message"] or "query_list" in response["message"]
 
 
 def test_pygwalker_browser_callbacks_do_not_register_data_query_endpoints(monkeypatch):
