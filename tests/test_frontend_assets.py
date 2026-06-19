@@ -1,6 +1,15 @@
 import pytest
+import json
+from pathlib import Path
 
 from pygwalker.utils import frontend_assets
+
+
+def test_frontend_toolchain_targets_vite_6():
+    package_json = json.loads((Path(__file__).resolve().parents[1] / "app" / "package.json").read_text())
+
+    assert package_json["devDependencies"]["vite"].startswith("^6.")
+    assert package_json["devDependencies"]["@vitejs/plugin-react"].startswith("^4.")
 
 
 def test_read_frontend_asset_reads_from_templates_dist(monkeypatch, tmp_path):
