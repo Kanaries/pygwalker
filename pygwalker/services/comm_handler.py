@@ -22,6 +22,7 @@ from pygwalker.communications.protocol import (
 )
 from pygwalker.services.cloud_communication import CloudCommunicationService
 from pygwalker.services.data_communication import DataCommunicationService
+from pygwalker.services.data_upload_communication import DataUploadCommunicationService
 from pygwalker.services.desktop_import import DesktopImportService
 from pygwalker.services.preview_image import PreviewImageTool
 from pygwalker.services.spec_communication import SpecCommunicationService
@@ -46,22 +47,26 @@ class CommHandler:
         desktop_import: Optional[DesktopImportService] = None,
         cloud_communication: Optional[CloudCommunicationService] = None,
         data_communication: Optional[DataCommunicationService] = None,
+        data_upload_communication: Optional[DataUploadCommunicationService] = None,
         spec_communication: Optional[SpecCommunicationService] = None,
     ):
         self.walker = walker
         self.comm = comm
         self.preview_tool = preview_tool
-        self.upload_tool = upload_tool_cls(comm)
         self.desktop_import = desktop_import or DesktopImportService()
         self.cloud_communication = cloud_communication or CloudCommunicationService(walker)
         self.data_communication = data_communication or DataCommunicationService(walker)
+        self.data_upload_communication = data_upload_communication or DataUploadCommunicationService(
+            walker,
+            upload_tool_cls(comm),
+        )
         self.spec_communication = spec_communication or SpecCommunicationService(walker, preview_tool)
 
     def register(self) -> None:
         self.walker.comm = self.comm
 
         self.comm.register("get_latest_vis_spec", self.spec_communication.get_latest_vis_spec)
-        self.comm.register("request_data", self.request_data)
+        self.comm.register("request_data", self.data_upload_communication.request_data)
         self.comm.register("ping", lambda _: {})
         self._register_request("open_in_desktop", OpenDesktopRequest, self.open_in_desktop)
 
@@ -118,14 +123,6 @@ class CommHandler:
             return handler(validate_request(request_model, data))
 
         self.comm.register(endpoint, _handle)
-
-    def request_data(self, _):
-        self.upload_tool.run(
-            records=self.walker.origin_data_source,
-            sample_data_count=0,
-            data_source_id=self.walker.data_source_id,
-        )
-        return dump_response(EmptyResponse())
 
     def open_in_desktop(self, request: OpenDesktopRequest):
         self.desktop_import.import_to_desktop(
