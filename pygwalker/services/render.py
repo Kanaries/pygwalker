@@ -1,4 +1,3 @@
-import os
 import json
 import base64
 import html as m_html
@@ -8,9 +7,9 @@ import zlib
 from jinja2 import Environment, PackageLoader
 
 from pygwalker._typing import IAppearance
-from pygwalker._constants import ROOT_DIR
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.estimate_tools import estimate_average_data_size
+from pygwalker.utils.frontend_assets import read_frontend_asset
 from pygwalker.services.global_var import GlobalVarManager
 
 jinja_env = Environment(
@@ -26,9 +25,8 @@ def compress_data(data: str) -> str:
     return base64.b64encode(compressed_data).decode()
 
 
-with open(os.path.join(ROOT_DIR, "templates", "dist", "pygwalker-app.iife.js"), "r", encoding="utf8") as f:
-    GWALKER_SCRIPT = f.read()
-    GWALKER_SCRIPT_BASE64 = compress_data(GWALKER_SCRIPT)
+GWALKER_SCRIPT = read_frontend_asset("pygwalker-app.iife.js")
+GWALKER_SCRIPT_BASE64 = compress_data(GWALKER_SCRIPT)
 
 
 def get_max_limited_datas(datas: List[Dict[str, Any]], byte_limit: int) -> List[Dict[str, Any]]:

@@ -1,7 +1,6 @@
 from typing import Union, List, Optional
 import inspect
 import json
-import pathlib
 
 from typing_extensions import Literal
 
@@ -12,6 +11,7 @@ from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.communications.anywidget_comm import AnywidgetCommunication
 from pygwalker.utils.computation import resolve_computation_mode
+from pygwalker.utils.frontend_assets import read_frontend_asset
 from pygwalker.utils.spec import resolve_spec_input
 import anywidget
 import traitlets
@@ -20,9 +20,7 @@ import traitlets
 class _WalkerWidget(anywidget.AnyWidget):
     """WalkerWidget"""
 
-    _esm = (pathlib.Path(__file__).parent.parent / "templates" / "dist" / "pygwalker-app.es.js").read_text(
-        encoding="utf-8"
-    )
+    _esm = read_frontend_asset("pygwalker-app.es.js", encoding="utf-8")
     props = traitlets.Unicode("").tag(sync=True)
 
 

@@ -1,8 +1,7 @@
 from typing import Dict, List, Any
-import os
 import json
 
-from pygwalker._constants import ROOT_DIR
+from pygwalker.utils.frontend_assets import read_frontend_asset
 from .randoms import rand_str
 
 _dsl_to_workflow_js = None  # type: Optional[Callable]
@@ -38,14 +37,8 @@ def _ensure_js_runtime():
         return
 
     try:
-        dsl_js_path = os.path.join(ROOT_DIR, "templates", "dist", "dsl-to-workflow.umd.js")
-        vega_js_path = os.path.join(ROOT_DIR, "templates", "dist", "vega-to-dsl.umd.js")
-
-        with open(dsl_js_path, "r", encoding="utf8") as f:
-            _dsl_to_workflow_js = _make_js_callable("main", f.read())
-
-        with open(vega_js_path, "r", encoding="utf8") as f:
-            _vega_to_dsl_js = _make_js_callable("main", f.read())
+        _dsl_to_workflow_js = _make_js_callable("main", read_frontend_asset("dsl-to-workflow.umd.js"))
+        _vega_to_dsl_js = _make_js_callable("main", read_frontend_asset("vega-to-dsl.umd.js"))
     except ImportError:
         raise ImportError(_INSTALL_MSG)
 
