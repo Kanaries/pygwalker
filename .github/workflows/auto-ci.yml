@@ -114,7 +114,7 @@ jobs:
           pip install pytest ruff
           ruff check pygwalker tests scripts bin pygwalker_tools
           ruff format --check pygwalker tests scripts bin pygwalker_tools
-          python -X faulthandler -m pytest -o faulthandler_timeout=300 tests
+          python -X faulthandler -W error::DeprecationWarning:pygwalker -m pytest -o faulthandler_timeout=300 tests
       - name: Uploading notebooks
         uses: actions/upload-artifact@v4
         if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}

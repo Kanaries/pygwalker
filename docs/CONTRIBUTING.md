@@ -121,7 +121,7 @@ Run Python formatting, lint, and tests from the repository root:
 ```bash
 python -m ruff check pygwalker tests scripts bin pygwalker_tools
 python -m ruff format --check pygwalker tests scripts bin pygwalker_tools
-python -X faulthandler -m pytest -o faulthandler_timeout=60 tests
+python -X faulthandler -W error::DeprecationWarning:pygwalker -m pytest -o faulthandler_timeout=60 tests
 ```
 
 Run frontend type checking, build, and smoke tests from `app/`:
