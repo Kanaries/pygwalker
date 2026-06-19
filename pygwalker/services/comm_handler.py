@@ -2,7 +2,6 @@ from typing import Any, Callable, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
 from pydantic import BaseModel
 
-from pygwalker import __version__
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.communications.protocol import (
     AskSpecRequest,
@@ -10,7 +9,6 @@ from pygwalker.communications.protocol import (
     BatchSqlQueryRequest,
     ChatChartRequest,
     EmptyResponse,
-    LatestVisSpecResponse,
     OpenDesktopRequest,
     PayloadQueryRequest,
     SaveChartRequest,
@@ -26,8 +24,8 @@ from pygwalker.services.cloud_communication import CloudCommunicationService
 from pygwalker.services.data_communication import DataCommunicationService
 from pygwalker.services.desktop_import import DesktopImportService
 from pygwalker.services.preview_image import PreviewImageTool
+from pygwalker.services.spec_communication import SpecCommunicationService
 from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets
-from pygwalker.utils.pydantic_compat import model_dump
 
 if TYPE_CHECKING:
     from pygwalker.api.pygwalker import PygWalker
@@ -48,6 +46,7 @@ class CommHandler:
         desktop_import: Optional[DesktopImportService] = None,
         cloud_communication: Optional[CloudCommunicationService] = None,
         data_communication: Optional[DataCommunicationService] = None,
+        spec_communication: Optional[SpecCommunicationService] = None,
     ):
         self.walker = walker
         self.comm = comm
@@ -56,11 +55,12 @@ class CommHandler:
         self.desktop_import = desktop_import or DesktopImportService()
         self.cloud_communication = cloud_communication or CloudCommunicationService(walker)
         self.data_communication = data_communication or DataCommunicationService(walker)
+        self.spec_communication = spec_communication or SpecCommunicationService(walker, preview_tool)
 
     def register(self) -> None:
         self.walker.comm = self.comm
 
-        self.comm.register("get_latest_vis_spec", self.get_latest_vis_spec)
+        self.comm.register("get_latest_vis_spec", self.spec_communication.get_latest_vis_spec)
         self.comm.register("request_data", self.request_data)
         self.comm.register("ping", lambda _: {})
         self._register_request("open_in_desktop", OpenDesktopRequest, self.open_in_desktop)
@@ -69,8 +69,8 @@ class CommHandler:
             self._register_request(
                 "upload_spec_to_cloud", UploadSpecToCloudRequest, self.cloud_communication.upload_spec_to_cloud
             )
-            self._register_request("update_spec", UpdateSpecRequest, self.update_spec)
-            self._register_request("save_chart", SaveChartRequest, self.save_chart)
+            self._register_request("update_spec", UpdateSpecRequest, self.spec_communication.update_spec)
+            self._register_request("save_chart", SaveChartRequest, self.spec_communication.save_chart)
 
         if self.walker.show_cloud_tool:
             self._register_request(
@@ -125,27 +125,6 @@ class CommHandler:
             sample_data_count=0,
             data_source_id=self.walker.data_source_id,
         )
-        return dump_response(EmptyResponse())
-
-    def get_latest_vis_spec(self, _):
-        return dump_response(LatestVisSpecResponse(visSpec=self.walker.vis_spec))
-
-    def save_chart(self, request: SaveChartRequest):
-        self.walker.spec_manager.save_chart_payload(model_dump(request, by_alias=True))
-        return dump_response(EmptyResponse())
-
-    def update_spec(self, request: UpdateSpecRequest):
-        self.walker.spec_manager.update_runtime_state(
-            vis_spec=request.vis_spec,
-            workflow_list=request.workflow_list,
-            chart_data=request.chart_data,
-            version=__version__,
-        )
-
-        if self.walker.use_preview:
-            self.preview_tool.async_render_gw_review(self.walker._get_gw_preview_html())
-
-        self.walker.spec_manager.write_back(self.walker.cloud_service, __version__)
         return dump_response(EmptyResponse())
 
     def open_in_desktop(self, request: OpenDesktopRequest):
