@@ -6,6 +6,7 @@ import urllib.parse
 import zlib
 
 import pandas as pd
+import pyarrow as pa
 import pytest
 from duckdb import ParserException
 
@@ -1377,7 +1378,7 @@ def test_jupyter_walk_rejects_spec_and_spec_path(monkeypatch, tmp_path):
 
 
 def test_jupyter_walk_accepts_public_walker_object(monkeypatch):
-    from pygwalker.api.walker import Walker
+    import pygwalker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
     monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
@@ -1392,7 +1393,7 @@ def test_jupyter_walk_accepts_public_walker_object(monkeypatch):
         lambda self: display_calls.append(self.gid),
     )
 
-    public_walker = Walker(
+    public_walker = pygwalker.Walker(
         pd.DataFrame([{"city": "London", "value": 1}]),
         gid="public-jupyter",
         computation="browser",
@@ -1401,6 +1402,44 @@ def test_jupyter_walk_accepts_public_walker_object(monkeypatch):
 
     assert result is public_walker.core
     assert display_calls == ["public-jupyter"]
+
+
+def test_public_walker_accepts_empty_dataframe(monkeypatch):
+    import pygwalker
+
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+
+    public_walker = pygwalker.Walker(
+        pd.DataFrame({"city": pd.Series(dtype="object"), "value": pd.Series(dtype="int64")}),
+        gid="public-empty",
+        computation="browser",
+    )
+
+    assert public_walker.core.gid == "public-empty"
+    assert public_walker.core.origin_data_source == []
+    assert public_walker.core.dataset_type == "pandas_dataframe"
+    assert public_walker.core.parse_dsl_type == "client"
+    assert [field["fid"] for field in public_walker.core.field_specs] == ["city", "value"]
+
+
+def test_public_walker_accepts_pyarrow_table(monkeypatch):
+    import pygwalker
+
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+
+    public_walker = pygwalker.Walker(
+        pa.table({"city": ["London"], "value": [1]}),
+        gid="public-pyarrow",
+        computation="browser",
+    )
+
+    assert public_walker.core.gid == "public-pyarrow"
+    assert public_walker.core.origin_data_source == [{"city": "London", "value": 1}]
+    assert public_walker.core.dataset_type == "pyarrow_table"
+    assert public_walker.core.parse_dsl_type == "client"
+    assert [field["fid"] for field in public_walker.core.field_specs] == ["city", "value"]
 
 
 def test_jupyter_walk_public_walker_legacy_widget_env_warns_once(monkeypatch):
@@ -1660,6 +1699,21 @@ def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
     assert "srcdoc=" in rendered
     assert "eval(script)" not in rendered
     assert "URL.createObjectURL" in rendered
+
+
+def test_to_html_accepts_pyarrow_table(monkeypatch):
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "test-user")
+
+    rendered = html.to_html(
+        pa.table({"city": ["London"], "value": [1]}),
+        gid="static-pyarrow",
+        computation="browser",
+    )
+
+    assert 'id="gwalker-static-pyarrow"' in rendered
+    assert "srcdoc=" in rendered
 
 
 @pytest.mark.parametrize(
