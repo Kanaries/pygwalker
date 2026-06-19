@@ -34,16 +34,13 @@ class GradioCommunication(BaseCommunication):
     Hacker streamlit communication class.
     only support receive message.
     """
+
     def __init__(self, gid: str) -> None:
         super().__init__(gid)
         gradio_comm_map[gid] = self
 
 
-PYGWALKER_ROUTE = Route(
-    "/_pygwalker/comm/{gid}",
-    _pygwalker_router,
-    methods=["POST"]
-)
+PYGWALKER_ROUTE = Route("/_pygwalker/comm/{gid}", _pygwalker_router, methods=["POST"])
 
 
 # it will work when gradio server reload

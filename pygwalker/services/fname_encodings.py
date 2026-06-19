@@ -5,13 +5,13 @@ from collections import defaultdict
 
 def base36encode(s: str) -> str:
     """Converts an string to a base36 string."""
-    alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     number = int.from_bytes(s.encode(), "big")
 
     if not isinstance(number, int):
-        raise TypeError('number must be an integer')
+        raise TypeError("number must be an integer")
 
-    base36 = ''
+    base36 = ""
 
     if 0 <= number < len(alphabet):
         return alphabet[number]

@@ -16,6 +16,7 @@ from pygwalker.utils.check_walker_params import check_expired_params
 
 # pylint: disable=protected-access
 
+
 def get_component(
     dataset: Union[DataFrame, Connector],
     gid: Union[int, str] = None,

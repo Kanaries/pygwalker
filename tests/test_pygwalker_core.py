@@ -243,9 +243,7 @@ def test_pygwalker_request_data_callback_uploads_current_records(monkeypatch):
         def run(self, **kwargs):
             upload_calls.append(kwargs)
 
-    monkeypatch.setattr(
-        pygwalker_module, "BatchUploadDatasToolOnWidgets", FakeUploadTool
-    )
+    monkeypatch.setattr(pygwalker_module, "BatchUploadDatasToolOnWidgets", FakeUploadTool)
     walker = _make_walker(monkeypatch, kernel_computation=False)
     comm = BaseCommunication("core")
     walker._init_callback(comm)
@@ -364,12 +362,8 @@ def test_pygwalker_export_dataframe_callback_stores_last_dataframe(monkeypatch):
         )
 
         assert response == {"code": 0, "data": None, "message": "success"}
-        assert walker.last_exported_dataframe.to_dict("records") == [
-            {"city": "Tokyo", "value": 2}
-        ]
-        assert (
-            GlobalVarManager.last_exported_dataframe is walker.last_exported_dataframe
-        )
+        assert walker.last_exported_dataframe.to_dict("records") == [{"city": "Tokyo", "value": 2}]
+        assert GlobalVarManager.last_exported_dataframe is walker.last_exported_dataframe
     finally:
         GlobalVarManager.last_exported_dataframe = previous_exported_dataframe
 

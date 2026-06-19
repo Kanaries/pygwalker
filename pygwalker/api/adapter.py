@@ -1,4 +1,3 @@
-
 from typing import Union, List, Optional
 
 from typing_extensions import Literal
@@ -15,10 +14,10 @@ def walk(
     dataset: Union[DataFrame, Connector, str],
     gid: Union[int, str] = None,
     *,
-    env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
+    env: Literal["Jupyter", "JupyterWidget"] = "JupyterWidget",
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     spec: str = "",
     use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
@@ -26,7 +25,7 @@ def walk(
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
-    **kwargs
+    **kwargs,
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
 
@@ -62,7 +61,7 @@ def walk(
             show_cloud_tool=show_cloud_tool,
             kanaries_api_key=kanaries_api_key,
             default_tab=default_tab,
-            **kwargs
+            **kwargs,
         )
 
     return webserver.walk(
@@ -79,7 +78,7 @@ def walk(
         default_tab=default_tab,
         auto_open=True,
         auto_shutdown=True,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -87,11 +86,11 @@ def render(
     dataset: Union[DataFrame, Connector, str],
     spec: str,
     *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
-    **kwargs
+    **kwargs,
 ):
     """
     Args:
@@ -114,7 +113,7 @@ def render(
             appearance=appearance,
             kernel_computation=kernel_computation,
             kanaries_api_key=kanaries_api_key,
-            **kwargs
+            **kwargs,
         )
 
     return webserver.render(
@@ -126,18 +125,18 @@ def render(
         kanaries_api_key=kanaries_api_key,
         auto_open=True,
         auto_shutdown=True,
-        **kwargs
+        **kwargs,
     )
 
 
 def table(
     dataset: Union[DataFrame, Connector, str],
     *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
-    **kwargs
+    **kwargs,
 ):
     """
     Args:
@@ -158,9 +157,9 @@ def table(
             appearance=appearance,
             kernel_computation=kernel_computation,
             kanaries_api_key=kanaries_api_key,
-            **kwargs
+            **kwargs,
         )
-    
+
     return webserver.table(
         dataset,
         theme_key=theme_key,
@@ -169,5 +168,5 @@ def table(
         kanaries_api_key=kanaries_api_key,
         auto_open=True,
         auto_shutdown=True,
-        **kwargs
+        **kwargs,
     )

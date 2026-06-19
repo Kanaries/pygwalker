@@ -14,13 +14,16 @@ from pygwalker.utils.randoms import rand_str
 
 
 GRAPHIC_WALKER_AGG_FUNCS = {
-    "sum", "mean", "median",
-    "min", "max", "variance", "stddev",
+    "sum",
+    "mean",
+    "median",
+    "min",
+    "max",
+    "variance",
+    "stddev",
 }
 
-GRAPHIC_WALKER_FIELD_FUNCS = {
-    "bin", "bin_count"
-}
+GRAPHIC_WALKER_FIELD_FUNCS = {"bin", "bin_count"}
 
 
 def _convert_sql_to_field(sql: str, is_agg_sql: bool) -> Dict[str, Any]:
@@ -32,13 +35,7 @@ def _convert_sql_to_field(sql: str, is_agg_sql: bool) -> Dict[str, Any]:
         "analyticType": "dimension",
         "semanticType": "nominal",
         "computed": True,
-        "expression": {
-            "as": fid,
-            "op": "expr",
-            "params": [
-                {"type": "sql", "value": sql}
-            ]
-        }
+        "expression": {"as": fid, "op": "expr", "params": [{"type": "sql", "value": sql}]},
     }
     if is_agg_sql:
         field_item["aggName"] = "expr"
@@ -77,7 +74,7 @@ def _convert_gw_bin_function_to_field(func_name: str, field_name: str, num: int)
                 {"type": "field", "value": field_name},
             ],
             "num": num,
-        }
+        },
     }
     return field_item
 
@@ -127,6 +124,7 @@ class Component:
         - field_map (Dict[str, Any]): field map.
         - single_chart_spec (Dict[str, Any]): single chart
     """
+
     def __init__(
         self,
         *,
@@ -147,7 +145,7 @@ class Component:
             walker=self.walker,
             render_type=self._render_type,
             field_map=deepcopy(self._field_map),
-            single_chart_spec=deepcopy(self._single_chart_spec)
+            single_chart_spec=deepcopy(self._single_chart_spec),
         )
 
     def _update_single_chart_spec(self, key: str, value: Any) -> Dict[str, Any]:
@@ -176,7 +174,7 @@ class Component:
                 "analyticType": "dimension",
                 "semanticType": "nominal",
                 "computed": False,
-                **self._field_map.get(s, {})
+                **self._field_map.get(s, {}),
             }
         return {}
 
@@ -326,9 +324,7 @@ class Component:
         .encode(x="field_0", y="SUM(field_1)")
         """
         all_params = {
-            key: [value] if isinstance(value, str) else value
-            for key, value in locals().items()
-            if key != "self"
+            key: [value] if isinstance(value, str) else value for key, value in locals().items() if key != "self"
         }
         copied_obj = self.copy()
         params_key_map = {
@@ -363,7 +359,7 @@ class Component:
         mode: Optional[Literal["auto", "fixed", "container"]] = None,
         width: Optional[int] = None,
         height: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> "Component":
         """
         Set layout config.
@@ -399,12 +395,7 @@ class Component:
         }
         """
         copied_obj = self.copy()
-        layout_info = {
-            "size__mode": mode,
-            "size__width": width,
-            "size__height": height,
-            **kwargs
-        }
+        layout_info = {"size__mode": mode, "size__width": width, "size__height": height, **kwargs}
         for key, value in layout_info.items():
             if value is None:
                 continue
@@ -423,6 +414,8 @@ class Component:
         copied_obj = self.copy()
         copied_obj._render_type = "explorer"
         return copied_obj
+
+
 # pylint: enable=protected-access
 
 
@@ -437,7 +430,7 @@ def component(
     show_cloud_tool: Optional[bool] = False,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
-    **kwargs
+    **kwargs,
 ) -> Component:
     """
     Component class for creating a chain of components.
@@ -471,13 +464,10 @@ def component(
         kanaries_api_key=kanaries_api_key,
         default_tab="data",
         cloud_computation=False,
-        **kwargs
+        **kwargs,
     )
     render_type = "pure_chart"
-    field_map = {
-        field["fid"]: field
-        for field in walker.data_parser.raw_fields
-    }
+    field_map = {field["fid"]: field for field in walker.data_parser.raw_fields}
     single_chart_spec = {
         "name": "Chart 1",
         "visId": "",
@@ -527,7 +517,7 @@ def component(
             },
             "stack": "stack",
             "zeroScale": True,
-        }
+        },
     }
     return Component(
         walker=walker,

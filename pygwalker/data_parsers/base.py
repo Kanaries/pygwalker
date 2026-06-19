@@ -26,9 +26,10 @@ class FieldSpec(BaseModel):
     - analytic_type: '?' | 'dimension' | 'measure'. default to '?'.
     - display_as: str. The field name displayed. None means using the original column name.
     """
+
     fname: str
-    semantic_type: Literal['?', 'nominal', 'ordinal', 'temporal', 'quantitative'] = '?'
-    analytic_type: Literal['?', 'dimension', 'measure'] = '?'
+    semantic_type: Literal["?", "nominal", "ordinal", "temporal", "quantitative"] = "?"
+    analytic_type: Literal["?", "dimension", "measure"] = "?"
     display_as: str = None
 
 
@@ -45,7 +46,7 @@ class BaseDataParser(abc.ABC):
         field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
-        other_params: Dict[str, Any]
+        other_params: Dict[str, Any],
     ) -> None:
         raise NotImplementedError
 
@@ -117,12 +118,14 @@ class BaseDataParser(abc.ABC):
 
 class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     """DataFrame property getter"""
+
     def __init__(
-        self, df: DataFrame,
+        self,
+        df: DataFrame,
         field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
-        other_params: Dict[str, Any]
+        other_params: Dict[str, Any],
     ):
         self.origin_df = df
         self.df = self._rename_dataframe(df)
@@ -144,14 +147,9 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
     @property
     @lru_cache()
     def raw_fields(self) -> List[Dict[str, str]]:
-        return [
-            self._infer_prop(col, self.field_specs)
-            for _, col in enumerate(self._example_df.columns)
-        ]
+        return [self._infer_prop(col, self.field_specs) for _, col in enumerate(self._example_df.columns)]
 
-    def _infer_prop(
-        self, col: str, field_specs: List[FieldSpec] = None
-    ) -> Dict[str, str]:
+    def _infer_prop(self, col: str, field_specs: List[FieldSpec] = None) -> Dict[str, str]:
         """get IMutField
 
         Returns:
@@ -163,14 +161,18 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         field_spec_map = {field_spec.fname: field_spec for field_spec in field_specs}
 
         field_spec = field_spec_map.get(orig_fname, FieldSpec(fname=orig_fname))
-        semantic_type = self._infer_semantic(s, orig_fname) if field_spec.semantic_type == '?' else field_spec.semantic_type
-        analytic_type = self._infer_analytic(s, orig_fname) if field_spec.analytic_type == '?' else field_spec.analytic_type
+        semantic_type = (
+            self._infer_semantic(s, orig_fname) if field_spec.semantic_type == "?" else field_spec.semantic_type
+        )
+        analytic_type = (
+            self._infer_analytic(s, orig_fname) if field_spec.analytic_type == "?" else field_spec.analytic_type
+        )
         fname = orig_fname if field_spec.display_as is None else field_spec.display_as
         return {
-            'fid': col,
-            'name': fname,
-            'semanticType': semantic_type,
-            'analyticType': analytic_type,
+            "fid": col,
+            "name": fname,
+            "semanticType": semantic_type,
+            "analyticType": analytic_type,
         }
 
     def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
@@ -183,36 +185,23 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         duckdb.register("pygwalker_mid_table", self._duckdb_df)
 
         result = duckdb.query(sql)
-        return [
-            dict(zip(result.columns, row))
-            for row in result.fetchall()
-        ]
+        return [dict(zip(result.columns, row)) for row in result.fetchall()]
 
     def _rename_dataframe(self, df: DataFrame) -> DataFrame:
         """rename dataframe"""
         raise NotImplementedError
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-        sql = get_sql_from_payload(
-            "pygwalker_mid_table",
-            payload,
-            {"pygwalker_mid_table": self.field_metas}
-        )
+        sql = get_sql_from_payload("pygwalker_mid_table", payload, {"pygwalker_mid_table": self.field_metas})
         return self.get_datas_by_sql(sql)
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
-        return [
-            self.get_datas_by_sql(sql)
-            for sql in sql_list
-        ]
+        return [self.get_datas_by_sql(sql) for sql in sql_list]
 
     def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
-        return [
-            self.get_datas_by_payload(payload)
-            for payload in payload_list
-        ]
+        return [self.get_datas_by_payload(payload) for payload in payload_list]
 
     @property
     def dataset_type(self) -> str:
@@ -242,12 +231,9 @@ def is_temporal_field(value: Any, infer_string_to_date: bool) -> bool:
 
 
 def is_geo_field(field_name: str) -> bool:
-    """check if filed is """
+    """check if filed is"""
     field_name = field_name.lower().strip(" .")
-    return field_name in {
-        "latitude", "longitude",
-        "lat", "long", "lon"
-    }
+    return field_name in {"latitude", "longitude", "lat", "long", "lon"}
 
 
 def format_temporal_string(value: str) -> str:
@@ -266,10 +252,7 @@ def get_data_meta_type(data: Dict[str, Any]) -> List[Dict[str, str]]:
             field_meta_type = "number"
         else:
             field_meta_type = "string"
-        meta_types.append({
-            "key": key,
-            "type": field_meta_type
-        })
+        meta_types.append({"key": key, "type": field_meta_type})
     return meta_types
 
 

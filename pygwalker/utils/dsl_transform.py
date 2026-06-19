@@ -38,14 +38,14 @@ def _ensure_js_runtime():
         return
 
     try:
-        dsl_js_path = os.path.join(ROOT_DIR, 'templates', 'dist', 'dsl-to-workflow.umd.js')
-        vega_js_path = os.path.join(ROOT_DIR, 'templates', 'dist', 'vega-to-dsl.umd.js')
+        dsl_js_path = os.path.join(ROOT_DIR, "templates", "dist", "dsl-to-workflow.umd.js")
+        vega_js_path = os.path.join(ROOT_DIR, "templates", "dist", "vega-to-dsl.umd.js")
 
-        with open(dsl_js_path, 'r', encoding='utf8') as f:
-            _dsl_to_workflow_js = _make_js_callable('main', f.read())
+        with open(dsl_js_path, "r", encoding="utf8") as f:
+            _dsl_to_workflow_js = _make_js_callable("main", f.read())
 
-        with open(vega_js_path, 'r', encoding='utf8') as f:
-            _vega_to_dsl_js = _make_js_callable('main', f.read())
+        with open(vega_js_path, "r", encoding="utf8") as f:
+            _vega_to_dsl_js = _make_js_callable("main", f.read())
     except ImportError:
         raise ImportError(_INSTALL_MSG)
 
@@ -57,9 +57,6 @@ def dsl_to_workflow(dsl: Dict[str, Any]) -> Dict[str, Any]:
 
 def vega_to_dsl(vega_config: Dict[str, Any], fields: List[Dict[str, Any]]) -> Dict[str, Any]:
     _ensure_js_runtime()
-    return json.loads(_vega_to_dsl_js(json.dumps({
-        "vl": vega_config,
-        "allFields": fields,
-        "visId": rand_str(6),
-        "name": rand_str(6)
-    })))
+    return json.loads(
+        _vega_to_dsl_js(json.dumps({"vl": vega_config, "allFields": fields, "visId": rand_str(6), "name": rand_str(6)}))
+    )

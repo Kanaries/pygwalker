@@ -2,10 +2,7 @@ from typing import Union, List, Optional
 from typing_extensions import Literal
 
 from .pygwalker import PygWalker
-from pygwalker.communications.gradio_comm import (
-    BASE_URL_PATH,
-    GradioCommunication
-)
+from pygwalker.communications.gradio_comm import BASE_URL_PATH, GradioCommunication
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame, IAppearance, ISpecIOMode, IThemeKey
@@ -18,14 +15,14 @@ def get_html_on_gradio(
     gid: Union[int, str] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     spec: str = "",
     spec_io_mode: ISpecIOMode = "r",
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
-    **kwargs
+    **kwargs,
 ) -> str:
     """Get pygwalker html render to gradio
 
@@ -63,7 +60,7 @@ def get_html_on_gradio(
         default_tab=default_tab,
         cloud_computation=False,
         gw_mode="explore",
-        **kwargs
+        **kwargs,
     )
 
     props = walker._get_props("gradio")

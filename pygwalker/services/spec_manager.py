@@ -27,11 +27,7 @@ class SpecManager:
 
     def update_vis_spec(self, vis_spec: List[Dict[str, Any]]) -> None:
         self.vis_spec = vis_spec
-        self.chart_name_index_map = {
-            item["name"]: index
-            for index, item in enumerate(vis_spec)
-            if "name" in item
-        }
+        self.chart_name_index_map = {item["name"]: index for index, item in enumerate(vis_spec) if "name" in item}
 
     def save_chart(self, chart_data: ChartData) -> None:
         self.chart_map[chart_data.title] = chart_data
@@ -79,13 +75,7 @@ class SpecManager:
         return self.chart_name_index_map[chart_name]
 
     def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
-        return {
-            key: model_dump(value, by_alias=True)
-            for key, value in chart_map.items()
-        }
+        return {key: model_dump(value, by_alias=True) for key, value in chart_map.items()}
 
     def _parse_chart_map_dict(self, chart_map_dict: Dict[str, Any]) -> Dict[str, ChartData]:
-        return {
-            key: model_validate(ChartData, value)
-            for key, value in chart_map_dict.items()
-        }
+        return {key: model_validate(ChartData, value) for key, value in chart_map_dict.items()}

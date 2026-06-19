@@ -21,13 +21,13 @@ def _to_html(
     *,
     spec: str = "",
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     default_tab: Literal["data", "vis"] = "vis",
-    gw_mode: Literal['explore', 'renderer', 'filter_renderer', 'table'] = "explore",
+    gw_mode: Literal["explore", "renderer", "filter_renderer", "table"] = "explore",
     width: Optional[int] = None,
     height: Optional[int] = None,
-    **kwargs
+    **kwargs,
 ) -> str:
     """
     Generate embeddable HTML code of Graphic Walker with data of `df`.
@@ -67,7 +67,7 @@ def _to_html(
         kanaries_api_key="",
         default_tab=default_tab,
         cloud_computation=False,
-        **kwargs
+        **kwargs,
     )
 
     return walker.to_html(width, height)
@@ -79,10 +79,10 @@ def to_html(
     *,
     spec: str = "",
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     default_tab: Literal["data", "vis"] = "vis",
-    **kwargs
+    **kwargs,
 ) -> str:
     """
     Generate embeddable HTML code of Graphic Walker with data of `df`.
@@ -106,17 +106,11 @@ def to_html(
         theme_key=theme_key,
         appearance=appearance,
         default_tab=default_tab,
-        **kwargs
+        **kwargs,
     )
 
 
-def to_table_html(
-    df: DataFrame,
-    *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
-    **kwargs
-) -> str:
+def to_table_html(df: DataFrame, *, theme_key: IThemeKey = "g2", appearance: IAppearance = "media", **kwargs) -> str:
     """
     Generate embeddable HTML code of Graphic Walker with data of `df`.
 
@@ -136,17 +130,12 @@ def to_table_html(
         appearance=appearance,
         gw_mode="table",
         height="800px",
-        **kwargs
+        **kwargs,
     )
 
 
 def to_render_html(
-    df: DataFrame,
-    spec: str,
-    *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
-    **kwargs
+    df: DataFrame, spec: str, *, theme_key: IThemeKey = "g2", appearance: IAppearance = "media", **kwargs
 ) -> str:
     """
     Args:
@@ -165,7 +154,7 @@ def to_render_html(
         theme_key=theme_key,
         appearance=appearance,
         gw_mode="filter_renderer",
-        **kwargs
+        **kwargs,
     )
 
 
@@ -174,8 +163,8 @@ def to_chart_html(
     spec: Dict[str, Any],
     *,
     spec_type: Literal["graphic-walker", "vega"] = "graphic-walker",
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
 ) -> str:
     """
     Generate HTML code of a chart by graphic-walker or vega spec.
@@ -202,10 +191,5 @@ def to_chart_html(
 
     data = data_parser.get_datas_by_payload(workflow)
     return render_gw_chart_preview_html(
-        single_vis_spec=gw_dsl,
-        data=data,
-        theme_key=theme_key,
-        appearance=appearance,
-        title="",
-        desc=""
+        single_vis_spec=gw_dsl, data=data, theme_key=theme_key, appearance=appearance, title="", desc=""
     )

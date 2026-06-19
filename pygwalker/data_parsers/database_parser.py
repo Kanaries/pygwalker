@@ -23,10 +23,7 @@ logger = logging.getLogger(__name__)
 
 def _check_view_sql(sql: str) -> None:
     """check view sql, it will raise ViewSqlSameColumnError if view sql contain same column"""
-    select_columns = [
-        select.alias_or_name
-        for select in sqlglot.parse_one(sql).find(exp.Select)
-    ]
+    select_columns = [select.alias_or_name for select in sqlglot.parse_one(sql).find(exp.Select)]
 
     has_join = sqlglot.parse_one(sql).find(exp.Join) is not None
     has_select_all = any(column == "*" for column in select_columns)
@@ -49,11 +46,9 @@ class Connector:
     - view_sql: view sql, example: SELECT * FROM table_name
     - engine_params: engine params, refer to sqlalchemy doc for params. example: {"pool_size": 10}
     """
+
     engine_map = {}
-    JSON_TYPE_CODE_SET_MAP = {
-        "snowflake": {9, 10},
-        "mysql": {245}
-    }
+    JSON_TYPE_CODE_SET_MAP = {"snowflake": {9, 10}, "mysql": {245}}
     PRE_INIT_SQL_MAP = {
         "snowflake": "ALTER SESSION SET WEEK_OF_YEAR_POLICY=1, WEEK_START=7, STRICT_JSON_OUTPUT=True;",
     }
@@ -74,7 +69,7 @@ class Connector:
     @classmethod
     def from_sqlalchemy_connection(cls, connection: Connection, view_sql: str) -> "Connector":
         """
-        Create a Connector instance from an existing SQLAlchemy connection.  
+        Create a Connector instance from an existing SQLAlchemy connection.
         This adapts the DuckDB connector.
 
         Note:
@@ -92,7 +87,7 @@ class Connector:
         self.url = str(engine.url)
         self.view_sql = view_sql
         self._json_type_code_set = self.JSON_TYPE_CODE_SET_MAP.get(self.dialect_name, set())
-        self._existing_conn = None 
+        self._existing_conn = None
         self._run_pre_init_sql(engine)
 
     def _get_or_create_engine(self, url: str, engine_params: Dict[str, Any]) -> Engine:
@@ -113,14 +108,11 @@ class Connector:
         field_type_map = {}
         should_close_connection = self._existing_conn is None
         connection = self._existing_conn or self.engine.connect()
-    
+
         try:
             result = connection.execute(text(sql))
             if self.dialect_name in self.JSON_TYPE_CODE_SET_MAP:
-                field_type_map = {
-                    column_desc[0]: column_desc[1]
-                    for column_desc in result.cursor.description
-                }
+                field_type_map = {column_desc[0]: column_desc[1] for column_desc in result.cursor.description}
             return [
                 {
                     key: json.loads(value) if field_type_map.get(key, -1) in self._json_type_code_set else value
@@ -139,6 +131,7 @@ class Connector:
 
 class DatabaseDataParser(BaseDataParser):
     """data parser for database"""
+
     sqlglot_dialect_map = {
         "postgresql": "postgres",
         "mssql": "tsql",
@@ -150,7 +143,7 @@ class DatabaseDataParser(BaseDataParser):
         field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
-        other_params: Dict[str, Any]
+        other_params: Dict[str, Any],
     ):
         self.conn = conn
         self.example_pandas_df = self._get_example_pandas_df()
@@ -172,7 +165,7 @@ class DatabaseDataParser(BaseDataParser):
 
         sub_query = exp.Subquery(
             this=sqlglot.parse(self.conn.view_sql, read=sqlglot_dialect_name)[0],
-            alias=exp.TableAlias(this="temp_view_name")
+            alias=exp.TableAlias(this="temp_view_name"),
         )
         ast = sqlglot.parse(sql, read=DuckdbDialect)[0]
         for from_exp in ast.find_all(exp.From):
@@ -200,26 +193,21 @@ class DatabaseDataParser(BaseDataParser):
             self.field_specs,
             self.infer_string_to_date,
             self.infer_number_to_dimension,
-            self.other_params
+            self.other_params,
         )
-        return [
-            {**field, "fid": field["name"]}
-            for field in pandas_parser.raw_fields
-        ]
+        return [{**field, "fid": field["name"]} for field in pandas_parser.raw_fields]
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         if limit is None:
             df = self.example_pandas_df
         else:
             df = self.example_pandas_df[:limit]
-        df = df.replace({float('nan'): None})
-        return df.to_dict(orient='records')
+        df = df.replace({float("nan"): None})
+        return df.to_dict(orient="records")
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         sql = get_sql_from_payload(
-            self.placeholder_table_name,
-            payload,
-            {self.placeholder_table_name: self.field_metas}
+            self.placeholder_table_name, payload, {self.placeholder_table_name: self.field_metas}
         )
         sql = self._format_sql(sql)
         result = self.conn.query_datas(sql)
@@ -246,17 +234,11 @@ class DatabaseDataParser(BaseDataParser):
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
-        return [
-            self.get_datas_by_sql(sql)
-            for sql in sql_list
-        ]
+        return [self.get_datas_by_sql(sql) for sql in sql_list]
 
     def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
-        return [
-            self.get_datas_by_payload(payload)
-            for payload in payload_list
-        ]
+        return [self.get_datas_by_payload(payload) for payload in payload_list]
 
     @property
     def dataset_type(self) -> str:

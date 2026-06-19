@@ -8,12 +8,9 @@ def _upload_error_info(gid: str, action: str, error: Exception):
     if isinstance(error, CommProtocolError):
         return
     try:
-        track_event("pygwalker_error", {
-            "gid": gid,
-            "action": action,
-            "error": str(error),
-            "error_type": type(error).__name__
-        })
+        track_event(
+            "pygwalker_error", {"gid": gid, "action": action, "error": str(error), "error_type": type(error).__name__}
+        )
     except Exception:
         pass
 
@@ -28,6 +25,7 @@ class BaseCommunication:
         "data": {}
     }
     """
+
     def __init__(self, gid: str) -> None:
         self._endpoint_map = {}
         self.gid = gid

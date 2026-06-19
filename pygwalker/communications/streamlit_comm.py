@@ -4,12 +4,14 @@ import re
 
 from tornado.web import Application
 from streamlit import config
+
 try:
     from streamlit.web.server.server_util import make_url_path_regex as _streamlit_make_url_path_regex
 except ImportError:  # pragma: no cover - depends on the installed Streamlit version.
     _streamlit_make_url_path_regex = None
 import tornado.web
 import streamlit as st
+
 try:
     from starlette.applications import Starlette
     from starlette.responses import JSONResponse
@@ -50,6 +52,7 @@ class PygwalkerHandler(tornado.web.RequestHandler):
     """
     Handler for pygwalker communication
     """
+
     def check_xsrf_cookie(self):
         return True
 
@@ -87,7 +90,9 @@ def _register_tornado_handler() -> bool:
     tornado_obj = None
     for obj in gc.get_objects():
         try:
-            if isinstance(obj, Application) and any(("streamlit" in str(rule.target) for rule in obj.wildcard_router.rules)):
+            if isinstance(obj, Application) and any(
+                ("streamlit" in str(rule.target) for rule in obj.wildcard_router.rules)
+            ):
                 tornado_obj = obj
         except Exception:
             pass
@@ -110,10 +115,7 @@ def _is_streamlit_starlette_app(app) -> bool:
     routes = _get_starlette_routes(app)
     if routes is None:
         return False
-    return any(
-        "_stcore" in getattr(route, "path", "") or "streamlit" in getattr(route, "path", "")
-        for route in routes
-    )
+    return any("_stcore" in getattr(route, "path", "") or "streamlit" in getattr(route, "path", "") for route in routes)
 
 
 def _register_starlette_route() -> bool:
@@ -135,7 +137,8 @@ def _register_starlette_route() -> bool:
             pygwalker_route = Route(STREAMLIT_API_ROUTE, _pygwalker_router, methods=["POST"])
             static_mount_index = next(
                 (
-                    index for index, route in enumerate(routes)
+                    index
+                    for index, route in enumerate(routes)
                     if Mount is not None and isinstance(route, Mount) and getattr(route, "path", None) in {"", "/"}
                 ),
                 None,
@@ -169,6 +172,7 @@ class StreamlitCommunication(BaseCommunication):
     Hacker streamlit communication class.
     only support receive message.
     """
+
     def __init__(self, gid: str) -> None:
         super().__init__(gid)
         streamlit_comm_map[gid] = self

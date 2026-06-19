@@ -13,6 +13,4 @@ def check_expired_params(params: Dict[str, Any]):
 
     for old_param, new_param in expired_params_map.items():
         if old_param in params:
-            logger.warning(
-                f"Parameter `{old_param}` is expired, please use `{new_param}` instead."
-            )
+            logger.warning(f"Parameter `{old_param}` is expired, please use `{new_param}` instead.")

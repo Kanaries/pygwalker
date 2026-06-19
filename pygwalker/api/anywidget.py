@@ -17,7 +17,10 @@ import traitlets
 
 class _WalkerWidget(anywidget.AnyWidget):
     """WalkerWidget"""
-    _esm = (pathlib.Path(__file__).parent.parent / "templates" / "dist" / "pygwalker-app.es.js").read_text(encoding="utf-8")
+
+    _esm = (pathlib.Path(__file__).parent.parent / "templates" / "dist" / "pygwalker-app.es.js").read_text(
+        encoding="utf-8"
+    )
     props = traitlets.Unicode("").tag(sync=True)
 
 
@@ -26,13 +29,13 @@ def walk(
     gid: Union[int, str] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     spec: str = "",
     show_cloud_tool: bool = False,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
-    **kwargs
+    **kwargs,
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
 
@@ -51,9 +54,7 @@ def walk(
     if field_specs is None:
         field_specs = []
 
-    source_invoke_code = get_formated_spec_params_code_from_frame(
-        inspect.stack()[1].frame
-    )
+    source_invoke_code = get_formated_spec_params_code_from_frame(inspect.stack()[1].frame)
 
     widget = _WalkerWidget()
     walker = PygWalker(
@@ -73,7 +74,7 @@ def walk(
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
         cloud_computation=False,
-        **kwargs
+        **kwargs,
     )
     comm = AnywidgetCommunication(walker.gid)
 

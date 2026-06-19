@@ -8,6 +8,7 @@ from .config import get_config
 
 class GlobalVarManager:
     """A class to manage global variables."""
+
     env = None
     privacy = get_config("privacy") or "events"
     kanaries_api_key = get_config("kanaries_token") or os.getenv("KANARIES_API_KEY", "")
@@ -21,11 +22,11 @@ class GlobalVarManager:
     enable_vlchat = os.getenv("PYGWALKER_ENABLE_VLCHAT", "false").lower() == "true"
 
     @classmethod
-    def set_env(cls, env: Literal['Jupyter', 'Streamlit']):
+    def set_env(cls, env: Literal["Jupyter", "Streamlit"]):
         cls.env = env
 
     @classmethod
-    def get_env(cls) -> Literal['Jupyter', 'Streamlit']:
+    def get_env(cls) -> Literal["Jupyter", "Streamlit"]:
         return cls.env
 
     @classmethod
@@ -41,7 +42,7 @@ class GlobalVarManager:
         cls.kanaries_main_host = main_host
 
     @classmethod
-    def set_privacy(cls, privacy: Literal['offline', 'update-only', 'events']):
+    def set_privacy(cls, privacy: Literal["offline", "update-only", "events"]):
         cls.privacy = privacy
 
     @classmethod

@@ -49,6 +49,7 @@ def read_config_from_cloud(path: str) -> str:
 
 class PrivateSession(requests.Session):
     """A session with kanaries"""
+
     def __init__(self, api_key: Optional[str]):
         super().__init__()
         self.kanaries_api_key = api_key
@@ -61,13 +62,18 @@ class PrivateSession(requests.Session):
     def send(self, request: requests.PreparedRequest, **kwargs) -> requests.Response:
         kanaries_api_key = self.kanaries_api_key or GlobalVarManager.kanaries_api_key
         if not kanaries_api_key:
-            logger.error((
-                "kanaries_api_key is not valid.\n"
-                "Please set kanaries_api_key first.\n"
-                "If you are not kanaries user, please register it from 'https://kanaries.net/home/access' \n"
-                "Then refer 'https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F' to set kanaries_api_key. \n"
-            ))
-            raise CloudFunctionError("no kanaries api key. visit: https://docs.kanaries.net/ for setup documentation.", code=ErrorCode.TOKEN_ERROR)
+            logger.error(
+                (
+                    "kanaries_api_key is not valid.\n"
+                    "Please set kanaries_api_key first.\n"
+                    "If you are not kanaries user, please register it from 'https://kanaries.net/home/access' \n"
+                    "Then refer 'https://github.com/Kanaries/pygwalker/wiki/How-to-get-api-key-of-kanaries%3F' to set kanaries_api_key. \n"
+                )
+            )
+            raise CloudFunctionError(
+                "no kanaries api key. visit: https://docs.kanaries.net/ for setup documentation.",
+                code=ErrorCode.TOKEN_ERROR,
+            )
         resp = super().send(request, **kwargs)
         try:
             resp_json = resp.json()
@@ -78,13 +84,12 @@ class PrivateSession(requests.Session):
             if resp_json["success"] is False:
                 raise CloudFunctionError(
                     f"Request failed: {resp_json['message']}",
-                    code=resp_json["code"] if resp_json["code"] != 0 else ErrorCode.UNKNOWN_ERROR
+                    code=resp_json["code"] if resp_json["code"] != 0 else ErrorCode.UNKNOWN_ERROR,
                 )
         else:
             if resp.status_code != 200:
                 raise CloudFunctionError(
-                    f"Request failed: {resp_json['error']['message']}",
-                    code=resp_json["error"]["code"]
+                    f"Request failed: {resp_json['error']['message']}", code=resp_json["error"]["code"]
                 )
 
         return resp
@@ -92,6 +97,7 @@ class PrivateSession(requests.Session):
 
 class CloudService:
     """A class to manage cloud service"""
+
     def __init__(self, api_key: str):
         self.session = PrivateSession(api_key)
 
@@ -100,12 +106,9 @@ class CloudService:
         name: str,
         file_type: str = Literal["parquet", "csv"],
         is_public: bool = True,
-        kind: Literal["TEMP", "FILE"] = "FILE"
+        kind: Literal["TEMP", "FILE"] = "FILE",
     ) -> Dict[str, Any]:
-        param_file_type_map = {
-            "csv": "TEXT_FILE",
-            "parquet": "PARQUET"
-        }
+        param_file_type_map = {"csv": "TEXT_FILE", "parquet": "PARQUET"}
 
         url = f"{GlobalVarManager.kanaries_api_host}/dataset/upload"
         params = {
@@ -126,10 +129,7 @@ class CloudService:
 
     def _upload_dataset_callback(self, dataset_id: str, fid_list: List[str]) -> Dict[str, Any]:
         url = f"{GlobalVarManager.kanaries_api_host}/dataset/callback"
-        params = {
-            "datasetId": dataset_id,
-            "fidList": fid_list
-        }
+        params = {"datasetId": dataset_id, "fidList": fid_list}
         resp = self.session.post(url, json=params, timeout=10)
         return resp.json()
 
@@ -160,10 +160,7 @@ class CloudService:
 
     def _create_notebook(self, title: str, chart_id: str) -> Dict[str, Any]:
         url = f"{GlobalVarManager.kanaries_api_host}/notebook"
-        markdown = "\n".join([
-            "# " + title,
-            f"::chart[{chart_id}]"
-        ])
+        markdown = "\n".join(["# " + title, f"::chart[{chart_id}]"])
         params = {
             "title": title,
             "markdown": markdown,
@@ -190,10 +187,7 @@ class CloudService:
     def write_config_to_cloud(self, path: str, config: str):
         """Write config to cloud"""
         url = f"{GlobalVarManager.kanaries_api_host}/pygConfig"
-        self.session.put(url, json={
-            "path": path,
-            "config": config
-        })
+        self.session.put(url, json={"path": path, "config": config})
 
     def get_cloud_graphic_walker(self, workspace_name: str, chart_name: str) -> str:
         chart_data = self._get_chart_by_name(chart_name, workspace_name)
@@ -219,19 +213,20 @@ class CloudService:
         field_specs: List[Dict[str, Any]],
     ) -> str:
         fid_list = [field["fid"] for field in field_specs]
-        meta = json.dumps({
-            "dataSources": [{
-                "id": "dataSource-0",
-                "data": []
-            }],
-            "datasets": [{
-                "id": 'dataset-0',
-                "name": 'DataSet',
-                "rawFields": field_specs,
-                "dsId": 'dataSource-0',
-            }],
-            "specList": []
-        })
+        meta = json.dumps(
+            {
+                "dataSources": [{"id": "dataSource-0", "data": []}],
+                "datasets": [
+                    {
+                        "id": "dataset-0",
+                        "name": "DataSet",
+                        "rawFields": field_specs,
+                        "dsId": "dataSource-0",
+                    }
+                ],
+                "specList": [],
+            }
+        )
 
         chart_data = self._get_chart_by_name(chart_name, workspace_name)
 
@@ -245,14 +240,7 @@ class CloudService:
         _upload_file_to_s3(upload_url, dataset_content)
         self._upload_dataset_callback(dataset_id, fid_list)
 
-        self._create_chart(
-            dataset_id=dataset_id,
-            name=chart_name,
-            meta=meta,
-            workflow={},
-            thumbnail="",
-            is_public=True
-        )
+        self._create_chart(dataset_id=dataset_id, name=chart_name, meta=meta, workflow={}, thumbnail="", is_public=True)
 
     def get_kanaries_user_info(self) -> Dict[str, Any]:
         url = f"{GlobalVarManager.kanaries_api_host}/user/info"
@@ -262,19 +250,13 @@ class CloudService:
     def get_spec_by_text(self, metas: List[Dict[str, Any]], text: str) -> Dict[str, Any]:
         url = f"{GlobalVarManager.kanaries_api_host}/vis/text2gw"
         resp = self.session.post(
-            url,
-            json={"metas": metas, "messages": [{"role": "user", "content": text}]},
-            timeout=15
+            url, json={"metas": metas, "messages": [{"role": "user", "content": text}]}, timeout=15
         )
         return resp.json()["data"]
 
     def get_chart_by_chats(self, metas: List[Dict[str, Any]], chats: Any) -> Dict[str, Any]:
         url = f"{GlobalVarManager.kanaries_api_host}/vis/chat2gw"
-        resp = self.session.post(
-            url,
-            json={"metas": metas, "messages": chats},
-            timeout=30
-        )
+        resp = self.session.post(url, json={"metas": metas, "messages": chats}, timeout=30)
         return resp.json()["data"]
 
     def create_file_dataset(
@@ -283,7 +265,7 @@ class CloudService:
         dataset_content: io.BytesIO,
         fid_list: List[str],
         is_public: bool,
-        kind: Literal["TEMP", "FILE"]
+        kind: Literal["TEMP", "FILE"],
     ) -> str:
         dataset_info = self._upload_file_dataset_meta(dataset_name, "parquet", is_public, kind=kind)
         dataset_id = dataset_info["datasetId"]
@@ -305,7 +287,7 @@ class CloudService:
                 "url": database_url,
             },
             "datasourceType": database_type,
-            "desc": ""
+            "desc": "",
         }
         resp = self.session.post(url, json=params, timeout=15)
         return resp.json()["data"]["datasourceId"]
@@ -332,7 +314,7 @@ class CloudService:
             "type": "DATABASE",
             "meta": {
                 "viewSql": view_sql,
-            }
+            },
         }
         resp = self.session.post(url, json=params, timeout=60)
         return resp.json()["data"]["datasetId"]
@@ -355,11 +337,7 @@ class CloudService:
         return resp.json()["data"]
 
     def create_cloud_dataset(
-        self,
-        data_parser: BaseDataParser,
-        name: str,
-        is_public: bool,
-        is_temp_dataset: bool = False
+        self, data_parser: BaseDataParser, name: str, is_public: bool, is_temp_dataset: bool = False
     ) -> str:
         if name is None:
             name = f"pygwalker_{datetime.now().strftime('%Y%m%d%H%M')}"
@@ -373,16 +351,9 @@ class CloudService:
             datasource_id = self.get_datasource_by_name(datasource_name)
             if datasource_id is None:
                 datasource_id = self.create_datasource(
-                    datasource_name,
-                    connector.url,
-                    _get_database_type_from_dialect_name(connector.dialect_name)
+                    datasource_name, connector.url, _get_database_type_from_dialect_name(connector.dialect_name)
                 )
-            dataset_id = self.create_database_dataset(
-                name,
-                datasource_id,
-                is_public,
-                connector.view_sql
-            )
+            dataset_id = self.create_database_dataset(name, datasource_id, is_public, connector.view_sql)
             return dataset_id
         else:
             dataset_id = self.create_file_dataset(
@@ -390,19 +361,12 @@ class CloudService:
                 data_parser.to_parquet(),
                 [field["name"] for field in data_parser.raw_fields],
                 is_public,
-                kind="TEMP" if is_temp_dataset else "FILE"
+                kind="TEMP" if is_temp_dataset else "FILE",
             )
 
         return dataset_id
 
-    def create_dashboard(
-        self,
-        *,
-        name: str,
-        layout: List[Any],
-        config: Dict[str, Any],
-        is_public: bool
-    ) -> str:
+    def create_dashboard(self, *, name: str, layout: List[Any], config: Dict[str, Any], is_public: bool) -> str:
         url = f"{GlobalVarManager.kanaries_api_host}/report"
         params = {
             "title": name,
@@ -411,7 +375,7 @@ class CloudService:
             "size": {},
             "config": config,
             "layout": layout,
-            "public": is_public
+            "public": is_public,
         }
         resp = self.session.post(url, json=params, timeout=60)
         return resp.json()["data"]["id"]
@@ -437,28 +401,26 @@ class CloudService:
         chart_info = self._create_chart(
             dataset_id=dataset_id,
             name=chart_name,
-            meta=json.dumps({
-                "dataSources": [{
-                    "id": "dataSource-0",
-                    "data": []
-                }],
-                "datasets": [{
-                    "id": 'dataset-0',
-                    "name": 'DataSet',
-                    "rawFields": data_parser.raw_fields,
-                    "dsId": 'dataSource-0',
-                }],
-                "specList": spec_list
-            }),
+            meta=json.dumps(
+                {
+                    "dataSources": [{"id": "dataSource-0", "data": []}],
+                    "datasets": [
+                        {
+                            "id": "dataset-0",
+                            "name": "DataSet",
+                            "rawFields": data_parser.raw_fields,
+                            "dsId": "dataSource-0",
+                        }
+                    ],
+                    "specList": spec_list,
+                }
+            ),
             workflow=workflow,
             thumbnail="",
-            is_public=is_public
+            is_public=is_public,
         )
 
-        return {
-            "chart_id": chart_info["chartId"],
-            "dataset_id": dataset_id
-        }
+        return {"chart_id": chart_info["chartId"], "dataset_id": dataset_id}
 
     def upload_cloud_dashboard(
         self,
@@ -470,40 +432,38 @@ class CloudService:
         spec_list: List[Dict[str, Any]],
         is_public: bool,
         appearance: str,
-        create_dashboard_flag: bool
+        create_dashboard_flag: bool,
     ) -> Dict[str, str]:
         dataset_id = self.create_cloud_dataset(data_parser, dataset_name, False)
 
         chart_info_list = []
-        for spec, workflow in zip(spec_list, workflow_list):    
+        for spec, workflow in zip(spec_list, workflow_list):
             chart_info = self._create_chart(
                 dataset_id=dataset_id,
                 name=f"{dashboard_name}-{spec['name']}",
-                meta=json.dumps({
-                    "dataSources": [{
-                        "id": "dataSource-0",
-                        "data": []
-                    }],
-                    "datasets": [{
-                        "id": 'dataset-0',
-                        "name": 'DataSet',
-                        "rawFields": data_parser.raw_fields,
-                        "dsId": 'dataSource-0',
-                    }],
-                    "specList": [spec]
-                }),
+                meta=json.dumps(
+                    {
+                        "dataSources": [{"id": "dataSource-0", "data": []}],
+                        "datasets": [
+                            {
+                                "id": "dataset-0",
+                                "name": "DataSet",
+                                "rawFields": data_parser.raw_fields,
+                                "dsId": "dataSource-0",
+                            }
+                        ],
+                        "specList": [spec],
+                    }
+                ),
                 workflow=workflow,
                 thumbnail="",
-                is_public=is_public
+                is_public=is_public,
             )
 
             chart_info_list.append(chart_info)
 
         if not create_dashboard_flag:
-            return {
-                "dashboard_id": "",
-                "dataset_id": dataset_id
-            }
+            return {"dashboard_id": "", "dataset_id": dataset_id}
 
         dashboard_id = self.create_dashboard(
             name=dashboard_name,
@@ -521,16 +481,13 @@ class CloudService:
                             for spec, chart_info in zip(spec_list, chart_info_list)
                         ],
                         "mode": "gwtabs",
-                    }
+                    },
                 ],
             },
             layout=[
                 {"i": "dashboard_title", "h": 2, "w": 4, "x": 0, "y": 0},
                 {"i": "chart_tab", "h": 20, "w": 4, "x": 0, "y": 2},
-            ]
+            ],
         )
 
-        return {
-            "dashboard_id": dashboard_id,
-            "dataset_id": dataset_id
-        }
+        return {"dashboard_id": dashboard_id, "dataset_id": dataset_id}

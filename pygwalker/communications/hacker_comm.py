@@ -16,6 +16,7 @@ class HackerCommunication(BaseCommunication):
     Since it is not a long running service for multiple users,
     some expired buffers and locks will not be cleaned up.
     """
+
     def __init__(self, gid: str) -> None:
         super().__init__(gid)
         self._kernel_widget = self._get_kernel_widget()
@@ -32,12 +33,7 @@ class HackerCommunication(BaseCommunication):
         """
         if rid is None:
             rid = uuid.uuid1().hex
-        msg = {
-            "gid": self.gid,
-            "rid": rid,
-            "action": action,
-            "data": data
-        }
+        msg = {"gid": self.gid, "rid": rid, "action": action, "data": data}
         with self._send_msg_lock:
             self._html_widget.value = json.dumps(msg, cls=DataFrameEncoder)
             self._html_widget.placeholder = str(self.__increase)
@@ -45,10 +41,7 @@ class HackerCommunication(BaseCommunication):
             time.sleep(0.1)
 
     def get_widgets(self) -> Box:
-        return Box(
-            children=[self._html_widget, *self._kernel_widget],
-            layout=Layout(display="none")
-        )
+        return Box(children=[self._html_widget, *self._kernel_widget], layout=Layout(display="none"))
 
     def _on_mesage(self, info: Dict[str, Any]):
         self.__increase += 1

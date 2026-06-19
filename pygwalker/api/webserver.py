@@ -69,7 +69,7 @@ class _PygWalkerHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
         self.wfile.write(html.encode("utf-8"))
-    
+
     def do_POST(self):
         parsed_path = urllib.parse.urlparse(self.path)
         path = parsed_path.path
@@ -78,15 +78,15 @@ class _PygWalkerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404)
             return
 
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length).decode('utf-8')
+        content_length = int(self.headers["Content-Length"])
+        post_data = self.rfile.read(content_length).decode("utf-8")
         payload = json.loads(post_data)
         result = self._walker.comm._receive_msg(payload["action"], payload["data"])
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
         self.wfile.write(json.dumps(result, cls=DataFrameEncoder).encode("utf-8"))
-    
+
     def log_message(self, format, *args):
         pass
 
@@ -98,10 +98,11 @@ class CustomTCPServer(socketserver.TCPServer):
 
 def _create_handler_with_walker(walker: PygWalker, state: _GlobalState):
     """Create a custom handler with walker"""
+
     class CustomPygWalkerHandler(_PygWalkerHandler):
         _walker = walker
         _state = state
-    
+
     return CustomPygWalkerHandler
 
 
@@ -113,7 +114,7 @@ def _open_browser(address: str, delay_ms: int = 1000):
         opened = webbrowser.open(address)
     except Exception:
         opened = False
-    
+
     if opened:
         print(f"Run pygwalker at {address}, close page or press Ctrl+C to end.")
     else:
@@ -159,8 +160,8 @@ def walk(
     gid: Optional[Union[int, str]] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     spec: str = "",
     kernel_computation: Optional[bool] = None,
     cloud_computation: bool = False,
@@ -170,7 +171,7 @@ def walk(
     port: Optional[int] = None,
     auto_shutdown: bool = False,
     auto_open: bool = False,
-    **kwargs
+    **kwargs,
 ):
     """Walk through pandas.DataFrame df with Graphic Walker.
     This function was originally designed solely to launch Pygwalker in script mode.
@@ -214,7 +215,7 @@ def walk(
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
         cloud_computation=cloud_computation,
-        **kwargs
+        **kwargs,
     )
     _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
 
@@ -223,14 +224,14 @@ def render(
     dataset: Union[DataFrame, Connector, str],
     spec: str,
     *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     port: Optional[int] = None,
     auto_shutdown: bool = False,
     auto_open: bool = False,
-    **kwargs
+    **kwargs,
 ):
     """
     This function was originally designed solely to launch Pygwalker in script mode.
@@ -266,7 +267,7 @@ def render(
         kanaries_api_key=kanaries_api_key,
         default_tab="vis",
         cloud_computation=False,
-        **kwargs
+        **kwargs,
     )
     _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
 
@@ -274,14 +275,14 @@ def render(
 def table(
     dataset: Union[DataFrame, Connector, str],
     *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     port: Optional[int] = None,
     auto_shutdown: bool = False,
     auto_open: bool = False,
-    **kwargs
+    **kwargs,
 ):
     """
     This function was originally designed solely to launch Pygwalker in script mode.
@@ -315,6 +316,6 @@ def table(
         kanaries_api_key=kanaries_api_key,
         default_tab="vis",
         cloud_computation=False,
-        **kwargs
+        **kwargs,
     )
     _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)

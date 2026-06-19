@@ -73,7 +73,7 @@ def test_runtime_initialized_only_once():
         call_count[0] += 1
         return original(*args, **kwargs)
 
-    with mock.patch.object(mod, '_make_js_callable', side_effect=counting_make):
+    with mock.patch.object(mod, "_make_js_callable", side_effect=counting_make):
         dsl_to_workflow({})
         dsl_to_workflow({})
     # _make_js_callable is called twice during init (once per UMD file), but only on first call

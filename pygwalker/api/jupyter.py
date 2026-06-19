@@ -18,10 +18,10 @@ def walk(
     dataset: Union[DataFrame, Connector, str],
     gid: Union[int, str] = None,
     *,
-    env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
+    env: Literal["Jupyter", "JupyterWidget"] = "JupyterWidget",
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     spec: str = "",
     use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
@@ -29,7 +29,7 @@ def walk(
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
-    **kwargs
+    **kwargs,
 ):
     """Walk through pandas.DataFrame df with Graphic Walker
 
@@ -53,9 +53,7 @@ def walk(
     if field_specs is None:
         field_specs = []
 
-    source_invoke_code = get_formated_spec_params_code_from_frame(
-        inspect.stack()[1].frame
-    )
+    source_invoke_code = get_formated_spec_params_code_from_frame(inspect.stack()[1].frame)
 
     if check_kaggle():
         auto_set_kanaries_api_key_on_kaggle()
@@ -76,21 +74,22 @@ def walk(
         appearance=appearance,
         show_cloud_tool=show_cloud_tool,
         use_preview=True,
-        kernel_computation=env != "JupyterConvert" and (isinstance(dataset, (Connector, str)) or fallback_value(kernel_computation, use_kernel_calc)),
+        kernel_computation=env != "JupyterConvert"
+        and (isinstance(dataset, (Connector, str)) or fallback_value(kernel_computation, use_kernel_calc)),
         use_save_tool=True,
         gw_mode="explore",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
         cloud_computation=cloud_computation,
-        **kwargs
+        **kwargs,
     )
 
     env_display_map = {
         "JupyterWidget": walker.display_on_jupyter_use_widgets,
         "Jupyter": walker.display_on_jupyter,
         "JupyterConvert": walker.display_on_convert_html,
-        "JupyterPreview": walker.display_preview_on_jupyter
+        "JupyterPreview": walker.display_preview_on_jupyter,
     }
 
     display_func = env_display_map.get(env, lambda: None)
@@ -103,11 +102,11 @@ def render(
     dataset: Union[DataFrame, Connector, str],
     spec: str,
     *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
-    **kwargs
+    **kwargs,
 ):
     """
     Args:
@@ -138,7 +137,7 @@ def render(
         kanaries_api_key=kanaries_api_key,
         default_tab="vis",
         cloud_computation=False,
-        **kwargs
+        **kwargs,
     )
 
     walker.display_on_jupyter_use_widgets()
@@ -147,11 +146,11 @@ def render(
 def table(
     dataset: Union[DataFrame, Connector, str],
     *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
-    **kwargs
+    **kwargs,
 ):
     """
     Args:
@@ -180,7 +179,7 @@ def table(
         kanaries_api_key=kanaries_api_key,
         default_tab="vis",
         cloud_computation=False,
-        **kwargs
+        **kwargs,
     )
 
     walker.display_on_jupyter_use_widgets(iframe_height="800px")

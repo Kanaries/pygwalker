@@ -18,8 +18,10 @@ from pygwalker.api.html import to_html
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.api.component import component
 
-if GlobalVarManager.privacy == 'offline':
-    logging.getLogger(__name__).info("Running in offline mode. There might be newer releases available. Please check at https://github.com/Kanaries/pygwalker or https://pypi.org/project/pygwalker.")
+if GlobalVarManager.privacy == "offline":
+    logging.getLogger(__name__).info(
+        "Running in offline mode. There might be newer releases available. Please check at https://github.com/Kanaries/pygwalker or https://pypi.org/project/pygwalker."
+    )
 
 if __check_kaggle():
     __show_tips_user_kaggle()

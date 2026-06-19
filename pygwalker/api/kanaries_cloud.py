@@ -14,7 +14,7 @@ def create_cloud_dataset(
     *,
     name: Optional[str] = None,
     is_public: bool = False,
-    kanaries_api_key: str = ""
+    kanaries_api_key: str = "",
 ) -> str:
     """
     Create a dataset in kanaries cloud
@@ -44,7 +44,7 @@ def create_cloud_walker(
     chart_name: str,
     workspace_name: str,
     field_specs: Optional[List[FieldSpec]] = None,
-    kanaries_api_key: str = ""
+    kanaries_api_key: str = "",
 ) -> str:
     """
     (deprecated)
@@ -71,7 +71,7 @@ def create_cloud_walker(
         chart_name=chart_name,
         workspace_name=workspace_name,
         dataset_content=data_parser.to_parquet(),
-        field_specs=data_parser.raw_fields
+        field_specs=data_parser.raw_fields,
     )
 
 

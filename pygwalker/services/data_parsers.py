@@ -10,7 +10,7 @@ from pygwalker._typing import DataFrame
 
 __classname2method = {}
 
-DatasetType = Literal['pandas', 'polars', 'modin', 'pyspark', 'connector', 'cloud_dataset']
+DatasetType = Literal["pandas", "polars", "modin", "pyspark", "connector", "cloud_dataset"]
 
 
 # pylint: disable=import-outside-toplevel
@@ -24,37 +24,46 @@ def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> Tuple[BaseDat
 
     if isinstance(dataset, pd.DataFrame):
         from pygwalker.data_parsers.pandas_parser import PandasDataFrameDataParser
+
         __classname2method[pd.DataFrame] = (PandasDataFrameDataParser, "pandas")
         return __classname2method[pd.DataFrame]
 
-    if 'polars' in sys.modules:
+    if "polars" in sys.modules:
         import polars as pl
+
         if isinstance(dataset, pl.DataFrame):
             from pygwalker.data_parsers.polars_parser import PolarsDataFrameDataParser
+
             __classname2method[pl.DataFrame] = (PolarsDataFrameDataParser, "polars")
             return __classname2method[pl.DataFrame]
 
-    if 'modin.pandas' in sys.modules:
+    if "modin.pandas" in sys.modules:
         from modin import pandas as mpd
+
         if isinstance(dataset, mpd.DataFrame):
             from pygwalker.data_parsers.modin_parser import ModinPandasDataFrameDataParser
+
             __classname2method[mpd.DataFrame] = (ModinPandasDataFrameDataParser, "modin")
             return __classname2method[mpd.DataFrame]
 
-    if 'pyspark' in sys.modules:
+    if "pyspark" in sys.modules:
         from pyspark.sql import DataFrame as SparkDataFrame
+
         if isinstance(dataset, SparkDataFrame):
             from pygwalker.data_parsers.spark_parser import SparkDataFrameDataParser
+
             __classname2method[SparkDataFrame] = (SparkDataFrameDataParser, "pyspark")
             return __classname2method[SparkDataFrame]
 
     if isinstance(dataset, Connector):
         from pygwalker.data_parsers.database_parser import DatabaseDataParser
+
         __classname2method[DatabaseDataParser] = (DatabaseDataParser, "connector")
         return __classname2method[DatabaseDataParser]
 
     if isinstance(dataset, str):
         from pygwalker.data_parsers.cloud_dataset_parser import CloudDatasetParser
+
         __classname2method[CloudDatasetParser] = (CloudDatasetParser, "cloud_dataset")
         return __classname2method[CloudDatasetParser]
 
@@ -66,7 +75,7 @@ def get_parser(
     field_specs: Optional[List[FieldSpec]] = None,
     infer_string_to_date: bool = False,
     infer_number_to_dimension: bool = True,
-    other_params: Optional[Dict[str, Any]] = None
+    other_params: Optional[Dict[str, Any]] = None,
 ) -> BaseDataParser:
     if field_specs is None:
         field_specs = []
@@ -74,19 +83,14 @@ def get_parser(
         other_params = {}
 
     parser_func, _ = _get_data_parser(dataset)
-    parser = parser_func(
-        dataset,
-        field_specs,
-        infer_string_to_date,
-        infer_number_to_dimension,
-        other_params
-    )
+    parser = parser_func(dataset, field_specs, infer_string_to_date, infer_number_to_dimension, other_params)
     return parser
 
 
 def _get_pl_dataset_hash(dataset: DataFrame) -> str:
     """Get polars dataset hash value."""
     import polars as pl
+
     row_count = dataset.shape[0]
     other_info = str(dataset.shape) + "_polars"
     if row_count > 4000:
@@ -108,6 +112,7 @@ def _get_pd_dataset_hash(dataset: DataFrame) -> str:
 def _get_modin_dataset_hash(dataset: DataFrame) -> str:
     """Get modin dataset hash value."""
     import modin.pandas as mpd
+
     row_count = dataset.shape[0]
     other_info = str(dataset.shape) + "_modin"
     if row_count > 4000:
@@ -119,7 +124,7 @@ def _get_modin_dataset_hash(dataset: DataFrame) -> str:
 
 def _get_spark_dataset_hash(dataset: DataFrame) -> str:
     """Get pyspark dataset hash value."""
-    shape = ((dataset.count(), len(dataset.columns)))
+    shape = (dataset.count(), len(dataset.columns))
     row_count = shape[0]
     other_info = str(shape) + "_pyspark"
     if row_count > 4000:

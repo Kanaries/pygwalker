@@ -3,11 +3,7 @@ import io
 
 import polars as pl
 
-from .base import (
-    BaseDataFrameDataParser,
-    is_temporal_field,
-    is_geo_field
-)
+from .base import BaseDataFrameDataParser, is_temporal_field, is_geo_field
 from pygwalker.services.fname_encodings import rename_columns
 
 
@@ -30,10 +26,7 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return content
 
     def _rename_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
-        df = df.rename({
-            old_col: new_col
-            for old_col, new_col in zip(df.columns, rename_columns(df.columns))
-        })
+        df = df.rename({old_col: new_col for old_col, new_col in zip(df.columns, rename_columns(df.columns))})
         return df
 
     def _infer_semantic(self, s: pl.Series, field_name: str):

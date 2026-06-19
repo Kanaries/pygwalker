@@ -98,7 +98,8 @@ jobs:
         run: |
           pip install duckdb_engine
           pip install pytest ruff
-          ruff check pygwalker tests scripts bin
+          ruff check pygwalker tests scripts bin pygwalker_tools
+          ruff format --check pygwalker tests scripts bin pygwalker_tools
           python -X faulthandler -m pytest -o faulthandler_timeout=300 tests
       - name: Uploading notebooks
         uses: actions/upload-artifact@v4

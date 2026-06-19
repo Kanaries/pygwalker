@@ -26,7 +26,7 @@ def compress_data(data: str) -> str:
     return base64.b64encode(compressed_data).decode()
 
 
-with open(os.path.join(ROOT_DIR, 'templates', 'dist', 'pygwalker-app.iife.js'), 'r', encoding='utf8') as f:
+with open(os.path.join(ROOT_DIR, "templates", "dist", "pygwalker-app.iife.js"), "r", encoding="utf8") as f:
     GWALKER_SCRIPT = f.read()
     GWALKER_SCRIPT_BASE64 = compress_data(GWALKER_SCRIPT)
 
@@ -62,7 +62,7 @@ def render_gwalker_iframe(
         height=height,
         width=width,
         appearance=appearance,
-        component_url=GlobalVarManager.component_url
+        component_url=GlobalVarManager.component_url,
     )
 
 
@@ -71,11 +71,11 @@ def render_gwalker_html(gid: int, props: Dict[str, Any]) -> str:
     template = jinja_env.get_template("pygwalker_main_page.html")
     html = template.render(
         gwalker={
-            'id': container_id,
-            'gw_script': GWALKER_SCRIPT_BASE64,
+            "id": container_id,
+            "gw_script": GWALKER_SCRIPT_BASE64,
             "component_script": "PyGWalkerApp.GWalker(props, gw_id);",
             "props": compress_data(json.dumps(props, cls=DataFrameEncoder)),
         },
-        component_url=GlobalVarManager.component_url
+        component_url=GlobalVarManager.component_url,
     )
     return html

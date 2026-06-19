@@ -23,19 +23,16 @@ from pygwalker.services.render import (
     render_gwalker_html,
     render_gwalker_iframe,
     get_max_limited_datas,
-    render_iframe_messages_html
+    render_iframe_messages_html,
 )
 from pygwalker.services.config import set_config
 from pygwalker.services.preview_image import (
     PreviewImageTool,
     ChartData,
     render_gw_preview_html,
-    render_gw_chart_preview_html
+    render_gw_chart_preview_html,
 )
-from pygwalker.services.upload_data import (
-    BatchUploadDatasToolOnWidgets,
-    BatchUploadDatasToolOnJupyter
-)
+from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets, BatchUploadDatasToolOnJupyter
 from pygwalker.services.config import get_local_user_id
 from pygwalker.services.data_bridge import DataBridge
 from pygwalker.services.spec_manager import SpecManager
@@ -58,6 +55,7 @@ from pygwalker import __version__
 
 class PygWalker:
     """PygWalker"""
+
     def __init__(
         self,
         *,
@@ -77,7 +75,7 @@ class PygWalker:
         kanaries_api_key: str,
         default_tab: Literal["data", "vis"],
         gw_mode: Literal["explore", "renderer", "filter_renderer", "table"],
-        **kwargs
+        **kwargs,
     ):
         self.kanaries_api_key = kanaries_api_key or GlobalVarManager.kanaries_api_key
         if gid is None:
@@ -129,7 +127,7 @@ class PygWalker:
         field_specs: List[FieldSpec],
         cloud_computation: bool,
         kanaries_api_key: str,
-        cloud_service: CloudService
+        cloud_service: CloudService,
     ) -> BaseDataParser:
         return DataBridge.create_data_parser(
             dataset=dataset,
@@ -263,11 +261,7 @@ class PygWalker:
         and only a small amount of data will be output to the front end to complete the analysis of big data.
         """
         data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_BYTE_LIMIT)
-        props = self._get_props(
-            "jupyter",
-            data_source,
-            len(self.origin_data_source) > len(data_source)
-        )
+        props = self._get_props("jupyter", data_source, len(self.origin_data_source) > len(data_source))
         iframe_html = self._get_render_iframe(props)
 
         if len(self.origin_data_source) > len(data_source):
@@ -292,16 +286,11 @@ class PygWalker:
         comm = HackerCommunication(self.gid)
         preview_tool = PreviewImageTool(self.gid)
         data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
-        props = self._get_props(
-            "jupyter_widgets",
-            data_source,
-            len(self.origin_data_source) > len(data_source)
-        )
+        props = self._get_props("jupyter_widgets", data_source, len(self.origin_data_source) > len(data_source))
         iframe_html = self._get_render_iframe(props, iframe_width=iframe_width, iframe_height=iframe_height)
 
         html_widgets = ipywidgets.Box(
-            [ipywidgets.HTML(iframe_html), comm.get_widgets()],
-            layout=ipywidgets.Layout(display='block')
+            [ipywidgets.HTML(iframe_html), comm.get_widgets()], layout=ipywidgets.Layout(display="block")
         )
 
         self._init_callback(comm, preview_tool)
@@ -350,11 +339,7 @@ class PygWalker:
         """
         Export the chart as a html string.
         """
-        return self._get_gw_chart_preview_html(
-            chart_name,
-            title="",
-            desc=""
-        )
+        return self._get_gw_chart_preview_html(chart_name, title="", desc="")
 
     def export_chart_png(self, chart_name: str) -> bytes:
         """
@@ -374,7 +359,8 @@ class PygWalker:
         prefix = "data:image/svg+xml;base64,"
         if isinstance(svg_str, str) and svg_str.startswith(prefix):
             import base64
-            return base64.b64decode(svg_str[len(prefix):])
+
+            return base64.b64decode(svg_str[len(prefix) :])
         if isinstance(svg_str, str):
             return svg_str.encode("utf-8")
         return svg_str
@@ -386,11 +372,7 @@ class PygWalker:
         if title is None:
             title = chart_name
 
-        html = self._get_gw_chart_preview_html(
-            chart_name,
-            title=title,
-            desc=desc
-        )
+        html = self._get_gw_chart_preview_html(chart_name, title=title, desc=desc)
         display_html(html)
 
     def get_single_chart_html_by_spec(
@@ -402,6 +384,7 @@ class PygWalker:
     ) -> str:
         # pylint: disable=import-outside-toplevel
         from pygwalker.utils.dsl_transform import dsl_to_workflow
+
         workflow = dsl_to_workflow(spec)
         data = self.data_parser.get_datas_by_payload(workflow)
         return render_gw_chart_preview_html(
@@ -410,7 +393,7 @@ class PygWalker:
             theme_key=self.theme_key,
             title=title,
             desc=desc,
-            appearance=self.appearance
+            appearance=self.appearance,
         )
 
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
@@ -422,11 +405,7 @@ class PygWalker:
         self.comm = comm
 
         def reuqest_data_callback(_):
-            upload_tool.run(
-                records=self.origin_data_source,
-                sample_data_count=0,
-                data_source_id=self.data_source_id
-            )
+            upload_tool.run(records=self.origin_data_source, sample_data_count=0, data_source_id=self.data_source_id)
             return {}
 
         def get_latest_vis_spec(_):
@@ -462,51 +441,32 @@ class PygWalker:
         def _get_datas(data: Dict[str, Any]):
             request = validate_request(SqlQueryRequest, data)
             datas = self.data_parser.get_datas_by_sql(request.sql)
-            return {
-                "datas": datas
-            }
+            return {"datas": datas}
 
         def _get_datas_by_payload(data: Dict[str, Any]):
             request = validate_request(PayloadQueryRequest, data)
             datas = self.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True))
-            return {
-                "datas": datas
-            }
+            return {"datas": datas}
 
         def _batch_get_datas_by_sql(data: Dict[str, Any]):
             request = validate_request(BatchSqlQueryRequest, data)
             result = self.data_parser.batch_get_datas_by_sql(request.query_list)
-            return {
-                "datas": result
-            }
+            return {"datas": result}
 
         def _batch_get_datas_by_payload(data: Dict[str, Any]):
             request = validate_request(BatchPayloadQueryRequest, data)
-            result = self.data_parser.batch_get_datas_by_payload([
-                model_dump(query, exclude_none=True)
-                for query in request.query_list
-            ])
-            return {
-                "datas": result
-            }
+            result = self.data_parser.batch_get_datas_by_payload(
+                [model_dump(query, exclude_none=True) for query in request.query_list]
+            )
+            return {"datas": result}
 
         def _get_spec_by_text(data: Dict[str, Any]):
-            callback = self.other_props.get(
-                "custom_ask_callback",
-                self.cloud_service.get_spec_by_text
-            )
-            return {
-                "data": callback(data["metas"], data["query"])
-            }
+            callback = self.other_props.get("custom_ask_callback", self.cloud_service.get_spec_by_text)
+            return {"data": callback(data["metas"], data["query"])}
 
         def _get_chart_by_chats(data: Dict[str, Any]):
-            callback = self.other_props.get(
-                "custom_chat_callback",
-                self.cloud_service.get_chart_by_chats
-            )
-            return {
-                "data": callback(data["metas"], data["chats"])
-            }
+            callback = self.other_props.get("custom_chat_callback", self.cloud_service.get_chart_by_chats)
+            return {"data": callback(data["metas"], data["chats"])}
 
         def _export_dataframe_by_payload(data: Dict[str, Any]):
             request = validate_request(PayloadQueryRequest, data)
@@ -540,7 +500,7 @@ class PygWalker:
                 spec_list=data["visSpec"],
                 is_public=data["isPublic"],
                 create_dashboard_flag=data["isCreateDashboard"],
-                appearance=self.appearance
+                appearance=self.appearance,
             )
             return {"dashboardId": result["dashboard_id"], "datasetId": result["dataset_id"]}
 
@@ -558,10 +518,15 @@ class PygWalker:
             return urllib.parse.quote(base64.b64encode(compressed_data).decode())
 
         def open_in_desktop(data: Dict[str, Any]):
-            spec = json.dumps(data['spec'])
-            fields = json.dumps(data['fields'])
-            data = json.dumps(self.data_parser.to_records(), default=lambda obj: obj.isoformat() if hasattr(obj, 'isoformat') else str(obj))
-            _open_protocol(f"gw://import?data={compress_data(data)}&spec={compress_data(spec)}&fields={compress_data(fields)}")
+            spec = json.dumps(data["spec"])
+            fields = json.dumps(data["fields"])
+            data = json.dumps(
+                self.data_parser.to_records(),
+                default=lambda obj: obj.isoformat() if hasattr(obj, "isoformat") else str(obj),
+            )
+            _open_protocol(
+                f"gw://import?data={compress_data(data)}&spec={compress_data(spec)}&fields={compress_data(fields)}"
+            )
 
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
         comm.register("request_data", reuqest_data_callback)
@@ -591,10 +556,22 @@ class PygWalker:
 
     def _send_props_track(self, props: Dict[str, Any]):
         needed_fields = {
-            "id", "version", "hashcode", "themeKey",
-            "dark", "env", "specType", "needLoadDatas", "showCloudTool",
-            "useKernelCalc", "useSaveTool", "parseDslType", "gwMode", "datasetType",
-            "defaultTab", "useCloudCalc"
+            "id",
+            "version",
+            "hashcode",
+            "themeKey",
+            "dark",
+            "env",
+            "specType",
+            "needLoadDatas",
+            "showCloudTool",
+            "useKernelCalc",
+            "useSaveTool",
+            "parseDslType",
+            "gwMode",
+            "datasetType",
+            "defaultTab",
+            "useCloudCalc",
         }
         event_info = {key: value for key, value in props.items() if key in needed_fields}
         event_info["hasKanariesToken"] = bool(self.kanaries_api_key)
@@ -602,10 +579,7 @@ class PygWalker:
         track_event("invoke_props", event_info)
 
     def _get_props(
-        self,
-        env: str = "",
-        data_source: Optional[Dict[str, Any]] = None,
-        need_load_datas: bool = False
+        self, env: str = "", data_source: Optional[Dict[str, Any]] = None, need_load_datas: bool = False
     ) -> Dict[str, Any]:
         if data_source is None:
             data_source = self.origin_data_source
@@ -619,17 +593,14 @@ class PygWalker:
                 "privacy": GlobalVarManager.privacy,
             },
             "visSpec": self.vis_spec,
-            "rawFields": [
-                {**field, "offset": 0}
-                for field in self.field_specs
-            ],
+            "rawFields": [{**field, "offset": 0} for field in self.field_specs],
             "fieldkeyGuard": False,
             "themeKey": self.theme_key,
             "dark": self.appearance,
             "sourceInvokeCode": self.source_invoke_code,
             "dataSourceProps": {
-                'tunnelId': self.tunnel_id,
-                'dataSourceId': self.data_source_id,
+                "tunnelId": self.tunnel_id,
+                "dataSourceId": self.data_source_id,
             },
             "env": env,
             "specType": self.spec_type,
@@ -648,7 +619,7 @@ class PygWalker:
             "fieldMetas": self.data_parser.field_metas,
             "isExportDataFrame": self.is_export_dataframe,
             "defaultTab": self.default_tab,
-            "useCloudCalc": self.cloud_computation
+            "useCloudCalc": self.cloud_computation,
         }
 
         self._send_props_track(props)
@@ -660,7 +631,7 @@ class PygWalker:
         props: Dict[str, Any],
         return_iframe: bool = True,
         iframe_width: Optional[str] = None,
-        iframe_height: Optional[str] = None
+        iframe_height: Optional[str] = None,
     ) -> str:
         """Get render iframe html."""
         html = render_gwalker_html(self.gid, props)
@@ -682,11 +653,7 @@ class PygWalker:
             except ParserException:
                 datas.append([])
         html = render_gw_preview_html(
-            self.vis_spec,
-            datas,
-            self.theme_key,
-            self.gid if not manual else self.gid + rand_str(),
-            self.appearance
+            self.vis_spec, datas, self.theme_key, self.gid if not manual else self.gid + rand_str(), self.appearance
         )
 
         return html
@@ -703,5 +670,5 @@ class PygWalker:
             theme_key=self.theme_key,
             title=title,
             desc=desc,
-            appearance=self.appearance
+            appearance=self.appearance,
         )

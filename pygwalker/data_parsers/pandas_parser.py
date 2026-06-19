@@ -3,11 +3,7 @@ import io
 
 import pandas as pd
 
-from .base import (
-    BaseDataFrameDataParser,
-    is_temporal_field,
-    is_geo_field
-)
+from .base import BaseDataFrameDataParser, is_temporal_field, is_geo_field
 from pygwalker.services.fname_encodings import rename_columns
 
 
@@ -16,8 +12,8 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         df = self.df[:limit] if limit is not None else self.df
-        df = df.replace({float('nan'): None})
-        return df.to_dict(orient='records')
+        df = df.replace({float("nan"): None})
+        return df.to_dict(orient="records")
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
@@ -41,7 +37,7 @@ class PandasDataFrameDataParser(BaseDataFrameDataParser[pd.DataFrame]):
         if kind in "fcmiu" or is_geo_field(field_name):
             return "quantitative"
         if kind in "M" or (kind in "bOSUV" and is_temporal_field(example_value, self.infer_string_to_date)):
-            return 'temporal'
+            return "temporal"
 
         return "nominal"
 

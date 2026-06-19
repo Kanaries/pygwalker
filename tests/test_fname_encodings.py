@@ -1,9 +1,4 @@
-from pygwalker.services.fname_encodings import (
-    base36encode,
-    fname_decode,
-    fname_encode,
-    base36decode
-)
+from pygwalker.services.fname_encodings import base36encode, fname_decode, fname_encode, base36decode
 
 
 def test_base36_encode():

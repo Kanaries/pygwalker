@@ -9,9 +9,7 @@ If you are using pygwalker on Jupyter Notebook(version<7) and it can't display p
 <div>
 """
 
-TIPS_MAP = {
-    "widgets": WIDGETS_TIPS
-}
+TIPS_MAP = {"widgets": WIDGETS_TIPS}
 
 
 class TipOnStartTool:
