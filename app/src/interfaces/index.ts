@@ -11,11 +11,13 @@ export interface IAppProps {
     rawFields: IMutField[];
     id: string;
     dataSourceProps: IDataSourceProps;
+    len: number;
     version?: string;
     hashcode?: string;
     visSpec: any;
     userConfig?: IUserConfig;
     env?: string;
+    sourceInvokeCode: string;
     needLoadDatas?: boolean;
     specType: string;
     showCloudTool: boolean;
@@ -28,10 +30,12 @@ export interface IAppProps {
     communicationUrl: string;
     gwMode: "explore" | "renderer" | "filter_renderer" | "table";
     needLoadLastSpec: boolean;
+    datasetType: string;
     extraConfig?: any;
     fieldMetas: any;
     isExportDataFrame: boolean;
     defaultTab: "data" | "vis";
+    useCloudCalc: boolean;
 }
 
 export interface IDataSourceProps {
