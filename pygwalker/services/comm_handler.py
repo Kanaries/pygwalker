@@ -8,7 +8,6 @@ from pygwalker.communications.protocol import (
     BatchPayloadQueryRequest,
     BatchSqlQueryRequest,
     ChatChartRequest,
-    EmptyResponse,
     OpenDesktopRequest,
     PayloadQueryRequest,
     SaveChartRequest,
@@ -17,12 +16,12 @@ from pygwalker.communications.protocol import (
     UploadCloudDashboardRequest,
     UpdateSpecRequest,
     UploadSpecToCloudRequest,
-    dump_response,
     validate_request,
 )
 from pygwalker.services.cloud_communication import CloudCommunicationService
 from pygwalker.services.data_communication import DataCommunicationService
 from pygwalker.services.data_upload_communication import DataUploadCommunicationService
+from pygwalker.services.desktop_communication import DesktopCommunicationService
 from pygwalker.services.desktop_import import DesktopImportService
 from pygwalker.services.preview_image import PreviewImageTool
 from pygwalker.services.spec_communication import SpecCommunicationService
@@ -44,6 +43,7 @@ class CommHandler:
         comm: BaseCommunication,
         preview_tool: Optional[PreviewImageTool] = None,
         upload_tool_cls: Callable[[BaseCommunication], BatchUploadDatasToolOnWidgets] = BatchUploadDatasToolOnWidgets,
+        desktop_communication: Optional[DesktopCommunicationService] = None,
         desktop_import: Optional[DesktopImportService] = None,
         cloud_communication: Optional[CloudCommunicationService] = None,
         data_communication: Optional[DataCommunicationService] = None,
@@ -53,7 +53,7 @@ class CommHandler:
         self.walker = walker
         self.comm = comm
         self.preview_tool = preview_tool
-        self.desktop_import = desktop_import or DesktopImportService()
+        self.desktop_communication = desktop_communication or DesktopCommunicationService(walker, desktop_import)
         self.cloud_communication = cloud_communication or CloudCommunicationService(walker)
         self.data_communication = data_communication or DataCommunicationService(walker)
         self.data_upload_communication = data_upload_communication or DataUploadCommunicationService(
@@ -68,7 +68,7 @@ class CommHandler:
         self.comm.register("get_latest_vis_spec", self.spec_communication.get_latest_vis_spec)
         self.comm.register("request_data", self.data_upload_communication.request_data)
         self.comm.register("ping", lambda _: {})
-        self._register_request("open_in_desktop", OpenDesktopRequest, self.open_in_desktop)
+        self._register_request("open_in_desktop", OpenDesktopRequest, self.desktop_communication.open_in_desktop)
 
         if self.walker.use_save_tool:
             self._register_request(
@@ -123,11 +123,3 @@ class CommHandler:
             return handler(validate_request(request_model, data))
 
         self.comm.register(endpoint, _handle)
-
-    def open_in_desktop(self, request: OpenDesktopRequest):
-        self.desktop_import.import_to_desktop(
-            spec=request.spec,
-            fields=request.fields,
-            records=self.walker.data_parser.to_records(),
-        )
-        return dump_response(EmptyResponse())
