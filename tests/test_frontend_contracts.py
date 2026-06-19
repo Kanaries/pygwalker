@@ -75,3 +75,11 @@ def test_frontend_comm_maps_cover_python_comm_handler_endpoints():
 
     assert _typescript_interface_keys(repo_root, "ICommRequestMap") == endpoints
     assert _typescript_interface_keys(repo_root, "ICommResponseMap") == endpoints
+
+
+def test_frontend_dev_typescript_source_maps_are_enabled():
+    repo_root = Path(__file__).resolve().parents[1]
+    tsconfig = (repo_root / "app/tsconfig.json").read_text(encoding="utf-8")
+
+    assert '"sourceMap": true' in tsconfig
+    assert '"sourceMap": false' not in tsconfig

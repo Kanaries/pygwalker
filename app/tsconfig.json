@@ -17,8 +17,7 @@
       "noEmit": true,
       "jsx": "react-jsx",
       "declaration": true,
-      // "sourceMap": true,
-      "sourceMap": false,
+      "sourceMap": true,
       // "outDir": "./dist",
       "outDir": "../pygwalker/templates/dist",
       "baseUrl": ".",
@@ -28,4 +27,3 @@
     },
     "include": ["src"]
   }
-  
