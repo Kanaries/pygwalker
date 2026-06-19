@@ -35,6 +35,11 @@ jobs:
         run: |
           chmod u+x ./scripts/compile.sh
           ./scripts/compile.sh
+      - name: Try Frontend Smoke Test
+        working-directory: ./app
+        run: |
+          yarn playwright install --with-deps chromium
+          yarn test:front_end
       - name: Uploading dist
         uses: actions/upload-artifact@v4
         with:

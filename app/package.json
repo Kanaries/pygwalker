@@ -11,8 +11,8 @@
     "dev:preinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
     "dev:server": "vite --host",
     "dev": "vite",
-    "test:front_end": "vite --host",
-    "test": "npm run test:front_end",
+    "test:front_end": "playwright test",
+    "test": "yarn test:front_end",
     "serve": "vite preview"
   },
   "dependencies": {
@@ -51,6 +51,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "@rollup/plugin-commonjs": "^24.0.x",
     "@rollup/plugin-replace": "^5.0.x",
     "@rollup/plugin-terser": "^0.4.x",
