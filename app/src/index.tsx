@@ -15,6 +15,7 @@ import type {
     ICommAskSpecRequest,
     ICommChatChartRequest,
     ICommCloudCallbackResponse,
+    ICommEmptyResponse,
     ICommLatestVisSpecResponse,
     ICommSaveChartRequest,
 } from './interfaces';
@@ -71,7 +72,7 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
         });
         for await (const chart of gwRef.current?.exportChartList("data-url")!) {
             const request = await formatExportedChartDatas(chart.data) as ICommSaveChartRequest;
-            await communicationStore.comm?.sendMsg("save_chart", request);
+            await communicationStore.comm?.sendMsg<ICommEmptyResponse>("save_chart", request);
             commonStore.setInitModalInfo({
                 title: "Recover Charts",
                 curIndex: chart.index + 1,

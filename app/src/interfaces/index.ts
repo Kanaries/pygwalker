@@ -123,6 +123,8 @@ export interface ICommResponse<TData = any> {
     code: number;
 }
 
+export interface ICommEmptyResponse {}
+
 export interface ICommLatestVisSpecResponse {
     visSpec: any[];
 }

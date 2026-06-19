@@ -6,7 +6,7 @@ import { tracker } from "@/utils/tracker";
 import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { Loader2 } from "lucide-react"
 
-import type { IAppProps, ICommPayloadQueryRequest, ICommSqlQueryRequest } from '../interfaces';
+import type { IAppProps, ICommEmptyResponse, ICommPayloadQueryRequest, ICommSqlQueryRequest } from '../interfaces';
 import { parser_dsl_with_meta } from "@kanaries/gw-dsl-parser";
 import type { ToolbarButtonItem } from "@kanaries/graphic-walker/components/toolbar/toolbar-button"
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
@@ -47,7 +47,7 @@ export function getExportDataframeTool(
                         workflow: storeRef.current?.workflow ?? [],
                     }
                 };
-                await communicationStore.comm?.sendMsg("export_dataframe_by_payload", request);
+                await communicationStore.comm?.sendMsg<ICommEmptyResponse>("export_dataframe_by_payload", request);
             } else {
                 const sql = parser_dsl_with_meta(
                     "pygwalker_mid_table",
@@ -55,7 +55,7 @@ export function getExportDataframeTool(
                     JSON.stringify({"pygwalker_mid_table": props.fieldMetas})
                 );
                 const request: ICommSqlQueryRequest = { sql };
-                await communicationStore.comm?.sendMsg("export_dataframe_by_sql", request);
+                await communicationStore.comm?.sendMsg<ICommEmptyResponse>("export_dataframe_by_sql", request);
             }
             exportSuccess();
         } catch (_) {
