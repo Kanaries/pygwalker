@@ -49,6 +49,17 @@ def test_data_parser_on_polars():
     assert dataset_parser.to_records(1) == to_records_no_kernel_result
 
 
+def test_get_parser_reports_supported_inputs_for_unsupported_dataset():
+    with pytest.raises(TypeError) as exc_info:
+        get_parser(object())
+
+    message = str(exc_info.value)
+    assert "Unsupported dataset type: builtins.object" in message
+    assert "pandas.DataFrame" in message
+    assert "pygwalker.data_parsers.database_parser.Connector" in message
+    assert "cloud dataset id string" in message
+
+
 try:
     from modin import pandas as mpd
 

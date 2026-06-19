@@ -12,6 +12,20 @@ __classname2method = {}
 
 DatasetType = Literal["pandas", "polars", "modin", "pyspark", "connector", "cloud_dataset"]
 
+SUPPORTED_DATASET_INPUTS = (
+    "pandas.DataFrame",
+    "polars.DataFrame",
+    "modin.pandas.DataFrame",
+    "pyspark.sql.DataFrame",
+    "pygwalker.data_parsers.database_parser.Connector",
+    "cloud dataset id string",
+)
+
+
+def _get_type_name(value: Any) -> str:
+    value_type = type(value)
+    return f"{value_type.__module__}.{value_type.__qualname__}"
+
 
 # pylint: disable=import-outside-toplevel
 def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> Tuple[BaseDataParser, DatasetType]:
@@ -67,7 +81,10 @@ def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> Tuple[BaseDat
         __classname2method[CloudDatasetParser] = (CloudDatasetParser, "cloud_dataset")
         return __classname2method[CloudDatasetParser]
 
-    raise TypeError(f"Unsupported data type: {type(dataset)}")
+    raise TypeError(
+        f"Unsupported dataset type: {_get_type_name(dataset)}. "
+        f"Supported dataset inputs: {', '.join(SUPPORTED_DATASET_INPUTS)}."
+    )
 
 
 def get_parser(
