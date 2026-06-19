@@ -4,7 +4,7 @@ from pathlib import Path
 from pygwalker.api import jupyter
 
 
-def _read_walk_api_table_params() -> list[str]:
+def _read_walk_api_table_rows() -> list[dict[str, str]]:
     readme = Path(__file__).resolve().parents[1] / "README.md"
     lines = readme.read_text(encoding="utf-8").splitlines()
 
@@ -18,7 +18,29 @@ def _read_walk_api_table_params() -> list[str]:
         table_lines.append(line)
 
     rows = table_lines[2:]
-    return [row.split("|")[1].strip().strip("`") for row in rows]
+    parsed_rows = []
+    for row in rows:
+        cells = [cell.strip().strip("`") for cell in row.split("|")[1:-1]]
+        parsed_rows.append(
+            {
+                "parameter": cells[0],
+                "type": cells[1],
+                "default": cells[2],
+            }
+        )
+    return parsed_rows
+
+
+def _read_walk_api_table_params() -> list[str]:
+    return [row["parameter"] for row in _read_walk_api_table_rows()]
+
+
+def _format_signature_default(parameter: inspect.Parameter) -> str:
+    if parameter.default is inspect.Parameter.empty:
+        return "-"
+    if parameter.default == "":
+        return '""'
+    return repr(parameter.default)
 
 
 def test_readme_walk_api_table_matches_jupyter_walk_signature():
@@ -30,3 +52,19 @@ def test_readme_walk_api_table_matches_jupyter_walk_signature():
             signature_params.append(parameter.name)
 
     assert _read_walk_api_table_params() == signature_params
+
+
+def test_readme_walk_api_table_defaults_match_jupyter_walk_signature():
+    table_defaults = {row["parameter"]: row["default"] for row in _read_walk_api_table_rows()}
+    signature_defaults = {}
+    for parameter in inspect.signature(jupyter.walk).parameters.values():
+        name = f"**{parameter.name}" if parameter.kind is inspect.Parameter.VAR_KEYWORD else parameter.name
+        signature_defaults[name] = _format_signature_default(parameter)
+
+    assert table_defaults == signature_defaults
+
+
+def test_readme_walk_api_table_documents_reusable_walker_input():
+    dataset_row = next(row for row in _read_walk_api_table_rows() if row["parameter"] == "dataset")
+
+    assert "Walker" in dataset_row["type"]

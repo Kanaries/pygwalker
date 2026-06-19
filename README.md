@@ -256,7 +256,7 @@ renderer.explorer()
 
 | Parameter          | Type                                                      | Default         | Description                                                                                                                       |
 |--------------------|-----------------------------------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| dataset            | Union[DataFrame, Connector, str]                          | -               | DataFrame, database connector, or SQL/data source string to explore.                                                               |
+| dataset            | Union[DataFrame, Connector, str, Walker]                  | -               | DataFrame, database connector, SQL/data source string, or reusable Walker object to explore.                                       |
 | gid                | Union[int, str]                                           | None            | ID for the GraphicWalker container div, formatted as `gwalker-{gid}`.                                                              |
 | env                | Literal['JupyterAnywidget', 'Jupyter', 'JupyterWidget']   | 'JupyterAnywidget' | Notebook rendering environment. `JupyterWidget` keeps the legacy ipywidgets text-bridge transport.                              |
 | field_specs        | Optional[List[FieldSpec]]                                 | None            | Field specifications. They will be inferred from `dataset` if not specified.                                                       |
