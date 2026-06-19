@@ -124,11 +124,18 @@ python -m ruff format --check pygwalker tests scripts bin pygwalker_tools
 python -X faulthandler -m pytest -o faulthandler_timeout=60 tests
 ```
 
-Run a frontend build check from `app/`:
+Run frontend type checking, build, and smoke tests from `app/`:
 
 ```bash
-yarn build:app
+yarn typecheck
+yarn build
+yarn playwright install chromium
+yarn test:front_end
 ```
+
+`yarn build:app` is useful for fast local iteration on the main app bundle, but
+it does not run TypeScript checking or build the auxiliary DSL conversion
+bundles that CI and package builds require.
 
 Run a package build from the repository root:
 
@@ -141,9 +148,10 @@ existing `pygwalker/templates/dist` file.
 
 ## CI Notes
 
-The GitHub workflows build frontend assets with Node.js 22.x, then run the
-Python test matrix. Python package builds also set up Node.js and Yarn because
-the Hatch build hook rebuilds the frontend during wheel creation.
+The GitHub workflows build frontend assets with Node.js 22.x, run the frontend
+Playwright smoke test, then run the Python test matrix. Python package builds
+also set up Node.js and Yarn because the Hatch build hook rebuilds the frontend
+during wheel creation.
 
 Keep workflow changes aligned with `app/package.json`, `pyproject.toml`, and
 `scripts/compile.sh`.

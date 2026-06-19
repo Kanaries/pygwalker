@@ -54,6 +54,10 @@ yarn build
 3. Restart your Jupyter kernel
 4. Test your changes
 
+Before committing frontend changes, run the full validation path from
+[`docs/CONTRIBUTING.md`](./CONTRIBUTING.md): `yarn typecheck`, `yarn build`,
+and `yarn test:front_end`.
+
 ### Option B: Hot-Reload Development (Recommended)
 
 This setup enables live reloading when you change frontend code.
@@ -153,3 +157,5 @@ yarn build  # Builds all variants (iife, es, dsl-to-workflow, vega-to-dsl)
 ```
 
 The built files are placed in `pygwalker/templates/dist/`.
+`yarn build:app` only rebuilds the main app bundle and is intended for local
+iteration, not release or CI validation.
