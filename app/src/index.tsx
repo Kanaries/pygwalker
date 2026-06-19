@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { observer } from "mobx-react-lite";
 import { reaction } from "mobx"
@@ -23,12 +23,8 @@ import commonStore from "./store/common";
 import { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback, initAnywidgetCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig } from './utils/userConfig';
-import CodeExportModal from './components/codeExportModal';
 import type { IPreviewProps, IChartPreviewProps } from './components/preview';
 import { Preview, ChartPreview } from './components/preview';
-import UploadSpecModal from "./components/uploadSpecModal"
-import UploadChartModal from './components/uploadChartModal';
-import InitModal from './components/initModal';
 import { getSaveTool } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
@@ -57,6 +53,48 @@ import { AppContext, darkModeContext } from './store/context';
 import FormatSpec from './utils/formatSpec';
 import { getOpenDesktopTool } from './tools/openDesktop';
 import RuncellBanner from './components/runcellBanner';
+
+
+const InitModal = React.lazy(() => import("./components/initModal"));
+const UploadSpecModal = React.lazy(() => import("./components/uploadSpecModal"));
+const UploadChartModal = React.lazy(() => import("./components/uploadChartModal"));
+const CodeExportModal = React.lazy(() => import("./components/codeExportModal"));
+
+const ExploreModals = observer((props: {
+    exportOpen: boolean;
+    setExportOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    gwRef: React.MutableRefObject<IGWHandler | null>;
+    storeRef: React.MutableRefObject<VizSpecStore | null>;
+    setGwIsChanged: React.Dispatch<React.SetStateAction<boolean>>;
+    sourceCode: string;
+}) => {
+    const darkMode = useContext(darkModeContext);
+
+    return (
+        <>
+            {commonStore.uploadSpecModalOpen && (
+                <Suspense fallback={null}>
+                    <UploadSpecModal storeRef={props.storeRef} setGwIsChanged={props.setGwIsChanged} />
+                </Suspense>
+            )}
+            {commonStore.uploadChartModalOpen && (
+                <Suspense fallback={null}>
+                    <UploadChartModal gwRef={props.gwRef} storeRef={props.storeRef} dark={darkMode} />
+                </Suspense>
+            )}
+            {props.exportOpen && (
+                <Suspense fallback={null}>
+                    <CodeExportModal
+                        open={props.exportOpen}
+                        setOpen={props.setExportOpen}
+                        globalStore={props.storeRef}
+                        sourceCode={props.sourceCode}
+                    />
+                </Suspense>
+            )}
+        </>
+    );
+});
 
 
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
@@ -149,7 +187,11 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
                             </ToggleGroup>
                         </div>
                     )}
-                    <InitModal />
+                    {commonStore.initModalOpen && (
+                        <Suspense fallback={null}>
+                            <InitModal />
+                        </Suspense>
+                    )}
                     <div ref={setPortal}></div>
                 </div>
             </div>
@@ -271,9 +313,14 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     return (
         <React.StrictMode>
             <Notification />
-            <UploadSpecModal storeRef={storeRef} setGwIsChanged={setIsChanged} />
-            <UploadChartModal gwRef={gwRef} storeRef={storeRef} dark={useContext(darkModeContext)} />
-            <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
+            <ExploreModals
+                exportOpen={exportOpen}
+                setExportOpen={setExportOpen}
+                gwRef={gwRef}
+                storeRef={storeRef}
+                setGwIsChanged={setIsChanged}
+                sourceCode={props["sourceInvokeCode"] || ""}
+            />
             {
                 !hideModeOption &&
                 <Select onValueChange={modeChange} defaultValue='walker' >

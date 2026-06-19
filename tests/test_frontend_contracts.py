@@ -93,3 +93,22 @@ def test_frontend_tracker_loads_segment_only_after_events_opt_in():
     assert "@segment/analytics-next" not in tracker_source
     assert "cdn.segment.com/analytics.js/v1/" in tracker_source
     assert 'tracker.setOpen(userConfig.privacy === "events")' in app_source
+
+
+def test_frontend_modals_are_lazy_loaded_from_entrypoint():
+    repo_root = Path(__file__).resolve().parents[1]
+    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+
+    modal_paths = [
+        "./components/initModal",
+        "./components/uploadSpecModal",
+        "./components/uploadChartModal",
+        "./components/codeExportModal",
+    ]
+    for modal_path in modal_paths:
+        static_import_pattern = rf"import\s+[^;\n]+?\s+from\s+[\"']{re.escape(modal_path)}[\"']"
+
+        assert re.search(static_import_pattern, app_source) is None
+        assert f'import "{modal_path}"' not in app_source
+        assert f"import '{modal_path}'" not in app_source
+        assert f'import("{modal_path}")' in app_source
