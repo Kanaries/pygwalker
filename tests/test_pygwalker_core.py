@@ -6,6 +6,7 @@ import zlib
 
 import pandas as pd
 import pytest
+from duckdb import ParserException
 
 from pygwalker import __version__
 from pygwalker.api import adapter, html, jupyter
@@ -14,6 +15,7 @@ from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.errors import ErrorCode
 from pygwalker.services import comm_handler as comm_handler_module
+from pygwalker.services import render_manager as render_manager_module
 from pygwalker.services.global_var import GlobalVarManager
 
 
@@ -139,6 +141,96 @@ def test_pygwalker_get_props_falls_back_without_props_builder(monkeypatch):
     assert props["dataSource"] == [{"city": "London"}]
     assert props["rawFields"] == [{"fid": "city", "offset": 0}]
     assert track_calls[0][0][0] == "invoke_props"
+
+
+def test_render_manager_preview_handles_parser_exception_and_manual_gid(monkeypatch):
+    captured = {}
+
+    class FakeDataParser:
+        def get_datas_by_payload(self, workflow):
+            if workflow == "bad-workflow":
+                raise ParserException("bad workflow")
+            return [{"workflow": workflow}]
+
+    def fake_render_preview(vis_spec, datas, theme_key, gid, appearance):
+        captured.update(
+            {
+                "vis_spec": vis_spec,
+                "datas": datas,
+                "theme_key": theme_key,
+                "gid": gid,
+                "appearance": appearance,
+            }
+        )
+        return "preview-html"
+
+    monkeypatch.setattr(render_manager_module, "render_gw_preview_html", fake_render_preview)
+    monkeypatch.setattr(render_manager_module, "rand_str", lambda: "-manual")
+
+    walker = SimpleNamespace(
+        workflow_list=["good-workflow", "bad-workflow"],
+        data_parser=FakeDataParser(),
+        vis_spec=[{"chart": "bar"}],
+        theme_key="g2",
+        gid="core",
+        appearance="light",
+    )
+
+    html = render_manager_module.RenderManager(walker).get_preview_html(manual=True)
+
+    assert html == "preview-html"
+    assert captured == {
+        "vis_spec": [{"chart": "bar"}],
+        "datas": [[{"workflow": "good-workflow"}], []],
+        "theme_key": "g2",
+        "gid": "core-manual",
+        "appearance": "light",
+    }
+
+
+def test_render_manager_chart_preview_uses_chart_indexed_workflow(monkeypatch):
+    captured = {}
+
+    class FakeDataParser:
+        def get_datas_by_payload(self, workflow):
+            assert workflow == "target-workflow"
+            return [{"value": 1}]
+
+    class FakeSpecManager:
+        def get_chart_index(self, chart_name):
+            assert chart_name == "Target chart"
+            return 1
+
+    def fake_render_chart_preview(**kwargs):
+        captured.update(kwargs)
+        return "chart-html"
+
+    monkeypatch.setattr(render_manager_module, "render_gw_chart_preview_html", fake_render_chart_preview)
+
+    walker = SimpleNamespace(
+        workflow_list=["other-workflow", "target-workflow"],
+        data_parser=FakeDataParser(),
+        spec_manager=FakeSpecManager(),
+        vis_spec=[{"chart": "other"}, {"chart": "target"}],
+        theme_key="g2",
+        appearance="light",
+    )
+
+    html = render_manager_module.RenderManager(walker).get_chart_preview_html(
+        "Target chart",
+        title="Chart title",
+        desc="Chart desc",
+    )
+
+    assert html == "chart-html"
+    assert captured == {
+        "single_vis_spec": {"chart": "target"},
+        "data": [{"value": 1}],
+        "theme_key": "g2",
+        "title": "Chart title",
+        "desc": "Chart desc",
+        "appearance": "light",
+    }
 
 
 @pytest.mark.parametrize(

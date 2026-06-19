@@ -2,7 +2,6 @@ from typing import List, Dict, Any, Optional, Union
 import urllib.request
 
 from typing_extensions import Literal
-from duckdb import ParserException
 import ipywidgets
 import pandas as pd
 
@@ -12,16 +11,10 @@ from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.global_var import GlobalVarManager
-from pygwalker.services.render import (
-    render_gwalker_html,
-    render_gwalker_iframe,
-    get_max_limited_datas,
-    render_iframe_messages_html,
-)
+from pygwalker.services.render import get_max_limited_datas, render_iframe_messages_html
 from pygwalker.services.preview_image import (
     PreviewImageTool,
     ChartData,
-    render_gw_preview_html,
     render_gw_chart_preview_html,
 )
 from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets, BatchUploadDatasToolOnJupyter
@@ -29,6 +22,7 @@ from pygwalker.services.config import get_local_user_id
 from pygwalker.services.comm_handler import CommHandler
 from pygwalker.services.data_bridge import DataBridge
 from pygwalker.services.props_builder import PropsBuilder
+from pygwalker.services.render_manager import RenderManager
 from pygwalker.services.spec_manager import SpecManager
 from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
@@ -95,6 +89,7 @@ class PygWalker:
         self.cloud_computation = cloud_computation
         self.comm = None
         self.props_builder = PropsBuilder(self, lambda: get_local_user_id())
+        self.render_manager = RenderManager(self)
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.kernel_computation:
@@ -228,8 +223,7 @@ class PygWalker:
 
     def to_html_without_iframe(self) -> str:
         props = self._get_props()
-        html = render_gwalker_html(self.gid, props)
-        return html
+        return self._get_render_iframe(props, return_iframe=False)
 
     def display_on_convert_html(self):
         """
@@ -436,41 +430,13 @@ class PygWalker:
         iframe_height: Optional[str] = None,
     ) -> str:
         """Get render iframe html."""
-        html = render_gwalker_html(self.gid, props)
-        if return_iframe:
-            return render_gwalker_iframe(self.gid, html, iframe_width, iframe_height, self.appearance)
-        else:
-            return html
+        return self.render_manager.get_render_iframe(props, return_iframe, iframe_width, iframe_height)
 
     def _get_gw_preview_html(self, manual: bool = False) -> str:
         """
         'manual' represents the user actively calling to obtain preview_html. It will randomly generate a gid, keeping it separate from the logic of walker automatically generating the preview part.
         """
-        if not self.workflow_list:
-            return ""
-        datas = []
-        for workflow in self.workflow_list:
-            try:
-                datas.append(self.data_parser.get_datas_by_payload(workflow))
-            except ParserException:
-                datas.append([])
-        html = render_gw_preview_html(
-            self.vis_spec, datas, self.theme_key, self.gid if not manual else self.gid + rand_str(), self.appearance
-        )
-
-        return html
+        return self.render_manager.get_preview_html(manual)
 
     def _get_gw_chart_preview_html(self, chart_name: int, title: str, desc: str) -> str:
-        chart_index = self.spec_manager.get_chart_index(chart_name)
-
-        if not self.workflow_list:
-            return ""
-        data = self.data_parser.get_datas_by_payload(self.workflow_list[chart_index])
-        return render_gw_chart_preview_html(
-            single_vis_spec=self.vis_spec[chart_index],
-            data=data,
-            theme_key=self.theme_key,
-            title=title,
-            desc=desc,
-            appearance=self.appearance,
-        )
+        return self.render_manager.get_chart_preview_html(chart_name, title, desc)
