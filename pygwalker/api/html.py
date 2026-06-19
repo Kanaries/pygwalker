@@ -15,6 +15,20 @@ from pygwalker.utils.check_walker_params import check_expired_params
 logger = logging.getLogger(__name__)
 
 
+def _pop_static_html_computation_kwargs(kwargs: Dict[str, Any]) -> None:
+    computation_flags = ("kernel_computation", "cloud_computation", "use_kernel_calc")
+    enabled_flags = [name for name in computation_flags if kwargs.get(name) is True]
+    if enabled_flags:
+        flags = ", ".join(enabled_flags)
+        raise ValueError(
+            f"Static HTML export does not support kernel or cloud computation ({flags}). "
+            "Use pygwalker.walk/render in a live backend for kernel/cloud computation, "
+            "or omit these options for browser-only static HTML."
+        )
+    for name in computation_flags:
+        kwargs.pop(name, None)
+
+
 def _to_html(
     df: DataFrame,
     gid: Union[int, str] = None,
@@ -43,6 +57,7 @@ def _to_html(
         - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     check_expired_params(kwargs)
+    _pop_static_html_computation_kwargs(kwargs)
 
     if gid is None:
         gid = generate_hash_code()

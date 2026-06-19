@@ -870,6 +870,30 @@ def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
 
 
 @pytest.mark.parametrize(
+    "kwargs", [{"kernel_computation": True}, {"cloud_computation": True}, {"use_kernel_calc": True}]
+)
+def test_to_html_rejects_live_computation_modes(kwargs):
+    with pytest.raises(ValueError, match="Static HTML export does not support kernel or cloud computation"):
+        html.to_html(pd.DataFrame([{"city": "London", "value": 1}]), **kwargs)
+
+
+def test_to_html_allows_disabled_computation_kwargs(monkeypatch):
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "test-user")
+
+    rendered = html.to_html(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        kernel_computation=False,
+        cloud_computation=False,
+        use_kernel_calc=None,
+    )
+
+    assert 'id="gwalker-' in rendered
+    assert "srcdoc=" in rendered
+
+
+@pytest.mark.parametrize(
     ("runtime_env", "expected_backend"),
     [
         ("jupyter", "jupyter"),
