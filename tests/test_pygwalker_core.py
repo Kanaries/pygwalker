@@ -113,6 +113,67 @@ def test_pygwalker_parse_dsl_type_tracks_dataset_location(
     assert walker._get_parse_dsl_type(data_parser) == expected_parse_dsl_type
 
 
+def test_pygwalker_data_bridge_property_setters_remain_writable(monkeypatch):
+    walker = _make_walker(monkeypatch)
+    data_parser = SimpleNamespace(dataset_type="custom")
+
+    walker.data_parser = data_parser
+    walker.kernel_computation = True
+    walker.origin_data_source = [{"city": "Paris"}]
+    walker.field_specs = [{"fid": "city"}]
+    walker.parse_dsl_type = "server"
+    walker.dataset_type = "custom_dataset"
+
+    assert walker.data_bridge.data_parser is data_parser
+    assert walker.data_bridge.kernel_computation is True
+    assert walker.data_bridge.origin_data_source == [{"city": "Paris"}]
+    assert walker.data_bridge.field_specs == [{"fid": "city"}]
+    assert walker.data_bridge.parse_dsl_type == "server"
+    assert walker.data_bridge.dataset_type == "custom_dataset"
+
+
+def test_pygwalker_init_preserves_get_data_parser_override(monkeypatch):
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    calls = []
+
+    class FakeParser:
+        data_size = 1
+        raw_fields = [{"fid": "city"}]
+        dataset_type = "pandas_dataframe"
+        field_metas = []
+
+        def to_records(self, limit=None):
+            return [{"city": "London"}]
+
+    class HookedPygWalker(PygWalker):
+        def _get_data_parser(self, **kwargs):
+            calls.append(kwargs)
+            return FakeParser()
+
+    walker = HookedPygWalker(
+        gid="hooked",
+        dataset=pd.DataFrame([{"city": "London"}]),
+        field_specs=[],
+        spec="",
+        source_invoke_code="",
+        theme_key="g2",
+        appearance="light",
+        show_cloud_tool=False,
+        use_preview=False,
+        kernel_computation=False,
+        cloud_computation=False,
+        use_save_tool=False,
+        is_export_dataframe=False,
+        kanaries_api_key="",
+        default_tab="vis",
+        gw_mode="explore",
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["dataset"].to_dict("records") == [{"city": "London"}]
+    assert walker.data_parser.dataset_type == "pandas_dataframe"
+
+
 def test_pygwalker_kernel_callbacks_register_data_query_endpoints(monkeypatch):
     walker = _make_walker(monkeypatch, kernel_computation=True)
     comm = BaseCommunication("core")

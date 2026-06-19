@@ -37,8 +37,8 @@ from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnJupyter
 )
 from pygwalker.services.config import get_local_user_id
+from pygwalker.services.data_bridge import DataBridge
 from pygwalker.services.spec_manager import SpecManager
-from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
@@ -85,18 +85,15 @@ class PygWalker:
         else:
             self.gid = gid
         self.cloud_service = CloudService(self.kanaries_api_key)
-        self.data_parser = self._get_data_parser(
+        self.data_bridge = DataBridge(
             dataset=dataset,
             field_specs=field_specs,
             cloud_computation=cloud_computation,
+            kernel_computation=kernel_computation,
             kanaries_api_key=self.kanaries_api_key,
-            cloud_service=self.cloud_service
+            cloud_service=self.cloud_service,
+            parser_factory=self._get_data_parser,
         )
-
-        suggest_kernel_computation = self.data_parser.data_size > JUPYTER_BYTE_LIMIT
-        self.kernel_computation = suggest_kernel_computation if kernel_computation is None else kernel_computation
-        self.origin_data_source = self.data_parser.to_records(500 if self.kernel_computation else None)
-        self.field_specs = self.data_parser.raw_fields
         self.spec = spec
         self.source_invoke_code = source_invoke_code
         self.theme_key = theme_key
@@ -108,9 +105,7 @@ class PygWalker:
         self.use_preview = use_preview
         self.spec_manager = SpecManager(spec, self.field_specs)
         self.use_save_tool = use_save_tool
-        self.parse_dsl_type = self._get_parse_dsl_type(self.data_parser)
         self.gw_mode = gw_mode
-        self.dataset_type = self.data_parser.dataset_type
         self.is_export_dataframe = is_export_dataframe
         self._last_exported_dataframe = None
         self.default_tab = default_tab
@@ -119,10 +114,7 @@ class PygWalker:
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.kernel_computation:
-            try:
-                self.data_parser.get_datas_by_sql("SELECT 1 FROM pygwalker_mid_table LIMIT 1")
-            except Exception:
-                pass
+            self.data_bridge.warm_kernel_table()
         if GlobalVarManager.privacy == "offline":
             self.show_cloud_tool = False
 
@@ -139,33 +131,64 @@ class PygWalker:
         kanaries_api_key: str,
         cloud_service: CloudService
     ) -> BaseDataParser:
-        data_parser = get_parser(
-            dataset,
-            field_specs,
-            other_params={"kanaries_api_key": kanaries_api_key}
-        )
-        if not cloud_computation:
-            return data_parser
-
-        dataset_id = cloud_service.create_cloud_dataset(
-            data_parser,
-            f"temp_{rand_str()}",
-            False,
-            True
-        )
-
-        return get_parser(
-            dataset_id,
-            field_specs,
-            other_params={"kanaries_api_key": kanaries_api_key}
+        return DataBridge.create_data_parser(
+            dataset=dataset,
+            field_specs=field_specs,
+            cloud_computation=cloud_computation,
+            kanaries_api_key=kanaries_api_key,
+            cloud_service=cloud_service,
         )
 
     def _get_parse_dsl_type(self, data_parser: BaseDataParser) -> Literal["server", "client"]:
-        if data_parser.dataset_type.startswith("connector"):
-            return "server"
-        if data_parser.dataset_type == "cloud_dataset":
-            return "server"
-        return "client"
+        return DataBridge.get_parse_dsl_type(data_parser)
+
+    @property
+    def data_parser(self) -> BaseDataParser:
+        return self.data_bridge.data_parser
+
+    @data_parser.setter
+    def data_parser(self, value: BaseDataParser):
+        self.data_bridge.data_parser = value
+
+    @property
+    def kernel_computation(self) -> bool:
+        return self.data_bridge.kernel_computation
+
+    @kernel_computation.setter
+    def kernel_computation(self, value: bool):
+        self.data_bridge.kernel_computation = value
+
+    @property
+    def origin_data_source(self) -> List[Dict[str, Any]]:
+        return self.data_bridge.origin_data_source
+
+    @origin_data_source.setter
+    def origin_data_source(self, value: List[Dict[str, Any]]):
+        self.data_bridge.origin_data_source = value
+
+    @property
+    def field_specs(self) -> List[Dict[str, Any]]:
+        return self.data_bridge.field_specs
+
+    @field_specs.setter
+    def field_specs(self, value: List[Dict[str, Any]]):
+        self.data_bridge.field_specs = value
+
+    @property
+    def parse_dsl_type(self) -> Literal["server", "client"]:
+        return self.data_bridge.parse_dsl_type
+
+    @parse_dsl_type.setter
+    def parse_dsl_type(self, value: Literal["server", "client"]):
+        self.data_bridge.parse_dsl_type = value
+
+    @property
+    def dataset_type(self) -> str:
+        return self.data_bridge.dataset_type
+
+    @dataset_type.setter
+    def dataset_type(self, value: str):
+        self.data_bridge.dataset_type = value
 
     @property
     def spec_type(self) -> str:
