@@ -78,6 +78,14 @@ def test_package_declares_pep561_typed_marker():
     assert "pygwalker" in _extract_hatch_build_include(pyproject)
 
 
+def test_public_dataframe_type_alias_includes_pyarrow_table():
+    repo_root = Path(__file__).resolve().parents[1]
+    typing_source = (repo_root / "pygwalker/_typing.py").read_text(encoding="utf-8")
+
+    assert "import pyarrow as pa" in typing_source
+    assert "dataframe_types.append(pa.Table)" in typing_source
+
+
 def test_package_keeps_pygwalker_tools_metrics_namespace():
     repo_root = Path(__file__).resolve().parents[1]
     pyproject = (repo_root / "pyproject.toml").read_text(encoding="utf-8")

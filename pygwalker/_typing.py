@@ -23,6 +23,12 @@ if TYPE_CHECKING:
     except ModuleNotFoundError:
         pass
     try:
+        import pyarrow as pa
+
+        dataframe_types.append(pa.Table)
+    except ModuleNotFoundError:
+        pass
+    try:
         from pyspark.sql import DataFrame as SparkDataFrame
 
         dataframe_types.append(SparkDataFrame)

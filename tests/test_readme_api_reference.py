@@ -75,6 +75,7 @@ def test_readme_walk_api_table_documents_reusable_walker_input():
     dataset_row = next(row for row in _read_walk_api_table_rows() if row["parameter"] == "dataset")
 
     assert "Walker" in dataset_row["type"]
+    assert "pyarrow.Table" in dataset_row["type"]
 
 
 def test_readme_walk_api_table_marks_legacy_jupyter_envs_deprecated():
