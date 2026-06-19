@@ -187,6 +187,12 @@ code = walker.to_code(dataset_name="df")
 print(code)
 ```
 
+If you have an older saved spec, migrate it to the current schema before committing it:
+
+```python
+migrated_spec = pyg.spec.migrate(open("./old_chart_meta.json").read())
+```
+
 ### Example in local notebook
 
 * Notebook Code: [Click Here](https://github.com/Kanaries/pygwalker-offline-example)

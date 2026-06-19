@@ -18,6 +18,7 @@ from pygwalker.api.html import to_html
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.api.component import component
 from pygwalker.api.walker import Walker
+from . import spec
 
 if GlobalVarManager.privacy == "offline":
     logging.getLogger(__name__).info(
@@ -27,4 +28,4 @@ if GlobalVarManager.privacy == "offline":
 if __check_kaggle():
     __show_tips_user_kaggle()
 
-__all__ = ["walk", "render", "table", "to_html", "FieldSpec", "GlobalVarManager", "component", "Walker"]
+__all__ = ["walk", "render", "table", "to_html", "FieldSpec", "GlobalVarManager", "component", "Walker", "spec"]
