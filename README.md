@@ -171,6 +171,14 @@ walker = pyg.walk(
 )
 ```
 
+You can also create a reusable `Walker` object and choose where to render it:
+
+```python
+walker = pyg.Walker(df, spec_path="./chart_meta_0.json", computation="browser")
+walker.show()       # auto-detects notebook or script mode
+html = walker.to_html()
+```
+
 ### Example in local notebook
 
 * Notebook Code: [Click Here](https://github.com/Kanaries/pygwalker-offline-example)
