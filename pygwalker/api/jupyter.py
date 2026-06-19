@@ -29,6 +29,7 @@ _LEGACY_JUPYTER_ENVS = {
     "JupyterWidget": "JupyterAnywidget",
 }
 _DELEGATED_WALKER_SHOW_WARNING_PATTERN = r"`Walker\.show\(env=.*legacy Jupyter transport"
+_CORE_LEGACY_TRANSPORT_WARNING_PATTERN = r"`PygWalker\.display_on_jupyter.*legacy Jupyter transport"
 
 
 def _warn_legacy_jupyter_env(env: str) -> None:
@@ -52,6 +53,20 @@ def _show_public_walker(dataset: "Walker", env: str) -> None:
             category=DeprecationWarning,
         )
         dataset.show(env)
+
+
+def _call_display_func(env: str, display_func) -> None:
+    if env not in _LEGACY_JUPYTER_ENVS:
+        display_func()
+        return
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=_CORE_LEGACY_TRANSPORT_WARNING_PATTERN,
+            category=DeprecationWarning,
+        )
+        display_func()
 
 
 def _reject_walker_construction_params(
@@ -243,7 +258,7 @@ def walk(
     }
 
     display_func = env_display_map.get(env, lambda: None)
-    display_func()
+    _call_display_func(env, display_func)
 
     return walker
 

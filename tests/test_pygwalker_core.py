@@ -1435,6 +1435,30 @@ def test_jupyter_walk_public_walker_legacy_widget_env_warns_once(monkeypatch):
     assert display_calls == [("public-legacy-widget", None, None)]
 
 
+def test_walker_show_legacy_inline_env_warns_once_with_core_display(monkeypatch):
+    from pygwalker.api.walker import Walker
+
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+
+    display_calls = []
+    public_walker = Walker(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="public-legacy-inline",
+        computation="browser",
+    )
+    public_walker.core.jupyter_display_manager = SimpleNamespace(
+        display_on_jupyter=lambda: display_calls.append(public_walker.core.gid)
+    )
+
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport") as warnings:
+        result = public_walker.show("Jupyter")
+
+    assert len(warnings) == 1
+    assert result is public_walker
+    assert display_calls == ["public-legacy-inline"]
+
+
 def test_jupyter_walk_legacy_widget_env_uses_ipywidgets_transport(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
     monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
@@ -1467,16 +1491,37 @@ def test_jupyter_walk_legacy_inline_env_warns_and_uses_inline_transport(monkeypa
 
     display_calls = []
     monkeypatch.setattr(
-        PygWalker,
+        jupyter_display_module.JupyterDisplayManager,
         "display_on_jupyter",
-        lambda self: display_calls.append(self.gid),
+        lambda self: display_calls.append(self.walker.gid),
+    )
+
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport") as warnings:
+        walker = jupyter.walk(pd.DataFrame([{"city": "London", "value": 1}]), gid="legacy-inline", env="Jupyter")
+
+    assert len(warnings) == 1
+    assert walker.gid == "legacy-inline"
+    assert display_calls == ["legacy-inline"]
+
+
+def test_core_legacy_jupyter_display_methods_warn(monkeypatch):
+    inline_calls = []
+    widget_calls = []
+    walker = _make_walker(monkeypatch, gid="core-legacy")
+    walker.jupyter_display_manager = SimpleNamespace(
+        display_on_jupyter=lambda: inline_calls.append(walker.gid),
+        display_on_jupyter_use_widgets=lambda iframe_width=None, iframe_height=None: widget_calls.append(
+            (iframe_width, iframe_height)
+        ),
     )
 
     with pytest.warns(DeprecationWarning, match="legacy Jupyter transport"):
-        walker = jupyter.walk(pd.DataFrame([{"city": "London", "value": 1}]), gid="legacy-inline", env="Jupyter")
+        walker.display_on_jupyter()
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport"):
+        walker.display_on_jupyter_use_widgets("640px", "480px")
 
-    assert walker.gid == "legacy-inline"
-    assert display_calls == ["legacy-inline"]
+    assert inline_calls == ["core-legacy"]
+    assert widget_calls == [("640px", "480px")]
 
 
 def test_display_on_jupyter_anywidget_sends_browser_data(monkeypatch):

@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional, Union
 import json
 import keyword
+import warnings
 
 from typing_extensions import Literal
 import pandas as pd
@@ -30,6 +31,15 @@ from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.communications.hacker_comm import BaseCommunication
+
+
+def _warn_legacy_jupyter_transport(entrypoint: str) -> None:
+    warnings.warn(
+        f"`{entrypoint}` uses a legacy Jupyter transport and is deprecated. "
+        "Use `display_on_jupyter_use_anywidget()` or the default `Walker.show()`/`pyg.walk()` anywidget path.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
 
 
 class PygWalker:
@@ -257,6 +267,7 @@ class PygWalker:
         After that, it will be changed to python for data calculation,
         and only a small amount of data will be output to the front end to complete the analysis of big data.
         """
+        _warn_legacy_jupyter_transport("PygWalker.display_on_jupyter()")
         self._get_jupyter_display_manager().display_on_jupyter()
 
     def display_on_jupyter_use_widgets(self, iframe_width: Optional[str] = None, iframe_height: Optional[str] = None):
@@ -264,6 +275,7 @@ class PygWalker:
         use the legacy ipywidgets text bridge, Display on jupyter notebook/lab.
         When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
         """
+        _warn_legacy_jupyter_transport("PygWalker.display_on_jupyter_use_widgets()")
         self._get_jupyter_display_manager().display_on_jupyter_use_widgets(iframe_width, iframe_height)
 
     def display_on_jupyter_use_anywidget(self):

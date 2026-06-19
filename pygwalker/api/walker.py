@@ -37,6 +37,7 @@ _LEGACY_SHOW_ENVS = {
     "jupyter-inline": "jupyter-anywidget",
     "jupyter-widget": "jupyter-anywidget",
 }
+_CORE_LEGACY_TRANSPORT_WARNING_PATTERN = r"`PygWalker\.display_on_jupyter.*legacy Jupyter transport"
 
 
 def _warn_legacy_show_env(env: str) -> None:
@@ -50,6 +51,16 @@ def _warn_legacy_show_env(env: str) -> None:
         DeprecationWarning,
         stacklevel=3,
     )
+
+
+def _call_core_legacy_display_without_duplicate_warning(display_func) -> None:
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=_CORE_LEGACY_TRANSPORT_WARNING_PATTERN,
+            category=DeprecationWarning,
+        )
+        display_func()
 
 
 class Walker:
@@ -170,9 +181,11 @@ class Walker:
         if resolved_env == "jupyter-anywidget":
             self._walker.display_on_jupyter_use_anywidget()
         elif resolved_env == "jupyter-widget":
-            self._walker.display_on_jupyter_use_widgets(iframe_width, iframe_height)
+            _call_core_legacy_display_without_duplicate_warning(
+                lambda: self._walker.display_on_jupyter_use_widgets(iframe_width, iframe_height)
+            )
         elif resolved_env == "jupyter-inline":
-            self._walker.display_on_jupyter()
+            _call_core_legacy_display_without_duplicate_warning(self._walker.display_on_jupyter)
         elif resolved_env == "jupyter-convert":
             self._raise_if_live_computation("JupyterConvert/static HTML output")
             self._walker.display_on_convert_html()
