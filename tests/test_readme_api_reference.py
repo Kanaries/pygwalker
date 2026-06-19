@@ -91,3 +91,15 @@ def test_translated_readmes_defer_api_reference_to_english_readme():
     assert translated_readmes
     for readme in translated_readmes:
         assert TRANSLATED_README_NOTICE in readme.read_text(encoding="utf-8")
+
+
+def test_translated_readmes_do_not_repeat_stale_api_parameters():
+    docs_dir = Path(__file__).resolve().parents[1] / "docs"
+    stale_parameters = {"hide_data_source_config", "use_preview"}
+
+    translated_readmes = sorted(docs_dir.glob("README.*.md"))
+    assert translated_readmes
+    for readme in translated_readmes:
+        source = readme.read_text(encoding="utf-8")
+        for parameter in stale_parameters:
+            assert parameter not in source

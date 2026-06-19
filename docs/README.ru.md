@@ -180,21 +180,10 @@ renderer.explorer()
 
 ## Справочник API
 
-### [pygwalker.walk](https://pygwalker-docs.vercel.app/api-reference/jupyter#walk)
-
-| Параметр                | Тип                                  | По умолчанию    | Описание                                                                   |
-| ----------------------- | ------------------------------------ | --------------- | -------------------------------------------------------------------------- |
-| dataset                 | Union\[DataFrame, Connector]         | —               | DataFrame или Connector для анализа данных.                                |
-| gid                     | Union\[int, str]                     | None            | ID контейнера GraphicWalker, формат: `gwalker-{gid}`.                      |
-| env                     | Literal\['JupyterAnywidget', 'Jupyter', 'JupyterWidget'] | 'JupyterAnywidget' | Окружение для pygwalker. Используйте `JupyterAnywidget` или не указывайте `env`; `Jupyter` и `JupyterWidget` — устаревшие транспорты, сохранённые для совместимости. |
-| field_specs             | Optional\[Dict\[str, FieldSpec]]     | None            | Спецификации полей, автоматически выводятся из `dataset`, если не заданы.  |
-| hide_data_source_config | bool                                 | True            | Скрыть кнопку импорта/экспорта источника данных.                           |
-| theme_key               | Literal\['vega', 'g2']               | 'g2'            | Тема для GraphicWalker.                                                    |
-| appearance              | Literal\['media', 'light', 'dark']   | 'media'         | Настройка темы: 'media' автоматически выбирает тему ОС.                    |
-| spec                    | str                                  | ""              | Данные конфигурации графика. Может быть ID, JSON-строка или удалённый URL. |
-| use_preview             | bool                                 | True            | Использовать функцию предварительного просмотра.                           |
-| kernel_computation      | bool                                 | False           | Включить вычисления внутри ядра для работы с большими данными.             |
-| \*\*kwargs              | Any                                  | —               | Дополнительные параметры.                                                  |
+Параметры API обновляются вместе с кодом. Используйте
+[английский API Reference](../README.md#api-reference) и
+[документацию `pygwalker-docs`](https://pygwalker-docs.vercel.app/api-reference/jupyter)
+как актуальный источник.
 
 ## Разработка
 
