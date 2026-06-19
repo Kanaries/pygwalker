@@ -1,11 +1,15 @@
 # PyGWalker Development Setup
 
+For the current end-to-end contributor workflow, see
+[`docs/CONTRIBUTING.md`](./CONTRIBUTING.md). This page keeps extra
+hot-reloading notes and troubleshooting details.
+
 This guide explains how to set up a local development environment for PyGWalker with hot-reloading support.
 
 ## Prerequisites
 
 - Python 3.10+
-- Node.js 16+
+- Node.js 22.x
 - Yarn
 
 ## Quick Start
@@ -58,7 +62,7 @@ This setup enables live reloading when you change frontend code.
 
 ```bash
 cd app
-yarn dev
+yarn dev:server
 ```
 
 The dev server will start at `http://localhost:8769/pyg_dev_app/`
@@ -149,4 +153,3 @@ yarn build  # Builds all variants (iife, es, dsl-to-workflow, vega-to-dsl)
 ```
 
 The built files are placed in `pygwalker/templates/dist/`.
-
