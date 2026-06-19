@@ -1,6 +1,8 @@
 from typing import List, Dict, Any
-from concurrent.futures.thread import ThreadPoolExecutor
+from queue import Queue
+from threading import Thread
 import json
+import logging
 
 from pydantic import BaseModel, Field
 from ipylab import JupyterFrontEnd
@@ -9,6 +11,9 @@ from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.services.render import jinja_env, GWALKER_SCRIPT_BASE64, compress_data
+
+
+logger = logging.getLogger(__name__)
 
 
 class ImgData(BaseModel):
@@ -101,7 +106,8 @@ class PreviewImageTool:
     def __init__(self, gid: str):
         self.gid = gid
         self.image_slot_id = f"pygwalker-preview-{gid}"
-        self.t_pool = ThreadPoolExecutor(1)
+        self._render_queue: Queue[str] = Queue()
+        Thread(target=self._render_queue_worker, daemon=True).start()
         try:
             self.command_app = JupyterFrontEnd()
         except Exception:
@@ -119,5 +125,22 @@ class PreviewImageTool:
             except Exception:
                 pass
 
+    def _render_next_preview(self):
+        html = self._render_queue.get()
+        try:
+            self.render_gw_review(html)
+        finally:
+            self._render_queue.task_done()
+
+    def _safe_render_next_preview(self):
+        try:
+            self._render_next_preview()
+        except Exception:
+            logger.exception("Failed to render pygwalker preview")
+
+    def _render_queue_worker(self):
+        while True:
+            self._safe_render_next_preview()
+
     def async_render_gw_review(self, html: str):
-        self.t_pool.submit(self.render_gw_review, html)
+        self._render_queue.put(html)
