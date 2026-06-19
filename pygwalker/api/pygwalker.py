@@ -37,13 +37,13 @@ from pygwalker.services.upload_data import (
     BatchUploadDatasToolOnJupyter
 )
 from pygwalker.services.config import get_local_user_id
-from pygwalker.services.spec import get_spec_json, fill_new_fields
+from pygwalker.services.spec_manager import SpecManager
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
-from pygwalker.utils.pydantic_compat import model_dump, model_validate
+from pygwalker.utils.pydantic_compat import model_dump
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker.communications.protocol import (
     BatchPayloadQueryRequest,
@@ -106,7 +106,7 @@ class PygWalker:
         self.tunnel_id = "tunnel!"
         self.show_cloud_tool = bool(self.kanaries_api_key) if show_cloud_tool is None else show_cloud_tool
         self.use_preview = use_preview
-        self._init_spec(spec, self.field_specs)
+        self.spec_manager = SpecManager(spec, self.field_specs)
         self.use_save_tool = use_save_tool
         self.parse_dsl_type = self._get_parse_dsl_type(self.data_parser)
         self.gw_mode = gw_mode
@@ -167,36 +167,53 @@ class PygWalker:
             return "server"
         return "client"
 
-    def _init_spec(self, spec: Dict[str, Any], field_specs: List[FieldSpec]):
-        spec_obj, spec_type = get_spec_json(spec)
-        if spec_type.startswith("vega"):
-            self._update_vis_spec(spec_obj["config"])
-        else:
-            self._update_vis_spec(spec_obj["config"] and fill_new_fields(spec_obj["config"], field_specs))
-        self.spec_type = spec_type
-        self._chart_map = self._parse_chart_map_dict(spec_obj["chart_map"])
-        self.spec_version = spec_obj.get("version", None)
-        self.workflow_list = spec_obj.get("workflow_list", [])
+    @property
+    def spec_type(self) -> str:
+        return self.spec_manager.spec_type
 
-    def _update_vis_spec(self, vis_spec: List[Dict[str, Any]]):
-        self.vis_spec = vis_spec
-        self._chart_name_index_map = {
-            item["name"]: index
-            for index, item in enumerate(vis_spec)
-            if "name" in item
-        }
+    @spec_type.setter
+    def spec_type(self, value: str):
+        self.spec_manager.spec_type = value
 
-    def _get_chart_map_dict(self, chart_map: Dict[str, ChartData]) -> Dict[str, Any]:
-        return {
-            key: model_dump(value, by_alias=True)
-            for key, value in chart_map.items()
-        }
+    @property
+    def spec_version(self):
+        return self.spec_manager.spec_version
 
-    def _parse_chart_map_dict(self, chart_map_dict: Dict[str, Any]) -> Dict[str, ChartData]:
-        return {
-            key: model_validate(ChartData, value)
-            for key, value in chart_map_dict.items()
-        }
+    @spec_version.setter
+    def spec_version(self, value):
+        self.spec_manager.spec_version = value
+
+    @property
+    def vis_spec(self) -> List[Dict[str, Any]]:
+        return self.spec_manager.vis_spec
+
+    @vis_spec.setter
+    def vis_spec(self, value: List[Dict[str, Any]]):
+        self.spec_manager.update_vis_spec(value)
+
+    @property
+    def workflow_list(self) -> List[Dict[str, Any]]:
+        return self.spec_manager.workflow_list
+
+    @workflow_list.setter
+    def workflow_list(self, value: List[Dict[str, Any]]):
+        self.spec_manager.workflow_list = value
+
+    @property
+    def _chart_map(self):
+        return self.spec_manager.chart_map
+
+    @_chart_map.setter
+    def _chart_map(self, value):
+        self.spec_manager.chart_map = value
+
+    @property
+    def _chart_name_index_map(self):
+        return self.spec_manager.chart_name_index_map
+
+    @_chart_name_index_map.setter
+    def _chart_name_index_map(self, value):
+        self.spec_manager.chart_name_index_map = value
 
     def to_html(self, iframe_width: Optional[str] = None, iframe_height: Optional[str] = None) -> str:
         props = self._get_props()
@@ -282,7 +299,7 @@ class PygWalker:
         """
         Get the list of saved charts.
         """
-        return list(self._chart_map.keys())
+        return self.spec_manager.chart_list
 
     def save_chart_to_file(self, chart_name: str, path: str, save_type: Literal["html", "png", "svg"] = "png"):
         """
@@ -374,9 +391,7 @@ class PygWalker:
         )
 
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
-        if chart_name not in self._chart_map:
-            raise ValueError(f"chart_name: {chart_name} not found, please confirm whether to save")
-        return self._chart_map[chart_name]
+        return self.spec_manager.get_chart_by_name(chart_name)
 
     # TODO: using the better way to handle callback
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool = None):
@@ -395,41 +410,26 @@ class PygWalker:
             return {"visSpec": self.vis_spec}
 
         def save_chart_endpoint(data: Dict[str, Any]):
-            chart_data = model_validate(ChartData, data)
-            self._chart_map[data["title"]] = chart_data
+            self.spec_manager.save_chart_payload(data)
 
         def update_spec(data: Dict[str, Any]):
-            spec_obj = {
-                "config": data["visSpec"],
-                "chart_map": {},
-                "version": __version__,
-                "workflow_list": data.get("workflowList", [])
-            }
-            self._update_vis_spec(data["visSpec"])
-            self.spec_version = __version__
-            self.workflow_list = data.get("workflowList", [])
+            self.spec_manager.update_runtime_state(
+                vis_spec=data["visSpec"],
+                workflow_list=data.get("workflowList", []),
+                chart_data=data["chartData"],
+                version=__version__,
+            )
 
             if self.use_preview:
                 preview_tool.async_render_gw_review(self._get_gw_preview_html())
 
-            save_chart_endpoint(data["chartData"])
-
-            if self.spec_type == "json_file":
-                with open(self.spec, "w", encoding="utf-8") as f:
-                    f.write(json.dumps(spec_obj))
-            if self.spec_type == "json_ksf":
-                self.cloud_service.write_config_to_cloud(self.spec[6:], json.dumps(spec_obj))
+            self.spec_manager.write_back(self.cloud_service, __version__)
 
         def upload_spec_to_cloud(data: Dict[str, Any]):
             if data["newToken"]:
                 set_config({"kanaries_token": data["newToken"]})
                 GlobalVarManager.kanaries_api_key = data["newToken"]
-            spec_obj = {
-                "config": self.vis_spec,
-                "chart_map": {},
-                "version": __version__,
-                "workflow_list": self.workflow_list,
-            }
+            spec_obj = self.spec_manager.build_spec_obj(__version__)
             file_name = data["fileName"]
             workspace_name = self.cloud_service.get_kanaries_user_info()["workspaceName"]
             path = f"{workspace_name}/{file_name}"
@@ -669,9 +669,7 @@ class PygWalker:
         return html
 
     def _get_gw_chart_preview_html(self, chart_name: int, title: str, desc: str) -> str:
-        if chart_name not in self._chart_name_index_map:
-            raise ValueError(f"chart_name: {chart_name} not found.")
-        chart_index = self._chart_name_index_map[chart_name]
+        chart_index = self.spec_manager.get_chart_index(chart_name)
 
         if not self.workflow_list:
             return ""

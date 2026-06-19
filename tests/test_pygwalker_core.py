@@ -1,8 +1,10 @@
+import json
 from types import SimpleNamespace
 
 import pandas as pd
 import pytest
 
+from pygwalker import __version__
 from pygwalker.api import adapter, html, jupyter
 from pygwalker.api import pygwalker as pygwalker_module
 from pygwalker.api.pygwalker import PygWalker
@@ -41,6 +43,26 @@ def _make_walker(monkeypatch, **kwargs):
     }
     defaults.update(kwargs)
     return PygWalker(**defaults)
+
+
+def _chart_payload(title="Updated chart"):
+    return {
+        "charts": [
+            {
+                "rowIndex": 0,
+                "colIndex": 0,
+                "data": "data:image/png;base64,abc",
+                "height": 100,
+                "width": 200,
+                "canvasHeight": 100,
+                "canvasWidth": 200,
+            }
+        ],
+        "singleChart": "data:image/png;base64,abc",
+        "nRows": 1,
+        "nCols": 1,
+        "title": title,
+    }
 
 
 def test_pygwalker_props_expose_browser_data_path(monkeypatch):
@@ -188,23 +210,7 @@ def test_pygwalker_update_spec_callback_updates_runtime_state(monkeypatch):
     walker._init_callback(comm)
     vis_spec = [{"name": "Updated chart", "encodings": {}}]
     workflow_list = [{"type": "filter"}]
-    chart_data = {
-        "charts": [
-            {
-                "rowIndex": 0,
-                "colIndex": 0,
-                "data": "data:image/png;base64,abc",
-                "height": 100,
-                "width": 200,
-                "canvasHeight": 100,
-                "canvasWidth": 200,
-            }
-        ],
-        "singleChart": "data:image/png;base64,abc",
-        "nRows": 1,
-        "nCols": 1,
-        "title": "Updated chart",
-    }
+    chart_data = _chart_payload()
 
     response = comm._receive_msg(
         "update_spec",
@@ -219,6 +225,69 @@ def test_pygwalker_update_spec_callback_updates_runtime_state(monkeypatch):
     assert walker.vis_spec == vis_spec
     assert walker.workflow_list == workflow_list
     assert walker._chart_map["Updated chart"].title == "Updated chart"
+
+
+def test_pygwalker_runtime_spec_properties_remain_writable(monkeypatch):
+    walker = _make_walker(monkeypatch)
+    vis_spec = [{"name": "Manual chart", "encodings": {}}]
+
+    walker.spec_type = "manual"
+    walker.spec_version = "0.6.0"
+    walker.vis_spec = vis_spec
+    walker.workflow_list = [{"workflow": []}]
+    walker._chart_map = {}
+    walker._chart_name_index_map = {"Manual chart": 0}
+
+    assert walker.spec_type == "manual"
+    assert walker.spec_version == "0.6.0"
+    assert walker.vis_spec == vis_spec
+    assert walker.workflow_list == [{"workflow": []}]
+    assert walker._chart_map == {}
+    assert walker._chart_name_index_map == {"Manual chart": 0}
+
+
+def test_pygwalker_update_spec_callback_writes_json_file(monkeypatch, tmp_path):
+    spec_path = tmp_path / "gw_config.json"
+    spec_path.write_text(json.dumps({"config": [], "chart_map": {}, "workflow_list": [], "version": "0.5.0"}))
+    walker = _make_walker(monkeypatch, spec=str(spec_path), use_save_tool=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+    vis_spec = [{"name": "File chart", "encodings": {}}]
+    workflow_list = [{"workflow": [{"type": "view"}]}]
+
+    response = comm._receive_msg(
+        "update_spec",
+        {
+            "visSpec": vis_spec,
+            "workflowList": workflow_list,
+            "chartData": _chart_payload("File chart"),
+        },
+    )
+
+    assert response == {"code": 0, "data": None, "message": "success"}
+    assert json.loads(spec_path.read_text()) == {
+        "config": vis_spec,
+        "chart_map": {},
+        "version": __version__,
+        "workflow_list": workflow_list,
+    }
+
+
+def test_pygwalker_loads_saved_chart_map_from_spec(monkeypatch):
+    chart_payload = _chart_payload("Saved chart")
+
+    walker = _make_walker(
+        monkeypatch,
+        spec={
+            "config": [],
+            "chart_map": {"Saved chart": chart_payload},
+            "workflow_list": [],
+            "version": "0.5.0",
+        },
+    )
+
+    assert walker.chart_list == ["Saved chart"]
+    assert walker._get_chart_by_name("Saved chart").title == "Saved chart"
 
 
 def test_pygwalker_export_dataframe_callback_stores_last_dataframe(monkeypatch):
