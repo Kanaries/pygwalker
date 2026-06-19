@@ -2,6 +2,54 @@ import ast
 import re
 from pathlib import Path
 
+from pydantic import BaseModel
+
+from pygwalker.communications import protocol
+
+
+PYTHON_REQUEST_MODEL_TS_TYPES = {
+    "EmptyRequest": "ICommEmptyRequest",
+    "SqlQueryRequest": "ICommSqlQueryRequest",
+    "PayloadQueryRequest": "ICommPayloadQueryRequest",
+    "BatchSqlQueryRequest": "ICommBatchQueryRequest<string>",
+    "BatchPayloadQueryRequest": "ICommBatchQueryRequest<IDataQueryPayload>",
+    "UploadSpecToCloudRequest": "ICommUploadSpecToCloudRequest",
+    "SaveChartRequest": "ICommSaveChartRequest",
+    "UpdateSpecRequest": "ICommUpdateSpecRequest",
+    "AskSpecRequest": "ICommAskSpecRequest",
+    "ChatChartRequest": "ICommChatChartRequest",
+    "OpenDesktopRequest": "ICommOpenDesktopRequest",
+    "UploadCloudChartRequest": "ICommUploadCloudChartRequest",
+    "UploadCloudDashboardRequest": "ICommUploadCloudDashboardRequest",
+}
+
+PROTOCOL_MODEL_TS_INTERFACES = {
+    protocol.CommMessageRequest: "ICommEnvelope",
+    protocol.CommResponse: "ICommResponse",
+    protocol.EmptyRequest: "ICommEmptyRequest",
+    protocol.SqlQueryRequest: "ICommSqlQueryRequest",
+    protocol.PayloadQueryRequest: "ICommPayloadQueryRequest",
+    protocol.BatchSqlQueryRequest: "ICommBatchQueryRequest",
+    protocol.BatchPayloadQueryRequest: "ICommBatchQueryRequest",
+    protocol.UploadSpecToCloudRequest: "ICommUploadSpecToCloudRequest",
+    protocol.ChartImageRequest: "ICommChartImageRequest",
+    protocol.SaveChartRequest: "ICommSaveChartRequest",
+    protocol.UpdateSpecRequest: "ICommUpdateSpecRequest",
+    protocol.AskSpecRequest: "ICommAskSpecRequest",
+    protocol.ChatChartRequest: "ICommChatChartRequest",
+    protocol.OpenDesktopRequest: "ICommOpenDesktopRequest",
+    protocol.UploadCloudChartRequest: "ICommUploadCloudChartRequest",
+    protocol.UploadCloudDashboardRequest: "ICommUploadCloudDashboardRequest",
+    protocol.EmptyResponse: "ICommEmptyResponse",
+    protocol.LatestVisSpecResponse: "ICommLatestVisSpecResponse",
+    protocol.DataRowsResponse: "ICommDataRowsResponse",
+    protocol.BatchDataRowsResponse: "ICommBatchDataRowsResponse",
+    protocol.UploadSpecToCloudResponse: "ICommUploadSpecToCloudResponse",
+    protocol.CloudCallbackResponse: "ICommCloudCallbackResponse",
+    protocol.UploadCloudChartResponse: "ICommUploadCloudChartResponse",
+    protocol.UploadCloudDashboardResponse: "ICommUploadCloudDashboardResponse",
+}
+
 
 def _props_builder_keys(repo_root: Path) -> set[str]:
     source = (repo_root / "pygwalker/services/props_builder.py").read_text(encoding="utf-8")
@@ -55,6 +103,32 @@ def _comm_handler_endpoints(repo_root: Path) -> set[str]:
     raise AssertionError("Could not find CommHandler.register endpoints")
 
 
+def _comm_handler_request_models(repo_root: Path) -> dict[str, str]:
+    source = (repo_root / "pygwalker/services/comm_handler.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+
+    for class_node in module.body:
+        if not isinstance(class_node, ast.ClassDef) or class_node.name != "CommHandler":
+            continue
+        for method_node in class_node.body:
+            if not isinstance(method_node, ast.FunctionDef) or method_node.name != "register":
+                continue
+            endpoints = {}
+            for node in ast.walk(method_node):
+                if not isinstance(node, ast.Call):
+                    continue
+                if not isinstance(node.func, ast.Attribute) or node.func.attr != "_register_request":
+                    continue
+                if len(node.args) < 2:
+                    continue
+                endpoint_node, model_node = node.args[0], node.args[1]
+                if isinstance(endpoint_node, ast.Constant) and isinstance(endpoint_node.value, str):
+                    if isinstance(model_node, ast.Name):
+                        endpoints[endpoint_node.value] = model_node.id
+            return endpoints
+    raise AssertionError("Could not find CommHandler.register request models")
+
+
 def _comm_handler_register_calls(repo_root: Path) -> list[ast.Call]:
     source = (repo_root / "pygwalker/services/comm_handler.py").read_text(encoding="utf-8")
     module = ast.parse(source)
@@ -76,6 +150,44 @@ def _typescript_interface_keys(repo_root: Path, interface_name: str) -> set[str]
     return set(re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\??:", match.group(1), re.MULTILINE))
 
 
+def _typescript_shape_keys(repo_root: Path, type_name: str) -> set[str]:
+    source = (repo_root / "app/src/interfaces/index.ts").read_text(encoding="utf-8")
+    empty_interface_pattern = rf"export interface {type_name}(?:<[^>]+>)? \{{\}}"
+    if re.search(empty_interface_pattern, source) is not None:
+        return set()
+
+    interface_match = re.search(rf"export interface {type_name}(?:<[^>]+>)? \{{([\s\S]*?)\n\}}", source)
+    if interface_match is not None:
+        return set(re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\??:", interface_match.group(1), re.MULTILINE))
+
+    empty_alias_pattern = rf"export type {type_name} = Record<string, never>;"
+    if re.search(empty_alias_pattern, source) is not None:
+        return set()
+
+    raise AssertionError(f"Could not find TypeScript shape for {type_name}")
+
+
+def _typescript_map_values(repo_root: Path, interface_name: str) -> dict[str, str]:
+    source = (repo_root / "app/src/interfaces/index.ts").read_text(encoding="utf-8")
+    match = re.search(rf"export interface {interface_name} \{{([\s\S]*?)\n\}}", source)
+    if match is None:
+        raise AssertionError(f"Could not find {interface_name} interface")
+    return dict(
+        re.findall(
+            r"^\s*([A-Za-z_][A-Za-z0-9_]*):\s*([^;]+);",
+            match.group(1),
+            re.MULTILINE,
+        )
+    )
+
+
+def _pydantic_alias_keys(model_cls: type[BaseModel]) -> set[str]:
+    fields = getattr(model_cls, "model_fields", None)
+    if fields is not None:
+        return {field.alias or name for name, field in fields.items()}
+    return {field.alias or name for name, field in model_cls.__fields__.items()}
+
+
 def test_frontend_props_interface_covers_python_props_builder():
     repo_root = Path(__file__).resolve().parents[1]
 
@@ -88,6 +200,23 @@ def test_frontend_comm_maps_cover_python_comm_handler_endpoints():
 
     assert _typescript_interface_keys(repo_root, "ICommRequestMap") == endpoints
     assert _typescript_interface_keys(repo_root, "ICommResponseMap") == endpoints
+
+
+def test_frontend_comm_request_map_uses_types_matching_python_request_models():
+    repo_root = Path(__file__).resolve().parents[1]
+    request_models = _comm_handler_request_models(repo_root)
+    request_map = _typescript_map_values(repo_root, "ICommRequestMap")
+
+    assert {
+        endpoint: PYTHON_REQUEST_MODEL_TS_TYPES[model_name] for endpoint, model_name in request_models.items()
+    } == request_map
+
+
+def test_frontend_protocol_interfaces_match_pydantic_aliases():
+    repo_root = Path(__file__).resolve().parents[1]
+
+    for model_cls, interface_name in PROTOCOL_MODEL_TS_INTERFACES.items():
+        assert _typescript_shape_keys(repo_root, interface_name) == _pydantic_alias_keys(model_cls)
 
 
 def test_comm_handler_register_uses_typed_request_models():
