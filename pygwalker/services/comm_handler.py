@@ -1,17 +1,14 @@
 from typing import Any, Callable, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
-import pandas as pd
 from pydantic import BaseModel
 
 from pygwalker import __version__
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.communications.protocol import (
     AskSpecRequest,
-    BatchDataRowsResponse,
     BatchPayloadQueryRequest,
     BatchSqlQueryRequest,
     ChatChartRequest,
-    DataRowsResponse,
     EmptyResponse,
     LatestVisSpecResponse,
     OpenDesktopRequest,
@@ -26,8 +23,8 @@ from pygwalker.communications.protocol import (
     validate_request,
 )
 from pygwalker.services.cloud_communication import CloudCommunicationService
+from pygwalker.services.data_communication import DataCommunicationService
 from pygwalker.services.desktop_import import DesktopImportService
-from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.preview_image import PreviewImageTool
 from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets
 from pygwalker.utils.pydantic_compat import model_dump
@@ -50,6 +47,7 @@ class CommHandler:
         upload_tool_cls: Callable[[BaseCommunication], BatchUploadDatasToolOnWidgets] = BatchUploadDatasToolOnWidgets,
         desktop_import: Optional[DesktopImportService] = None,
         cloud_communication: Optional[CloudCommunicationService] = None,
+        data_communication: Optional[DataCommunicationService] = None,
     ):
         self.walker = walker
         self.comm = comm
@@ -57,6 +55,7 @@ class CommHandler:
         self.upload_tool = upload_tool_cls(comm)
         self.desktop_import = desktop_import or DesktopImportService()
         self.cloud_communication = cloud_communication or CloudCommunicationService(walker)
+        self.data_communication = data_communication or DataCommunicationService(walker)
 
     def register(self) -> None:
         self.walker.comm = self.comm
@@ -86,16 +85,28 @@ class CommHandler:
             self._register_request("get_chart_by_chats", ChatChartRequest, self.cloud_communication.get_chart_by_chats)
 
         if self.walker.kernel_computation:
-            self._register_request("get_datas", SqlQueryRequest, self.get_datas)
-            self._register_request("get_datas_by_payload", PayloadQueryRequest, self.get_datas_by_payload)
-            self._register_request("batch_get_datas_by_sql", BatchSqlQueryRequest, self.batch_get_datas_by_sql)
+            self._register_request("get_datas", SqlQueryRequest, self.data_communication.get_datas)
             self._register_request(
-                "batch_get_datas_by_payload", BatchPayloadQueryRequest, self.batch_get_datas_by_payload
+                "get_datas_by_payload", PayloadQueryRequest, self.data_communication.get_datas_by_payload
+            )
+            self._register_request(
+                "batch_get_datas_by_sql", BatchSqlQueryRequest, self.data_communication.batch_get_datas_by_sql
+            )
+            self._register_request(
+                "batch_get_datas_by_payload",
+                BatchPayloadQueryRequest,
+                self.data_communication.batch_get_datas_by_payload,
             )
 
         if self.walker.is_export_dataframe:
-            self._register_request("export_dataframe_by_payload", PayloadQueryRequest, self.export_dataframe_by_payload)
-            self._register_request("export_dataframe_by_sql", SqlQueryRequest, self.export_dataframe_by_sql)
+            self._register_request(
+                "export_dataframe_by_payload",
+                PayloadQueryRequest,
+                self.data_communication.export_dataframe_by_payload,
+            )
+            self._register_request(
+                "export_dataframe_by_sql", SqlQueryRequest, self.data_communication.export_dataframe_by_sql
+            )
 
     def _register_request(
         self,
@@ -135,36 +146,6 @@ class CommHandler:
             self.preview_tool.async_render_gw_review(self.walker._get_gw_preview_html())
 
         self.walker.spec_manager.write_back(self.walker.cloud_service, __version__)
-        return dump_response(EmptyResponse())
-
-    def get_datas(self, request: SqlQueryRequest):
-        datas = self.walker.data_parser.get_datas_by_sql(request.sql)
-        return dump_response(DataRowsResponse(datas=datas))
-
-    def get_datas_by_payload(self, request: PayloadQueryRequest):
-        datas = self.walker.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True))
-        return dump_response(DataRowsResponse(datas=datas))
-
-    def batch_get_datas_by_sql(self, request: BatchSqlQueryRequest):
-        result = self.walker.data_parser.batch_get_datas_by_sql(request.query_list)
-        return dump_response(BatchDataRowsResponse(datas=result))
-
-    def batch_get_datas_by_payload(self, request: BatchPayloadQueryRequest):
-        result = self.walker.data_parser.batch_get_datas_by_payload(
-            [model_dump(query, exclude_none=True) for query in request.query_list]
-        )
-        return dump_response(BatchDataRowsResponse(datas=result))
-
-    def export_dataframe_by_payload(self, request: PayloadQueryRequest):
-        df = pd.DataFrame(self.walker.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True)))
-        GlobalVarManager.set_last_exported_dataframe(df)
-        self.walker._last_exported_dataframe = df
-        return dump_response(EmptyResponse())
-
-    def export_dataframe_by_sql(self, request: SqlQueryRequest):
-        df = pd.DataFrame(self.walker.data_parser.get_datas_by_sql(request.sql))
-        GlobalVarManager.set_last_exported_dataframe(df)
-        self.walker._last_exported_dataframe = df
         return dump_response(EmptyResponse())
 
     def open_in_desktop(self, request: OpenDesktopRequest):
