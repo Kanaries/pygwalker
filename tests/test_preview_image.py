@@ -14,7 +14,7 @@ def test_preview_image_tool_renders_on_daemon_thread(monkeypatch):
             started_threads.append(self)
 
     monkeypatch.setattr(preview_image, "Thread", FakeThread)
-    monkeypatch.setattr(preview_image, "JupyterFrontEnd", lambda: None)
+    monkeypatch.setattr(preview_image, "_create_jupyter_frontend", lambda: None)
     monkeypatch.setattr(preview_image, "display_html", lambda html, slot_id: display_calls.append((html, slot_id)))
 
     tool = preview_image.PreviewImageTool("preview")
@@ -48,7 +48,7 @@ def test_preview_image_tool_keeps_worker_alive_after_render_error(monkeypatch):
         display_calls.append((html, slot_id))
 
     monkeypatch.setattr(preview_image, "Thread", FakeThread)
-    monkeypatch.setattr(preview_image, "JupyterFrontEnd", lambda: None)
+    monkeypatch.setattr(preview_image, "_create_jupyter_frontend", lambda: None)
     monkeypatch.setattr(preview_image, "display_html", fake_display_html)
 
     tool = preview_image.PreviewImageTool("preview")

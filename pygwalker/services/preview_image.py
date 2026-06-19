@@ -5,7 +5,6 @@ import json
 import logging
 
 from pydantic import BaseModel, Field
-from ipylab import JupyterFrontEnd
 
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.display import display_html
@@ -14,6 +13,12 @@ from pygwalker.services.render import jinja_env, GWALKER_SCRIPT_BASE64, compress
 
 
 logger = logging.getLogger(__name__)
+
+
+def _create_jupyter_frontend():
+    from ipylab import JupyterFrontEnd
+
+    return JupyterFrontEnd()
 
 
 class ImgData(BaseModel):
@@ -109,7 +114,7 @@ class PreviewImageTool:
         self._render_queue: Queue[str] = Queue()
         Thread(target=self._render_queue_worker, daemon=True).start()
         try:
-            self.command_app = JupyterFrontEnd()
+            self.command_app = _create_jupyter_frontend()
         except Exception:
             self.command_app = None
 
