@@ -14,6 +14,7 @@ from pygwalker.api import pygwalker as pygwalker_module
 from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.errors import ErrorCode
+from pygwalker.services import chart_export as chart_export_module
 from pygwalker.services import comm_handler as comm_handler_module
 from pygwalker.services import jupyter_display as jupyter_display_module
 from pygwalker.services import render_manager as render_manager_module
@@ -282,6 +283,100 @@ def test_jupyter_display_manager_uploads_large_classic_jupyter_data(monkeypatch)
             "gid": "classic",
             "tunnel_id": "tunnel",
         }
+    ]
+
+
+def test_chart_export_manager_exports_png(monkeypatch):
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def read(self):
+            return b"png-bytes"
+
+    monkeypatch.setattr(chart_export_module.urllib.request, "urlopen", lambda url: FakeResponse())
+    walker = SimpleNamespace(
+        _get_chart_by_name=lambda name: SimpleNamespace(single_chart=f"https://example.test/{name}.png")
+    )
+
+    assert chart_export_module.ChartExportManager(walker, lambda _: None).export_chart_png("Chart 1") == b"png-bytes"
+
+
+def test_chart_export_manager_exports_svg_variants():
+    encoded_svg = "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="
+    raw_svg = "<svg></svg>"
+
+    encoded_walker = SimpleNamespace(
+        _get_chart_by_name=lambda _name: SimpleNamespace(charts=[SimpleNamespace(data=encoded_svg)])
+    )
+    raw_walker = SimpleNamespace(
+        _get_chart_by_name=lambda _name: SimpleNamespace(charts=[SimpleNamespace(data=raw_svg)])
+    )
+
+    assert (
+        chart_export_module.ChartExportManager(encoded_walker, lambda _: None).export_chart_svg("Chart 1")
+        == b"<svg></svg>"
+    )
+    assert (
+        chart_export_module.ChartExportManager(raw_walker, lambda _: None).export_chart_svg("Chart 1") == b"<svg></svg>"
+    )
+
+
+def test_chart_export_manager_display_chart_uses_chart_name_as_default_title():
+    displayed = []
+    calls = []
+    walker = SimpleNamespace(
+        _get_gw_chart_preview_html=lambda chart_name, title, desc: calls.append((chart_name, title, desc)) or "html"
+    )
+
+    chart_export_module.ChartExportManager(walker, displayed.append).display_chart("Chart 1")
+
+    assert calls == [("Chart 1", "Chart 1", "")]
+    assert displayed == ["html"]
+
+
+def test_chart_export_manager_get_single_chart_html_by_spec(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(chart_export_module, "dsl_to_workflow", lambda spec: calls.append(("workflow", spec)) or "wf")
+    monkeypatch.setattr(
+        chart_export_module,
+        "render_gw_chart_preview_html",
+        lambda **kwargs: calls.append(("render", kwargs)) or "chart-html",
+    )
+
+    walker = SimpleNamespace(
+        data_parser=SimpleNamespace(
+            get_datas_by_payload=lambda workflow: calls.append(("data", workflow)) or [{"x": 1}]
+        ),
+        theme_key="g2",
+        appearance="light",
+    )
+
+    html = chart_export_module.ChartExportManager(walker, lambda _: None).get_single_chart_html_by_spec(
+        spec={"mark": "bar"},
+        title="Title",
+        desc="Desc",
+    )
+
+    assert html == "chart-html"
+    assert calls == [
+        ("workflow", {"mark": "bar"}),
+        ("data", "wf"),
+        (
+            "render",
+            {
+                "single_vis_spec": {"mark": "bar"},
+                "data": [{"x": 1}],
+                "theme_key": "g2",
+                "title": "Title",
+                "desc": "Desc",
+                "appearance": "light",
+            },
+        ),
     ]
 
 

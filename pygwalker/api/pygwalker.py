@@ -1,5 +1,4 @@
 from typing import List, Dict, Any, Optional, Union
-import urllib.request
 
 from typing_extensions import Literal
 import pandas as pd
@@ -13,8 +12,8 @@ from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.preview_image import (
     PreviewImageTool,
     ChartData,
-    render_gw_chart_preview_html,
 )
+from pygwalker.services.chart_export import ChartExportManager
 from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets
 from pygwalker.services.config import get_local_user_id
 from pygwalker.services.comm_handler import CommHandler
@@ -89,6 +88,7 @@ class PygWalker:
         self.props_builder = PropsBuilder(self, lambda: get_local_user_id())
         self.render_manager = RenderManager(self)
         self.jupyter_display_manager = JupyterDisplayManager(self, lambda content: display_html(content))
+        self.chart_export_manager = ChartExportManager(self, lambda content: display_html(content))
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.kernel_computation:
@@ -269,63 +269,29 @@ class PygWalker:
         """
         Save the chart to a file.
         """
-        if save_type == "html":
-            content = self.export_chart_html(chart_name)
-            write_mode = "w"
-            encoding = "utf-8"
-        elif save_type == "png":
-            content = self.export_chart_png(chart_name)
-            write_mode = "wb"
-            encoding = None
-        elif save_type == "svg":
-            content = self.export_chart_svg(chart_name)
-            write_mode = "wb"
-            encoding = None
-        else:
-            raise ValueError(f"save_type must be html, png or svg, but got {save_type}")
-
-        with open(path, write_mode, encoding=encoding) as f:
-            f.write(content)
+        self._get_chart_export_manager().save_chart_to_file(chart_name, path, save_type)
 
     def export_chart_html(self, chart_name: str) -> str:
         """
         Export the chart as a html string.
         """
-        return self._get_gw_chart_preview_html(chart_name, title="", desc="")
+        return self._get_chart_export_manager().export_chart_html(chart_name)
 
     def export_chart_png(self, chart_name: str) -> bytes:
         """
         Export the chart as a png bytes.
         """
-        chart_data = self._get_chart_by_name(chart_name)
-
-        with urllib.request.urlopen(chart_data.single_chart) as png_string:
-            return png_string.read()
+        return self._get_chart_export_manager().export_chart_png(chart_name)
 
     def export_chart_svg(self, chart_name: str) -> bytes:
         """Export the chart as svg bytes."""
-        chart_data = self._get_chart_by_name(chart_name)
-        if len(chart_data.charts) == 0:
-            raise ValueError(f"chart_name: {chart_name} has no svg data")
-        svg_str = chart_data.charts[0].data
-        prefix = "data:image/svg+xml;base64,"
-        if isinstance(svg_str, str) and svg_str.startswith(prefix):
-            import base64
-
-            return base64.b64decode(svg_str[len(prefix) :])
-        if isinstance(svg_str, str):
-            return svg_str.encode("utf-8")
-        return svg_str
+        return self._get_chart_export_manager().export_chart_svg(chart_name)
 
     def display_chart(self, chart_name: str, *, title: Optional[str] = None, desc: str = ""):
         """
         Display the chart in the notebook.
         """
-        if title is None:
-            title = chart_name
-
-        html = self._get_gw_chart_preview_html(chart_name, title=title, desc=desc)
-        display_html(html)
+        self._get_chart_export_manager().display_chart(chart_name, title=title, desc=desc)
 
     def get_single_chart_html_by_spec(
         self,
@@ -334,19 +300,7 @@ class PygWalker:
         title: str = "",
         desc: str = "",
     ) -> str:
-        # pylint: disable=import-outside-toplevel
-        from pygwalker.utils.dsl_transform import dsl_to_workflow
-
-        workflow = dsl_to_workflow(spec)
-        data = self.data_parser.get_datas_by_payload(workflow)
-        return render_gw_chart_preview_html(
-            single_vis_spec=spec,
-            data=data,
-            theme_key=self.theme_key,
-            title=title,
-            desc=desc,
-            appearance=self.appearance,
-        )
+        return self._get_chart_export_manager().get_single_chart_html_by_spec(spec=spec, title=title, desc=desc)
 
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
         return self.spec_manager.get_chart_by_name(chart_name)
@@ -356,6 +310,12 @@ class PygWalker:
         if display_manager is None:
             display_manager = JupyterDisplayManager(self, lambda content: display_html(content))
         return display_manager
+
+    def _get_chart_export_manager(self) -> ChartExportManager:
+        export_manager = getattr(self, "chart_export_manager", None)
+        if export_manager is None:
+            export_manager = ChartExportManager(self, lambda content: display_html(content))
+        return export_manager
 
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool = None):
         CommHandler(
