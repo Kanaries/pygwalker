@@ -188,7 +188,7 @@ pyg.to_html(df, spec=vis_spec)
 示例输出：
 
 ```
-Signature: pyg.walk(df: 'pl.DataFrame | pd.DataFrame', gid: Union[int, str] = None, *, env: Literal['Jupyter', 'Streamlit'] = 'Jupyter', **kwargs)
+Signature: pyg.walk(df: 'pl.DataFrame | pd.DataFrame', gid: Union[int, str] = None, *, env: Literal['JupyterAnywidget', 'Jupyter', 'JupyterWidget'] = 'JupyterAnywidget', **kwargs)
 Docstring:
 Walk through pandas.DataFrame df with Graphic Walker
 
@@ -197,7 +197,7 @@ Args:
     - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
 Kargs:
-    - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
+    - env: (Literal['JupyterAnywidget' | 'Jupyter' | 'JupyterWidget'], optional): 使用 pygwalker 的 Notebook 渲染环境，默认 'JupyterAnywidget'。'Jupyter' 和 'JupyterWidget' 是为兼容性保留的已弃用旧 transport。
     - hide_data_source_config (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
     - theme_key ('vega' | 'g2'): theme type.
     - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.

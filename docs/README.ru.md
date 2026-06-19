@@ -186,7 +186,7 @@ renderer.explorer()
 | ----------------------- | ------------------------------------ | --------------- | -------------------------------------------------------------------------- |
 | dataset                 | Union\[DataFrame, Connector]         | —               | DataFrame или Connector для анализа данных.                                |
 | gid                     | Union\[int, str]                     | None            | ID контейнера GraphicWalker, формат: `gwalker-{gid}`.                      |
-| env                     | Literal\['Jupyter', 'JupyterWidget'] | 'JupyterWidget' | Окружение для pygwalker.                                                   |
+| env                     | Literal\['JupyterAnywidget', 'Jupyter', 'JupyterWidget'] | 'JupyterAnywidget' | Окружение для pygwalker. Используйте `JupyterAnywidget` или не указывайте `env`; `Jupyter` и `JupyterWidget` — устаревшие транспорты, сохранённые для совместимости. |
 | field_specs             | Optional\[Dict\[str, FieldSpec]]     | None            | Спецификации полей, автоматически выводятся из `dataset`, если не заданы.  |
 | hide_data_source_config | bool                                 | True            | Скрыть кнопку импорта/экспорта источника данных.                           |
 | theme_key               | Literal\['vega', 'g2']               | 'g2'            | Тема для GraphicWalker.                                                    |

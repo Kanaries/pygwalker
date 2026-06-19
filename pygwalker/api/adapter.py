@@ -39,7 +39,7 @@ def walk(
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
-        - env: (Literal['JupyterAnywidget' | 'Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterAnywidget'
+        - env: (Literal['JupyterAnywidget' | 'Jupyter' | 'JupyterWidget'], optional): The environment using pygwalker. Default as 'JupyterAnywidget'. 'Jupyter' and 'JupyterWidget' are deprecated legacy transports kept for compatibility.
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.

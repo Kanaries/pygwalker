@@ -26,6 +26,7 @@ def _read_walk_api_table_rows() -> list[dict[str, str]]:
                 "parameter": cells[0],
                 "type": cells[1],
                 "default": cells[2],
+                "description": cells[3],
             }
         )
     return parsed_rows
@@ -68,3 +69,10 @@ def test_readme_walk_api_table_documents_reusable_walker_input():
     dataset_row = next(row for row in _read_walk_api_table_rows() if row["parameter"] == "dataset")
 
     assert "Walker" in dataset_row["type"]
+
+
+def test_readme_walk_api_table_marks_legacy_jupyter_envs_deprecated():
+    env_row = next(row for row in _read_walk_api_table_rows() if row["parameter"] == "env")
+
+    assert "JupyterAnywidget" in env_row["description"]
+    assert "deprecated legacy transports" in env_row["description"]
