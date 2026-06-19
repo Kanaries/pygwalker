@@ -122,6 +122,7 @@ Run Python formatting, lint, and tests from the repository root:
 python -m ruff check pygwalker tests scripts bin pygwalker_tools
 python -m ruff format --check pygwalker tests scripts bin pygwalker_tools
 python -X faulthandler -W error::DeprecationWarning:pygwalker -m pytest -o faulthandler_timeout=60 tests
+python -m pytest --nbmake --nbmake-kernel=python tests/*.ipynb
 ```
 
 Run frontend type checking, build, and smoke tests from `app/`:

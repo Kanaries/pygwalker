@@ -102,10 +102,10 @@ jobs:
       - name: Try Running
         working-directory: ./tests/
         run: |
-          pip install ipykernel nbconvert pandas polars
+          pip install ipykernel nbmake pandas polars pytest
           python -m ipykernel install --name python --user
           jupyter kernelspec list
-          jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=python --to html *.ipynb
+          python -m pytest --nbmake --nbmake-kernel=python *.ipynb
       - name: Try Pytest
         timeout-minutes: 20
         working-directory: ./
@@ -115,12 +115,3 @@ jobs:
           ruff check pygwalker tests scripts bin pygwalker_tools
           ruff format --check pygwalker tests scripts bin pygwalker_tools
           python -X faulthandler -W error::DeprecationWarning:pygwalker -m pytest -o faulthandler_timeout=300 tests
-      - name: Uploading notebooks
-        uses: actions/upload-artifact@v4
-        if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}
-        with:
-          name: notebook
-          path: |
-            ./tests/main.html
-            ./tests/offline.html
-            ./tests/stress-test.html

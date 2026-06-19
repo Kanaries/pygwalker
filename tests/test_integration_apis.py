@@ -312,6 +312,47 @@ def test_anywidget_widget_service_registers_comm(monkeypatch):
     assert walker.init_callback_calls == [comms[0]]
 
 
+def test_anywidget_widget_service_serializes_dataframe_values(monkeypatch):
+    _install_anywidget_stubs(monkeypatch)
+    anywidget_widget = importlib.reload(importlib.import_module("pygwalker.services.anywidget_widget"))
+
+    class FakeWalkerForWidget:
+        gid = "widget-core"
+
+        def _get_props(self, env, data_source):
+            return {
+                "id": self.gid,
+                "env": env,
+                "dataSource": [
+                    {"started_at": pd.Timestamp("2024-01-01T00:00:00Z")},
+                    {"started_at": pd.Timestamp("2024-01-02").date()},
+                ],
+            }
+
+        def _init_callback(self, comm):
+            self.comm = comm
+
+    class FakeAnywidgetCommunication:
+        def __init__(self, gid):
+            self.gid = gid
+
+        def register_widget(self, widget):
+            self.widget = widget
+
+    widget = anywidget_widget.create_anywidget_for_walker(
+        FakeWalkerForWidget(),
+        env="anywidget",
+        data_source=[],
+        communication_cls=FakeAnywidgetCommunication,
+    )
+
+    props = json.loads(widget.props)
+    assert props["dataSource"] == [
+        {"started_at": 1704067200000},
+        {"started_at": "2024-01-02"},
+    ]
+
+
 def test_marimo_api_wraps_anywidget(monkeypatch):
     wrapped_widgets = []
     _install_anywidget_stubs(monkeypatch)

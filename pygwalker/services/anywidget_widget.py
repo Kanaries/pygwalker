@@ -5,6 +5,7 @@ import anywidget
 import traitlets
 
 from pygwalker.communications.anywidget_comm import AnywidgetCommunication
+from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.frontend_assets import read_frontend_asset
 
 
@@ -24,7 +25,7 @@ def create_anywidget_for_walker(
 ) -> WalkerAnyWidget:
     widget = WalkerAnyWidget()
     comm = communication_cls(walker.gid)
-    widget.props = json.dumps(walker._get_props(env, data_source))
+    widget.props = json.dumps(walker._get_props(env, data_source), cls=DataFrameEncoder)
     comm.register_widget(widget)
     walker._init_callback(comm)
     return widget
