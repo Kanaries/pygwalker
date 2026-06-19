@@ -15,6 +15,7 @@ from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.errors import ErrorCode
 from pygwalker.services import chart_export as chart_export_module
+from pygwalker.services import data_bridge as data_bridge_module
 from pygwalker.services import desktop_import as desktop_import_module
 from pygwalker.services import jupyter_display as jupyter_display_module
 from pygwalker.services import props_tracker as props_tracker_module
@@ -52,6 +53,54 @@ def _make_walker(monkeypatch, **kwargs):
     }
     defaults.update(kwargs)
     return PygWalker(**defaults)
+
+
+def _patch_cloud_computation_parser(monkeypatch):
+    original_get_parser = data_bridge_module.get_parser
+    uploaded = []
+
+    class FakeCloudParser:
+        data_size = 1
+        raw_fields = [
+            {"fid": "city", "name": "city", "semanticType": "nominal", "analyticType": "dimension"},
+            {"fid": "value", "name": "value", "semanticType": "quantitative", "analyticType": "measure"},
+        ]
+        dataset_type = "cloud_dataset"
+
+        def to_records(self, limit=None):
+            return [{"city": "London", "value": 1}]
+
+    def fake_get_parser(
+        dataset,
+        field_specs=None,
+        infer_string_to_date=False,
+        infer_number_to_dimension=True,
+        other_params=None,
+    ):
+        if isinstance(dataset, str) and dataset == "cloud-dataset-id":
+            return FakeCloudParser()
+        return original_get_parser(
+            dataset,
+            field_specs,
+            infer_string_to_date,
+            infer_number_to_dimension,
+            other_params,
+        )
+
+    def fake_create_cloud_dataset(self, data_parser, name, is_public, temporary):
+        uploaded.append(
+            {
+                "data_parser": data_parser,
+                "name": name,
+                "is_public": is_public,
+                "temporary": temporary,
+            }
+        )
+        return "cloud-dataset-id"
+
+    monkeypatch.setattr(data_bridge_module, "get_parser", fake_get_parser)
+    monkeypatch.setattr(pygwalker_module.CloudService, "create_cloud_dataset", fake_create_cloud_dataset)
+    return uploaded
 
 
 def _chart_payload(title="Updated chart"):
@@ -1162,6 +1211,7 @@ def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
     monkeypatch.setattr(PygWalker, "display_on_jupyter_use_widgets", lambda self: None)
     monkeypatch.setattr(PygWalker, "display_on_jupyter", lambda self: None)
     monkeypatch.setattr(PygWalker, "display_on_convert_html", lambda self: None)
+    cloud_uploads = _patch_cloud_computation_parser(monkeypatch) if kwargs.get("computation") == "cloud" else []
 
     walker = jupyter.walk(
         pd.DataFrame([{"city": "London", "value": 1}]),
@@ -1170,6 +1220,10 @@ def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
     )
 
     assert walker.kernel_computation is expected_kernel_computation
+    if kwargs.get("computation") == "cloud":
+        assert walker.cloud_computation is True
+        assert walker.dataset_type == "cloud_dataset"
+        assert len(cloud_uploads) == 1
 
 
 @pytest.mark.parametrize(
@@ -1377,6 +1431,7 @@ def test_display_on_jupyter_anywidget_sends_cloud_mode_data(monkeypatch):
 
     displayed = []
     created = []
+    cloud_uploads = _patch_cloud_computation_parser(monkeypatch)
     monkeypatch.setattr(pygwalker_module, "display_html", lambda widget: displayed.append(widget))
     monkeypatch.setattr(
         anywidget_widget,
@@ -1388,6 +1443,8 @@ def test_display_on_jupyter_anywidget_sends_cloud_mode_data(monkeypatch):
     walker.display_on_jupyter_use_anywidget()
 
     assert walker.use_preview is False
+    assert walker.dataset_type == "cloud_dataset"
+    assert len(cloud_uploads) == 1
     assert created == [(walker, "anywidget", walker.origin_data_source)]
     assert displayed == ["widget"]
 
