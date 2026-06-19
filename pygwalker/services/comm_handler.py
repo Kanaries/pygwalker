@@ -13,17 +13,26 @@ from pygwalker import __version__
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.communications.protocol import (
     AskSpecRequest,
+    BatchDataRowsResponse,
     BatchPayloadQueryRequest,
     BatchSqlQueryRequest,
     ChatChartRequest,
+    CloudCallbackResponse,
+    DataRowsResponse,
+    EmptyResponse,
+    LatestVisSpecResponse,
     OpenDesktopRequest,
     PayloadQueryRequest,
     SaveChartRequest,
     SqlQueryRequest,
+    UploadCloudChartResponse,
+    UploadCloudDashboardResponse,
     UploadCloudChartRequest,
     UploadCloudDashboardRequest,
+    UploadSpecToCloudResponse,
     UpdateSpecRequest,
     UploadSpecToCloudRequest,
+    dump_response,
     validate_request,
 )
 from pygwalker.services.config import set_config
@@ -86,14 +95,15 @@ class CommHandler:
             sample_data_count=0,
             data_source_id=self.walker.data_source_id,
         )
-        return {}
+        return dump_response(EmptyResponse())
 
     def get_latest_vis_spec(self, _):
-        return {"visSpec": self.walker.vis_spec}
+        return dump_response(LatestVisSpecResponse(visSpec=self.walker.vis_spec))
 
     def save_chart(self, data: Dict[str, Any]):
         request = validate_request(SaveChartRequest, data)
         self.walker.spec_manager.save_chart_payload(model_dump(request, by_alias=True))
+        return dump_response(EmptyResponse())
 
     def update_spec(self, data: Dict[str, Any]):
         request = validate_request(UpdateSpecRequest, data)
@@ -108,6 +118,7 @@ class CommHandler:
             self.preview_tool.async_render_gw_review(self.walker._get_gw_preview_html())
 
         self.walker.spec_manager.write_back(self.walker.cloud_service, __version__)
+        return dump_response(EmptyResponse())
 
     def upload_spec_to_cloud(self, data: Dict[str, Any]):
         request = validate_request(UploadSpecToCloudRequest, data)
@@ -118,51 +129,53 @@ class CommHandler:
         workspace_name = self.walker.cloud_service.get_kanaries_user_info()["workspaceName"]
         path = f"{workspace_name}/{request.file_name}"
         self.walker.cloud_service.write_config_to_cloud(path, json.dumps(spec_obj))
-        return {"specFilePath": path}
+        return dump_response(UploadSpecToCloudResponse(specFilePath=path))
 
     def get_datas(self, data: Dict[str, Any]):
         request = validate_request(SqlQueryRequest, data)
         datas = self.walker.data_parser.get_datas_by_sql(request.sql)
-        return {"datas": datas}
+        return dump_response(DataRowsResponse(datas=datas))
 
     def get_datas_by_payload(self, data: Dict[str, Any]):
         request = validate_request(PayloadQueryRequest, data)
         datas = self.walker.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True))
-        return {"datas": datas}
+        return dump_response(DataRowsResponse(datas=datas))
 
     def batch_get_datas_by_sql(self, data: Dict[str, Any]):
         request = validate_request(BatchSqlQueryRequest, data)
         result = self.walker.data_parser.batch_get_datas_by_sql(request.query_list)
-        return {"datas": result}
+        return dump_response(BatchDataRowsResponse(datas=result))
 
     def batch_get_datas_by_payload(self, data: Dict[str, Any]):
         request = validate_request(BatchPayloadQueryRequest, data)
         result = self.walker.data_parser.batch_get_datas_by_payload(
             [model_dump(query, exclude_none=True) for query in request.query_list]
         )
-        return {"datas": result}
+        return dump_response(BatchDataRowsResponse(datas=result))
 
     def get_spec_by_text(self, data: Dict[str, Any]):
         request = validate_request(AskSpecRequest, data)
         callback = self.walker.other_props.get("custom_ask_callback", self.walker.cloud_service.get_spec_by_text)
-        return {"data": callback(request.metas, request.query)}
+        return dump_response(CloudCallbackResponse(data=callback(request.metas, request.query)))
 
     def get_chart_by_chats(self, data: Dict[str, Any]):
         request = validate_request(ChatChartRequest, data)
         callback = self.walker.other_props.get("custom_chat_callback", self.walker.cloud_service.get_chart_by_chats)
-        return {"data": callback(request.metas, request.chats)}
+        return dump_response(CloudCallbackResponse(data=callback(request.metas, request.chats)))
 
     def export_dataframe_by_payload(self, data: Dict[str, Any]):
         request = validate_request(PayloadQueryRequest, data)
         df = pd.DataFrame(self.walker.data_parser.get_datas_by_payload(model_dump(request.payload, exclude_none=True)))
         GlobalVarManager.set_last_exported_dataframe(df)
         self.walker._last_exported_dataframe = df
+        return dump_response(EmptyResponse())
 
     def export_dataframe_by_sql(self, data: Dict[str, Any]):
         request = validate_request(SqlQueryRequest, data)
         df = pd.DataFrame(self.walker.data_parser.get_datas_by_sql(request.sql))
         GlobalVarManager.set_last_exported_dataframe(df)
         self.walker._last_exported_dataframe = df
+        return dump_response(EmptyResponse())
 
     def upload_to_cloud_charts(self, data: Dict[str, Any]):
         request = validate_request(UploadCloudChartRequest, data)
@@ -174,7 +187,7 @@ class CommHandler:
             spec_list=request.vis_spec,
             is_public=request.is_public,
         )
-        return {"chartId": result["chart_id"], "datasetId": result["dataset_id"]}
+        return dump_response(UploadCloudChartResponse(chartId=result["chart_id"], datasetId=result["dataset_id"]))
 
     def upload_to_cloud_dashboard(self, data: Dict[str, Any]):
         request = validate_request(UploadCloudDashboardRequest, data)
@@ -188,7 +201,9 @@ class CommHandler:
             create_dashboard_flag=request.is_create_dashboard,
             appearance=self.walker.appearance,
         )
-        return {"dashboardId": result["dashboard_id"], "datasetId": result["dataset_id"]}
+        return dump_response(
+            UploadCloudDashboardResponse(dashboardId=result["dashboard_id"], datasetId=result["dataset_id"])
+        )
 
     def open_in_desktop(self, data: Dict[str, Any]):
         request = validate_request(OpenDesktopRequest, data)
@@ -201,6 +216,7 @@ class CommHandler:
         self._open_protocol(
             f"gw://import?data={self._compress_data(records)}&spec={self._compress_data(spec)}&fields={self._compress_data(fields)}"
         )
+        return dump_response(EmptyResponse())
 
     @staticmethod
     def _open_protocol(link: str):

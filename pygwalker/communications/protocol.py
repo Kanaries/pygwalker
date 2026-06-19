@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Type
 from pydantic import BaseModel, Field, ValidationError
 
 from pygwalker.errors import CommProtocolError
-from pygwalker.utils.pydantic_compat import model_validate
+from pygwalker.utils.pydantic_compat import model_dump, model_validate
 
 
 def validate_request(model_cls: Type[BaseModel], data: Dict[str, Any]) -> BaseModel:
@@ -11,6 +11,10 @@ def validate_request(model_cls: Type[BaseModel], data: Dict[str, Any]) -> BaseMo
         return model_validate(model_cls, data)
     except ValidationError as exc:
         raise CommProtocolError(f"Invalid communication payload: {exc}") from exc
+
+
+def dump_response(response: BaseModel) -> Dict[str, Any]:
+    return model_dump(response, by_alias=True, exclude_none=True)
 
 
 class DataQueryPayload(BaseModel):
@@ -95,3 +99,37 @@ class UploadCloudDashboardRequest(BaseModel):
     is_create_dashboard: bool = Field(..., alias="isCreateDashboard")
     vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
     workflow_list: List[List[Dict[str, Any]]] = Field(..., alias="workflowList")
+
+
+class EmptyResponse(BaseModel):
+    pass
+
+
+class LatestVisSpecResponse(BaseModel):
+    vis_spec: List[Dict[str, Any]] = Field(..., alias="visSpec")
+
+
+class DataRowsResponse(BaseModel):
+    datas: List[Dict[str, Any]]
+
+
+class BatchDataRowsResponse(BaseModel):
+    datas: List[List[Dict[str, Any]]]
+
+
+class UploadSpecToCloudResponse(BaseModel):
+    spec_file_path: str = Field(..., alias="specFilePath")
+
+
+class CloudCallbackResponse(BaseModel):
+    data: Any
+
+
+class UploadCloudChartResponse(BaseModel):
+    chart_id: str = Field(..., alias="chartId")
+    dataset_id: str = Field(..., alias="datasetId")
+
+
+class UploadCloudDashboardResponse(BaseModel):
+    dashboard_id: str = Field(..., alias="dashboardId")
+    dataset_id: str = Field(..., alias="datasetId")

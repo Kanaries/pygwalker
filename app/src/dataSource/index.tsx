@@ -1,5 +1,5 @@
 import type { IDataSourceProps } from "../interfaces";
-import type { ICommBatchQueryRequest } from "../interfaces";
+import type { ICommBatchDataRowsResponse, ICommBatchQueryRequest } from "../interfaces";
 import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/interfaces";
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
@@ -92,14 +92,14 @@ function initBatchGetDatas<TQuery>(action: string) {
         const request: ICommBatchQueryRequest<TQuery> = {
             queryList: taskList.map(task => task.query)
         };
-        const result = await communicationStore.comm?.sendMsg(
+        const result = await communicationStore.comm?.sendMsg<ICommBatchDataRowsResponse>(
             action,
             request,
             60_000
         );
-        if (result) {
+        if (result?.data?.datas) {
             for (let i = 0; i < taskList.length; i++) {
-                taskList[i].resolve(result["data"]["datas"][i]);
+                taskList[i].resolve(result.data.datas[i]);
             }
         } else {
             for (let i = 0; i < taskList.length; i++) {

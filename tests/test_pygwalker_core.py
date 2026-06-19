@@ -418,7 +418,7 @@ def test_pygwalker_update_spec_callback_updates_runtime_state(monkeypatch):
         },
     )
 
-    assert response == {"code": 0, "data": None, "message": "success"}
+    assert response == {"code": 0, "data": {}, "message": "success"}
     assert walker.vis_spec == vis_spec
     assert walker.workflow_list == workflow_list
     assert walker._chart_map["Updated chart"].title == "Updated chart"
@@ -449,7 +449,7 @@ def test_pygwalker_update_spec_callback_defaults_missing_workflow_list(monkeypat
         },
     )
 
-    assert response == {"code": 0, "data": None, "message": "success"}
+    assert response == {"code": 0, "data": {}, "message": "success"}
     assert walker.vis_spec == vis_spec
     assert walker.workflow_list == []
 
@@ -491,7 +491,7 @@ def test_pygwalker_update_spec_callback_writes_json_file(monkeypatch, tmp_path):
         },
     )
 
-    assert response == {"code": 0, "data": None, "message": "success"}
+    assert response == {"code": 0, "data": {}, "message": "success"}
     assert json.loads(spec_path.read_text()) == {
         "config": vis_spec,
         "chart_map": {},
@@ -529,7 +529,7 @@ def test_pygwalker_export_dataframe_callback_stores_last_dataframe(monkeypatch):
             {"sql": "SELECT city, value FROM pygwalker_mid_table WHERE value = 2"},
         )
 
-        assert response == {"code": 0, "data": None, "message": "success"}
+        assert response == {"code": 0, "data": {}, "message": "success"}
         assert walker.last_exported_dataframe.to_dict("records") == [{"city": "Tokyo", "value": 2}]
         assert GlobalVarManager.last_exported_dataframe is walker.last_exported_dataframe
     finally:
@@ -552,7 +552,7 @@ def test_pygwalker_export_dataframe_by_payload_callback_stores_last_dataframe(mo
             {"payload": {"workflow": [{"type": "view"}]}},
         )
 
-        assert response == {"code": 0, "data": None, "message": "success"}
+        assert response == {"code": 0, "data": {}, "message": "success"}
         assert calls == [{"workflow": [{"type": "view"}]}]
         assert walker.last_exported_dataframe.to_dict("records") == [{"city": "London", "value": 1}]
         assert GlobalVarManager.last_exported_dataframe is walker.last_exported_dataframe
@@ -623,7 +623,7 @@ def test_pygwalker_save_chart_callback_validates_and_stores_chart(monkeypatch):
 
     response = comm._receive_msg("save_chart", _chart_payload("Recovered chart"))
 
-    assert response == {"code": 0, "data": None, "message": "success"}
+    assert response == {"code": 0, "data": {}, "message": "success"}
     assert walker.chart_list == ["Recovered chart"]
     assert walker._get_chart_by_name("Recovered chart").single_chart == "data:image/png;base64,abc"
 
@@ -785,7 +785,7 @@ def test_pygwalker_open_in_desktop_callback_encodes_payload(monkeypatch):
         },
     )
 
-    assert response == {"code": 0, "data": None, "message": "success"}
+    assert response == {"code": 0, "data": {}, "message": "success"}
     parsed = urllib.parse.urlparse(links[0])
     query = urllib.parse.parse_qs(parsed.query)
 

@@ -116,3 +116,39 @@ export interface ICommUploadCloudDashboardRequest {
     visSpec: any[];
     workflowList: any[][];
 }
+
+export interface ICommResponse<TData = any> {
+    data?: TData;
+    message?: string;
+    code: number;
+}
+
+export interface ICommLatestVisSpecResponse {
+    visSpec: any[];
+}
+
+export interface ICommDataRowsResponse {
+    datas: IRow[];
+}
+
+export interface ICommBatchDataRowsResponse {
+    datas: IRow[][];
+}
+
+export interface ICommUploadSpecToCloudResponse {
+    specFilePath: string;
+}
+
+export interface ICommCloudCallbackResponse {
+    data: any;
+}
+
+export interface ICommUploadCloudChartResponse {
+    chartId: string;
+    datasetId: string;
+}
+
+export interface ICommUploadCloudDashboardResponse {
+    dashboardId: string;
+    datasetId: string;
+}

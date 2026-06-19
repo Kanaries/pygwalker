@@ -1,15 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import commonStore from '../store/common';
 import { Streamlit } from "streamlit-component-lib"
-
-interface IResponse {
-    data?: any;
-    message?: string;
-    code: number;
-}
+import type { ICommResponse } from '../interfaces';
 
 interface ICommunication {
-    sendMsg: (action: string, data: any, timeout?: number) => Promise<IResponse>;
+    sendMsg: <TData = any>(action: string, data: any, timeout?: number) => Promise<ICommResponse<TData>>;
     registerEndpoint: (action: string, callback: (data: any) => any) => void;
     sendMsgAsync: (action: string, data: any, rid: string | null) => void;
 }
@@ -96,9 +91,9 @@ const initJupyterCommunication = (gid: string) => {
         }
     }
 
-    const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
+    const sendMsg = async<TData = any>(action: string, data: any, timeout: number = 30_000): Promise<ICommResponse<TData>> => {
         const rid = uuidv4();
-        const promise = new Promise<any>((resolve, reject) => {
+        const promise = new Promise<ICommResponse<TData>>((resolve, reject) => {
             setTimeout(() => {
                 sendMsgAsync(action, data, rid);
             }, 0);
@@ -211,7 +206,7 @@ const initHttpCommunication = async(gid: string, baseUrl: string) => {
     }
    url = "/" + url.replace(new RegExp(`/*`), "");
 
-    const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
+    const sendMsg = async<TData = any>(action: string, data: any, timeout: number = 30_000): Promise<ICommResponse<TData>> => {
         const timer = setTimeout(() => {
             raiseRequestError("communication timeout", 0);
             throw(new Error("get result timeout"));
@@ -275,9 +270,9 @@ const initAnywidgetCommunication = async(gid: string, model: import("@anywidget/
         onMessage(msg.data);
     });
 
-    const sendMsg = async(action: string, data: any, timeout: number = 30_000) => {
+    const sendMsg = async<TData = any>(action: string, data: any, timeout: number = 30_000): Promise<ICommResponse<TData>> => {
         const rid = uuidv4();
-        const promise = new Promise<any>((resolve, reject) => {
+        const promise = new Promise<ICommResponse<TData>>((resolve, reject) => {
             setTimeout(() => {
                 sendMsgAsync(action, data, rid);
             }, 0);
