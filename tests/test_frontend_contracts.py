@@ -55,6 +55,19 @@ def _comm_handler_endpoints(repo_root: Path) -> set[str]:
     raise AssertionError("Could not find CommHandler.register endpoints")
 
 
+def _comm_handler_register_calls(repo_root: Path) -> list[ast.Call]:
+    source = (repo_root / "pygwalker/services/comm_handler.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+
+    for class_node in module.body:
+        if not isinstance(class_node, ast.ClassDef) or class_node.name != "CommHandler":
+            continue
+        for method_node in class_node.body:
+            if isinstance(method_node, ast.FunctionDef) and method_node.name == "register":
+                return [node for node in ast.walk(method_node) if isinstance(node, ast.Call)]
+    raise AssertionError("Could not find CommHandler.register")
+
+
 def _typescript_interface_keys(repo_root: Path, interface_name: str) -> set[str]:
     source = (repo_root / "app/src/interfaces/index.ts").read_text(encoding="utf-8")
     match = re.search(rf"export interface {interface_name} \{{([\s\S]*?)\n\}}", source)
@@ -75,6 +88,25 @@ def test_frontend_comm_maps_cover_python_comm_handler_endpoints():
 
     assert _typescript_interface_keys(repo_root, "ICommRequestMap") == endpoints
     assert _typescript_interface_keys(repo_root, "ICommResponseMap") == endpoints
+
+
+def test_comm_handler_register_uses_typed_request_models():
+    repo_root = Path(__file__).resolve().parents[1]
+    raw_register_calls = []
+    untyped_request_calls = []
+
+    for call in _comm_handler_register_calls(repo_root):
+        if not isinstance(call.func, ast.Attribute):
+            continue
+        if call.func.attr == "register":
+            raw_register_calls.append(call.lineno)
+        if call.func.attr != "_register_request":
+            continue
+        if len(call.args) < 2 or not isinstance(call.args[1], ast.Name) or not call.args[1].id.endswith("Request"):
+            untyped_request_calls.append(call.lineno)
+
+    assert raw_register_calls == []
+    assert untyped_request_calls == []
 
 
 def test_frontend_dev_typescript_source_maps_are_enabled():
