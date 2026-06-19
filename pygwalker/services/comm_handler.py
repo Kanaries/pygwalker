@@ -12,9 +12,13 @@ import pandas as pd
 from pygwalker import __version__
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.communications.protocol import (
+    AskSpecRequest,
     BatchPayloadQueryRequest,
     BatchSqlQueryRequest,
+    ChatChartRequest,
+    OpenDesktopRequest,
     PayloadQueryRequest,
+    SaveChartRequest,
     SqlQueryRequest,
     UpdateSpecRequest,
     UploadSpecToCloudRequest,
@@ -86,7 +90,8 @@ class CommHandler:
         return {"visSpec": self.walker.vis_spec}
 
     def save_chart(self, data: Dict[str, Any]):
-        self.walker.spec_manager.save_chart_payload(data)
+        request = validate_request(SaveChartRequest, data)
+        self.walker.spec_manager.save_chart_payload(model_dump(request, by_alias=True))
 
     def update_spec(self, data: Dict[str, Any]):
         request = validate_request(UpdateSpecRequest, data)
@@ -136,12 +141,14 @@ class CommHandler:
         return {"datas": result}
 
     def get_spec_by_text(self, data: Dict[str, Any]):
+        request = validate_request(AskSpecRequest, data)
         callback = self.walker.other_props.get("custom_ask_callback", self.walker.cloud_service.get_spec_by_text)
-        return {"data": callback(data["metas"], data["query"])}
+        return {"data": callback(request.metas, request.query)}
 
     def get_chart_by_chats(self, data: Dict[str, Any]):
+        request = validate_request(ChatChartRequest, data)
         callback = self.walker.other_props.get("custom_chat_callback", self.walker.cloud_service.get_chart_by_chats)
-        return {"data": callback(data["metas"], data["chats"])}
+        return {"data": callback(request.metas, request.chats)}
 
     def export_dataframe_by_payload(self, data: Dict[str, Any]):
         request = validate_request(PayloadQueryRequest, data)
@@ -180,8 +187,9 @@ class CommHandler:
         return {"dashboardId": result["dashboard_id"], "datasetId": result["dataset_id"]}
 
     def open_in_desktop(self, data: Dict[str, Any]):
-        spec = json.dumps(data["spec"])
-        fields = json.dumps(data["fields"])
+        request = validate_request(OpenDesktopRequest, data)
+        spec = json.dumps(request.spec)
+        fields = json.dumps(request.fields)
         records = json.dumps(
             self.walker.data_parser.to_records(),
             default=lambda obj: obj.isoformat() if hasattr(obj, "isoformat") else str(obj),

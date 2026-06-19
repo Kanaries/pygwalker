@@ -1,4 +1,4 @@
-import type { IRow, IMutField, IDataQueryPayload } from '@kanaries/graphic-walker/interfaces'
+import type { IRow, IMutField, IDataQueryPayload, IViewField, IChatMessage } from '@kanaries/graphic-walker/interfaces'
 import type { IDarkMode, IThemeKey, IComputationFunction } from '@kanaries/graphic-walker/interfaces';
 
 export interface IAppProps {
@@ -65,4 +65,37 @@ export interface ICommUpdateSpecRequest {
 export interface ICommUploadSpecToCloudRequest {
     fileName: string;
     newToken?: string;
+}
+
+export interface ICommChartImageRequest {
+    rowIndex: number;
+    colIndex: number;
+    data: string;
+    height: number;
+    width: number;
+    canvasHeight: number;
+    canvasWidth: number;
+}
+
+export interface ICommSaveChartRequest {
+    charts: ICommChartImageRequest[];
+    singleChart: string;
+    nRows: number;
+    nCols: number;
+    title: string;
+}
+
+export interface ICommAskSpecRequest {
+    metas: IViewField[];
+    query: string;
+}
+
+export interface ICommChatChartRequest {
+    metas: IViewField[];
+    chats: IChatMessage[];
+}
+
+export interface ICommOpenDesktopRequest {
+    spec: any[];
+    fields: any[];
 }

@@ -616,6 +616,56 @@ def test_pygwalker_upload_spec_to_cloud_callback_validates_payload(monkeypatch):
     assert "fileName" in response["message"] or "file_name" in response["message"]
 
 
+def test_pygwalker_save_chart_callback_validates_and_stores_chart(monkeypatch):
+    walker = _make_walker(monkeypatch, use_save_tool=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("save_chart", _chart_payload("Recovered chart"))
+
+    assert response == {"code": 0, "data": None, "message": "success"}
+    assert walker.chart_list == ["Recovered chart"]
+    assert walker._get_chart_by_name("Recovered chart").single_chart == "data:image/png;base64,abc"
+
+
+def test_pygwalker_save_chart_callback_validates_payload(monkeypatch):
+    walker = _make_walker(monkeypatch, use_save_tool=True)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("save_chart", {"title": "Broken chart"})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "singleChart" in response["message"] or "single_chart" in response["message"]
+
+
+def test_pygwalker_cloud_text_callbacks_validate_payloads(monkeypatch):
+    ask_calls = []
+    chat_calls = []
+    walker = _make_walker(
+        monkeypatch,
+        show_cloud_tool=True,
+        custom_ask_callback=lambda metas, query: ask_calls.append((metas, query)) or {"chart": "bar"},
+        custom_chat_callback=lambda metas, chats: chat_calls.append((metas, chats)) or {"chart": "line"},
+    )
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    ask_response = comm._receive_msg("get_spec_by_text", {"metas": [{"fid": "city"}], "query": "show city"})
+    chat_response = comm._receive_msg(
+        "get_chart_by_chats",
+        {"metas": [{"fid": "city"}], "chats": [{"role": "user", "content": "show city"}]},
+    )
+    invalid_response = comm._receive_msg("get_spec_by_text", {"metas": []})
+
+    assert ask_response == {"code": 0, "data": {"data": {"chart": "bar"}}, "message": "success"}
+    assert chat_response == {"code": 0, "data": {"data": {"chart": "line"}}, "message": "success"}
+    assert ask_calls == [([{"fid": "city"}], "show city")]
+    assert chat_calls == [([{"fid": "city"}], [{"role": "user", "content": "show city"}])]
+    assert invalid_response["code"] == ErrorCode.INVALID_REQUEST
+    assert "query" in invalid_response["message"]
+
+
 def test_pygwalker_open_in_desktop_callback_encodes_payload(monkeypatch):
     links = []
     monkeypatch.setattr(comm_handler_module.CommHandler, "_open_protocol", lambda _self, link: links.append(link))
@@ -647,6 +697,20 @@ def test_pygwalker_open_in_desktop_callback_encodes_payload(monkeypatch):
         {"city": "London", "value": 1},
         {"city": "Tokyo", "value": 2},
     ]
+
+
+def test_pygwalker_open_in_desktop_callback_validates_payload(monkeypatch):
+    links = []
+    monkeypatch.setattr(comm_handler_module.CommHandler, "_open_protocol", lambda _self, link: links.append(link))
+    walker = _make_walker(monkeypatch)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("open_in_desktop", {"spec": []})
+
+    assert response["code"] == ErrorCode.INVALID_REQUEST
+    assert "fields" in response["message"]
+    assert links == []
 
 
 @pytest.mark.parametrize(

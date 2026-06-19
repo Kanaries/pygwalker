@@ -45,3 +45,36 @@ class UpdateSpecRequest(BaseModel):
 class UploadSpecToCloudRequest(BaseModel):
     file_name: str = Field(..., alias="fileName")
     new_token: str = Field("", alias="newToken")
+
+
+class ChartImageRequest(BaseModel):
+    row_index: int = Field(..., alias="rowIndex")
+    col_index: int = Field(..., alias="colIndex")
+    data: str
+    height: int
+    width: int
+    canvas_height: int = Field(..., alias="canvasHeight")
+    canvas_width: int = Field(..., alias="canvasWidth")
+
+
+class SaveChartRequest(BaseModel):
+    charts: List[ChartImageRequest]
+    single_chart: str = Field(..., alias="singleChart")
+    n_rows: int = Field(..., alias="nRows")
+    n_cols: int = Field(..., alias="nCols")
+    title: str
+
+
+class AskSpecRequest(BaseModel):
+    metas: List[Dict[str, Any]]
+    query: str
+
+
+class ChatChartRequest(BaseModel):
+    metas: List[Dict[str, Any]]
+    chats: List[Dict[str, Any]]
+
+
+class OpenDesktopRequest(BaseModel):
+    spec: List[Dict[str, Any]]
+    fields: List[Dict[str, Any]]
