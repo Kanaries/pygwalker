@@ -177,6 +177,7 @@ You can also create a reusable `Walker` object and choose where to render it:
 walker = pyg.Walker(df, spec_path="./chart_meta_0.json", computation="browser")
 walker.show()       # auto-detects notebook or script mode
 html = walker.to_html()
+html = pyg.to_html(walker)
 ```
 
 ### Example in local notebook

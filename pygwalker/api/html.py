@@ -16,6 +16,59 @@ from pygwalker.utils.spec import resolve_spec_input
 logger = logging.getLogger(__name__)
 
 
+def _is_public_walker(value: Any) -> bool:
+    from pygwalker.api.walker import Walker
+
+    return isinstance(value, Walker)
+
+
+def _to_html_from_walker(
+    walker,
+    gid: Union[int, str] = None,
+    *,
+    spec: str = "",
+    spec_path: Optional[str] = None,
+    field_specs: Optional[List[FieldSpec]] = None,
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
+    default_tab: Literal["data", "vis"] = "vis",
+    computation: Optional[IComputation] = None,
+    **kwargs,
+) -> str:
+    width = kwargs.pop("width", None)
+    height = kwargs.pop("height", None)
+    conflicting_options = []
+    if gid is not None:
+        conflicting_options.append("gid")
+    if spec not in ("", None):
+        conflicting_options.append("spec")
+    if spec_path is not None:
+        conflicting_options.append("spec_path")
+    if field_specs is not None:
+        conflicting_options.append("field_specs")
+    if theme_key != "g2":
+        conflicting_options.append("theme_key")
+    if appearance != "media":
+        conflicting_options.append("appearance")
+    if default_tab != "vis":
+        conflicting_options.append("default_tab")
+    if computation is not None:
+        conflicting_options.append("computation")
+    for name in ("kernel_computation", "cloud_computation", "use_kernel_calc"):
+        if name in kwargs:
+            conflicting_options.append(name)
+            kwargs.pop(name)
+    if kwargs:
+        conflicting_options.extend(sorted(kwargs))
+    if conflicting_options:
+        params = ", ".join(conflicting_options)
+        raise ValueError(
+            f"pygwalker.to_html() received a Walker object and cannot apply construction parameters: {params}. "
+            "Pass those options when creating pygwalker.Walker instead."
+        )
+    return walker.to_html(width, height)
+
+
 def _pop_static_html_computation_kwargs(kwargs: Dict[str, Any], computation: Optional[IComputation]) -> None:
     if computation is not None and computation not in ("auto", "browser", "kernel", "cloud"):
         raise ValueError("`computation` must be one of 'auto', 'browser', 'kernel', or 'cloud'.")
@@ -127,6 +180,20 @@ def to_html(
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         - computation (Literal["auto", "browser"]): static HTML always uses browser computation.
     """
+    if _is_public_walker(df):
+        return _to_html_from_walker(
+            df,
+            gid,
+            spec=spec,
+            spec_path=spec_path,
+            field_specs=field_specs,
+            theme_key=theme_key,
+            appearance=appearance,
+            default_tab=default_tab,
+            computation=computation,
+            **kwargs,
+        )
+
     return _to_html(
         df,
         gid,

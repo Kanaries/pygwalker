@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 import pygwalker
+from pygwalker.api import html
 from pygwalker.api import walker as walker_api
 
 
@@ -112,6 +113,33 @@ def test_walker_static_html_rejects_live_computation(monkeypatch, kwargs):
 
     with pytest.raises(ValueError, match="Static HTML export does not support"):
         walker.to_html()
+
+
+def test_to_html_adapter_accepts_walker_object(monkeypatch):
+    monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
+
+    walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+    rendered = html.to_html(walker, width="640px", height="480px")
+
+    assert rendered == "iframe:640px:480px"
+
+
+def test_to_html_adapter_rejects_rebuilding_walker_object(monkeypatch):
+    monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
+
+    walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: spec_path"):
+        html.to_html(walker, spec_path="other.json")
+
+
+def test_to_html_adapter_preserves_walker_live_computation_error(monkeypatch):
+    monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
+
+    walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="kernel")
+
+    with pytest.raises(ValueError, match="Static HTML export does not support kernel computation"):
+        html.to_html(walker)
 
 
 def test_walker_to_streamlit_reuses_constructor_options(monkeypatch):
