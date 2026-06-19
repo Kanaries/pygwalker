@@ -32,3 +32,22 @@ def test_auto_ci_runs_notebooks_through_pytest_nbmake():
 
     assert "python -m pytest --nbmake --nbmake-kernel=python *.ipynb" in workflow
     assert "jupyter nbconvert --execute" not in workflow
+
+
+def test_publish_workflow_packages_fresh_frontend_bundle():
+    workflow = (REPO_ROOT / ".github/workflows/publish.yml").read_text(encoding="utf-8")
+
+    assert "node-version: [22.x]" in workflow
+    assert "./scripts/compile.sh" in workflow
+    assert "name: pygwalker-app" in workflow
+    assert "path: ./pygwalker/templates/dist/*" in workflow
+    assert "build-py:\n    needs: [build-js]" in workflow
+    assert "actions/download-artifact@v4" in workflow
+    assert "path: ./pygwalker/templates/dist" in workflow
+    assert "python -m build ." in workflow
+    assert "pypa/gh-action-pypi-publish" in workflow
+
+    build_py_start = workflow.index("  build-py:")
+    download_dist_start = workflow.index("uses: actions/download-artifact@v4", build_py_start)
+    build_package_start = workflow.index("python -m build .", build_py_start)
+    assert download_dist_start < build_package_start
