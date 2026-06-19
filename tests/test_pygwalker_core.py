@@ -1694,3 +1694,23 @@ def test_public_walk_routes_pygwalker_to_environment_backend(
     if expected_backend == "webserver":
         assert calls[0][2]["auto_open"] is True
         assert calls[0][2]["auto_shutdown"] is True
+
+
+def test_public_walk_forwards_legacy_kernel_flag_to_webserver(monkeypatch):
+    calls = []
+
+    def fake_webserver_walk(*args, **kwargs):
+        calls.append(("webserver", args, kwargs))
+        return "webserver-walker"
+
+    monkeypatch.setattr(adapter, "get_current_env", lambda: "script")
+    monkeypatch.setattr(adapter.webserver, "walk", fake_webserver_walk)
+
+    result = adapter.walk(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="entry",
+        use_kernel_calc=True,
+    )
+
+    assert result == "webserver-walker"
+    assert calls[0][2]["use_kernel_calc"] is True

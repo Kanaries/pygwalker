@@ -537,6 +537,30 @@ def test_webserver_walk_builds_walker_and_starts_server(monkeypatch):
     assert starts == [(walker, 8765, True, True)]
 
 
+def test_webserver_walk_resolves_legacy_use_kernel_calc(monkeypatch):
+    from pygwalker.api import webserver
+
+    _reset_fake_walker()
+    monkeypatch.setattr(webserver, "PygWalker", FakeWalker)
+    starts = []
+    monkeypatch.setattr(
+        webserver,
+        "_start_server",
+        lambda walker, port, *, auto_open, auto_shutdown: starts.append((walker, port, auto_open, auto_shutdown)),
+    )
+
+    with pytest.warns(DeprecationWarning, match="use_kernel_calc"):
+        webserver.walk(
+            pd.DataFrame([{"city": "London"}]),
+            use_kernel_calc=True,
+        )
+
+    walker = FakeWalker.instances[0]
+    assert walker.kwargs["kernel_computation"] is True
+    assert walker.kwargs["cloud_computation"] is False
+    assert starts == [(walker, None, False, False)]
+
+
 def test_webserver_walk_accepts_public_walker_object(monkeypatch):
     from pygwalker.api import webserver
     from pygwalker.api import walker as walker_api
@@ -602,6 +626,18 @@ def test_webserver_walk_rejects_show_cloud_tool_true_alias_for_public_walker(mon
 
     with pytest.raises(ValueError, match="cannot apply construction parameters: show_cloud_tool"):
         webserver.walk(public_walker, show_cloud_tool=1)
+
+
+def test_webserver_walk_rejects_legacy_kernel_flag_for_public_walker(monkeypatch):
+    from pygwalker.api import webserver
+    from pygwalker.api import walker as walker_api
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+
+    with pytest.raises(ValueError, match="cannot apply construction parameters: use_kernel_calc"):
+        webserver.walk(public_walker, use_kernel_calc=True)
 
 
 def test_webserver_start_server_disables_preview(monkeypatch):

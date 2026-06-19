@@ -46,6 +46,7 @@ def walk(
         - spec (str): chart config data. config id, json, remote file url
         - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
+        - use_kernel_calc(bool): Deprecated alias for kernel computation. Prefer computation="kernel".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -82,6 +83,7 @@ def walk(
         spec=spec,
         spec_path=spec_path,
         computation=computation,
+        use_kernel_calc=use_kernel_calc,
         kernel_computation=kernel_computation,
         cloud_computation=cloud_computation,
         show_cloud_tool=show_cloud_tool,

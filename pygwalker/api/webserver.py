@@ -125,6 +125,7 @@ def _reject_walker_construction_params(
     spec: str,
     spec_path: Optional[str],
     computation: Optional[IComputation],
+    use_kernel_calc: Optional[bool],
     kernel_computation: Optional[bool],
     cloud_computation: bool,
     show_cloud_tool: bool,
@@ -141,6 +142,7 @@ def _reject_walker_construction_params(
             "spec": spec,
             "spec_path": spec_path,
             "computation": computation,
+            "use_kernel_calc": use_kernel_calc,
             "kernel_computation": kernel_computation,
             "cloud_computation": cloud_computation,
             "show_cloud_tool": show_cloud_tool,
@@ -155,6 +157,7 @@ def _reject_walker_construction_params(
             "spec": "",
             "spec_path": None,
             "computation": None,
+            "use_kernel_calc": None,
             "kernel_computation": None,
             "cloud_computation": False,
             "show_cloud_tool": True,
@@ -230,6 +233,7 @@ def walk(
     spec: str = "",
     spec_path: Optional[str] = None,
     computation: Optional[IComputation] = None,
+    use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
     cloud_computation: bool = False,
     show_cloud_tool: bool = True,
@@ -254,6 +258,7 @@ def walk(
         - spec (str): chart config data. config id, json, remote file url
         - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
+        - use_kernel_calc(bool): Deprecated alias for kernel computation. Prefer computation="kernel".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -273,6 +278,7 @@ def walk(
             spec=spec,
             spec_path=spec_path,
             computation=computation,
+            use_kernel_calc=use_kernel_calc,
             kernel_computation=kernel_computation,
             cloud_computation=cloud_computation,
             show_cloud_tool=show_cloud_tool,
@@ -290,6 +296,7 @@ def walk(
     resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
         dataset,
         computation=computation,
+        use_kernel_calc=use_kernel_calc,
         kernel_computation=kernel_computation,
         cloud_computation=cloud_computation,
     )
