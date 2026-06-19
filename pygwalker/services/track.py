@@ -4,13 +4,18 @@ import segment.analytics as analytics
 import kanaries_track
 
 from pygwalker.services.global_var import GlobalVarManager
-from pygwalker.services.config import get_local_user_id
+from pygwalker.services.config import get_local_user_id, should_show_privacy_notice
 
 analytics.write_key = "z58N15R8LShkpUbBSt1ZjdDSdSEF5VpR"
 kanaries_public_key = "tk-6572d7b34a03d7fcf6cf0c86-cOzZyr6xqd"
 kanaries_track.config.auth_token = kanaries_public_key
 kanaries_track.config.proxies = {}
 kanaries_track.config.max_retries = 2
+
+PRIVACY_NOTICE = (
+    "PyGWalker telemetry is enabled. It only sends feature-usage events, not your analyzed data. "
+    "To opt out, run `pygwalker config --set privacy=update-only` or `pygwalker config --set privacy=offline`."
+)
 
 
 # pylint: disable=broad-exception-caught
@@ -32,6 +37,9 @@ def track_event(event: str, properties: Optional[Dict[str, Any]] = None):
     """
     if GlobalVarManager.privacy == "events":
         try:
+            if should_show_privacy_notice():
+                print(PRIVACY_NOTICE, flush=True)
+            properties = properties or {}
             analytics.track(user_id=get_local_user_id(), event=event, properties=properties)
             kanaries_track.track({**properties, "user_id": get_local_user_id()})
         except Exception:

@@ -16,6 +16,7 @@ CONFIG_KEYS = list(DEFAULT_CONFIG.keys())
 APP_DIR = user_config_dir("pygwalker")
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
 USER_CONFIG_PATH = os.path.join(APP_DIR, "user_config.json")
+PRIVACY_NOTICE_PATH = os.path.join(APP_DIR, "privacy_notice_shown")
 
 
 class ConfigItem:
@@ -136,6 +137,19 @@ def get_config_dict() -> Dict[str, str]:
 def get_all_config_str() -> str:
     config = _read_and_create_file(CONFIG_PATH, DEFAULT_CONFIG)
     return json.dumps(config, indent=4)
+
+
+def should_show_privacy_notice() -> bool:
+    """Return True once per user config directory for the telemetry opt-out notice."""
+    try:
+        if os.path.exists(PRIVACY_NOTICE_PATH):
+            return False
+        os.makedirs(os.path.dirname(PRIVACY_NOTICE_PATH), exist_ok=True)
+        with open(PRIVACY_NOTICE_PATH, "w", encoding="utf-8") as f:
+            f.write("shown")
+        return True
+    except Exception:
+        return False
 
 
 @lru_cache(maxsize=1)
