@@ -1,5 +1,8 @@
+import base64
 import json
 from types import SimpleNamespace
+import urllib.parse
+import zlib
 
 import pandas as pd
 import pytest
@@ -10,6 +13,7 @@ from pygwalker.api import pygwalker as pygwalker_module
 from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.errors import ErrorCode
+from pygwalker.services import comm_handler as comm_handler_module
 from pygwalker.services.global_var import GlobalVarManager
 
 
@@ -366,6 +370,108 @@ def test_pygwalker_export_dataframe_callback_stores_last_dataframe(monkeypatch):
         assert GlobalVarManager.last_exported_dataframe is walker.last_exported_dataframe
     finally:
         GlobalVarManager.last_exported_dataframe = previous_exported_dataframe
+
+
+def test_pygwalker_export_dataframe_by_payload_callback_stores_last_dataframe(monkeypatch):
+    previous_exported_dataframe = GlobalVarManager.last_exported_dataframe
+    walker = _make_walker(monkeypatch, is_export_dataframe=True)
+    calls = []
+    walker.data_parser = SimpleNamespace(
+        get_datas_by_payload=lambda payload: calls.append(payload) or [{"city": "London", "value": 1}]
+    )
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    try:
+        response = comm._receive_msg(
+            "export_dataframe_by_payload",
+            {"payload": {"workflow": [{"type": "view"}]}},
+        )
+
+        assert response == {"code": 0, "data": None, "message": "success"}
+        assert calls == [{"workflow": [{"type": "view"}]}]
+        assert walker.last_exported_dataframe.to_dict("records") == [{"city": "London", "value": 1}]
+        assert GlobalVarManager.last_exported_dataframe is walker.last_exported_dataframe
+    finally:
+        GlobalVarManager.last_exported_dataframe = previous_exported_dataframe
+
+
+def test_pygwalker_batch_sql_callback_returns_records(monkeypatch):
+    walker = _make_walker(monkeypatch, kernel_computation=True)
+    calls = []
+    walker.data_parser = SimpleNamespace(
+        batch_get_datas_by_sql=lambda query_list: calls.append(query_list) or [[{"total": 3}]]
+    )
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("batch_get_datas_by_sql", {"queryList": ["SELECT 1"]})
+
+    assert response == {"code": 0, "data": {"datas": [[{"total": 3}]]}, "message": "success"}
+    assert calls == [["SELECT 1"]]
+
+
+def test_pygwalker_upload_spec_to_cloud_callback_writes_workspace_path(monkeypatch):
+    walker = _make_walker(monkeypatch, use_save_tool=True)
+    writes = []
+    walker.cloud_service = SimpleNamespace(
+        get_kanaries_user_info=lambda: {"workspaceName": "workspace"},
+        write_config_to_cloud=lambda path, data: writes.append((path, json.loads(data))),
+    )
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg("upload_spec_to_cloud", {"newToken": "", "fileName": "chart.json"})
+
+    assert response == {
+        "code": 0,
+        "data": {"specFilePath": "workspace/chart.json"},
+        "message": "success",
+    }
+    assert writes == [
+        (
+            "workspace/chart.json",
+            {
+                "config": [],
+                "chart_map": {},
+                "workflow_list": [],
+                "version": __version__,
+            },
+        )
+    ]
+
+
+def test_pygwalker_open_in_desktop_callback_encodes_payload(monkeypatch):
+    links = []
+    monkeypatch.setattr(comm_handler_module.CommHandler, "_open_protocol", lambda _self, link: links.append(link))
+    walker = _make_walker(monkeypatch)
+    comm = BaseCommunication("core")
+    walker._init_callback(comm)
+
+    response = comm._receive_msg(
+        "open_in_desktop",
+        {
+            "spec": [{"name": "Chart"}],
+            "fields": [{"fid": "city"}],
+        },
+    )
+
+    assert response == {"code": 0, "data": None, "message": "success"}
+    parsed = urllib.parse.urlparse(links[0])
+    query = urllib.parse.parse_qs(parsed.query)
+
+    def _decode_query_value(name):
+        compressed = base64.b64decode(urllib.parse.unquote(query[name][0]))
+        return json.loads(zlib.decompress(compressed).decode())
+
+    assert parsed.scheme == "gw"
+    assert parsed.netloc == "import"
+    assert _decode_query_value("spec") == [{"name": "Chart"}]
+    assert _decode_query_value("fields") == [{"fid": "city"}]
+    assert _decode_query_value("data") == [
+        {"city": "London", "value": 1},
+        {"city": "Tokyo", "value": 2},
+    ]
 
 
 @pytest.mark.parametrize(
