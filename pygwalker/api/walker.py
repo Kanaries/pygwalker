@@ -1,4 +1,5 @@
 from typing import Any, List, Optional, Union
+import warnings
 
 from typing_extensions import Literal
 
@@ -28,6 +29,27 @@ IWalkerShowEnv = Literal[
     "JupyterConvert",
     "JupyterPreview",
 ]
+
+
+_LEGACY_SHOW_ENVS = {
+    "Jupyter": "jupyter-anywidget",
+    "JupyterWidget": "jupyter-anywidget",
+    "jupyter-inline": "jupyter-anywidget",
+    "jupyter-widget": "jupyter-anywidget",
+}
+
+
+def _warn_legacy_show_env(env: str) -> None:
+    replacement = _LEGACY_SHOW_ENVS.get(env)
+    if replacement is None:
+        return
+
+    warnings.warn(
+        f"`Walker.show(env='{env}')` uses a legacy Jupyter transport and is deprecated. "
+        f"Use `Walker.show(env='{replacement}')` or omit `env` to use the anywidget transport.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
 
 
 class Walker:
@@ -129,6 +151,9 @@ class Walker:
             "JupyterConvert": "jupyter-convert",
             "JupyterPreview": "jupyter-preview",
         }
+        if env != "auto":
+            _warn_legacy_show_env(env)
+
         resolved_env = get_current_env() if env == "auto" else env_aliases.get(env, env)
         if resolved_env == "jupyter":
             resolved_env = "jupyter-anywidget"

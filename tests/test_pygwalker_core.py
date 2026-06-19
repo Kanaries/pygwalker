@@ -1256,6 +1256,38 @@ def test_jupyter_walk_accepts_public_walker_object(monkeypatch):
     assert display_calls == ["public-jupyter"]
 
 
+def test_jupyter_walk_public_walker_legacy_widget_env_warns_once(monkeypatch):
+    from pygwalker.api.walker import Walker
+
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+
+    display_calls = []
+    monkeypatch.setattr(
+        PygWalker,
+        "display_on_jupyter_use_widgets",
+        lambda self, iframe_width=None, iframe_height=None: display_calls.append(
+            (self.gid, iframe_width, iframe_height)
+        ),
+    )
+
+    public_walker = Walker(
+        pd.DataFrame([{"city": "London", "value": 1}]),
+        gid="public-legacy-widget",
+        computation="browser",
+    )
+
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport") as warnings:
+        result = jupyter.walk(public_walker, env="JupyterWidget")
+
+    assert len(warnings) == 1
+    assert result is public_walker.core
+    assert display_calls == [("public-legacy-widget", None, None)]
+
+
 def test_jupyter_walk_legacy_widget_env_uses_ipywidgets_transport(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
     monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
@@ -1272,10 +1304,32 @@ def test_jupyter_walk_legacy_widget_env_uses_ipywidgets_transport(monkeypatch):
         ),
     )
 
-    walker = jupyter.walk(pd.DataFrame([{"city": "London", "value": 1}]), gid="legacy-widget", env="JupyterWidget")
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport"):
+        walker = jupyter.walk(pd.DataFrame([{"city": "London", "value": 1}]), gid="legacy-widget", env="JupyterWidget")
 
     assert walker.gid == "legacy-widget"
     assert display_calls == [("legacy-widget", None, None)]
+
+
+def test_jupyter_walk_legacy_inline_env_warns_and_uses_inline_transport(monkeypatch):
+    monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
+    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+
+    display_calls = []
+    monkeypatch.setattr(
+        PygWalker,
+        "display_on_jupyter",
+        lambda self: display_calls.append(self.gid),
+    )
+
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport"):
+        walker = jupyter.walk(pd.DataFrame([{"city": "London", "value": 1}]), gid="legacy-inline", env="Jupyter")
+
+    assert walker.gid == "legacy-inline"
+    assert display_calls == ["legacy-inline"]
 
 
 def test_display_on_jupyter_anywidget_sends_browser_data(monkeypatch):

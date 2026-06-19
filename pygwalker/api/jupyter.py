@@ -1,5 +1,6 @@
 from typing import Union, List, Optional, TYPE_CHECKING
 import inspect
+import warnings
 
 from typing_extensions import Literal
 
@@ -21,6 +22,36 @@ from pygwalker.api._walker_reuse import (
 
 if TYPE_CHECKING:
     from pygwalker.api.walker import Walker
+
+
+_LEGACY_JUPYTER_ENVS = {
+    "Jupyter": "JupyterAnywidget",
+    "JupyterWidget": "JupyterAnywidget",
+}
+_DELEGATED_WALKER_SHOW_WARNING_PATTERN = r"`Walker\.show\(env=.*legacy Jupyter transport"
+
+
+def _warn_legacy_jupyter_env(env: str) -> None:
+    replacement = _LEGACY_JUPYTER_ENVS.get(env)
+    if replacement is None:
+        return
+
+    warnings.warn(
+        f"`env='{env}'` uses a legacy Jupyter transport and is deprecated. "
+        f"Use `env='{replacement}'` or omit `env` to use the anywidget transport.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+
+
+def _show_public_walker(dataset: "Walker", env: str) -> None:
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=_DELEGATED_WALKER_SHOW_WARNING_PATTERN,
+            category=DeprecationWarning,
+        )
+        dataset.show(env)
 
 
 def _reject_walker_construction_params(
@@ -129,6 +160,8 @@ def walk(
     elif check_convert():
         env = "JupyterConvert"
 
+    _warn_legacy_jupyter_env(env)
+
     if is_public_walker(dataset):
         _reject_walker_construction_params(
             gid=gid,
@@ -146,7 +179,7 @@ def walk(
             default_tab=default_tab,
             kwargs=kwargs,
         )
-        dataset.show(env)
+        _show_public_walker(dataset, env)
         return dataset.core
 
     if field_specs is None:
