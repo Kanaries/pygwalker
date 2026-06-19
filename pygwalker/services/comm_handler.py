@@ -1,10 +1,4 @@
-import base64
 import json
-import os
-import subprocess
-import sys
-import urllib.parse
-import zlib
 from typing import Any, Callable, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
 import pandas as pd
@@ -37,6 +31,7 @@ from pygwalker.communications.protocol import (
     validate_request,
 )
 from pygwalker.services.config import set_config
+from pygwalker.services.desktop_import import DesktopImportService
 from pygwalker.services.global_var import GlobalVarManager
 from pygwalker.services.preview_image import PreviewImageTool
 from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets
@@ -58,11 +53,13 @@ class CommHandler:
         comm: BaseCommunication,
         preview_tool: Optional[PreviewImageTool] = None,
         upload_tool_cls: Callable[[BaseCommunication], BatchUploadDatasToolOnWidgets] = BatchUploadDatasToolOnWidgets,
+        desktop_import: Optional[DesktopImportService] = None,
     ):
         self.walker = walker
         self.comm = comm
         self.preview_tool = preview_tool
         self.upload_tool = upload_tool_cls(comm)
+        self.desktop_import = desktop_import or DesktopImportService()
 
     def register(self) -> None:
         self.walker.comm = self.comm
@@ -212,28 +209,9 @@ class CommHandler:
         )
 
     def open_in_desktop(self, request: OpenDesktopRequest):
-        spec = json.dumps(request.spec)
-        fields = json.dumps(request.fields)
-        records = json.dumps(
-            self.walker.data_parser.to_records(),
-            default=lambda obj: obj.isoformat() if hasattr(obj, "isoformat") else str(obj),
-        )
-        self._open_protocol(
-            f"gw://import?data={self._compress_data(records)}&spec={self._compress_data(spec)}&fields={self._compress_data(fields)}"
+        self.desktop_import.import_to_desktop(
+            spec=request.spec,
+            fields=request.fields,
+            records=self.walker.data_parser.to_records(),
         )
         return dump_response(EmptyResponse())
-
-    @staticmethod
-    def _open_protocol(link: str):
-        if sys.platform == "win32":
-            os.startfile(link)
-        else:
-            opener = "open" if sys.platform == "darwin" else "xdg-open"
-            subprocess.call([opener, link])
-
-    @staticmethod
-    def _compress_data(data: str) -> str:
-        compress = zlib.compressobj(zlib.Z_BEST_COMPRESSION, zlib.DEFLATED, 15, 8, 0)
-        compressed_data = compress.compress(data.encode())
-        compressed_data += compress.flush()
-        return urllib.parse.quote(base64.b64encode(compressed_data).decode())

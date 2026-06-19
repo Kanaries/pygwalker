@@ -15,7 +15,7 @@ from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.errors import ErrorCode
 from pygwalker.services import chart_export as chart_export_module
-from pygwalker.services import comm_handler as comm_handler_module
+from pygwalker.services import desktop_import as desktop_import_module
 from pygwalker.services import jupyter_display as jupyter_display_module
 from pygwalker.services import props_tracker as props_tracker_module
 from pygwalker.services import render_manager as render_manager_module
@@ -1015,7 +1015,11 @@ def test_pygwalker_upload_cloud_dashboard_callback_validates_and_uploads(monkeyp
 
 def test_pygwalker_open_in_desktop_callback_encodes_payload(monkeypatch):
     links = []
-    monkeypatch.setattr(comm_handler_module.CommHandler, "_open_protocol", lambda _self, link: links.append(link))
+    monkeypatch.setattr(
+        desktop_import_module.DesktopImportService,
+        "_open_platform_link",
+        staticmethod(lambda link: links.append(link)),
+    )
     walker = _make_walker(monkeypatch)
     comm = BaseCommunication("core")
     walker._init_callback(comm)
@@ -1048,7 +1052,11 @@ def test_pygwalker_open_in_desktop_callback_encodes_payload(monkeypatch):
 
 def test_pygwalker_open_in_desktop_callback_validates_payload(monkeypatch):
     links = []
-    monkeypatch.setattr(comm_handler_module.CommHandler, "_open_protocol", lambda _self, link: links.append(link))
+    monkeypatch.setattr(
+        desktop_import_module.DesktopImportService,
+        "_open_platform_link",
+        staticmethod(lambda link: links.append(link)),
+    )
     walker = _make_walker(monkeypatch)
     comm = BaseCommunication("core")
     walker._init_callback(comm)
