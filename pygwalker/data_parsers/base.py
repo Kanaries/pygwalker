@@ -7,7 +7,13 @@ import abc
 import io
 
 from pydantic import BaseModel
-import duckdb
+
+try:
+    import duckdb
+except ModuleNotFoundError as exc:  # pragma: no cover - exercised in subprocess import tests.
+    from pygwalker.utils.dependencies import raise_missing_duckdb
+
+    raise_missing_duckdb(exc)
 import arrow
 import pytz
 

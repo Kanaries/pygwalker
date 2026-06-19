@@ -1,6 +1,11 @@
 from typing import Any, Dict, Optional
 
-from duckdb import ParserException
+try:
+    from duckdb import ParserException
+except ModuleNotFoundError as exc:  # pragma: no cover - exercised in subprocess import tests.
+    from pygwalker.utils.dependencies import raise_missing_duckdb
+
+    raise_missing_duckdb(exc)
 
 from pygwalker.services.preview_image import render_gw_chart_preview_html, render_gw_preview_html
 from pygwalker.services.render import render_gwalker_html, render_gwalker_iframe

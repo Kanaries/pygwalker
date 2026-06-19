@@ -1,4 +1,6 @@
 import os.path
+import subprocess
+import sys
 
 from sqlalchemy import create_engine
 import pandas as pd
@@ -58,6 +60,42 @@ def test_get_parser_reports_supported_inputs_for_unsupported_dataset():
     assert "pandas.DataFrame" in message
     assert "pygwalker.data_parsers.database_parser.Connector" in message
     assert "cloud dataset id string" in message
+
+
+@pytest.mark.parametrize(
+    "module_name",
+    [
+        "pygwalker.data_parsers.base",
+        "pygwalker.services.render_manager",
+    ],
+)
+def test_duckdb_import_failure_has_actionable_message(module_name):
+    repo_root = os.path.dirname(os.path.dirname(__file__))
+    code = f"""
+import builtins
+import importlib
+
+original_import = builtins.__import__
+
+def blocked_import(name, *args, **kwargs):
+    if name == "duckdb" or name.startswith("duckdb."):
+        raise ModuleNotFoundError("No module named 'duckdb'")
+    return original_import(name, *args, **kwargs)
+
+builtins.__import__ = blocked_import
+importlib.import_module({module_name!r})
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=repo_root,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode != 0
+    assert "PyGWalker requires duckdb for dataframe querying" in result.stderr
+    assert "pip install duckdb" in result.stderr
 
 
 try:
