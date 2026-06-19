@@ -2,7 +2,6 @@ from typing import List, Dict, Any, Optional, Union
 import urllib.request
 
 from typing_extensions import Literal
-import ipywidgets
 import pandas as pd
 
 from pygwalker._typing import DataFrame, IAppearance, IThemeKey
@@ -11,16 +10,16 @@ from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import rand_str
 from pygwalker.services.global_var import GlobalVarManager
-from pygwalker.services.render import get_max_limited_datas, render_iframe_messages_html
 from pygwalker.services.preview_image import (
     PreviewImageTool,
     ChartData,
     render_gw_chart_preview_html,
 )
-from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets, BatchUploadDatasToolOnJupyter
+from pygwalker.services.upload_data import BatchUploadDatasToolOnWidgets
 from pygwalker.services.config import get_local_user_id
 from pygwalker.services.comm_handler import CommHandler
 from pygwalker.services.data_bridge import DataBridge
+from pygwalker.services.jupyter_display import JupyterDisplayManager
 from pygwalker.services.props_builder import PropsBuilder
 from pygwalker.services.render_manager import RenderManager
 from pygwalker.services.spec_manager import SpecManager
@@ -28,8 +27,7 @@ from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
 from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
-from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
-from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
+from pygwalker.communications.hacker_comm import BaseCommunication
 
 
 class PygWalker:
@@ -90,6 +88,7 @@ class PygWalker:
         self.comm = None
         self.props_builder = PropsBuilder(self, lambda: get_local_user_id())
         self.render_manager = RenderManager(self)
+        self.jupyter_display_manager = JupyterDisplayManager(self, lambda content: display_html(content))
         check_update()
         # Temporarily adapt to pandas import module bug
         if self.kernel_computation:
@@ -229,9 +228,7 @@ class PygWalker:
         """
         Display on jupyter-nbconvert html.
         """
-        props = self._get_props("jupyter")
-        iframe_html = self._get_render_iframe(props)
-        display_html(iframe_html)
+        self._get_jupyter_display_manager().display_on_convert_html()
 
     def display_on_jupyter(self):
         """
@@ -240,62 +237,26 @@ class PygWalker:
         After that, it will be changed to python for data calculation,
         and only a small amount of data will be output to the front end to complete the analysis of big data.
         """
-        data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_BYTE_LIMIT)
-        props = self._get_props("jupyter", data_source, len(self.origin_data_source) > len(data_source))
-        iframe_html = self._get_render_iframe(props)
-
-        if len(self.origin_data_source) > len(data_source):
-            upload_tool = BatchUploadDatasToolOnJupyter()
-            display_html(iframe_html)
-            upload_tool.run(
-                records=self.origin_data_source,
-                sample_data_count=0,
-                data_source_id=self.data_source_id,
-                gid=self.gid,
-                tunnel_id=self.tunnel_id,
-            )
-        else:
-            display_html(iframe_html)
-        display_html(render_iframe_messages_html(self.gid))
+        self._get_jupyter_display_manager().display_on_jupyter()
 
     def display_on_jupyter_use_widgets(self, iframe_width: Optional[str] = None, iframe_height: Optional[str] = None):
         """
         use the legacy ipywidgets text bridge, Display on jupyter notebook/lab.
         When the kernel is down, the chart will not be displayed, so use `display_on_jupyter` to share
         """
-        comm = HackerCommunication(self.gid)
-        preview_tool = PreviewImageTool(self.gid)
-        data_source = get_max_limited_datas(self.origin_data_source, JUPYTER_WIDGETS_BYTE_LIMIT)
-        props = self._get_props("jupyter_widgets", data_source, len(self.origin_data_source) > len(data_source))
-        iframe_html = self._get_render_iframe(props, iframe_width=iframe_width, iframe_height=iframe_height)
-
-        html_widgets = ipywidgets.Box(
-            [ipywidgets.HTML(iframe_html), comm.get_widgets()], layout=ipywidgets.Layout(display="block")
-        )
-
-        self._init_callback(comm, preview_tool)
-
-        display_html(html_widgets)
-        display_html(render_iframe_messages_html(self.gid))
-        preview_tool.init_display()
-        preview_tool.async_render_gw_review(self._get_gw_preview_html())
+        self._get_jupyter_display_manager().display_on_jupyter_use_widgets(iframe_width, iframe_height)
 
     def display_on_jupyter_use_anywidget(self):
         """
         Display on Jupyter notebook/lab using the cross-notebook anywidget transport.
         """
-        from pygwalker.services.anywidget_widget import create_anywidget_for_walker
-
-        self.use_preview = False
-        data_source = [] if self.kernel_computation else self.origin_data_source
-        widget = create_anywidget_for_walker(self, env="anywidget", data_source=data_source)
-        display_html(widget)
+        self._get_jupyter_display_manager().display_on_jupyter_use_anywidget()
 
     def display_preview_on_jupyter(self):
         """
         Display preview on jupyter notebook/lab.
         """
-        display_html(self._get_gw_preview_html(True))
+        self._get_jupyter_display_manager().display_preview_on_jupyter()
 
     @property
     def chart_list(self) -> List[str]:
@@ -389,6 +350,12 @@ class PygWalker:
 
     def _get_chart_by_name(self, chart_name: str) -> ChartData:
         return self.spec_manager.get_chart_by_name(chart_name)
+
+    def _get_jupyter_display_manager(self) -> JupyterDisplayManager:
+        display_manager = getattr(self, "jupyter_display_manager", None)
+        if display_manager is None:
+            display_manager = JupyterDisplayManager(self, lambda content: display_html(content))
+        return display_manager
 
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool = None):
         CommHandler(

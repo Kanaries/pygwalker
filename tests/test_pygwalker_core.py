@@ -15,6 +15,7 @@ from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
 from pygwalker.errors import ErrorCode
 from pygwalker.services import comm_handler as comm_handler_module
+from pygwalker.services import jupyter_display as jupyter_display_module
 from pygwalker.services import render_manager as render_manager_module
 from pygwalker.services.global_var import GlobalVarManager
 
@@ -231,6 +232,57 @@ def test_render_manager_chart_preview_uses_chart_indexed_workflow(monkeypatch):
         "desc": "Chart desc",
         "appearance": "light",
     }
+
+
+def test_jupyter_display_manager_convert_html_displays_iframe():
+    displayed = []
+    walker = SimpleNamespace(
+        _get_props=lambda env: {"env": env},
+        _get_render_iframe=lambda props: f"iframe-{props['env']}",
+    )
+
+    jupyter_display_module.JupyterDisplayManager(walker, displayed.append).display_on_convert_html()
+
+    assert displayed == ["iframe-jupyter"]
+
+
+def test_jupyter_display_manager_uploads_large_classic_jupyter_data(monkeypatch):
+    displayed = []
+    upload_calls = []
+
+    class FakeUploadTool:
+        def run(self, **kwargs):
+            upload_calls.append(kwargs)
+
+    monkeypatch.setattr(jupyter_display_module, "get_max_limited_datas", lambda records, _limit: records[:1])
+    monkeypatch.setattr(jupyter_display_module, "BatchUploadDatasToolOnJupyter", lambda: FakeUploadTool())
+    monkeypatch.setattr(jupyter_display_module, "render_iframe_messages_html", lambda gid: f"messages-{gid}")
+
+    walker = SimpleNamespace(
+        gid="classic",
+        origin_data_source=[{"city": "London"}, {"city": "Tokyo"}],
+        data_source_id="data-source",
+        tunnel_id="tunnel",
+        _get_props=lambda env, data_source, need_load_datas: {
+            "env": env,
+            "dataSource": data_source,
+            "needLoadDatas": need_load_datas,
+        },
+        _get_render_iframe=lambda props: f"iframe-{props['env']}-{props['needLoadDatas']}",
+    )
+
+    jupyter_display_module.JupyterDisplayManager(walker, displayed.append).display_on_jupyter()
+
+    assert displayed == ["iframe-jupyter-True", "messages-classic"]
+    assert upload_calls == [
+        {
+            "records": [{"city": "London"}, {"city": "Tokyo"}],
+            "sample_data_count": 0,
+            "data_source_id": "data-source",
+            "gid": "classic",
+            "tunnel_id": "tunnel",
+        }
+    ]
 
 
 @pytest.mark.parametrize(
