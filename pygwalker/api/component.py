@@ -7,9 +7,10 @@ import sqlglot
 import sqlglot.expressions as exp
 
 from .pygwalker import PygWalker
-from pygwalker._typing import DataFrame, IAppearance, IThemeKey, ISpecIOMode
+from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey, ISpecIOMode
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
+from pygwalker.utils.computation import resolve_computation_mode
 from pygwalker.utils.randoms import rand_str
 
 
@@ -428,6 +429,7 @@ def component(
     theme_key: IThemeKey = "vega",
     appearance: IAppearance = "media",
     show_cloud_tool: Optional[bool] = False,
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     **kwargs,
@@ -444,9 +446,16 @@ def component(
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
+    resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+        dataset,
+        computation=computation,
+        kernel_computation=kernel_computation,
+    )
+
     walker = PygWalker(
         gid=None,
         dataset=dataset,
@@ -457,13 +466,13 @@ def component(
         appearance=appearance,
         show_cloud_tool=show_cloud_tool,
         use_preview=True,
-        kernel_computation=isinstance(dataset, (Connector, str)) or kernel_computation,
+        kernel_computation=resolved_kernel_computation,
         use_save_tool="w" in spec_io_mode,
         gw_mode="explore",
         is_export_dataframe="w" in spec_io_mode,
         kanaries_api_key=kanaries_api_key,
         default_tab="data",
-        cloud_computation=False,
+        cloud_computation=resolved_cloud_computation,
         **kwargs,
     )
     render_type = "pure_chart"

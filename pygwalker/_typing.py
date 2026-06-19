@@ -36,3 +36,4 @@ Series = TypeVar("Series")
 IThemeKey = Literal["vega", "g2", "streamlit"]
 IAppearance = Literal["media", "light", "dark"]
 ISpecIOMode = Literal["r", "rw"]
+IComputation = Literal["auto", "browser", "kernel", "cloud"]

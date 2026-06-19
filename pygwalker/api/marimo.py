@@ -8,9 +8,10 @@ from typing_extensions import Literal
 from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame, IAppearance, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.services.format_invoke_walk_code import get_formated_spec_params_code_from_frame
 from pygwalker.communications.anywidget_comm import AnywidgetCommunication
+from pygwalker.utils.computation import resolve_computation_mode
 import marimo as mo
 import anywidget
 import traitlets
@@ -33,6 +34,7 @@ def walk(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     spec: str = "",
+    computation: Optional[IComputation] = None,
     show_cloud_tool: bool = False,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
@@ -49,6 +51,7 @@ def walk(
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "kernel".
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
@@ -58,6 +61,11 @@ def walk(
     source_invoke_code = get_formated_spec_params_code_from_frame(inspect.stack()[1].frame)
 
     widget = _WalkerWidget()
+    resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+        dataset,
+        computation=computation,
+        default_kernel_computation=True,
+    )
     walker = PygWalker(
         gid=gid,
         dataset=dataset,
@@ -68,13 +76,13 @@ def walk(
         appearance=appearance,
         show_cloud_tool=show_cloud_tool,
         use_preview=False,
-        kernel_computation=True,
+        kernel_computation=resolved_kernel_computation,
         use_save_tool=True,
         gw_mode="explore",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
-        cloud_computation=False,
+        cloud_computation=resolved_cloud_computation,
         **kwargs,
     )
     comm = AnywidgetCommunication(walker.gid)

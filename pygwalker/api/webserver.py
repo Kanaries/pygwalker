@@ -12,8 +12,9 @@ from typing_extensions import Literal
 from .pygwalker import PygWalker
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame, IAppearance, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.utils.check_walker_params import check_expired_params
+from pygwalker.utils.computation import resolve_computation_mode
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.free_port import find_free_port
 from pygwalker.communications.base import BaseCommunication
@@ -163,6 +164,7 @@ def walk(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     spec: str = "",
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     cloud_computation: bool = False,
     show_cloud_tool: bool = True,
@@ -185,6 +187,7 @@ def walk(
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -198,6 +201,13 @@ def walk(
     if field_specs is None:
         field_specs = []
 
+    resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+        dataset,
+        computation=computation,
+        kernel_computation=kernel_computation,
+        cloud_computation=cloud_computation,
+    )
+
     walker = PygWalker(
         gid=gid,
         dataset=dataset,
@@ -208,13 +218,13 @@ def walk(
         appearance=appearance,
         show_cloud_tool=show_cloud_tool,
         use_preview=False,
-        kernel_computation=kernel_computation,
+        kernel_computation=resolved_kernel_computation,
         use_save_tool=True,
         gw_mode="explore",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
-        cloud_computation=cloud_computation,
+        cloud_computation=resolved_cloud_computation,
         **kwargs,
     )
     _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
@@ -226,6 +236,7 @@ def render(
     *,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     port: Optional[int] = None,
@@ -243,12 +254,18 @@ def render(
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - port (int): port to use for the server. Default to None, which means a random port will be used.
         - auto_shutdown (bool): Whether to shutdown the server when the page is closed. Default to False.
         - auto_open (bool): Whether to open the browser automatically. Default to False.
     """
+    resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+        dataset,
+        computation=computation,
+        kernel_computation=kernel_computation,
+    )
 
     walker = PygWalker(
         gid=None,
@@ -260,13 +277,13 @@ def render(
         appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        kernel_computation=isinstance(dataset, (Connector, str)) or kernel_computation,
+        kernel_computation=resolved_kernel_computation,
         use_save_tool=False,
         gw_mode="filter_renderer",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab="vis",
-        cloud_computation=False,
+        cloud_computation=resolved_cloud_computation,
         **kwargs,
     )
     _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
@@ -277,6 +294,7 @@ def table(
     *,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     port: Optional[int] = None,
@@ -293,12 +311,18 @@ def table(
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - port (int): port to use for the server. Default to None, which means a random port will be used.
         - auto_shutdown (bool): Whether to shutdown the server when the page is closed. Default to False.
         - auto_open (bool): Whether to open the browser automatically. Default to False.
     """
+    resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+        dataset,
+        computation=computation,
+        kernel_computation=kernel_computation,
+    )
     walker = PygWalker(
         gid=None,
         dataset=dataset,
@@ -309,13 +333,13 @@ def table(
         appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        kernel_computation=isinstance(dataset, (Connector, str)) or kernel_computation,
+        kernel_computation=resolved_kernel_computation,
         use_save_tool=False,
         gw_mode="table",
         is_export_dataframe=True,
         kanaries_api_key=kanaries_api_key,
         default_tab="vis",
-        cloud_computation=False,
+        cloud_computation=resolved_cloud_computation,
         **kwargs,
     )
     _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)

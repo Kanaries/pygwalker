@@ -121,7 +121,7 @@ def test_gradio_api_builds_walker_and_registers_comm(monkeypatch):
         pd.DataFrame([{"city": "London"}]),
         gid="gradio",
         spec_io_mode="rw",
-        kernel_computation=False,
+        computation="browser",
         default_tab="data",
     )
 
@@ -155,7 +155,7 @@ def test_reflex_api_returns_html_component(monkeypatch):
         pd.DataFrame([{"city": "London"}]),
         gid="reflex",
         spec_io_mode="r",
-        kernel_computation=True,
+        computation="kernel",
     )
 
     walker = FakeWalker.instances[0]
@@ -186,11 +186,16 @@ def test_anywidget_api_builds_widget_props_and_registers_comm(monkeypatch):
 
     monkeypatch.setattr(anywidget_api, "AnywidgetCommunication", FakeAnywidgetCommunication)
 
-    widget = anywidget_api.walk(pd.DataFrame([{"city": "London"}]), gid="anywidget", show_cloud_tool=True)
+    widget = anywidget_api.walk(
+        pd.DataFrame([{"city": "London"}]),
+        gid="anywidget",
+        show_cloud_tool=True,
+        computation="browser",
+    )
 
     walker = FakeWalker.instances[0]
     assert walker.kwargs["gid"] == "anywidget"
-    assert walker.kwargs["kernel_computation"] is True
+    assert walker.kwargs["kernel_computation"] is False
     assert walker.kwargs["use_save_tool"] is True
     assert walker.kwargs["is_export_dataframe"] is True
     assert walker.props_calls == [("anywidget", [], False)]
@@ -250,7 +255,7 @@ def test_streamlit_html_builds_renderer_and_component_html(monkeypatch):
         pd.DataFrame([{"city": "London"}]),
         gid=None,
         spec_io_mode="rw",
-        kernel_computation=False,
+        computation="cloud",
         mode="table",
         default_tab="data",
     )
@@ -259,6 +264,7 @@ def test_streamlit_html_builds_renderer_and_component_html(monkeypatch):
     assert walker.kwargs["gid"] == "dataset-hash"
     assert walker.kwargs["use_save_tool"] is True
     assert walker.kwargs["kernel_computation"] is False
+    assert walker.kwargs["cloud_computation"] is True
     assert walker.kwargs["default_tab"] == "data"
     assert walker.init_callback_calls == [({"gid": "dataset-hash"}, None)]
     rendered_props = json.loads(html)
@@ -285,13 +291,15 @@ def test_webserver_walk_builds_walker_and_starts_server(monkeypatch):
         port=8765,
         auto_open=True,
         auto_shutdown=True,
-        kernel_computation=False,
+        computation="kernel",
     )
 
     walker = FakeWalker.instances[0]
     assert walker.kwargs["gid"] == "server"
     assert walker.kwargs["use_save_tool"] is True
     assert walker.kwargs["is_export_dataframe"] is True
+    assert walker.kwargs["kernel_computation"] is True
+    assert walker.kwargs["cloud_computation"] is False
     assert walker.kwargs["gw_mode"] == "explore"
     assert starts == [(walker, 8765, True, True)]
 
@@ -314,12 +322,14 @@ def test_webserver_render_builds_filter_renderer(monkeypatch):
         port=8766,
         auto_open=False,
         auto_shutdown=True,
-        kernel_computation=False,
+        computation="browser",
     )
 
     walker = FakeWalker.instances[0]
     assert walker.kwargs["spec"] == "{}"
     assert walker.kwargs["use_save_tool"] is False
+    assert walker.kwargs["kernel_computation"] is False
+    assert walker.kwargs["cloud_computation"] is False
     assert walker.kwargs["gw_mode"] == "filter_renderer"
     assert walker.kwargs["is_export_dataframe"] is True
     assert starts == [(walker, 8766, False, True)]

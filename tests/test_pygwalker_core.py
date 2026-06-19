@@ -822,7 +822,10 @@ def test_pygwalker_open_in_desktop_callback_validates_payload(monkeypatch):
     [
         ({}, False),
         ({"kernel_computation": True}, True),
-        ({"env": "JupyterConvert", "kernel_computation": True}, False),
+        ({"computation": "browser"}, False),
+        ({"computation": "kernel"}, True),
+        ({"computation": "cloud"}, False),
+        ({"env": "JupyterConvert", "kernel_computation": False}, False),
     ],
 )
 def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
@@ -848,6 +851,29 @@ def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
     assert walker.kernel_computation is expected_kernel_computation
 
 
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"computation": "kernel"},
+        {"computation": "cloud"},
+        {"kernel_computation": True},
+        {"use_kernel_calc": True},
+        {"cloud_computation": True},
+    ],
+)
+def test_jupyter_walk_rejects_live_computation_for_convert_env(monkeypatch, kwargs):
+    monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
+    monkeypatch.setattr(jupyter, "check_convert", lambda: False)
+    monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
+
+    with pytest.raises(ValueError, match="JupyterConvert/static HTML output does not support"):
+        jupyter.walk(
+            pd.DataFrame([{"city": "London", "value": 1}]),
+            env="JupyterConvert",
+            **kwargs,
+        )
+
+
 def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
     monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
@@ -870,7 +896,14 @@ def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "kwargs", [{"kernel_computation": True}, {"cloud_computation": True}, {"use_kernel_calc": True}]
+    "kwargs",
+    [
+        {"kernel_computation": True},
+        {"cloud_computation": True},
+        {"use_kernel_calc": True},
+        {"computation": "kernel"},
+        {"computation": "cloud"},
+    ],
 )
 def test_to_html_rejects_live_computation_modes(kwargs):
     with pytest.raises(ValueError, match="Static HTML export does not support kernel or cloud computation"):
@@ -887,6 +920,7 @@ def test_to_html_allows_disabled_computation_kwargs(monkeypatch):
         kernel_computation=False,
         cloud_computation=False,
         use_kernel_calc=None,
+        computation="browser",
     )
 
     assert 'id="gwalker-' in rendered
@@ -922,11 +956,12 @@ def test_public_walk_routes_pygwalker_to_environment_backend(
     result = adapter.walk(
         pd.DataFrame([{"city": "London", "value": 1}]),
         gid="entry",
-        kernel_computation=True,
+        computation="kernel",
     )
 
     assert result == f"{expected_backend}-walker"
     assert [call[0] for call in calls] == [expected_backend]
+    assert calls[0][2]["computation"] == "kernel"
     if expected_backend == "webserver":
         assert calls[0][2]["auto_open"] is True
         assert calls[0][2]["auto_shutdown"] is True

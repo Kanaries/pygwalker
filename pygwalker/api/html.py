@@ -8,16 +8,21 @@ from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.preview_image import render_gw_chart_preview_html
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame, IAppearance, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.utils.check_walker_params import check_expired_params
 
 logger = logging.getLogger(__name__)
 
 
-def _pop_static_html_computation_kwargs(kwargs: Dict[str, Any]) -> None:
+def _pop_static_html_computation_kwargs(kwargs: Dict[str, Any], computation: Optional[IComputation]) -> None:
+    if computation is not None and computation not in ("auto", "browser", "kernel", "cloud"):
+        raise ValueError("`computation` must be one of 'auto', 'browser', 'kernel', or 'cloud'.")
+
     computation_flags = ("kernel_computation", "cloud_computation", "use_kernel_calc")
     enabled_flags = [name for name in computation_flags if kwargs.get(name) is True]
+    if computation in ("kernel", "cloud"):
+        enabled_flags.append(f"computation='{computation}'")
     if enabled_flags:
         flags = ", ".join(enabled_flags)
         raise ValueError(
@@ -38,6 +43,7 @@ def _to_html(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     default_tab: Literal["data", "vis"] = "vis",
+    computation: Optional[IComputation] = None,
     gw_mode: Literal["explore", "renderer", "filter_renderer", "table"] = "explore",
     width: Optional[int] = None,
     height: Optional[int] = None,
@@ -57,7 +63,7 @@ def _to_html(
         - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
     """
     check_expired_params(kwargs)
-    _pop_static_html_computation_kwargs(kwargs)
+    _pop_static_html_computation_kwargs(kwargs, computation)
 
     if gid is None:
         gid = generate_hash_code()
@@ -97,6 +103,7 @@ def to_html(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     default_tab: Literal["data", "vis"] = "vis",
+    computation: Optional[IComputation] = None,
     **kwargs,
 ) -> str:
     """
@@ -112,6 +119,7 @@ def to_html(
         - theme_key ('vega' | 'g2'): theme type.
         - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
+        - computation (Literal["auto", "browser"]): static HTML always uses browser computation.
     """
     return _to_html(
         df,
@@ -121,11 +129,19 @@ def to_html(
         theme_key=theme_key,
         appearance=appearance,
         default_tab=default_tab,
+        computation=computation,
         **kwargs,
     )
 
 
-def to_table_html(df: DataFrame, *, theme_key: IThemeKey = "g2", appearance: IAppearance = "media", **kwargs) -> str:
+def to_table_html(
+    df: DataFrame,
+    *,
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
+    computation: Optional[IComputation] = None,
+    **kwargs,
+) -> str:
     """
     Generate embeddable HTML code of Graphic Walker with data of `df`.
 
@@ -143,6 +159,7 @@ def to_table_html(df: DataFrame, *, theme_key: IThemeKey = "g2", appearance: IAp
         field_specs=[],
         theme_key=theme_key,
         appearance=appearance,
+        computation=computation,
         gw_mode="table",
         height="800px",
         **kwargs,
@@ -150,7 +167,13 @@ def to_table_html(df: DataFrame, *, theme_key: IThemeKey = "g2", appearance: IAp
 
 
 def to_render_html(
-    df: DataFrame, spec: str, *, theme_key: IThemeKey = "g2", appearance: IAppearance = "media", **kwargs
+    df: DataFrame,
+    spec: str,
+    *,
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
+    computation: Optional[IComputation] = None,
+    **kwargs,
 ) -> str:
     """
     Args:
@@ -168,6 +191,7 @@ def to_render_html(
         field_specs=[],
         theme_key=theme_key,
         appearance=appearance,
+        computation=computation,
         gw_mode="filter_renderer",
         **kwargs,
     )

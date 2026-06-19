@@ -10,8 +10,9 @@ from pygwalker.communications.reflex_comm import (
 )
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame, IAppearance, ISpecIOMode, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IComputation, ISpecIOMode, IThemeKey
 from pygwalker.utils.check_walker_params import check_expired_params
+from pygwalker.utils.computation import resolve_computation_mode
 
 
 # pylint: disable=protected-access
@@ -26,6 +27,7 @@ def get_component(
     appearance: IAppearance = "media",
     spec: str = "",
     spec_io_mode: ISpecIOMode = "r",
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
@@ -33,6 +35,12 @@ def get_component(
 ) -> rx.Component:
     """Get a Reflex component that renders Pygwalker."""
     check_expired_params(kwargs)
+
+    resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+        dataset,
+        computation=computation,
+        kernel_computation=kernel_computation,
+    )
 
     walker = PygWalker(
         gid=gid,
@@ -44,12 +52,12 @@ def get_component(
         appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        kernel_computation=isinstance(dataset, Connector) or kernel_computation,
+        kernel_computation=resolved_kernel_computation,
         use_save_tool="w" in spec_io_mode,
         is_export_dataframe=False,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
-        cloud_computation=False,
+        cloud_computation=resolved_cloud_computation,
         gw_mode="explore",
         **kwargs,
     )

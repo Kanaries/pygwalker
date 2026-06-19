@@ -5,8 +5,9 @@ from .pygwalker import PygWalker
 from pygwalker.communications.gradio_comm import BASE_URL_PATH, GradioCommunication
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame, IAppearance, ISpecIOMode, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IComputation, ISpecIOMode, IThemeKey
 from pygwalker.utils.check_walker_params import check_expired_params
+from pygwalker.utils.computation import resolve_computation_mode
 
 
 # pylint: disable=protected-access
@@ -19,6 +20,7 @@ def get_html_on_gradio(
     appearance: IAppearance = "media",
     spec: str = "",
     spec_io_mode: ISpecIOMode = "r",
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
@@ -37,11 +39,18 @@ def get_html_on_gradio(
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to True.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
     check_expired_params(kwargs)
+
+    resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+        dataset,
+        computation=computation,
+        kernel_computation=kernel_computation,
+    )
 
     walker = PygWalker(
         gid=gid,
@@ -53,12 +62,12 @@ def get_html_on_gradio(
         appearance=appearance,
         show_cloud_tool=False,
         use_preview=False,
-        kernel_computation=isinstance(dataset, Connector) or kernel_computation,
+        kernel_computation=resolved_kernel_computation,
         use_save_tool="w" in spec_io_mode,
         is_export_dataframe=False,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
-        cloud_computation=False,
+        cloud_computation=resolved_cloud_computation,
         gw_mode="explore",
         **kwargs,
     )

@@ -4,7 +4,7 @@ from typing_extensions import Literal
 
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame, IAppearance, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.utils.runtime_env import get_current_env
 from pygwalker.api import jupyter
 from pygwalker.api import webserver
@@ -19,6 +19,7 @@ def walk(
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
     spec: str = "",
+    computation: Optional[IComputation] = None,
     use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
     cloud_computation: bool = False,
@@ -39,6 +40,7 @@ def walk(
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -55,6 +57,7 @@ def walk(
             theme_key=theme_key,
             appearance=appearance,
             spec=spec,
+            computation=computation,
             use_kernel_calc=use_kernel_calc,
             kernel_computation=kernel_computation,
             cloud_computation=cloud_computation,
@@ -71,6 +74,7 @@ def walk(
         theme_key=theme_key,
         appearance=appearance,
         spec=spec,
+        computation=computation,
         kernel_computation=kernel_computation,
         cloud_computation=cloud_computation,
         show_cloud_tool=show_cloud_tool,
@@ -88,6 +92,7 @@ def render(
     *,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     **kwargs,
@@ -100,6 +105,7 @@ def render(
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - port(int): only works in web server mode. port to use for the server. Default to None, which means a random port will be used.
@@ -111,6 +117,7 @@ def render(
             spec,
             theme_key=theme_key,
             appearance=appearance,
+            computation=computation,
             kernel_computation=kernel_computation,
             kanaries_api_key=kanaries_api_key,
             **kwargs,
@@ -121,6 +128,7 @@ def render(
         spec,
         theme_key=theme_key,
         appearance=appearance,
+        computation=computation,
         kernel_computation=kernel_computation,
         kanaries_api_key=kanaries_api_key,
         auto_open=True,
@@ -134,6 +142,7 @@ def table(
     *,
     theme_key: IThemeKey = "g2",
     appearance: IAppearance = "media",
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
     **kwargs,
@@ -145,6 +154,7 @@ def table(
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - port(int): only works in web server mode. port to use for the server. Default to None, which means a random port will be used.
@@ -155,6 +165,7 @@ def table(
             dataset,
             theme_key=theme_key,
             appearance=appearance,
+            computation=computation,
             kernel_computation=kernel_computation,
             kanaries_api_key=kanaries_api_key,
             **kwargs,
@@ -164,6 +175,7 @@ def table(
         dataset,
         theme_key=theme_key,
         appearance=appearance,
+        computation=computation,
         kernel_computation=kernel_computation,
         kanaries_api_key=kanaries_api_key,
         auto_open=True,
