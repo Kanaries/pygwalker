@@ -125,6 +125,10 @@ python -X faulthandler -W error::DeprecationWarning:pygwalker -m pytest -o fault
 python -m pytest --nbmake --nbmake-kernel=python tests/*.ipynb
 ```
 
+`pygwalker_tools/` is an active packaged helper namespace. Its currently
+supported surface is `pygwalker_tools.metrics`, covered by
+`tests/test_metrics_tools.py`, so keep it in lint, test, wheel, and sdist paths.
+
 Run frontend type checking, build, and smoke tests from `app/`:
 
 ```bash

@@ -22,6 +22,15 @@ def _extract_hatch_build_include(pyproject_text: str) -> list[str]:
     ]
 
 
+def _extract_hatch_sdist_include(pyproject_text: str) -> list[str]:
+    section_start = pyproject_text.index("[tool.hatch.build.targets.sdist]")
+    include_start = pyproject_text.index("include = [", section_start)
+    include_end = pyproject_text.index("]", include_start)
+    return [
+        line.strip().strip('",') for line in pyproject_text[include_start:include_end].splitlines()[1:] if line.strip()
+    ]
+
+
 def test_jupyter_notebook_extra_targets_modern_widgets_by_default():
     pyproject = (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8")
 
@@ -67,3 +76,13 @@ def test_package_declares_pep561_typed_marker():
 
     assert (repo_root / "pygwalker/py.typed").is_file()
     assert "pygwalker" in _extract_hatch_build_include(pyproject)
+
+
+def test_package_keeps_pygwalker_tools_metrics_namespace():
+    repo_root = Path(__file__).resolve().parents[1]
+    pyproject = (repo_root / "pyproject.toml").read_text(encoding="utf-8")
+
+    assert (repo_root / "pygwalker_tools/metrics").is_dir()
+    assert (repo_root / "tests/test_metrics_tools.py").is_file()
+    assert "pygwalker_tools" in _extract_hatch_build_include(pyproject)
+    assert "pygwalker_tools" in _extract_hatch_sdist_include(pyproject)
