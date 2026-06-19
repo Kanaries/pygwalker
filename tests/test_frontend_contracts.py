@@ -83,3 +83,13 @@ def test_frontend_dev_typescript_source_maps_are_enabled():
 
     assert '"sourceMap": true' in tsconfig
     assert '"sourceMap": false' not in tsconfig
+
+
+def test_frontend_tracker_loads_segment_only_after_events_opt_in():
+    repo_root = Path(__file__).resolve().parents[1]
+    tracker_source = (repo_root / "app/src/utils/tracker.ts").read_text(encoding="utf-8")
+    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+
+    assert "@segment/analytics-next" not in tracker_source
+    assert "cdn.segment.com/analytics.js/v1/" in tracker_source
+    assert 'tracker.setOpen(userConfig.privacy === "events")' in app_source
