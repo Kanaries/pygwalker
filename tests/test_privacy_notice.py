@@ -1,3 +1,7 @@
+import subprocess
+import sys
+from types import SimpleNamespace
+
 from pygwalker.services import config, track
 from pygwalker.services.global_var import GlobalVarManager
 
@@ -24,8 +28,16 @@ def test_track_event_prints_privacy_notice_once_and_handles_empty_properties(mon
 
     monkeypatch.setattr(track, "should_show_privacy_notice", lambda: True)
     monkeypatch.setattr(track, "get_local_user_id", lambda: "test-user")
-    monkeypatch.setattr(track.analytics, "track", lambda **kwargs: analytics_calls.append(kwargs))
-    monkeypatch.setattr(track.kanaries_track, "track", lambda payload: kanaries_calls.append(payload))
+    monkeypatch.setattr(
+        track,
+        "_get_analytics_client",
+        lambda: SimpleNamespace(track=lambda **kwargs: analytics_calls.append(kwargs)),
+    )
+    monkeypatch.setattr(
+        track,
+        "_get_kanaries_track_client",
+        lambda: SimpleNamespace(track=lambda payload: kanaries_calls.append(payload)),
+    )
 
     try:
         track.track_event("invoke_props")
@@ -44,7 +56,11 @@ def test_track_event_does_not_emit_when_privacy_is_not_events(monkeypatch, capsy
     GlobalVarManager.privacy = "update-only"
 
     monkeypatch.setattr(track, "should_show_privacy_notice", lambda: notice_calls.append(True) or True)
-    monkeypatch.setattr(track.analytics, "track", lambda **kwargs: analytics_calls.append(kwargs))
+    monkeypatch.setattr(
+        track,
+        "_get_analytics_client",
+        lambda: SimpleNamespace(track=lambda **kwargs: analytics_calls.append(kwargs)),
+    )
 
     try:
         track.track_event("invoke_props", {"mode": "test"})
@@ -54,3 +70,32 @@ def test_track_event_does_not_emit_when_privacy_is_not_events(monkeypatch, capsy
     assert capsys.readouterr().out == ""
     assert notice_calls == []
     assert analytics_calls == []
+
+
+def test_track_event_does_not_import_analytics_clients_when_privacy_is_not_events():
+    code = """
+import builtins
+
+original_import = builtins.__import__
+
+def blocked_import(name, *args, **kwargs):
+    if name == "kanaries_track" or name == "segment" or name.startswith("segment."):
+        raise AssertionError(f"unexpected analytics import: {name}")
+    return original_import(name, *args, **kwargs)
+
+builtins.__import__ = blocked_import
+
+from pygwalker.services.global_var import GlobalVarManager
+from pygwalker.services.track import track_event
+
+GlobalVarManager.privacy = "update-only"
+track_event("invoke_props", {"mode": "test"})
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
