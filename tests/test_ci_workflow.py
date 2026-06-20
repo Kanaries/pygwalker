@@ -20,6 +20,19 @@ def test_auto_ci_enforces_python_and_frontend_quality_gates():
     assert "yarn test:front_end" in workflow
 
 
+def test_local_ci_script_mirrors_auto_ci_quality_gates():
+    script = (REPO_ROOT / "scripts/local_ci.py").read_text(encoding="utf-8")
+
+    assert '"scripts/compile.sh"' in script
+    assert '"yarn", "playwright", "install", "--with-deps", "chromium"' in script
+    assert '"yarn", "test:front_end"' in script
+    assert '"--nbmake", "--nbmake-kernel=python"' in script
+    assert '"ruff", "check", *PYTHON_TARGETS' in script
+    assert '"ruff", "format", "--check", *PYTHON_TARGETS' in script
+    assert '"error::DeprecationWarning:pygwalker"' in script
+    assert '"faulthandler_timeout=300"' in script
+
+
 def test_auto_ci_runs_pytest_directly_without_watchdog():
     workflow = (REPO_ROOT / ".github/workflows/auto-ci.yml").read_text(encoding="utf-8")
 

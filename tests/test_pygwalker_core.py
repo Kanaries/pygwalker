@@ -1780,7 +1780,9 @@ def test_to_html_allows_disabled_computation_kwargs(monkeypatch):
         (False, True, "cloud computation"),
     ],
 )
-def test_component_static_app_exports_reject_live_computation(render_type, kernel_computation, cloud_computation, message):
+def test_component_static_app_exports_reject_live_computation(
+    render_type, kernel_computation, cloud_computation, message
+):
     component = Component(
         walker=SimpleNamespace(kernel_computation=kernel_computation, cloud_computation=cloud_computation),
         render_type=render_type,

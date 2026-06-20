@@ -264,7 +264,7 @@ def test_frontend_http_integrations_initialize_communication():
         pattern = rf'case "{env}":[\s\S]*?preRender = initOnHttpCommunication;'
         assert re.search(pattern, app_source) is not None
 
-    assert "case \"reflex\":" not in app_source
+    assert 'case "reflex":' not in app_source
 
 
 def test_frontend_pure_renderer_uses_local_data_without_kernel_computation():
