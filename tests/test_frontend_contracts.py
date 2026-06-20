@@ -256,6 +256,17 @@ def test_frontend_tracker_loads_segment_only_after_events_opt_in():
     assert 'tracker.setOpen(userConfig.privacy === "events")' in app_source
 
 
+def test_frontend_http_integrations_initialize_communication():
+    repo_root = Path(__file__).resolve().parents[1]
+    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+
+    for env in ("streamlit", "gradio", "web_server"):
+        pattern = rf'case "{env}":[\s\S]*?preRender = initOnHttpCommunication;'
+        assert re.search(pattern, app_source) is not None
+
+    assert "case \"reflex\":" not in app_source
+
+
 def test_frontend_modals_are_lazy_loaded_from_entrypoint():
     repo_root = Path(__file__).resolve().parents[1]
     app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")

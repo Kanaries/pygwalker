@@ -161,16 +161,29 @@ def test_reflex_api_returns_html_component(monkeypatch):
         pd.DataFrame([{"city": "London"}]),
         gid="reflex",
         spec_io_mode="r",
-        computation="kernel",
+        computation="browser",
     )
 
     walker = FakeWalker.instances[0]
     assert walker.kwargs["gid"] == "reflex"
     assert walker.kwargs["use_save_tool"] is False
-    assert walker.kwargs["kernel_computation"] is True
+    assert walker.kwargs["kernel_computation"] is False
     assert walker.props_calls == [("reflex", None, False)]
     assert walker.init_callback_calls == [(comms[0], None)]
     assert json.loads(component["html"])["communicationUrl"] == reflex.BASE_URL_PATH
+
+
+@pytest.mark.parametrize("computation", ["kernel", "cloud"])
+def test_reflex_api_rejects_live_computation(monkeypatch, computation):
+    fake_reflex = SimpleNamespace(Component=object, html=lambda value: {"html": value})
+    monkeypatch.setitem(sys.modules, "reflex", fake_reflex)
+    reflex = importlib.reload(importlib.import_module("pygwalker.api.reflex"))
+
+    with pytest.raises(ValueError, match="Reflex integration does not support kernel or cloud computation"):
+        reflex.get_component(
+            pd.DataFrame([{"city": "London"}]),
+            computation=computation,
+        )
 
 
 def test_anywidget_api_builds_widget_props_and_registers_comm(monkeypatch):
@@ -511,6 +524,39 @@ def test_streamlit_renderer_accepts_public_walker_object(monkeypatch):
     rendered_props = json.loads(html)
     assert rendered_props["env"] == "streamlit"
     assert rendered_props["gwMode"] == "table"
+    component = renderer.explorer(key="public-explorer")
+    assert public_walker.core.props_calls[-1] == ("streamlit", [{"city": "London"}], False)
+    assert component["dataSource"] == [{"city": "London"}]
+
+
+def test_streamlit_renderer_component_data_source_matches_computation_mode(monkeypatch):
+    _install_streamlit_stubs(monkeypatch)
+    streamlit = importlib.reload(importlib.import_module("pygwalker.api.streamlit"))
+
+    _reset_fake_walker()
+    monkeypatch.setattr(streamlit, "PygWalker", FakeWalker)
+    monkeypatch.setattr(streamlit, "init_streamlit_comm", lambda: None)
+    monkeypatch.setattr(streamlit, "get_dataset_hash", lambda _dataset: "dataset-hash")
+    monkeypatch.setattr(streamlit, "StreamlitCommunication", lambda gid: {"gid": gid})
+
+    browser_renderer = streamlit.StreamlitRenderer(
+        pd.DataFrame([{"city": "London"}]),
+        computation="browser",
+    )
+    FakeWalker.instances[-1].origin_data_source = [{"date": pd.Timestamp("2024-01-01"), "city": "London"}]
+    browser_component = browser_renderer.explorer(key="browser-explorer")
+
+    assert FakeWalker.instances[-1].props_calls[-1] == ("streamlit", [{"date": 1704067200000, "city": "London"}], False)
+    assert browser_component["dataSource"] == [{"date": 1704067200000, "city": "London"}]
+
+    kernel_renderer = streamlit.StreamlitRenderer(
+        pd.DataFrame([{"city": "London"}]),
+        computation="kernel",
+    )
+    kernel_component = kernel_renderer.explorer(key="kernel-explorer")
+
+    assert FakeWalker.instances[-1].props_calls[-1] == ("streamlit", [], False)
+    assert kernel_component["dataSource"] == []
 
 
 def test_streamlit_renderer_rejects_rebuilding_public_walker_object(monkeypatch, tmp_path):

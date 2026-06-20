@@ -16,6 +16,7 @@ from pygwalker._typing import DataFrame, IAppearance, IComputation, ISpecIOMode,
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.utils.computation import resolve_computation_mode
+from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.spec import resolve_spec_input
 from pygwalker.services.streamlit_components import pygwalker_component
 from pygwalker.services.data_parsers import get_dataset_hash
@@ -351,7 +352,9 @@ class StreamlitRenderer:
         vis_spec: Optional[List[Dict[str, Any]]] = None,
         **kwargs: Dict[str, Any],
     ):
-        props = self.walker._get_props("streamlit", [])
+        data_source = [] if self.walker.kernel_computation else self.walker.origin_data_source
+        data_source = json.loads(json.dumps(data_source, cls=DataFrameEncoder))
+        props = self.walker._get_props("streamlit", data_source)
         props["gwMode"] = mode
         props["communicationUrl"] = BASE_URL_PATH
         if vis_spec is not None:

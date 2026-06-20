@@ -195,20 +195,22 @@ class Component:
     def _get_single_chart_html(self) -> str:
         return self.walker.get_single_chart_html_by_spec(spec=self._single_chart_spec)
 
-    def _get_explorer_html(self) -> str:
-        all_datas = None
+    def _raise_if_live_computation(self, target: str) -> None:
         if self.walker.kernel_computation:
-            all_datas = self.walker.data_parser.to_records()
-        pyg_props = self.walker._get_props(data_source=all_datas)
+            raise ValueError(f"{target} does not support kernel computation. Use computation='browser'.")
+        if self.walker.cloud_computation:
+            raise ValueError(f"{target} does not support cloud computation. Use computation='browser'.")
+
+    def _get_explorer_html(self) -> str:
+        self._raise_if_live_computation("Static component explorer export")
+        pyg_props = self.walker._get_props()
         pyg_props["visSpec"] = [self._single_chart_spec]
 
         return self.walker._get_render_iframe(pyg_props)
 
     def _get_profiling_html(self) -> str:
-        all_datas = None
-        if self.walker.kernel_computation:
-            all_datas = self.walker.data_parser.to_records()
-        pyg_props = self.walker._get_props(data_source=all_datas)
+        self._raise_if_live_computation("Static component profiling export")
+        pyg_props = self.walker._get_props()
         pyg_props["gwMode"] = "table"
         return self.walker._get_render_iframe(pyg_props)
 

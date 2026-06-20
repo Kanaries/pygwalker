@@ -12,6 +12,7 @@ from duckdb import ParserException
 
 from pygwalker import __version__
 from pygwalker.api import adapter, html, jupyter
+from pygwalker.api.component import Component
 from pygwalker.api import pygwalker as pygwalker_module
 from pygwalker.api.pygwalker import PygWalker
 from pygwalker.communications.base import BaseCommunication
@@ -1769,6 +1770,26 @@ def test_to_html_allows_disabled_computation_kwargs(monkeypatch):
 
     assert 'id="gwalker-' in rendered
     assert "srcdoc=" in rendered
+
+
+@pytest.mark.parametrize("render_type", ["explorer", "profiling"])
+@pytest.mark.parametrize(
+    ("kernel_computation", "cloud_computation", "message"),
+    [
+        (True, False, "kernel computation"),
+        (False, True, "cloud computation"),
+    ],
+)
+def test_component_static_app_exports_reject_live_computation(render_type, kernel_computation, cloud_computation, message):
+    component = Component(
+        walker=SimpleNamespace(kernel_computation=kernel_computation, cloud_computation=cloud_computation),
+        render_type=render_type,
+        field_map={},
+        single_chart_spec={},
+    )
+
+    with pytest.raises(ValueError, match=message):
+        component.to_html()
 
 
 @pytest.mark.parametrize(

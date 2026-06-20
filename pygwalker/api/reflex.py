@@ -44,6 +44,8 @@ def get_component(
         computation=computation,
         kernel_computation=kernel_computation,
     )
+    if resolved_kernel_computation or resolved_cloud_computation:
+        raise ValueError("Reflex integration does not support kernel or cloud computation. Use computation='browser'.")
 
     walker = PygWalker(
         gid=gid,
