@@ -245,19 +245,23 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
             setConfig(userConfig);
             tracker.setOpen(userConfig.privacy === "events");
         };
-    }, []);
+    }, [props.showCloudTool, props.hashcode, userConfig]);
+
+    useEffect(() => {
+        setVisSpec(props.visSpec);
+    }, [props.visSpec]);
 
     useEffect(() => {
         if (props.initChartFlag) {
             setTimeout(() => { initChart(gwRef, visSpec.length, props) }, 0);
         }
-    }, [props.initChartFlag]);
+    }, [props.initChartFlag, props.id, props.visSpec, visSpec.length]);
 
     useEffect(() => {
         setTimeout(() => {
             storeRef.current?.setSegmentKey(props.defaultTab as ISegmentKey);
         }, 0);
-    }, [mode]);
+    }, [mode, props.defaultTab]);
 
     const runcellTool = getRuncellTool();
     const exportTool = getExportTool(setExportOpen);
@@ -302,7 +306,10 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
         return undefined;
     }, [props.showCloudTool, props.enableAskViz, props.enableVlChat]);
 
-    const computationCallback = React.useMemo(() => getComputationCallback(props), []);
+    const computationCallback = React.useMemo(
+        () => getComputationCallback(props),
+        [props.useKernelCalc, props.parseDslType, props.fieldMetas, props.__comm],
+    );
 
     const modeChange = (value: string) => {
         if (mode === "walker") {
@@ -463,21 +470,34 @@ const initOnAnywidgetCommunication = async(props: IAppProps, model: import("@any
 
 const defaultInit = async(props: IAppProps) => {}
 
+const formatAppProps = (props: IAppProps): IAppProps => ({
+    ...props,
+    id: String(props.id),
+    visSpec: FormatSpec(props.visSpec, props.rawFields),
+});
+
 function GWalkerComponent(props: IAppProps) {
     const [initChartFlag, setInitChartFlag] = useState(false);
     const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
 
     useEffect(() => {
+        let cancelled = false;
+        setInitChartFlag(false);
         if (props.needLoadDatas) {
             loadDataSource(props.dataSourceProps).then((data) => {
+                if (cancelled) return;
                 setDataSource(data);
                 setInitChartFlag(true);
                 commonStore.setInitModalOpen(false);
             })
         } else {
+            setDataSource(props.dataSource);
             setInitChartFlag(true);
         }
-    }, []);
+        return () => {
+            cancelled = true;
+        }
+    }, [props.needLoadDatas, props.dataSource, props.dataSourceProps.dataSourceId, props.dataSourceProps.tunnelId]);
 
     return (
         <React.StrictMode>
@@ -624,21 +644,25 @@ function TableWalkerApp(props: IAppProps) {
 
 
 function SteamlitGWalkerApp(streamlitProps: any) {
-    const propsRef = React.useRef<IAppProps | null>(null);
-    if (!propsRef.current) {
-        propsRef.current = streamlitProps.args as IAppProps;
-        propsRef.current.visSpec = FormatSpec(propsRef.current.visSpec, propsRef.current.rawFields);
-    }
-    const props = propsRef.current;
+    const props = React.useMemo(
+        () => formatAppProps(streamlitProps.args as IAppProps),
+        [streamlitProps.args],
+    );
     const [inited, setInited] = useState(false);
     const container = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         commonStore.setIsStreamlitComponent(true);
+        let cancelled = false;
+        setInited(false);
         initOnHttpCommunication(props).then(() => {
+            if (cancelled) return;
             setInited(true);
         })
-    }, []);
+        return () => {
+            cancelled = true;
+        }
+    }, [props.id, props.communicationUrl]);
 
     useEffect(() => {
         if (!container.current) return;

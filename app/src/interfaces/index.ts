@@ -129,7 +129,7 @@ export interface ICommResponse<TData = any> {
 }
 
 export interface ICommEnvelope<TAction extends string = string, TData = any> {
-    gid?: string;
+    gid?: string | number;
     rid?: string;
     action: TAction;
     data: TData;

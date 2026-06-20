@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -48,7 +48,7 @@ class CommMessageRequest(CommBaseModel):
     action: str
     data: Dict[str, Any] = Field(default_factory=dict)
     rid: Optional[str] = None
-    gid: Optional[str] = None
+    gid: Optional[Union[int, str]] = None
 
 
 class CommResponse(CommBaseModel):

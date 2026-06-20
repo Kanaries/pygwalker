@@ -20,7 +20,7 @@ class PropsBuilder:
         if data_source is None:
             data_source = self.walker.origin_data_source
         return {
-            "id": self.walker.gid,
+            "id": str(self.walker.gid),
             "dataSource": data_source,
             "len": len(data_source),
             "version": __version__,

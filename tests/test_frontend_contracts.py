@@ -194,6 +194,13 @@ def test_frontend_props_interface_covers_python_props_builder():
     assert _props_builder_keys(repo_root) - _app_props_keys(repo_root) == set()
 
 
+def test_python_props_builder_stringifies_frontend_id():
+    repo_root = Path(__file__).resolve().parents[1]
+    props_builder_source = (repo_root / "pygwalker/services/props_builder.py").read_text(encoding="utf-8")
+
+    assert '"id": str(self.walker.gid)' in props_builder_source
+
+
 def test_frontend_comm_maps_cover_python_comm_handler_endpoints():
     repo_root = Path(__file__).resolve().parents[1]
     endpoints = _comm_handler_endpoints(repo_root)
@@ -265,6 +272,29 @@ def test_frontend_http_integrations_initialize_communication():
         assert re.search(pattern, app_source) is not None
 
     assert 'case "reflex":' not in app_source
+
+
+def test_streamlit_entrypoint_refreshes_props_on_reruns():
+    repo_root = Path(__file__).resolve().parents[1]
+    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+    streamlit_app_match = re.search(
+        r"function SteamlitGWalkerApp[\s\S]*?const StreamlitGWalker =",
+        app_source,
+    )
+
+    assert streamlit_app_match is not None
+    streamlit_app_source = streamlit_app_match.group(0)
+    assert "propsRef" not in streamlit_app_source
+    assert "formatAppProps(streamlitProps.args as IAppProps)" in streamlit_app_source
+    assert "[streamlitProps.args]" in streamlit_app_source
+
+
+def test_frontend_component_state_refreshes_when_props_change():
+    repo_root = Path(__file__).resolve().parents[1]
+    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+
+    assert "setDataSource(props.dataSource);" in app_source
+    assert "setVisSpec(props.visSpec);" in app_source
 
 
 def test_frontend_pure_renderer_uses_local_data_without_kernel_computation():

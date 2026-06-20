@@ -89,3 +89,12 @@ def test_gradio_router_preserves_successful_envelope_routing():
         gradio_comm.gradio_comm_map.pop("gradio-gid", None)
 
     assert json.loads(response.body) == {"code": 0, "data": {}, "message": "success"}
+
+
+def test_comm_envelope_accepts_integer_gid_before_dispatch():
+    comm = BaseCommunication("123")
+    comm.register("ping", lambda _: {})
+
+    response = comm._receive_msg_envelope({"gid": 123, "rid": "request-1", "action": "ping", "data": {}})
+
+    assert response == {"code": 0, "data": {}, "message": "success"}
