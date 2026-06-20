@@ -1,5 +1,6 @@
 import pytest
 import json
+import ntpath
 from pathlib import Path
 
 from pygwalker.utils import frontend_assets
@@ -30,3 +31,15 @@ def test_read_frontend_asset_reports_compile_command(monkeypatch, tmp_path):
     message = str(exc_info.value)
     assert "pygwalker/templates/dist/missing.js" in message
     assert "./scripts/compile.sh" in message
+
+
+def test_read_frontend_asset_report_uses_stable_posix_path_with_windows_paths(monkeypatch, tmp_path):
+    monkeypatch.setattr(frontend_assets, "ROOT_DIR", str(tmp_path))
+    monkeypatch.setattr(frontend_assets.os, "path", ntpath)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        frontend_assets.read_frontend_asset("missing.js")
+
+    message = str(exc_info.value)
+    assert "pygwalker/templates/dist/missing.js" in message
+    assert "pygwalker\\templates\\dist\\missing.js" not in message
