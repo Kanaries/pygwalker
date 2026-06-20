@@ -96,6 +96,7 @@ jobs:
       - name: Try Install Modin In Linux Os
         if: ${{ matrix.os-version == 'ubuntu-latest' && matrix.python-version == '3.11' }}
         run: |
+          pip install "numpy<2" "pandas<2.1"
           pip install aiohttp==3.8.6
           pip install "modin==0.23.1" "modin[ray]==0.23.1"
           pip install pydantic==1.10.9
@@ -111,7 +112,7 @@ jobs:
         working-directory: ./
         run: |
           pip install duckdb_engine
-          pip install pytest ruff
+          pip install pytest ruff fastapi
           ruff check pygwalker tests scripts bin pygwalker_tools
           ruff format --check pygwalker tests scripts bin pygwalker_tools
           python -X faulthandler -W error::DeprecationWarning:pygwalker -m pytest -o faulthandler_timeout=300 tests
