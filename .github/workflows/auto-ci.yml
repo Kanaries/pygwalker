@@ -106,13 +106,13 @@ jobs:
           pip install ipykernel nbmake pandas polars pytest
           python -m ipykernel install --name python --user
           jupyter kernelspec list
-          python -m pytest --nbmake --nbmake-kernel=python *.ipynb
+          python -c "from pathlib import Path; import subprocess, sys; notebooks = sorted(str(path) for path in Path('.').glob('*.ipynb')); subprocess.run([sys.executable, '-m', 'pytest', '--nbmake', '--nbmake-kernel=python', *notebooks], check=True)"
       - name: Try Pytest
         timeout-minutes: 20
         working-directory: ./
         run: |
           pip install duckdb_engine
-          pip install pytest ruff fastapi
+          pip install pytest ruff starlette polars tornado
           ruff check pygwalker tests scripts bin pygwalker_tools
           ruff format --check pygwalker tests scripts bin pygwalker_tools
           python -X faulthandler -W error::DeprecationWarning:pygwalker -m pytest -o faulthandler_timeout=300 tests

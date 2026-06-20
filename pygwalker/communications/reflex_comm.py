@@ -1,10 +1,14 @@
 import json
-from fastapi import FastAPI
 from starlette.responses import JSONResponse, Response
 from starlette.requests import Request
 
 from pygwalker.utils.encode import DataFrameEncoder
 from .base import BaseCommunication
+
+try:
+    from fastapi import FastAPI
+except ModuleNotFoundError:
+    FastAPI = None
 
 reflex_comm_map = {}
 
@@ -45,6 +49,9 @@ class ReflexCommunication(BaseCommunication):
 # Create a FastAPI sub-application for PyGWalker API
 def _create_pygwalker_app() -> FastAPI:
     """Create a FastAPI sub-application for PyGWalker API routes."""
+    if FastAPI is None:
+        raise ModuleNotFoundError("Reflex PyGWalker API registration requires fastapi.")
+
     pygwalker_app = FastAPI()
 
     @pygwalker_app.post("/{gid}")

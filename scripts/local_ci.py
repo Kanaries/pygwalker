@@ -44,7 +44,7 @@ def install_legacy_modin_ci_deps() -> None:
 
 def run_python_ci() -> None:
     run([sys.executable, "-m", "pip", "install", "duckdb_engine"])
-    run([sys.executable, "-m", "pip", "install", "pytest", "ruff", "fastapi"])
+    run([sys.executable, "-m", "pip", "install", "pytest", "ruff", "starlette", "polars", "tornado"])
     run([sys.executable, "-m", "ruff", "check", *PYTHON_TARGETS])
     run([sys.executable, "-m", "ruff", "format", "--check", *PYTHON_TARGETS])
     run(

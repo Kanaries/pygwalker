@@ -17,7 +17,7 @@ def test_auto_ci_enforces_python_and_frontend_quality_gates():
     assert 'pip install "numpy<2" "pandas<2.1"' in workflow
     assert "ruff check pygwalker tests scripts bin pygwalker_tools" in workflow
     assert "ruff format --check pygwalker tests scripts bin pygwalker_tools" in workflow
-    assert "pip install pytest ruff fastapi" in workflow
+    assert "pip install pytest ruff starlette polars tornado" in workflow
     assert "yarn playwright install --with-deps chromium" in workflow
     assert "yarn test:front_end" in workflow
 
@@ -29,7 +29,7 @@ def test_local_ci_script_mirrors_auto_ci_quality_gates():
     assert '"yarn", "playwright", "install", "--with-deps", "chromium"' in script
     assert '"yarn", "test:front_end"' in script
     assert '"numpy<2", "pandas<2.1"' in script
-    assert '"pytest", "ruff", "fastapi"' in script
+    assert '"pytest", "ruff", "starlette", "polars", "tornado"' in script
     assert '"--nbmake", "--nbmake-kernel=python"' in script
     assert '"ruff", "check", *PYTHON_TARGETS' in script
     assert '"ruff", "format", "--check", *PYTHON_TARGETS' in script
@@ -47,7 +47,8 @@ def test_auto_ci_runs_pytest_directly_without_watchdog():
 def test_auto_ci_runs_notebooks_through_pytest_nbmake():
     workflow = (REPO_ROOT / ".github/workflows/auto-ci.yml").read_text(encoding="utf-8")
 
-    assert "python -m pytest --nbmake --nbmake-kernel=python *.ipynb" in workflow
+    assert "Path('.').glob('*.ipynb')" in workflow
+    assert "python -m pytest --nbmake --nbmake-kernel=python *.ipynb" not in workflow
     assert "jupyter nbconvert --execute" not in workflow
 
 

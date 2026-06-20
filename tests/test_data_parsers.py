@@ -155,7 +155,7 @@ try:
 
     def test_data_parser_infers_modin_series_by_position_not_label():
         df = mpd.DataFrame({"date": ["2022-01-01"]}, index=[10])
-        dataset_parser = get_parser(df)
+        dataset_parser = get_parser(df, infer_string_to_date=True)
 
         assert dataset_parser.raw_fields == [
             {"fid": "date", "name": "date", "semanticType": "temporal", "analyticType": "dimension"},

@@ -2,13 +2,12 @@ from typing import Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel, Field, ValidationError
 
-try:
-    from pydantic import ConfigDict
-except ImportError:  # pragma: no cover - only exercised on pydantic v1
-    ConfigDict = None
+from pygwalker.utils.pydantic_compat import PYDANTIC_V2, model_dump, model_validate
 
 from pygwalker.errors import CommProtocolError
-from pygwalker.utils.pydantic_compat import model_dump, model_validate
+
+if PYDANTIC_V2:
+    from pydantic import ConfigDict
 
 
 def validate_request(model_cls: Type[BaseModel], data: Dict[str, Any]) -> BaseModel:
@@ -26,7 +25,7 @@ def dump_comm_response(response: BaseModel) -> Dict[str, Any]:
     return model_dump(response, by_alias=True)
 
 
-if ConfigDict is not None:
+if PYDANTIC_V2:
 
     class CommBaseModel(BaseModel):
         model_config = ConfigDict(extra="forbid")

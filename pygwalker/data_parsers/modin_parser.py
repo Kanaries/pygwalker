@@ -20,6 +20,7 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
     ):
         super().__init__(df, field_specs, infer_string_to_date, infer_number_to_dimension, other_params)
         self._duckdb_df = self.df._to_pandas()
+        self._example_df = self._duckdb_df[:1000]
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         df = self.df[:limit] if limit is not None else self.df
@@ -42,6 +43,9 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         return df
 
     def _infer_semantic(self, s: mpd.Series, field_name: str):
+        if len(s) == 0 and not is_geo_field(field_name):
+            return "nominal"
+
         kind = s.dtype.kind
 
         if kind in "fcmiu" or is_geo_field(field_name):
@@ -54,6 +58,9 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         return "nominal"
 
     def _infer_analytic(self, s: mpd.Series, field_name: str):
+        if len(s) == 0:
+            return "dimension"
+
         kind = s.dtype.kind
 
         if is_geo_field(field_name):

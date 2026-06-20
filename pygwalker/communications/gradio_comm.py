@@ -1,13 +1,17 @@
 import json
 import gc
 
-from fastapi import FastAPI
 from starlette.routing import Route
 from starlette.responses import JSONResponse, Response
 from starlette.requests import Request
 
 from pygwalker.utils.encode import DataFrameEncoder
 from .base import BaseCommunication
+
+try:
+    from fastapi import FastAPI
+except ModuleNotFoundError:
+    FastAPI = None
 
 gradio_comm_map = {}
 
@@ -45,6 +49,9 @@ PYGWALKER_ROUTE = Route("/_pygwalker/comm/{gid}", _pygwalker_router, methods=["P
 
 # it will work when gradio server reload
 def _hack_gradio_server():
+    if FastAPI is None:
+        return
+
     for obj in gc.get_objects():
         if isinstance(obj, FastAPI):
             for index, route in enumerate(obj.routes):
