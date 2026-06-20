@@ -267,6 +267,23 @@ def test_frontend_http_integrations_initialize_communication():
     assert "case \"reflex\":" not in app_source
 
 
+def test_frontend_pure_renderer_uses_local_data_without_kernel_computation():
+    repo_root = Path(__file__).resolve().parents[1]
+    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+
+    pure_renderer_match = re.search(
+        r"const PureRednererApp:[\s\S]*?const initOnJupyter",
+        app_source,
+    )
+    assert pure_renderer_match is not None
+    pure_renderer_source = pure_renderer_match.group(0)
+
+    assert "props.useKernelCalc ?" in pure_renderer_source
+    assert "type='remote'" in pure_renderer_source
+    assert "computation={computationCallback!}" in pure_renderer_source
+    assert "rawData={props.dataSource}" in pure_renderer_source
+
+
 def test_frontend_modals_are_lazy_loaded_from_entrypoint():
     repo_root = Path(__file__).resolve().parents[1]
     app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")

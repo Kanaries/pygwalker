@@ -373,17 +373,30 @@ const PureRednererApp: React.FC<IAppProps> = observer((props) => {
         <React.StrictMode>
             <div className='flex'>
                 {
-                    !expand && (<PureRenderer
-                        {...props.extraConfig}
-                        appearance={useContext(darkModeContext)}
-                        vizThemeConfig={props.themeKey}
-                        name={spec.name}
-                        visualConfig={spec.config}
-                        visualLayout={spec.layout}
-                        visualState={spec.encodings}
-                        type='remote'
-                        computation={computationCallback!}
-                    />)
+                    !expand && (
+                        props.useKernelCalc ?
+                        <PureRenderer
+                            {...props.extraConfig}
+                            appearance={useContext(darkModeContext)}
+                            vizThemeConfig={props.themeKey}
+                            name={spec.name}
+                            visualConfig={spec.config}
+                            visualLayout={spec.layout}
+                            visualState={spec.encodings}
+                            type='remote'
+                            computation={computationCallback!}
+                        /> :
+                        <PureRenderer
+                            {...props.extraConfig}
+                            appearance={useContext(darkModeContext)}
+                            vizThemeConfig={props.themeKey}
+                            name={spec.name}
+                            visualConfig={spec.config}
+                            visualLayout={spec.layout}
+                            visualState={spec.encodings}
+                            rawData={props.dataSource}
+                        />
+                    )
                 }
                 {
                     expand && commonStore.isStreamlitComponent && (
