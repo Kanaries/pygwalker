@@ -9,8 +9,7 @@ from pygwalker.utils.dsl_transform import dsl_to_workflow, vega_to_dsl
 
 def _reset_runtime():
     """Reset the lazy-initialized JS runtime so tests are independent."""
-    mod._dsl_to_workflow_js = None
-    mod._vega_to_dsl_js = None
+    mod._close_js_runtime()
 
 
 def test_dsl_to_workflow_returns_valid_workflow():
@@ -78,3 +77,24 @@ def test_runtime_initialized_only_once():
         dsl_to_workflow({})
     # _make_js_callable is called twice during init (once per UMD file), but only on first call
     assert call_count[0] == 2
+
+
+def test_reset_runtime_closes_existing_contexts():
+    class Runtime:
+        def __init__(self):
+            self.closed = False
+
+        def close(self):
+            self.closed = True
+
+    dsl_runtime = Runtime()
+    vega_runtime = Runtime()
+    mod._dsl_to_workflow_js = dsl_runtime
+    mod._vega_to_dsl_js = vega_runtime
+
+    _reset_runtime()
+
+    assert dsl_runtime.closed is True
+    assert vega_runtime.closed is True
+    assert mod._dsl_to_workflow_js is None
+    assert mod._vega_to_dsl_js is None
