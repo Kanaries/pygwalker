@@ -1,6 +1,7 @@
 """
 Experimental features
 """
+
 from typing import List, Dict, Any, Union, Optional
 from decimal import Decimal
 import json
@@ -16,12 +17,9 @@ from .core import get_metrics_sql
 
 class Chart:
     """Chart"""
+
     def __init__(self, data: DataFrame, spec: Dict[str, Any]):
-        self._html = to_chart_html(
-            data,
-            spec,
-            spec_type="vega"
-        )
+        self._html = to_chart_html(data, spec, spec_type="vega")
 
     @property
     def html(self) -> str:
@@ -36,6 +34,7 @@ class Chart:
 
 class _JSONEncoder(json.JSONEncoder):
     """JSON encoder"""
+
     def default(self, o):
         if isinstance(o, Decimal):
             if o.is_nan():
@@ -49,7 +48,7 @@ def get_metrics_datas(
     dataset: Union[DataFrame, Connector],
     metrics_name: str,
     field_map: Dict[str, str],
-    params: Optional[Dict[str, Any]] = None
+    params: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     """
     Example: get 1 day retention datas
@@ -111,10 +110,7 @@ def get_metrics_datas(
     parser = get_parser(dataset)
 
     sql = get_metrics_sql(
-        name=metrics_name,
-        field_map=field_map,
-        params=params,
-        origin_table_name=parser.placeholder_table_name
+        name=metrics_name, field_map=field_map, params=params, origin_table_name=parser.placeholder_table_name
     )
 
     if isinstance(dataset, Connector):
@@ -168,12 +164,13 @@ class MetricsChart:
         - dimensions: ['date']
         - params: ['within_active_days']
     """
+
     def __init__(
         self,
         dataset: Union[DataFrame, Connector],
         field_map: Dict[str, str],
         params: Optional[Dict[str, Any]] = None,
-        reverse_axis: bool = False
+        reverse_axis: bool = False,
     ):
         self.dataset = dataset
         self.field_map = field_map
@@ -182,10 +179,7 @@ class MetricsChart:
 
     def _get_datas(self, metrics_name: str, params: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
         datas = get_metrics_datas(
-            dataset=self.dataset,
-            metrics_name=metrics_name,
-            field_map=self.field_map,
-            params=params or self.params
+            dataset=self.dataset, metrics_name=metrics_name, field_map=self.field_map, params=params or self.params
         )
         return pd.DataFrame(json.loads(json.dumps(datas, cls=_JSONEncoder)))
 
@@ -201,7 +195,7 @@ class MetricsChart:
             "encoding": {
                 "x": {"field": "date"},
                 "y": {"field": "pv"},
-            }
+            },
         }
         return Chart(datas, params)
 
@@ -212,7 +206,7 @@ class MetricsChart:
             "encoding": {
                 "x": {"field": "date"},
                 "y": {"field": "uv"},
-            }
+            },
         }
         return Chart(datas, params)
 
@@ -223,7 +217,7 @@ class MetricsChart:
             "encoding": {
                 "x": {"field": "date"},
                 "y": {"field": "mau"},
-            }
+            },
         }
         return Chart(datas, params)
 
@@ -234,7 +228,7 @@ class MetricsChart:
             "encoding": {
                 "x": {"field": "date"},
                 "y": {"field": "retention"},
-            }
+            },
         }
         return Chart(datas, params)
 
@@ -245,7 +239,7 @@ class MetricsChart:
             "encoding": {
                 "x": {"field": "date"},
                 "y": {"field": "new_user_count"},
-            }
+            },
         }
         return Chart(datas, params)
 
@@ -263,7 +257,7 @@ class MetricsChart:
                 "x": {"field": "date", "type": "ordinal"},
                 "y": {"field": "new_user_count", "type": "ordinal"},
                 "color": {"field": "retention"},
-            }
+            },
         }
         return Chart(datas, params)
 
@@ -274,7 +268,7 @@ class MetricsChart:
             "encoding": {
                 "x": {"field": "date"},
                 "y": {"field": "active_user_count"},
-            }
+            },
         }
         return Chart(datas, params)
 
@@ -285,6 +279,6 @@ class MetricsChart:
             "encoding": {
                 "x": {"field": "date"},
                 "y": {"field": "user_churn_rate"},
-            }
+            },
         }
         return Chart(datas, params)

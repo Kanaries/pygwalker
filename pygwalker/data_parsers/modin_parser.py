@@ -3,32 +3,29 @@ from typing import Any, Dict, List, Optional
 
 from modin import pandas as mpd
 
-from .base import (
-    BaseDataFrameDataParser,
-    FieldSpec,
-    is_temporal_field,
-    is_geo_field
-)
+from .base import BaseDataFrameDataParser, FieldSpec, is_temporal_field, is_geo_field
 from pygwalker.services.fname_encodings import rename_columns
 
 
 class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
     """prop parser for modin.pandas.DataFrame"""
+
     def __init__(
         self,
         df: mpd.DataFrame,
         field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
-        other_params: Dict[str, Any]
+        other_params: Dict[str, Any],
     ):
         super().__init__(df, field_specs, infer_string_to_date, infer_number_to_dimension, other_params)
         self._duckdb_df = self.df._to_pandas()
+        self._example_df = self._duckdb_df[:1000]
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         df = self.df[:limit] if limit is not None else self.df
-        df = df.replace({float('nan'): None})
-        return df.to_dict(orient='records')
+        df = df.replace({float("nan"): None})
+        return df.to_dict(orient="records")
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()
@@ -46,17 +43,24 @@ class ModinPandasDataFrameDataParser(BaseDataFrameDataParser[mpd.DataFrame]):
         return df
 
     def _infer_semantic(self, s: mpd.Series, field_name: str):
-        example_value = s[0]
+        if len(s) == 0 and not is_geo_field(field_name):
+            return "nominal"
+
         kind = s.dtype.kind
 
         if kind in "fcmiu" or is_geo_field(field_name):
             return "quantitative"
-        if kind in "M" or (kind in "bOSUV" and is_temporal_field(example_value, self.infer_string_to_date)):
-            return 'temporal'
+        if kind in "M":
+            return "temporal"
+        if kind in "bOSUV" and len(s) > 0 and is_temporal_field(s.iloc[0], self.infer_string_to_date):
+            return "temporal"
 
         return "nominal"
 
     def _infer_analytic(self, s: mpd.Series, field_name: str):
+        if len(s) == 0:
+            return "dimension"
+
         kind = s.dtype.kind
 
         if is_geo_field(field_name):

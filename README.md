@@ -1,5 +1,8 @@
 [English](README.md) | [Español](./docs/README.es.md) | [Français](./docs/README.fr.md) | [Deutsch](./docs/README.de.md) | [中文](./docs/README.zh.md) | [Türkçe](./docs/README.tr.md) | [日本語](./docs/README.ja.md) | [한국어](./docs/README.ko.md) | [Русский](./docs/README.ru.md)
 
+> [!NOTE]
+> The English README is the source of truth for the API reference, installation, and development instructions. Translated READMEs are community-maintained and may lag behind this file.
+
 
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/user-attachments/assets/f90db669-6e5a-45d3-942e-547c9d0471c9" /></a></p>
 
@@ -57,7 +60,7 @@ Visit [Google Colab](https://colab.research.google.com/drive/171QUQeq-uTLgSj1u-P
 
 
 # Features
-PyGWalker is a Python library that simplifies data analysis and visualization workflows by turning pandas DataFrames into interactive visual interfaces.
+PyGWalker is a Python library that simplifies data analysis and visualization workflows by turning pandas, polars, and pyarrow table data into interactive visual interfaces.
 It offers a variety of features that make it a powerful tool for data exploration:
 - ##### Interactive Data Exploration:
     - Drag-and-drop interface for easy visualization creation.   
@@ -151,19 +154,43 @@ Cool things you can do with PyGwalker:
 
 ### Better Practices
 
-There are some important parameters you should know when using pygwalker: 
+There are some important parameters you should know when using pygwalker:
 
-+ `spec`: for save/load chart config (json string or file path)
-+ `kernel_computation`: for using duckdb as computing engine which allows you to handle larger dataset faster in your local machine.
-+ `use_kernel_calc`: Deprecated, use `kernel_computation` instead.
++ `spec_path`: local file path for saving/loading chart config.
++ `spec`: chart config object, JSON string, config ID, or remote URL.
++ `computation`: choose where data queries run. Use `"browser"` for frontend-only computation, `"kernel"` for local DuckDB-backed Python computation, `"cloud"` for Kanaries cloud computation, or omit it for the default automatic behavior.
++ `kernel_computation`: legacy boolean for using DuckDB as computing engine. Prefer `computation="kernel"`.
++ `use_kernel_calc`: Deprecated, use `computation="kernel"` or `kernel_computation` instead.
 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv')
 walker = pyg.walk(
     df,
-    spec="./chart_meta_0.json",    # this json file will save your chart state, you need to click save button in ui mannual when you finish a chart, 'autosave' will be supported in the future.
-    kernel_computation=True,          # set `kernel_computation=True`, pygwalker will use duckdb as computing engine, it support you explore bigger dataset(<=100GB).
+    spec_path="./chart_meta_0.json",  # local file used to load and save chart state.
+    computation="kernel",          # use DuckDB in the Python kernel for larger datasets.
 )
+```
+
+You can also create a reusable `Walker` object and choose where to render it:
+
+```python
+walker = pyg.Walker(df, spec_path="./chart_meta_0.json", computation="browser")
+walker.show()       # auto-detects notebook or script mode
+html = walker.to_html()
+html = pyg.to_html(walker)
+```
+
+After exploring in the UI, export the current chart state as reproducible Python code:
+
+```python
+code = walker.to_code(dataset_name="df")
+print(code)
+```
+
+If you have an older saved spec, migrate it to the current schema before committing it:
+
+```python
+migrated_spec = pyg.spec.migrate(open("./old_chart_meta.json").read())
 ```
 
 ### Example in local notebook
@@ -181,7 +208,7 @@ walker = pyg.walk(
 After saving a chart from the UI, you can retrieve the image directly from Python.
 
 ```python
-walker = pyg.walk(df, spec="./chart_meta_0.json")
+walker = pyg.walk(df, spec_path="./chart_meta_0.json")
 # edit the chart in the UI and click the save button
 walker.save_chart_to_file("Chart 1", "chart1.svg", save_type="svg")
 png_bytes = walker.export_chart_png("Chart 1")
@@ -216,11 +243,22 @@ st.title("Use Pygwalker In Streamlit")
 def get_pyg_renderer() -> "StreamlitRenderer":
     df = pd.read_csv("./bike_sharing_dc.csv")
     # If you want to use feature of saving chart config, set `spec_io_mode="rw"`
-    return StreamlitRenderer(df, spec="./gw_config.json", spec_io_mode="rw")
+    return StreamlitRenderer(df, spec_path="./gw_config.json", spec_io_mode="rw")
 
 
 renderer = get_pyg_renderer()
 
+renderer.explorer()
+```
+
+If you already created a reusable `Walker`, Streamlit can render it directly:
+
+```python
+import pygwalker as pyg
+from pygwalker.api.streamlit import StreamlitRenderer
+
+walker = pyg.Walker(df, spec_path="./gw_config.json", computation="kernel")
+renderer = StreamlitRenderer(walker)
 renderer.explorer()
 ```
 
@@ -229,19 +267,24 @@ renderer.explorer()
 ### [pygwalker.walk](https://pygwalker-docs.vercel.app/api-reference/jupyter#walk)
 
 
-| Parameter              | Type                                                      | Default              | Description                                                                                                                                      |
-|------------------------|-----------------------------------------------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| dataset                | Union[DataFrame, Connector]                               | -                    | The dataframe or connector to be used.                                                                                                           |
-| gid                    | Union[int, str]                                           | None                 | ID for the GraphicWalker container div, formatted as 'gwalker-{gid}'.                                                                            |
-| env                    | Literal['Jupyter', 'JupyterWidget']          | 'JupyterWidget'      | Environment using pygwalker.                                                                                                                     |
-| field_specs             | Optional[Dict[str, FieldSpec]]                            | None                 | Specifications of fields. Will be automatically inferred from `dataset` if not specified.                                                        |
-| hide_data_source_config   | bool                                                      | True                 | If True, hides DataSource import and export button.                                                                                              |
-| theme_key               | Literal['vega', 'g2']                                     | 'g2'                 | Theme type for the GraphicWalker.                                                                                                                |
-| appearance                   | Literal['media', 'light', 'dark']                         | 'media'              | Theme setting. 'media' will auto-detect the OS theme.                                                                                            |
-| spec                   | str                                                       | ""                   | Chart configuration data. Can be a configuration ID, JSON, or remote file URL.                                                                   |
-| use_preview            | bool                                                      | True                 | If True, uses the preview function.                                                                                                              |
-| kernel_computation        | bool                                                      | False                | If True, uses kernel computation for data.                                                                                                       |
-| **kwargs               | Any                                                       | -                    | Additional keyword arguments.                                                                                                                    |
+| Parameter          | Type                                                      | Default         | Description                                                                                                                       |
+|--------------------|-----------------------------------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| dataset            | Union[DataFrame, pyarrow.Table, Connector, str, Walker]   | -               | DataFrame, pyarrow table, database connector, SQL/data source string, or reusable Walker object to explore.                        |
+| gid                | Union[int, str]                                           | None            | ID for the GraphicWalker container div, formatted as `gwalker-{gid}`.                                                              |
+| env                | Literal['JupyterAnywidget', 'Jupyter', 'JupyterWidget']   | 'JupyterAnywidget' | Notebook rendering environment. Use `JupyterAnywidget` or omit `env`; `Jupyter` and `JupyterWidget` are deprecated legacy transports kept for compatibility. |
+| field_specs        | Optional[List[FieldSpec]]                                 | None            | Field specifications. They will be inferred from `dataset` if not specified.                                                       |
+| theme_key          | Literal['vega', 'g2', 'streamlit']                        | 'g2'            | Theme type for Graphic Walker.                                                                                                     |
+| appearance         | Literal['media', 'light', 'dark']                         | 'media'         | Theme appearance. `media` follows the operating system preference.                                                                 |
+| spec               | str                                                       | ""              | Chart configuration data. Can be a configuration ID, JSON string, local file path, or remote file URL.                             |
+| spec_path          | Optional[str]                                             | None            | Local chart configuration file path. Prefer this over passing a local file path through `spec`.                                    |
+| computation        | Optional[Literal['auto', 'browser', 'kernel', 'cloud']]   | None            | Computation backend. Omit it for automatic behavior; use `browser`, `kernel`, or `cloud` to choose explicitly.                     |
+| use_kernel_calc    | Optional[bool]                                            | None            | Deprecated. Use `computation="kernel"` or `kernel_computation` instead.                                                           |
+| kernel_computation | Optional[bool]                                            | None            | Legacy boolean for local DuckDB-backed kernel computation. Prefer `computation="kernel"` or `computation="browser"`.              |
+| cloud_computation  | bool                                                      | False           | Legacy boolean for Kanaries cloud computation. Prefer `computation="cloud"`.                                                       |
+| show_cloud_tool    | bool                                                      | True            | Whether to show the Kanaries cloud tool when available.                                                                            |
+| kanaries_api_key   | str                                                       | ""              | Kanaries API key used by cloud features.                                                                                           |
+| default_tab        | Literal['data', 'vis']                                    | 'vis'           | Default tab to show when the UI opens.                                                                                             |
+| **kwargs           | Any                                                       | -               | Additional keyword arguments.                                                                                                      |
 
 ## Development
 
@@ -257,7 +300,7 @@ Refer it: [local-development](https://docs.kanaries.net/pygwalker/installation#l
 - [x] Databricks Notebook (Since version `0.1.4a0`)
 - [x] Jupyter Extension for Visual Studio Code (Since version `0.1.4a0`)
 - [x] Most web applications compatiable with IPython kernels. (Since version `0.1.4a0`)
-- [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pyg.walk(df, env='Streamlit')`
+- [x] **Streamlit (Since version `0.1.4.9`)**, enabled with `pygwalker.api.streamlit.StreamlitRenderer`
 - [x] DataCamp Workspace (Since version `0.1.4a0`)
 - [x] Panel. See [panel-graphic-walker](https://github.com/panel-extensions/panel-graphic-walker).
 - [x] marimo (Since version `0.4.9.11`)
@@ -276,7 +319,7 @@ usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--rese
 Modify configuration file. (default: ~/Library/Application Support/pygwalker/config.json) 
 Available configurations:
 
-- privacy  ['offline', 'update-only', 'events'] (default: events).
+- privacy  ['offline', 'update-only', 'events'] (default: update-only).
     "offline": fully offline, no data is send or api is requested
     "update-only": only check whether this is a new version of pygwalker to update
     "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND. Events data will bind with a unique id, which is generated by pygwalker when it is installed based on timestamp. We will not collect any other information about you.

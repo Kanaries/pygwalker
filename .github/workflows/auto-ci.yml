@@ -35,6 +35,11 @@ jobs:
         run: |
           chmod u+x ./scripts/compile.sh
           ./scripts/compile.sh
+      - name: Try Frontend Smoke Test
+        working-directory: ./app
+        run: |
+          yarn playwright install --with-deps chromium
+          yarn test:front_end
       - name: Uploading dist
         uses: actions/upload-artifact@v4
         with:
@@ -48,7 +53,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         os-version: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os-version }}
@@ -64,6 +69,15 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'yarn'
+          cache-dependency-path: ./app/yarn.lock
+      - name: Ensure Yarn
+        run: |
+          npm install -g yarn
       - name: Download test data
         working-directory: ./
         run: |
@@ -75,32 +89,30 @@ jobs:
           PIP_ONLY_BINARY: "duckdb"
         run: |
           pip install ".[export]"
+      - name: Pin Pydantic v1 compatibility leg
+        if: ${{ matrix.os-version == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+        run: |
+          pip install "pydantic==1.10.15"
       - name: Try Install Modin In Linux Os
         if: ${{ matrix.os-version == 'ubuntu-latest' && matrix.python-version == '3.11' }}
         run: |
+          pip install "numpy<2" "pandas<2.1"
           pip install aiohttp==3.8.6
           pip install "modin==0.23.1" "modin[ray]==0.23.1"
           pip install pydantic==1.10.9
       - name: Try Running
         working-directory: ./tests/
         run: |
-          pip install ipykernel nbconvert pandas polars
+          pip install ipykernel nbmake pandas polars pytest
           python -m ipykernel install --name python --user
           jupyter kernelspec list
-          jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=python --to html *.ipynb
+          python -c "from pathlib import Path; import subprocess, sys; notebooks = sorted(str(path) for path in Path('.').glob('*.ipynb')); subprocess.run([sys.executable, '-m', 'pytest', '--nbmake', '--nbmake-kernel=python', *notebooks], check=True)"
       - name: Try Pytest
         timeout-minutes: 20
         working-directory: ./
         run: |
           pip install duckdb_engine
-          pip install pytest
-          python ./scripts/ci_run_pytest.py
-      - name: Uploading notebooks
-        uses: actions/upload-artifact@v4
-        if: ${{ matrix.python-version == '3.12' && matrix.os-version == 'ubuntu-latest' }}
-        with:
-          name: notebook
-          path: |
-            ./tests/main.html
-            ./tests/offline.html
-            ./tests/stress-test.html
+          pip install pytest ruff starlette polars tornado
+          ruff check pygwalker tests scripts bin pygwalker_tools
+          ruff format --check pygwalker tests scripts bin pygwalker_tools
+          python -X faulthandler -W error::DeprecationWarning:pygwalker -m pytest -o faulthandler_timeout=300 tests

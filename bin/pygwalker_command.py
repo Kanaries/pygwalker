@@ -1,6 +1,6 @@
 """
-PyGWalker is a python library that simplify your Jupyter Notebook data analysis 
-and data visualization workflow, by turning your pandas dataframe into an interactive 
+PyGWalker is a python library that simplify your Jupyter Notebook data analysis
+and data visualization workflow, by turning your pandas dataframe into an interactive
 user interface for visual exploration.
 
 Updated on Tue November 11 15:15:48 2024
@@ -18,58 +18,52 @@ from pygwalker.services.config import (
     get_config_params_help,
     reset_config,
     get_all_config_str,
-    CONFIG_PATH
+    CONFIG_PATH,
 )
 
 
 parser = argparse.ArgumentParser(
     prog="pygwalker",
-    description='pygwalker: turn your data into an interactive UI for data exploration \
-    and visualization'
+    description="pygwalker: turn your data into an interactive UI for data exploration \
+    and visualization",
 )
-subparsers = parser.add_subparsers(dest='command')
+subparsers = parser.add_subparsers(dest="command")
 
 # config command
 config_parser = subparsers.add_parser(
-    'config',
-    help=f'Modify configuration file. (default: {CONFIG_PATH})',
+    "config",
+    help=f"Modify configuration file. (default: {CONFIG_PATH})",
     add_help=True,
-    description=f'Modify configuration file. \
-    (default: {CONFIG_PATH}) \n' + get_config_params_help(),
-    formatter_class=argparse.RawTextHelpFormatter
+    description=f"Modify configuration file. \
+    (default: {CONFIG_PATH}) \n"
+    + get_config_params_help(),
+    formatter_class=argparse.RawTextHelpFormatter,
 )
 config_parser.add_argument(
-    '--set',
-    nargs='*',
-    metavar='key=value',
-    help='Set configuration. e.g. "pygwalker config --set privacy=update-only"'
+    "--set", nargs="*", metavar="key=value", help='Set configuration. e.g. "pygwalker config --set privacy=update-only"'
 )
 config_parser.add_argument(
-    '--reset',
-    nargs='*',
-    metavar='key',
+    "--reset",
+    nargs="*",
+    metavar="key",
     help='Reset user configuration and use default values instead. \
-    e.g. "pygwalker config --reset privacy"'
+    e.g. "pygwalker config --reset privacy"',
 )
 config_parser.add_argument(
-    '--reset-all',
-    action='store_true',
+    "--reset-all",
+    action="store_true",
     help='Reset all user configuration and use default values instead. \
-    e.g. "pygwalker config --reset-all"'
+    e.g. "pygwalker config --reset-all"',
 )
-config_parser.add_argument(
-    '--list',
-    action='store_true',
-    help='List current used configuration.'
-)
+config_parser.add_argument("--list", action="store_true", help="List current used configuration.")
 
 # login command
 login_parser = subparsers.add_parser(
-    'login',
+    "login",
     help="set up your kanaries token via kanaries website authorization.",
     add_help=True,
     description="set up your kanaries token via kanaries website authorization.",
-    formatter_class=argparse.RawTextHelpFormatter
+    formatter_class=argparse.RawTextHelpFormatter,
 )
 
 
@@ -83,10 +77,7 @@ def command_set_config(value: Tuple[str]):
         tuples of string values.
 
     """
-    config = dict(
-        item.split('=')
-        for item in value
-    )
+    config = dict(item.split("=") for item in value)
     set_config(config)
 
 
@@ -123,8 +114,8 @@ def command_list_config(_):
 
 def main():
     """
-    Entry point of the program. It acts like programcontroller and interface 
-    with program users. It handles commands from a command line and redirect 
+    Entry point of the program. It acts like programcontroller and interface
+    with program users. It handles commands from a command line and redirect
     to the disignated function or task.
 
 
@@ -137,7 +128,7 @@ def main():
         ("set", command_set_config),
         ("reset", command_reset_config),
         ("reset_all", command_reset_all_config),
-        ("list", command_list_config)
+        ("list", command_list_config),
     ]
 
     args = parser.parse_args()
@@ -146,7 +137,7 @@ def main():
         parser.print_help()
         return
 
-    if args.command == 'config':
+    if args.command == "config":
         for action, action_func in conifg_command_list:
             value = getattr(args, action)
             if value:
@@ -155,12 +146,12 @@ def main():
         config_parser.print_help()
         return
 
-    if args.command == 'login':
+    if args.command == "login":
         kanaries_login()
         return
 
     parser.print_help()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

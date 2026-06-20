@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { observer } from "mobx-react-lite";
 import { reaction } from "mobx"
@@ -10,7 +10,12 @@ import { Streamlit, withStreamlitConnection } from "streamlit-component-lib"
 import { createRender, useModel } from "@anywidget/react";
 
 import Options from './components/options';
-import { IAppProps } from './interfaces';
+import type {
+    IAppProps,
+    ICommAskSpecRequest,
+    ICommChatChartRequest,
+    ICommSaveChartRequest,
+} from './interfaces';
 
 import { loadDataSource, postDataService, finishDataService, getDatasFromKernelBySql, getDatasFromKernelByPayload } from './dataSource';
 
@@ -18,12 +23,8 @@ import commonStore from "./store/common";
 import { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback, initAnywidgetCommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig } from './utils/userConfig';
-import CodeExportModal from './components/codeExportModal';
 import type { IPreviewProps, IChartPreviewProps } from './components/preview';
 import { Preview, ChartPreview } from './components/preview';
-import UploadSpecModal from "./components/uploadSpecModal"
-import UploadChartModal from './components/uploadChartModal';
-import InitModal from './components/initModal';
 import { getSaveTool } from './tools/saveTool';
 import { getExportTool } from './tools/exportTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
@@ -54,6 +55,48 @@ import { getOpenDesktopTool } from './tools/openDesktop';
 import RuncellBanner from './components/runcellBanner';
 
 
+const InitModal = React.lazy(() => import("./components/initModal"));
+const UploadSpecModal = React.lazy(() => import("./components/uploadSpecModal"));
+const UploadChartModal = React.lazy(() => import("./components/uploadChartModal"));
+const CodeExportModal = React.lazy(() => import("./components/codeExportModal"));
+
+const ExploreModals = observer((props: {
+    exportOpen: boolean;
+    setExportOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    gwRef: React.MutableRefObject<IGWHandler | null>;
+    storeRef: React.MutableRefObject<VizSpecStore | null>;
+    setGwIsChanged: React.Dispatch<React.SetStateAction<boolean>>;
+    sourceCode: string;
+}) => {
+    const darkMode = useContext(darkModeContext);
+
+    return (
+        <>
+            {commonStore.uploadSpecModalOpen && (
+                <Suspense fallback={null}>
+                    <UploadSpecModal storeRef={props.storeRef} setGwIsChanged={props.setGwIsChanged} />
+                </Suspense>
+            )}
+            {commonStore.uploadChartModalOpen && (
+                <Suspense fallback={null}>
+                    <UploadChartModal gwRef={props.gwRef} storeRef={props.storeRef} dark={darkMode} />
+                </Suspense>
+            )}
+            {props.exportOpen && (
+                <Suspense fallback={null}>
+                    <CodeExportModal
+                        open={props.exportOpen}
+                        setOpen={props.setExportOpen}
+                        globalStore={props.storeRef}
+                        sourceCode={props.sourceCode}
+                    />
+                </Suspense>
+            )}
+        </>
+    );
+});
+
+
 const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total: number, props: IAppProps) => {
     if (props.needInitChart && props.env === "jupyter_widgets" && total !== 0) {
         commonStore.setInitModalOpen(true);
@@ -63,7 +106,8 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
             total: total,
         });
         for await (const chart of gwRef.current?.exportChartList("data-url")!) {
-            await communicationStore.comm?.sendMsg("save_chart", await formatExportedChartDatas(chart.data));
+            const request = await formatExportedChartDatas(chart.data) as ICommSaveChartRequest;
+            await communicationStore.comm?.sendMsg("save_chart", request);
             commonStore.setInitModalInfo({
                 title: "Recover Charts",
                 curIndex: chart.index + 1,
@@ -75,11 +119,12 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
 }
 
 const getComputationCallback = (props: IAppProps) => {
+    const comm = props.__comm ?? communicationStore.comm;
     if (props.useKernelCalc && props.parseDslType === "client") {
-        return getDatasFromKernelBySql(props.fieldMetas);
+        return getDatasFromKernelBySql(props.fieldMetas, comm);
     }
     if (props.useKernelCalc && props.parseDslType === "server") {
-        return getDatasFromKernelByPayload;
+        return getDatasFromKernelByPayload(comm);
     }
 }
 
@@ -143,7 +188,11 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
                             </ToggleGroup>
                         </div>
                     )}
-                    <InitModal />
+                    {commonStore.initModalOpen && (
+                        <Suspense fallback={null}>
+                            <InitModal />
+                        </Suspense>
+                    )}
                     <div ref={setPortal}></div>
                 </div>
             </div>
@@ -160,7 +209,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const [hideModeOption, _] = useState(true);
     const [isChanged, setIsChanged] = useState(false);
     const storeRef = React.useRef<VizSpecStore|null>(null);
-    const disposerRef = React.useRef<() => void>();
+    const disposerRef = React.useRef<(() => void) | undefined>(undefined);
     const storeRefProxied = React.useMemo(
         () =>
             new Proxy(storeRef, {
@@ -196,19 +245,23 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
             setConfig(userConfig);
             tracker.setOpen(userConfig.privacy === "events");
         };
-    }, []);
+    }, [props.showCloudTool, props.hashcode, userConfig]);
+
+    useEffect(() => {
+        setVisSpec(props.visSpec);
+    }, [props.visSpec]);
 
     useEffect(() => {
         if (props.initChartFlag) {
             setTimeout(() => { initChart(gwRef, visSpec.length, props) }, 0);
         }
-    }, [props.initChartFlag]);
+    }, [props.initChartFlag, props.id, props.visSpec, visSpec.length]);
 
     useEffect(() => {
         setTimeout(() => {
             storeRef.current?.setSegmentKey(props.defaultTab as ISegmentKey);
         }, 0);
-    }, [mode]);
+    }, [mode, props.defaultTab]);
 
     const runcellTool = getRuncellTool();
     const exportTool = getExportTool(setExportOpen);
@@ -234,14 +287,16 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
             const features: Record<string, any> = {};
             if (props.enableAskViz) {
                 features["askviz"] = async (metas: IViewField[], query: string) => {
-                    const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", { metas, query });
-                    return resp?.data.data;
+                    const request: ICommAskSpecRequest = { metas, query };
+                    const resp = await communicationStore.comm?.sendMsg("get_spec_by_text", request);
+                    return resp?.data?.data;
                 };
             }
             if (props.enableVlChat) {
                 features["vlChat"] = async (metas: IViewField[], chats: IChatMessage[]) => {
-                    const resp = await communicationStore.comm?.sendMsg("get_chart_by_chats", { metas, chats });
-                    return resp?.data.data;
+                    const request: ICommChatChartRequest = { metas, chats };
+                    const resp = await communicationStore.comm?.sendMsg("get_chart_by_chats", request);
+                    return resp?.data?.data;
                 };
             }
             if (Object.keys(features).length > 0) {
@@ -251,7 +306,10 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
         return undefined;
     }, [props.showCloudTool, props.enableAskViz, props.enableVlChat]);
 
-    const computationCallback = React.useMemo(() => getComputationCallback(props), []);
+    const computationCallback = React.useMemo(
+        () => getComputationCallback(props),
+        [props.useKernelCalc, props.parseDslType, props.fieldMetas, props.__comm],
+    );
 
     const modeChange = (value: string) => {
         if (mode === "walker") {
@@ -263,9 +321,14 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     return (
         <React.StrictMode>
             <Notification />
-            <UploadSpecModal storeRef={storeRef} setGwIsChanged={setIsChanged} />
-            <UploadChartModal gwRef={gwRef} storeRef={storeRef} dark={useContext(darkModeContext)} />
-            <CodeExportModal open={exportOpen} setOpen={setExportOpen} globalStore={storeRef} sourceCode={props["sourceInvokeCode"] || ""} />
+            <ExploreModals
+                exportOpen={exportOpen}
+                setExportOpen={setExportOpen}
+                gwRef={gwRef}
+                storeRef={storeRef}
+                setGwIsChanged={setIsChanged}
+                sourceCode={props["sourceInvokeCode"] || ""}
+            />
             {
                 !hideModeOption &&
                 <Select onValueChange={modeChange} defaultValue='walker' >
@@ -317,17 +380,30 @@ const PureRednererApp: React.FC<IAppProps> = observer((props) => {
         <React.StrictMode>
             <div className='flex'>
                 {
-                    !expand && (<PureRenderer
-                        {...props.extraConfig}
-                        appearance={useContext(darkModeContext)}
-                        vizThemeConfig={props.themeKey}
-                        name={spec.name}
-                        visualConfig={spec.config}
-                        visualLayout={spec.layout}
-                        visualState={spec.encodings}
-                        type='remote'
-                        computation={computationCallback!}
-                    />)
+                    !expand && (
+                        props.useKernelCalc ?
+                        <PureRenderer
+                            {...props.extraConfig}
+                            appearance={useContext(darkModeContext)}
+                            vizThemeConfig={props.themeKey}
+                            name={spec.name}
+                            visualConfig={spec.config}
+                            visualLayout={spec.layout}
+                            visualState={spec.encodings}
+                            type='remote'
+                            computation={computationCallback!}
+                        /> :
+                        <PureRenderer
+                            {...props.extraConfig}
+                            appearance={useContext(darkModeContext)}
+                            vizThemeConfig={props.themeKey}
+                            name={spec.name}
+                            visualConfig={spec.config}
+                            visualLayout={spec.layout}
+                            visualState={spec.encodings}
+                            rawData={props.dataSource}
+                        />
+                    )
                 }
                 {
                     expand && commonStore.isStreamlitComponent && (
@@ -358,10 +434,11 @@ const initOnJupyter = async(props: IAppProps) => {
     const comm = initJupyterCommunication(props.id);
     comm.registerEndpoint("postData", postDataService);
     comm.registerEndpoint("finishData", finishDataService);
+    props.__comm = comm;
     communicationStore.setComm(comm);
     if (props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
-        props.visSpec = FormatSpec(visSpecResp["data"]["visSpec"], props.rawFields);
+        props.visSpec = FormatSpec(visSpecResp.data?.visSpec ?? [], props.rawFields);
     }
     if (props.needLoadDatas) {
         comm.sendMsgAsync("request_data", {}, null);
@@ -371,41 +448,56 @@ const initOnJupyter = async(props: IAppProps) => {
 
 const initOnHttpCommunication = async(props: IAppProps) => {
     const comm = await initHttpCommunication(props.id, props.communicationUrl);
+    props.__comm = comm;
     communicationStore.setComm(comm);
     if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
-        props.visSpec = visSpecResp["data"]["visSpec"];
+        props.visSpec = visSpecResp.data?.visSpec ?? [];
     }
     await initDslParser();
 }
 
 const initOnAnywidgetCommunication = async(props: IAppProps, model: import("@anywidget/types").AnyModel) => {
     const comm = await initAnywidgetCommunication(props.id, model);
+    props.__comm = comm;
     communicationStore.setComm(comm);
     if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
-        props.visSpec = visSpecResp["data"]["visSpec"];
+        props.visSpec = visSpecResp.data?.visSpec ?? [];
     }
     await initDslParser();
 }
 
 const defaultInit = async(props: IAppProps) => {}
 
+const formatAppProps = (props: IAppProps): IAppProps => ({
+    ...props,
+    id: String(props.id),
+    visSpec: FormatSpec(props.visSpec, props.rawFields),
+});
+
 function GWalkerComponent(props: IAppProps) {
     const [initChartFlag, setInitChartFlag] = useState(false);
     const [dataSource, setDataSource] = useState<IRow[]>(props.dataSource);
 
     useEffect(() => {
+        let cancelled = false;
+        setInitChartFlag(false);
         if (props.needLoadDatas) {
             loadDataSource(props.dataSourceProps).then((data) => {
+                if (cancelled) return;
                 setDataSource(data);
                 setInitChartFlag(true);
                 commonStore.setInitModalOpen(false);
             })
         } else {
+            setDataSource(props.dataSource);
             setInitChartFlag(true);
         }
-    }, []);
+        return () => {
+            cancelled = true;
+        }
+    }, [props.needLoadDatas, props.dataSource, props.dataSourceProps.dataSourceId, props.dataSourceProps.tunnelId]);
 
     return (
         <React.StrictMode>
@@ -552,17 +644,25 @@ function TableWalkerApp(props: IAppProps) {
 
 
 function SteamlitGWalkerApp(streamlitProps: any) {
-    const props = streamlitProps.args as IAppProps;
+    const props = React.useMemo(
+        () => formatAppProps(streamlitProps.args as IAppProps),
+        [streamlitProps.args],
+    );
     const [inited, setInited] = useState(false);
     const container = React.useRef<HTMLDivElement>(null);
-    props.visSpec = FormatSpec(props.visSpec, props.rawFields);
 
     useEffect(() => {
         commonStore.setIsStreamlitComponent(true);
+        let cancelled = false;
+        setInited(false);
         initOnHttpCommunication(props).then(() => {
+            if (cancelled) return;
             setInited(true);
         })
-    }, []);
+        return () => {
+            cancelled = true;
+        }
+    }, [props.id, props.communicationUrl]);
 
     useEffect(() => {
         if (!container.current) return;
@@ -601,8 +701,12 @@ const StreamlitGWalker = () => {
 function AnywidgetGWalkerApp() {
     const [inited, setInited] = useState(false);
     const model = useModel();
-    const props = JSON.parse(model.get("props")) as IAppProps;
-    props.visSpec = FormatSpec(props.visSpec, props.rawFields);
+    const propsRef = React.useRef<IAppProps | null>(null);
+    if (!propsRef.current) {
+        propsRef.current = JSON.parse(model.get("props")) as IAppProps;
+        propsRef.current.visSpec = FormatSpec(propsRef.current.visSpec, propsRef.current.rawFields);
+    }
+    const props = propsRef.current;
 
     useEffect(() => {
         initOnAnywidgetCommunication(props, model).then(() => {

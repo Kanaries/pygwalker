@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import type { VizSpecStore } from '@kanaries/graphic-walker/store/visualSpecStore'
 import { chartToWorkflow } from "@kanaries/graphic-walker/utils/workflow";
 import { tracker } from "@/utils/tracker";
+import type { ICommUploadSpecToCloudRequest } from "@/interfaces";
 
 import communicationStore from "../../store/communication";
 import commonStore from "../../store/common";
@@ -49,13 +50,14 @@ const UploadSpecModal: React.FC<IUploadSpecModal> = observer((props) => {
 
         try {
 
+            const request: ICommUploadSpecToCloudRequest = { fileName: specName, newToken: isSetToken ? token : "" };
             const resp = await communicationStore.comm?.sendMsg(
                 "upload_spec_to_cloud",
-                {"fileName": specName, "newToken": isSetToken ? token : ""},
+                request,
                 30_000
             );
             commonStore.setUploadSpecModalOpen(false);
-            uploadSuccess(resp?.data["specFilePath"]);
+            uploadSuccess(resp?.data?.specFilePath ?? "");
             props.setGwIsChanged(false);
         } finally {
             setUploading(false);

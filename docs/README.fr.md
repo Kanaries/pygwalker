@@ -1,5 +1,8 @@
 > Si vous êtes un locuteur natif de la langue actuelle, nous vous invitons à nous aider à maintenir la traduction de ce document. Vous pouvez faire une PR [ici](https://github.com/Kanaries/pygwalker/pulls)
 
+> [!IMPORTANT]
+> This translation is community-maintained and may lag behind the [English README](../README.md). Treat the English README as the source of truth for API reference, installation, and development instructions.
+
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/Kanaries/pygwalker/assets/22167673/bed8b3db-fda8-43e7-8ad2-71f6afb9dddd"></a></p>
 
 <h2 align="center">Une Bibliothèque Python pour l'Analyse Exploratoire de Données avec Visualisation.</h2>
@@ -162,7 +165,7 @@ usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--rese
 Modify configuration file. (default: /Users/douding/Library/Application Support/pygwalker/config.json) 
 Available configurations:
 
-- privacy  ['offline', 'update-only', 'events'] (default: events).
+- privacy  ['offline', 'update-only', 'events'] (default: update-only).
     "offline": fully offline, no data is send or api is requested
     "update-only": only check whether this is a new version of pygwalker to update
     "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.

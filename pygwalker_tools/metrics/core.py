@@ -19,7 +19,7 @@ METRICS_DEFINITIONS = {
                 "___default_table___"
             GROUP BY
                 strftime("date", '%Y-%m-%d')
-        """
+        """,
     },
     "uv": {
         "name": "uv",
@@ -36,7 +36,7 @@ METRICS_DEFINITIONS = {
                 "___default_table___"
             GROUP BY
                 strftime("date", '%Y-%m-%d')
-        """
+        """,
     },
     "mau": {
         "name": "mau",
@@ -53,7 +53,7 @@ METRICS_DEFINITIONS = {
                 "___default_table___"
             GROUP BY
                 strftime("date", '%Y-%m')
-        """
+        """,
     },
     "retention": {
         "name": "retention",
@@ -86,7 +86,7 @@ METRICS_DEFINITIONS = {
                 datediff('{time_unit}', t0."date", t1."date") = {time_size}
             GROUP BY
                 strftime(t0."date", '%Y-%m-%d')
-        """
+        """,
     },
     "new_user_count": {
         "name": "new_user_count",
@@ -105,7 +105,7 @@ METRICS_DEFINITIONS = {
                 "date"::date = "user_signup_date"::date
             GROUP BY
                 strftime("___default_table___"."date", '%Y-%m-%d')
-        """
+        """,
     },
     "active_user": {
         "name": "active_user",
@@ -128,7 +128,7 @@ METRICS_DEFINITIONS = {
             ) t1
             ON
                 datediff('day', t1."date", t0."date") BETWEEN 0 AND {within_active_days}
-        """
+        """,
     },
     "active_user_count": {
         "name": "active_user_count",
@@ -145,7 +145,7 @@ METRICS_DEFINITIONS = {
                 "active_user"
             GROUP BY
                 "active_user"."date"
-        """
+        """,
     },
     "user_churn_rate_base_active": {
         "name": "user_churn_rate_base_active",
@@ -169,15 +169,12 @@ METRICS_DEFINITIONS = {
                 "t0"."date"
             HAVING
                 COUNT("t1"."user_id") > 0
-        """
-    }
+        """,
+    },
 }
 
 
-def _replace_table_name_to_subquery(
-    origin_sql: str,
-    table_query_map: List[Tuple[str, str]]
-) -> str:
+def _replace_table_name_to_subquery(origin_sql: str, table_query_map: List[Tuple[str, str]]) -> str:
     """
     replace table name to subquery
     example:
@@ -196,22 +193,13 @@ def _replace_table_name_to_subquery(
                     alias_name = from_exp.this.alias
                 else:
                     alias_name = table_name
-                sub_query_node = exp.Subquery(
-                    this=sub_query_sql_ast,
-                    alias=f'"{alias_name}"'
-                )
+                sub_query_node = exp.Subquery(this=sub_query_sql_ast, alias=f'"{alias_name}"')
                 from_exp.this.replace(sub_query_node)
 
     return origin_sql_ast.sql("duckdb")
 
 
-def get_metrics_sql(
-    *,
-    name: str,
-    field_map: Dict[str, str],
-    params: Dict[str, Any],
-    origin_table_name: str
-) -> str:
+def get_metrics_sql(*, name: str, field_map: Dict[str, str], params: Dict[str, Any], origin_table_name: str) -> str:
     """get metrics sql"""
     if name not in METRICS_DEFINITIONS:
         raise ValueError(f"Unknown metrics name: {name}")
@@ -229,10 +217,14 @@ def get_metrics_sql(
 
     timestamp_field = {"date"}
 
-    field_map_sql = ",\n".join([
-        f'"{field_map[field]}" "{field}"' if field not in timestamp_field else f'"{field_map[field]}"::timestamp "{field}"'
-        for field in metrics_definition["fields"]
-    ])
+    field_map_sql = ",\n".join(
+        [
+            f'"{field_map[field]}" "{field}"'
+            if field not in timestamp_field
+            else f'"{field_map[field]}"::timestamp "{field}"'
+            for field in metrics_definition["fields"]
+        ]
+    )
     sub_query = f"""
         SELECT
             {field_map_sql}
@@ -241,15 +233,15 @@ def get_metrics_sql(
     """
 
     sql = metrics_definition["sql"].format(**used_params)
-    table_query_map = [
-        ("___default_table___", sub_query)
-    ]
+    table_query_map = [("___default_table___", sub_query)]
 
     for depend in metrics_definition["depends"]:
-        table_query_map.append((
-            depend,
-            get_metrics_sql(name=depend, field_map=field_map, params=params, origin_table_name=origin_table_name)
-        ))
+        table_query_map.append(
+            (
+                depend,
+                get_metrics_sql(name=depend, field_map=field_map, params=params, origin_table_name=origin_table_name),
+            )
+        )
 
     sql = _replace_table_name_to_subquery(sql, table_query_map)
 

@@ -130,7 +130,7 @@ dmypy.json
 
 __pycache__
 dist
-!/pygwalker/templates/dist/*
+pygwalker/templates/dist/
 .DS_Store
 venv
 .ipynb_checkpoints

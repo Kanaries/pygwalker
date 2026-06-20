@@ -10,7 +10,22 @@ from pygwalker._typing import DataFrame
 
 __classname2method = {}
 
-DatasetType = Literal['pandas', 'polars', 'modin', 'pyspark', 'connector', 'cloud_dataset']
+DatasetType = Literal["pandas", "polars", "pyarrow", "modin", "pyspark", "connector", "cloud_dataset"]
+
+SUPPORTED_DATASET_INPUTS = (
+    "pandas.DataFrame",
+    "polars.DataFrame",
+    "pyarrow.Table",
+    "modin.pandas.DataFrame",
+    "pyspark.sql.DataFrame",
+    "pygwalker.data_parsers.database_parser.Connector",
+    "cloud dataset id string",
+)
+
+
+def _get_type_name(value: Any) -> str:
+    value_type = type(value)
+    return f"{value_type.__module__}.{value_type.__qualname__}"
 
 
 # pylint: disable=import-outside-toplevel
@@ -24,41 +39,62 @@ def _get_data_parser(dataset: Union[DataFrame, Connector, str]) -> Tuple[BaseDat
 
     if isinstance(dataset, pd.DataFrame):
         from pygwalker.data_parsers.pandas_parser import PandasDataFrameDataParser
+
         __classname2method[pd.DataFrame] = (PandasDataFrameDataParser, "pandas")
         return __classname2method[pd.DataFrame]
 
-    if 'polars' in sys.modules:
+    if "polars" in sys.modules:
         import polars as pl
+
         if isinstance(dataset, pl.DataFrame):
             from pygwalker.data_parsers.polars_parser import PolarsDataFrameDataParser
+
             __classname2method[pl.DataFrame] = (PolarsDataFrameDataParser, "polars")
             return __classname2method[pl.DataFrame]
 
-    if 'modin.pandas' in sys.modules:
+    if "pyarrow" in sys.modules:
+        import pyarrow as pa
+
+        if isinstance(dataset, pa.Table):
+            from pygwalker.data_parsers.pyarrow_parser import PyArrowTableDataParser
+
+            __classname2method[pa.Table] = (PyArrowTableDataParser, "pyarrow")
+            return __classname2method[pa.Table]
+
+    if "modin.pandas" in sys.modules:
         from modin import pandas as mpd
+
         if isinstance(dataset, mpd.DataFrame):
             from pygwalker.data_parsers.modin_parser import ModinPandasDataFrameDataParser
+
             __classname2method[mpd.DataFrame] = (ModinPandasDataFrameDataParser, "modin")
             return __classname2method[mpd.DataFrame]
 
-    if 'pyspark' in sys.modules:
+    if "pyspark" in sys.modules:
         from pyspark.sql import DataFrame as SparkDataFrame
+
         if isinstance(dataset, SparkDataFrame):
             from pygwalker.data_parsers.spark_parser import SparkDataFrameDataParser
+
             __classname2method[SparkDataFrame] = (SparkDataFrameDataParser, "pyspark")
             return __classname2method[SparkDataFrame]
 
     if isinstance(dataset, Connector):
         from pygwalker.data_parsers.database_parser import DatabaseDataParser
+
         __classname2method[DatabaseDataParser] = (DatabaseDataParser, "connector")
         return __classname2method[DatabaseDataParser]
 
     if isinstance(dataset, str):
         from pygwalker.data_parsers.cloud_dataset_parser import CloudDatasetParser
+
         __classname2method[CloudDatasetParser] = (CloudDatasetParser, "cloud_dataset")
         return __classname2method[CloudDatasetParser]
 
-    raise TypeError(f"Unsupported data type: {type(dataset)}")
+    raise TypeError(
+        f"Unsupported dataset type: {_get_type_name(dataset)}. "
+        f"Supported dataset inputs: {', '.join(SUPPORTED_DATASET_INPUTS)}."
+    )
 
 
 def get_parser(
@@ -66,7 +102,7 @@ def get_parser(
     field_specs: Optional[List[FieldSpec]] = None,
     infer_string_to_date: bool = False,
     infer_number_to_dimension: bool = True,
-    other_params: Optional[Dict[str, Any]] = None
+    other_params: Optional[Dict[str, Any]] = None,
 ) -> BaseDataParser:
     if field_specs is None:
         field_specs = []
@@ -74,19 +110,14 @@ def get_parser(
         other_params = {}
 
     parser_func, _ = _get_data_parser(dataset)
-    parser = parser_func(
-        dataset,
-        field_specs,
-        infer_string_to_date,
-        infer_number_to_dimension,
-        other_params
-    )
+    parser = parser_func(dataset, field_specs, infer_string_to_date, infer_number_to_dimension, other_params)
     return parser
 
 
 def _get_pl_dataset_hash(dataset: DataFrame) -> str:
     """Get polars dataset hash value."""
     import polars as pl
+
     row_count = dataset.shape[0]
     other_info = str(dataset.shape) + "_polars"
     if row_count > 4000:
@@ -105,9 +136,21 @@ def _get_pd_dataset_hash(dataset: DataFrame) -> str:
     return hashlib.md5(hash_bytes).hexdigest()
 
 
+def _get_pyarrow_dataset_hash(dataset: DataFrame) -> str:
+    """Get pyarrow table hash value."""
+    table_shape = (dataset.num_rows, dataset.num_columns)
+    dataset = dataset.to_pandas()
+    other_info = str(table_shape) + "_pyarrow"
+    if len(dataset) > 4000:
+        dataset = pd.concat([dataset[:2000], dataset[-2000:]])
+    hash_bytes = pd.util.hash_pandas_object(dataset).values.tobytes() + other_info.encode()
+    return hashlib.md5(hash_bytes).hexdigest()
+
+
 def _get_modin_dataset_hash(dataset: DataFrame) -> str:
     """Get modin dataset hash value."""
     import modin.pandas as mpd
+
     row_count = dataset.shape[0]
     other_info = str(dataset.shape) + "_modin"
     if row_count > 4000:
@@ -119,7 +162,7 @@ def _get_modin_dataset_hash(dataset: DataFrame) -> str:
 
 def _get_spark_dataset_hash(dataset: DataFrame) -> str:
     """Get pyspark dataset hash value."""
-    shape = ((dataset.count(), len(dataset.columns)))
+    shape = (dataset.count(), len(dataset.columns))
     row_count = shape[0]
     other_info = str(shape) + "_pyspark"
     if row_count > 4000:
@@ -138,6 +181,9 @@ def get_dataset_hash(dataset: Union[DataFrame, Connector, str]) -> str:
 
     if dataset_type == "pandas":
         return _get_pd_dataset_hash(dataset)
+
+    if dataset_type == "pyarrow":
+        return _get_pyarrow_dataset_hash(dataset)
 
     if dataset_type == "modin":
         return _get_modin_dataset_hash(dataset)

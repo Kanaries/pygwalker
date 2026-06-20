@@ -1,4 +1,7 @@
-[English](README.md) | [Español](./docs/README.es.md) | [Français](./docs/README.fr.md) | [Deutsch](./docs/README.de.md) | [中文](./docs/README.zh.md) | [Türkçe](./docs/README.tr.md) | [日本語](./docs/README.ja.md) | [한국어](./docs/README.ko.md)
+[English](../README.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Deutsch](./README.de.md) | [中文](./README.zh.md) | [Türkçe](./README.tr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md)
+
+> [!IMPORTANT]
+> This translation is community-maintained and may lag behind the [English README](../README.md). Treat the English README as the source of truth for API reference, installation, and development instructions.
 
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/user-attachments/assets/f90db669-6e5a-45d3-942e-547c9d0471c9" /></a></p>
 
@@ -177,21 +180,10 @@ renderer.explorer()
 
 ## Справочник API
 
-### [pygwalker.walk](https://pygwalker-docs.vercel.app/api-reference/jupyter#walk)
-
-| Параметр                | Тип                                  | По умолчанию    | Описание                                                                   |
-| ----------------------- | ------------------------------------ | --------------- | -------------------------------------------------------------------------- |
-| dataset                 | Union\[DataFrame, Connector]         | —               | DataFrame или Connector для анализа данных.                                |
-| gid                     | Union\[int, str]                     | None            | ID контейнера GraphicWalker, формат: `gwalker-{gid}`.                      |
-| env                     | Literal\['Jupyter', 'JupyterWidget'] | 'JupyterWidget' | Окружение для pygwalker.                                                   |
-| field_specs             | Optional\[Dict\[str, FieldSpec]]     | None            | Спецификации полей, автоматически выводятся из `dataset`, если не заданы.  |
-| hide_data_source_config | bool                                 | True            | Скрыть кнопку импорта/экспорта источника данных.                           |
-| theme_key               | Literal\['vega', 'g2']               | 'g2'            | Тема для GraphicWalker.                                                    |
-| appearance              | Literal\['media', 'light', 'dark']   | 'media'         | Настройка темы: 'media' автоматически выбирает тему ОС.                    |
-| spec                    | str                                  | ""              | Данные конфигурации графика. Может быть ID, JSON-строка или удалённый URL. |
-| use_preview             | bool                                 | True            | Использовать функцию предварительного просмотра.                           |
-| kernel_computation      | bool                                 | False           | Включить вычисления внутри ядра для работы с большими данными.             |
-| \*\*kwargs              | Any                                  | —               | Дополнительные параметры.                                                  |
+Параметры API обновляются вместе с кодом. Используйте
+[английский API Reference](../README.md#api-reference) и
+[документацию `pygwalker-docs`](https://pygwalker-docs.vercel.app/api-reference/jupyter)
+как актуальный источник.
 
 ## Разработка
 
@@ -226,7 +218,7 @@ usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--rese
 Modify configuration file. (default: ~/Library/Application Support/pygwalker/config.json)
 Available configurations:
 
-- privacy  ['offline', 'update-only', 'events'] (default: events).
+- privacy  ['offline', 'update-only', 'events'] (default: update-only).
     "offline": полностью офлайн, без отправки данных.
     "update-only": только проверка обновлений pygwalker.
     "events": отправка данных о событиях для оптимизации продукта. Никакие пользовательские данные не передаются.

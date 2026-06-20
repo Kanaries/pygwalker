@@ -9,11 +9,10 @@ from pygwalker.utils.display import display_html
 def auto_set_kanaries_api_key_on_kaggle():
     """Auto set kanaries api key on kaggle."""
     from kaggle_secrets import UserSecretsClient
+
     if not GlobalVarManager.kanaries_api_key:
         try:
-            GlobalVarManager.set_kanaries_api_key(
-                UserSecretsClient().get_secret("kanaries_api_key")
-            )
+            GlobalVarManager.set_kanaries_api_key(UserSecretsClient().get_secret("kanaries_api_key"))
         except Exception:
             pass
 
@@ -27,6 +26,7 @@ def adjust_kaggle_default_font_size():
 def show_tips_user_kaggle() -> bool:
     """Whether has set kanaries api key."""
     from kaggle_secrets import UserSecretsClient
+
     try:
         has_set_api_key = bool(UserSecretsClient().get_secret("kanaries_api_key"))
     except Exception:

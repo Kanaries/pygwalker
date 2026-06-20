@@ -7,6 +7,7 @@ import pytz
 
 class DataFrameEncoder(json.JSONEncoder):
     """JSON encoder for DataFrame"""
+
     def default(self, o):
         if isinstance(o, datetime):
             if o.tzinfo is None:

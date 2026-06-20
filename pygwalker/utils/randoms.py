@@ -4,7 +4,7 @@ import string
 
 
 def rand_str(n: int = 8, options: str = string.ascii_letters + string.digits) -> str:
-    return ''.join(random.sample(options, n))
+    return "".join(random.sample(options, n))
 
 
 def generate_hash_code() -> str:

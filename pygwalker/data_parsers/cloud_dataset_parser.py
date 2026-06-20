@@ -16,13 +16,14 @@ logger = logging.getLogger(__name__)
 
 class CloudDatasetParser(BaseDataParser):
     """data parser for database"""
+
     def __init__(
         self,
         dataset_id: str,
         field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
-        other_params: Dict[str, Any]
+        other_params: Dict[str, Any],
     ):
         self.dataset_id = dataset_id
         self.field_specs = field_specs
@@ -54,20 +55,17 @@ class CloudDatasetParser(BaseDataParser):
             self.field_specs,
             self.infer_string_to_date,
             self.infer_number_to_dimension,
-            self.other_params
+            self.other_params,
         )
-        return [
-            {**field, "fid": field["name"]}
-            for field in pandas_parser.raw_fields
-        ]
+        return [{**field, "fid": field["name"]} for field in pandas_parser.raw_fields]
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         if limit is None:
             df = self.example_pandas_df
         else:
             df = self.example_pandas_df[:limit]
-        df = df.replace({float('nan'): None})
-        return df.to_dict(orient='records')
+        df = df.replace({float("nan"): None})
+        return df.to_dict(orient="records")
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         result = self._cloud_service.query_from_dataset(self.dataset_id, payload)
@@ -87,7 +85,11 @@ class CloudDatasetParser(BaseDataParser):
         return content
 
     def _get_all_datas(self, limit: int) -> List[Dict[str, Any]]:
-        payload = {"workflow": [{"type": "view", "query": [{"op": "raw", "fields": ["*"]}]}], "limit": limit, "offset": 0}
+        payload = {
+            "workflow": [{"type": "view", "query": [{"op": "raw", "fields": ["*"]}]}],
+            "limit": limit,
+            "offset": 0,
+        }
         return self.get_datas_by_payload(payload)
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
@@ -97,10 +99,7 @@ class CloudDatasetParser(BaseDataParser):
     def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
         result = self._cloud_service.batch_query_from_dataset(self.dataset_id, payload_list)
-        return [
-            item["rows"]
-            for item in result
-        ]
+        return [item["rows"] for item in result]
 
     @property
     def dataset_type(self) -> str:

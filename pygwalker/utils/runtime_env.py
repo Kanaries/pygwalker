@@ -4,10 +4,11 @@ from typing_extensions import Literal
 def _is_jupyter() -> bool:
     try:
         from IPython import get_ipython
+
         ip = get_ipython()
         if ip is None:
             return False
-        return ip.has_trait('kernel')
+        return ip.has_trait("kernel")
     except Exception:
         return False
 

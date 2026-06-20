@@ -6,11 +6,7 @@ import ipywidgets
 DISPLAY_HANDLER = {}
 
 
-def display_html(
-    html: Union[str, HTML, ipywidgets.Widget],
-    *,
-    slot_id: str = None
-):
+def display_html(html: Union[str, HTML, ipywidgets.Widget], *, slot_id: str = None):
     """Judge the presentation method to be used based on the context
 
     Args:

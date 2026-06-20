@@ -5,13 +5,11 @@ from pygwalker.utils.display import display_html
 
 WIDGETS_TIPS = """
 <div style="">
-If you are using pygwalker on Jupyter Notebook(version<7) and it can't display properly, please execute code to fix it: `pip install "pygwalker[notebook]" --pre`.(close after 15 seconds)
+If you are using pygwalker on Jupyter Notebook(version<7) and it can't display properly, please execute code to fix it: `pip install "pygwalker[notebook-legacy]" --pre`.(close after 15 seconds)
 <div>
 """
 
-TIPS_MAP = {
-    "widgets": WIDGETS_TIPS
-}
+TIPS_MAP = {"widgets": WIDGETS_TIPS}
 
 
 class TipOnStartTool:
@@ -21,7 +19,7 @@ class TipOnStartTool:
         self.gid = gid
         self.slot_id = f"user-tips-{gid}"
         self.tips = TIPS_MAP.get(tip_name, "")
-        Thread(target=self.hide).start()
+        Thread(target=self.hide, daemon=True).start()
 
     def show(self):
         display_html(self.tips, slot_id=self.slot_id)

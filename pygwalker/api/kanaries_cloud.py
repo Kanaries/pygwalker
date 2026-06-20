@@ -14,13 +14,13 @@ def create_cloud_dataset(
     *,
     name: Optional[str] = None,
     is_public: bool = False,
-    kanaries_api_key: str = ""
+    kanaries_api_key: str = "",
 ) -> str:
     """
     Create a dataset in kanaries cloud
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataset.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector, optional): dataset.
 
     Kargs:
         - name (str): dataset name in kanaries cloud.
@@ -44,14 +44,14 @@ def create_cloud_walker(
     chart_name: str,
     workspace_name: str,
     field_specs: Optional[List[FieldSpec]] = None,
-    kanaries_api_key: str = ""
+    kanaries_api_key: str = "",
 ) -> str:
     """
     (deprecated)
     Create a pygwalker in kanaries cloud
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table, optional): dataframe.
 
     Kargs:
         - chart_name (str): pygwalker chart name in kanaries cloud.
@@ -71,7 +71,7 @@ def create_cloud_walker(
         chart_name=chart_name,
         workspace_name=workspace_name,
         dataset_content=data_parser.to_parquet(),
-        field_specs=data_parser.raw_fields
+        field_specs=data_parser.raw_fields,
     )
 
 

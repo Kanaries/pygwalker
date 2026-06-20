@@ -112,18 +112,13 @@ def fill_new_fields(config: List[Dict[str, Any]], all_fields: List[Dict[str, str
     config = deepcopy(config)
     for chart_item in config:
         field_set = {
-            field["fid"]
-            for field in chart_item["encodings"]["dimensions"] + chart_item["encodings"]["measures"]
+            field["fid"] for field in chart_item["encodings"]["dimensions"] + chart_item["encodings"]["measures"]
         }
         new_dimension_fields = []
         new_measure_fields = []
         for field in all_fields:
             if field["fid"] not in field_set:
-                gw_field = {
-                    **field,
-                    "basename": field["name"],
-                    "dragId": "GW_" + rand_str()
-                }
+                gw_field = {**field, "basename": field["name"], "dragId": "GW_" + rand_str()}
                 if field["analyticType"] == "dimension":
                     new_dimension_fields.append(gw_field)
                 else:
@@ -185,7 +180,6 @@ def get_spec_json(spec: Union[str, List[Any], Dict[str, Any]]) -> Tuple[Dict[str
 
     if Version(spec_obj.get("version", "0.1.0")) <= Version("0.3.17a4"):
         spec_obj["config"] = _config_adapter(spec_obj["config"])
-    
 
     if isinstance(spec_obj["config"], str):
         spec_obj["config"] = json.loads(spec_obj["config"])

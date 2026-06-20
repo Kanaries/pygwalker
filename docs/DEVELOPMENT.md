@@ -1,11 +1,15 @@
 # PyGWalker Development Setup
 
+For the current end-to-end contributor workflow, see
+[`docs/CONTRIBUTING.md`](./CONTRIBUTING.md). This page keeps extra
+hot-reloading notes and troubleshooting details.
+
 This guide explains how to set up a local development environment for PyGWalker with hot-reloading support.
 
 ## Prerequisites
 
-- Python 3.7+
-- Node.js 16+
+- Python 3.10+
+- Node.js 22.x
 - Yarn
 
 ## Quick Start
@@ -50,6 +54,10 @@ yarn build
 3. Restart your Jupyter kernel
 4. Test your changes
 
+Before committing frontend changes, run the full validation path from
+[`docs/CONTRIBUTING.md`](./CONTRIBUTING.md): `yarn typecheck`, `yarn build`,
+and `yarn test:front_end`.
+
 ### Option B: Hot-Reload Development (Recommended)
 
 This setup enables live reloading when you change frontend code.
@@ -58,7 +66,7 @@ This setup enables live reloading when you change frontend code.
 
 ```bash
 cd app
-yarn dev
+yarn dev:server
 ```
 
 The dev server will start at `http://localhost:8769/pyg_dev_app/`
@@ -149,5 +157,5 @@ yarn build  # Builds all variants (iife, es, dsl-to-workflow, vega-to-dsl)
 ```
 
 The built files are placed in `pygwalker/templates/dist/`.
-
-
+`yarn build:app` only rebuilds the main app bundle and is intended for local
+iteration, not release or CI validation.

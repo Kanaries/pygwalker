@@ -7,20 +7,25 @@ import sqlglot
 import sqlglot.expressions as exp
 
 from .pygwalker import PygWalker
-from pygwalker._typing import DataFrame, IAppearance, IThemeKey, ISpecIOMode
+from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey, ISpecIOMode
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
+from pygwalker.utils.computation import resolve_computation_mode
 from pygwalker.utils.randoms import rand_str
+from pygwalker.utils.spec import resolve_spec_input
 
 
 GRAPHIC_WALKER_AGG_FUNCS = {
-    "sum", "mean", "median",
-    "min", "max", "variance", "stddev",
+    "sum",
+    "mean",
+    "median",
+    "min",
+    "max",
+    "variance",
+    "stddev",
 }
 
-GRAPHIC_WALKER_FIELD_FUNCS = {
-    "bin", "bin_count"
-}
+GRAPHIC_WALKER_FIELD_FUNCS = {"bin", "bin_count"}
 
 
 def _convert_sql_to_field(sql: str, is_agg_sql: bool) -> Dict[str, Any]:
@@ -32,13 +37,7 @@ def _convert_sql_to_field(sql: str, is_agg_sql: bool) -> Dict[str, Any]:
         "analyticType": "dimension",
         "semanticType": "nominal",
         "computed": True,
-        "expression": {
-            "as": fid,
-            "op": "expr",
-            "params": [
-                {"type": "sql", "value": sql}
-            ]
-        }
+        "expression": {"as": fid, "op": "expr", "params": [{"type": "sql", "value": sql}]},
     }
     if is_agg_sql:
         field_item["aggName"] = "expr"
@@ -77,7 +76,7 @@ def _convert_gw_bin_function_to_field(func_name: str, field_name: str, num: int)
                 {"type": "field", "value": field_name},
             ],
             "num": num,
-        }
+        },
     }
     return field_item
 
@@ -127,6 +126,7 @@ class Component:
         - field_map (Dict[str, Any]): field map.
         - single_chart_spec (Dict[str, Any]): single chart
     """
+
     def __init__(
         self,
         *,
@@ -147,7 +147,7 @@ class Component:
             walker=self.walker,
             render_type=self._render_type,
             field_map=deepcopy(self._field_map),
-            single_chart_spec=deepcopy(self._single_chart_spec)
+            single_chart_spec=deepcopy(self._single_chart_spec),
         )
 
     def _update_single_chart_spec(self, key: str, value: Any) -> Dict[str, Any]:
@@ -176,7 +176,7 @@ class Component:
                 "analyticType": "dimension",
                 "semanticType": "nominal",
                 "computed": False,
-                **self._field_map.get(s, {})
+                **self._field_map.get(s, {}),
             }
         return {}
 
@@ -195,20 +195,22 @@ class Component:
     def _get_single_chart_html(self) -> str:
         return self.walker.get_single_chart_html_by_spec(spec=self._single_chart_spec)
 
-    def _get_explorer_html(self) -> str:
-        all_datas = None
+    def _raise_if_live_computation(self, target: str) -> None:
         if self.walker.kernel_computation:
-            all_datas = self.walker.data_parser.to_records()
-        pyg_props = self.walker._get_props(data_source=all_datas)
+            raise ValueError(f"{target} does not support kernel computation. Use computation='browser'.")
+        if self.walker.cloud_computation:
+            raise ValueError(f"{target} does not support cloud computation. Use computation='browser'.")
+
+    def _get_explorer_html(self) -> str:
+        self._raise_if_live_computation("Static component explorer export")
+        pyg_props = self.walker._get_props()
         pyg_props["visSpec"] = [self._single_chart_spec]
 
         return self.walker._get_render_iframe(pyg_props)
 
     def _get_profiling_html(self) -> str:
-        all_datas = None
-        if self.walker.kernel_computation:
-            all_datas = self.walker.data_parser.to_records()
-        pyg_props = self.walker._get_props(data_source=all_datas)
+        self._raise_if_live_computation("Static component profiling export")
+        pyg_props = self.walker._get_props()
         pyg_props["gwMode"] = "table"
         return self.walker._get_render_iframe(pyg_props)
 
@@ -326,9 +328,7 @@ class Component:
         .encode(x="field_0", y="SUM(field_1)")
         """
         all_params = {
-            key: [value] if isinstance(value, str) else value
-            for key, value in locals().items()
-            if key != "self"
+            key: [value] if isinstance(value, str) else value for key, value in locals().items() if key != "self"
         }
         copied_obj = self.copy()
         params_key_map = {
@@ -363,7 +363,7 @@ class Component:
         mode: Optional[Literal["auto", "fixed", "container"]] = None,
         width: Optional[int] = None,
         height: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> "Component":
         """
         Set layout config.
@@ -399,12 +399,7 @@ class Component:
         }
         """
         copied_obj = self.copy()
-        layout_info = {
-            "size__mode": mode,
-            "size__width": width,
-            "size__height": height,
-            **kwargs
-        }
+        layout_info = {"size__mode": mode, "size__width": width, "size__height": height, **kwargs}
         for key, value in layout_info.items():
             if value is None:
                 continue
@@ -423,6 +418,8 @@ class Component:
         copied_obj = self.copy()
         copied_obj._render_type = "explorer"
         return copied_obj
+
+
 # pylint: enable=protected-access
 
 
@@ -431,53 +428,61 @@ def component(
     *,
     field_specs: Optional[List[FieldSpec]] = None,
     spec: str = "",
+    spec_path: Optional[str] = None,
     spec_io_mode: ISpecIOMode = "rw",
     theme_key: IThemeKey = "vega",
     appearance: IAppearance = "media",
     show_cloud_tool: Optional[bool] = False,
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
-    **kwargs
+    **kwargs,
 ) -> Component:
     """
     Component class for creating a chain of components.
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | str, optional): dataset.
 
     Kargs:
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
+    resolved_spec = resolve_spec_input(spec, spec_path)
+    resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+        dataset,
+        computation=computation,
+        kernel_computation=kernel_computation,
+    )
+
     walker = PygWalker(
         gid=None,
         dataset=dataset,
         field_specs=field_specs,
-        spec=spec,
+        spec=resolved_spec,
         source_invoke_code="",
         theme_key=theme_key,
         appearance=appearance,
         show_cloud_tool=show_cloud_tool,
         use_preview=True,
-        kernel_computation=isinstance(dataset, (Connector, str)) or kernel_computation,
+        kernel_computation=resolved_kernel_computation,
         use_save_tool="w" in spec_io_mode,
         gw_mode="explore",
         is_export_dataframe="w" in spec_io_mode,
         kanaries_api_key=kanaries_api_key,
         default_tab="data",
-        cloud_computation=False,
-        **kwargs
+        cloud_computation=resolved_cloud_computation,
+        **kwargs,
     )
     render_type = "pure_chart"
-    field_map = {
-        field["fid"]: field
-        for field in walker.data_parser.raw_fields
-    }
+    field_map = {field["fid"]: field for field in walker.data_parser.raw_fields}
     single_chart_spec = {
         "name": "Chart 1",
         "visId": "",
@@ -527,7 +532,7 @@ def component(
             },
             "stack": "stack",
             "zeroScale": True,
-        }
+        },
     }
     return Component(
         walker=walker,

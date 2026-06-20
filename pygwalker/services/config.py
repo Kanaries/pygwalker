@@ -9,24 +9,20 @@ from appdirs import user_config_dir
 
 
 DEFAULT_CONFIG = {
-    "privacy": "events",
+    "privacy": "update-only",
     "kanaries_token": "",
 }
 CONFIG_KEYS = list(DEFAULT_CONFIG.keys())
 APP_DIR = user_config_dir("pygwalker")
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
 USER_CONFIG_PATH = os.path.join(APP_DIR, "user_config.json")
+PRIVACY_NOTICE_PATH = os.path.join(APP_DIR, "privacy_notice_shown")
 
 
 class ConfigItem:
     """Configuration item."""
-    def __init__(
-        self,
-        name: str,
-        type_list: List[str],
-        default: Optional[str] = None,
-        description: str = ''
-    ) -> None:
+
+    def __init__(self, name: str, type_list: List[str], default: Optional[str] = None, description: str = "") -> None:
         self.name = name
         self.type_list = type_list
         self.default = default
@@ -39,12 +35,12 @@ class ConfigItem:
 privacy_item = ConfigItem(
     "privacy",
     ["offline", "update-only", "events"],
-    default="events",
+    default="update-only",
     description="""
     "offline": fully offline, no data is send or api is requested
     "update-only": only check whether this is a new version of pygwalker to update
     "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.
-    """
+    """,
 )
 kanati_token_item = ConfigItem(
     "kanaries_token",
@@ -54,7 +50,7 @@ kanati_token_item = ConfigItem(
     your kanaries token, you can get it from https://kanaries.net.
     refer: https://space.kanaries.net/t/how-to-get-api-key-of-kanaries.
     by kanaries token, you can use kanaries service in pygwalker, such as share chart, share config.
-    """
+    """,
 )
 config_items = [privacy_item, kanati_token_item]
 
@@ -62,8 +58,8 @@ config_items = [privacy_item, kanati_token_item]
 def get_config_params_help() -> str:
     help_str = ""
     help_str += "Available configurations:\n\n"
-    for item in config_items: 
-        help_str += (str(item) + "\n")
+    for item in config_items:
+        help_str += str(item) + "\n"
     return help_str
 
 
@@ -71,10 +67,10 @@ def _read_and_create_file(path: str, default_content: Dict[str, str]) -> Dict[st
     try:
         if not os.path.exists(path):
             os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path, 'w', encoding="utf-8") as f:
+            with open(path, "w", encoding="utf-8") as f:
                 json.dump(default_content, f, indent=4)
 
-        with open(path, 'r', encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             file_content = json.load(f)
         return file_content
     except Exception:
@@ -92,7 +88,7 @@ def set_config(new_config: Dict[str, str]):
 
     config.update(new_config)
 
-    with open(CONFIG_PATH, 'w', encoding="utf-8") as f:
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4)
 
 
@@ -109,13 +105,13 @@ def reset_config(keys: List[str]):
         else:
             config.pop(key, None)
 
-    with open(CONFIG_PATH, 'w', encoding="utf-8") as f:
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4)
 
 
 def reset_all_config():
     """Unset all user configuration and use default value instead."""
-    with open(CONFIG_PATH, 'w', encoding="utf-8") as f:
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(DEFAULT_CONFIG, f, indent=4)
 
 
@@ -143,9 +139,19 @@ def get_all_config_str() -> str:
     return json.dumps(config, indent=4)
 
 
+def should_show_privacy_notice() -> bool:
+    """Return True once per user config directory for the telemetry opt-out notice."""
+    try:
+        if os.path.exists(PRIVACY_NOTICE_PATH):
+            return False
+        os.makedirs(os.path.dirname(PRIVACY_NOTICE_PATH), exist_ok=True)
+        with open(PRIVACY_NOTICE_PATH, "w", encoding="utf-8") as f:
+            f.write("shown")
+        return True
+    except Exception:
+        return False
+
+
 @lru_cache(maxsize=1)
 def get_local_user_id() -> str:
-    return _read_and_create_file(
-        USER_CONFIG_PATH,
-        {"user_id": generate_hash_code()}
-    ).get("user_id", "")
+    return _read_and_create_file(USER_CONFIG_PATH, {"user_id": generate_hash_code()}).get("user_id", "")

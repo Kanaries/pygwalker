@@ -17,13 +17,14 @@ logger = logging.getLogger(__name__)
 
 class SparkDataFrameDataParser(BaseDataParser):
     """prop parser for DataFrame of spark"""
+
     def __init__(
         self,
         df: DataFrame,
         field_specs: List[FieldSpec],
         infer_string_to_date: bool,
         infer_number_to_dimension: bool,
-        other_params: Dict[str, Any]
+        other_params: Dict[str, Any],
     ):
         if not df.is_cached:
             logger.warning(
@@ -48,7 +49,7 @@ class SparkDataFrameDataParser(BaseDataParser):
             self.field_specs,
             self.infer_string_to_date,
             self.infer_number_to_dimension,
-            self.other_params
+            self.other_params,
         )
         return pandas_parser.raw_fields
 
@@ -69,26 +70,16 @@ class SparkDataFrameDataParser(BaseDataParser):
         return [row.asDict() for row in result_df.collect()]
 
     def get_datas_by_payload(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
-        sql = get_sql_from_payload(
-            "pygwalker_mid_table",
-            payload,
-            {"pygwalker_mid_table": self.field_metas}
-        )
+        sql = get_sql_from_payload("pygwalker_mid_table", payload, {"pygwalker_mid_table": self.field_metas})
         return self.get_datas_by_sql(sql)
 
     def batch_get_datas_by_sql(self, sql_list: List[str]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
-        return [
-            self.get_datas_by_sql(sql)
-            for sql in sql_list
-        ]
+        return [self.get_datas_by_sql(sql) for sql in sql_list]
 
     def batch_get_datas_by_payload(self, payload_list: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
         """batch get records"""
-        return [
-            self.get_datas_by_payload(payload)
-            for payload in payload_list
-        ]
+        return [self.get_datas_by_payload(payload) for payload in payload_list]
 
     def to_csv(self) -> io.BytesIO:
         content = io.BytesIO()

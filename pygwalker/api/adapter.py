@@ -1,45 +1,52 @@
-
-from typing import Union, List, Optional
+from typing import Union, List, Optional, TYPE_CHECKING
 
 from typing_extensions import Literal
 
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame, IAppearance, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
 from pygwalker.utils.runtime_env import get_current_env
 from pygwalker.api import jupyter
 from pygwalker.api import webserver
 
+if TYPE_CHECKING:
+    from pygwalker.api.walker import Walker
+
 
 def walk(
-    dataset: Union[DataFrame, Connector, str],
+    dataset: Union[DataFrame, Connector, str, "Walker"],
     gid: Union[int, str] = None,
     *,
-    env: Literal['Jupyter', 'JupyterWidget'] = 'JupyterWidget',
+    env: Literal["JupyterAnywidget", "Jupyter", "JupyterWidget"] = "JupyterAnywidget",
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     spec: str = "",
+    spec_path: Optional[str] = None,
+    computation: Optional[IComputation] = None,
     use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
     cloud_computation: bool = False,
     show_cloud_tool: bool = True,
     kanaries_api_key: str = "",
     default_tab: Literal["data", "vis"] = "vis",
-    **kwargs
+    **kwargs,
 ):
-    """Walk through pandas.DataFrame df with Graphic Walker
+    """Walk through a tabular dataset with Graphic Walker
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | str | pygwalker.Walker, optional): dataset or reusable Walker object.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
-        - env: (Literal['Jupyter' | 'JupyterWidget'], optional): The enviroment using pygwalker. Default as 'JupyterWidget'
+        - env: (Literal['JupyterAnywidget' | 'Jupyter' | 'JupyterWidget'], optional): The environment using pygwalker. Default as 'JupyterAnywidget'. 'Jupyter' and 'JupyterWidget' are deprecated legacy transports kept for compatibility.
         - field_specs (List[FieldSpec], optional): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
         - theme_key ('vega' | 'g2' | 'streamlit'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
+        - use_kernel_calc(bool): Deprecated alias for kernel computation. Prefer computation="kernel".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
@@ -56,13 +63,15 @@ def walk(
             theme_key=theme_key,
             appearance=appearance,
             spec=spec,
+            spec_path=spec_path,
+            computation=computation,
             use_kernel_calc=use_kernel_calc,
             kernel_computation=kernel_computation,
             cloud_computation=cloud_computation,
             show_cloud_tool=show_cloud_tool,
             kanaries_api_key=kanaries_api_key,
             default_tab=default_tab,
-            **kwargs
+            **kwargs,
         )
 
     return webserver.walk(
@@ -72,6 +81,9 @@ def walk(
         theme_key=theme_key,
         appearance=appearance,
         spec=spec,
+        spec_path=spec_path,
+        computation=computation,
+        use_kernel_calc=use_kernel_calc,
         kernel_computation=kernel_computation,
         cloud_computation=cloud_computation,
         show_cloud_tool=show_cloud_tool,
@@ -79,28 +91,32 @@ def walk(
         default_tab=default_tab,
         auto_open=True,
         auto_shutdown=True,
-        **kwargs
+        **kwargs,
     )
 
 
 def render(
     dataset: Union[DataFrame, Connector, str],
-    spec: str,
+    spec: str = "",
     *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
+    spec_path: Optional[str] = None,
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
-    **kwargs
+    **kwargs,
 ):
     """
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | str, optional): dataset.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - port(int): only works in web server mode. port to use for the server. Default to None, which means a random port will be used.
@@ -112,9 +128,11 @@ def render(
             spec,
             theme_key=theme_key,
             appearance=appearance,
+            spec_path=spec_path,
+            computation=computation,
             kernel_computation=kernel_computation,
             kanaries_api_key=kanaries_api_key,
-            **kwargs
+            **kwargs,
         )
 
     return webserver.render(
@@ -122,30 +140,36 @@ def render(
         spec,
         theme_key=theme_key,
         appearance=appearance,
+        spec_path=spec_path,
+        computation=computation,
         kernel_computation=kernel_computation,
         kanaries_api_key=kanaries_api_key,
         auto_open=True,
         auto_shutdown=True,
-        **kwargs
+        **kwargs,
     )
 
 
 def table(
     dataset: Union[DataFrame, Connector, str],
     *,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
+    spec_path: Optional[str] = None,
+    computation: Optional[IComputation] = None,
     kernel_computation: Optional[bool] = None,
     kanaries_api_key: str = "",
-    **kwargs
+    **kwargs,
 ):
     """
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | str, optional): dataset.
 
     Kargs:
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
+        - spec_path (str): local chart configuration file path.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - port(int): only works in web server mode. port to use for the server. Default to None, which means a random port will be used.
@@ -156,18 +180,22 @@ def table(
             dataset,
             theme_key=theme_key,
             appearance=appearance,
+            spec_path=spec_path,
+            computation=computation,
             kernel_computation=kernel_computation,
             kanaries_api_key=kanaries_api_key,
-            **kwargs
+            **kwargs,
         )
-    
+
     return webserver.table(
         dataset,
         theme_key=theme_key,
         appearance=appearance,
+        spec_path=spec_path,
+        computation=computation,
         kernel_computation=kernel_computation,
         kanaries_api_key=kanaries_api_key,
         auto_open=True,
         auto_shutdown=True,
-        **kwargs
+        **kwargs,
     )

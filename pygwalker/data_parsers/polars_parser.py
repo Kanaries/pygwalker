@@ -3,12 +3,29 @@ import io
 
 import polars as pl
 
-from .base import (
-    BaseDataFrameDataParser,
-    is_temporal_field,
-    is_geo_field
-)
+from .base import BaseDataFrameDataParser, is_temporal_field, is_geo_field
 from pygwalker.services.fname_encodings import rename_columns
+
+
+def _is_numeric_dtype(dtype: pl.DataType) -> bool:
+    is_numeric = getattr(dtype, "is_numeric", None)
+    if is_numeric is not None:
+        return is_numeric()
+    return dtype in pl.NUMERIC_DTYPES
+
+
+def _is_integer_dtype(dtype: pl.DataType) -> bool:
+    is_integer = getattr(dtype, "is_integer", None)
+    if is_integer is not None:
+        return is_integer()
+    return dtype in pl.INTEGER_DTYPES
+
+
+def _is_temporal_dtype(dtype: pl.DataType) -> bool:
+    is_temporal = getattr(dtype, "is_temporal", None)
+    if is_temporal is not None:
+        return is_temporal()
+    return dtype in pl.TEMPORAL_DTYPES
 
 
 class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
@@ -30,19 +47,17 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         return content
 
     def _rename_dataframe(self, df: pl.DataFrame) -> pl.DataFrame:
-        df = df.rename({
-            old_col: new_col
-            for old_col, new_col in zip(df.columns, rename_columns(df.columns))
-        })
+        df = df.rename({old_col: new_col for old_col, new_col in zip(df.columns, rename_columns(df.columns))})
         return df
 
     def _infer_semantic(self, s: pl.Series, field_name: str):
-        example_value = s[0]
         kind = s.dtype
 
-        if kind in pl.NUMERIC_DTYPES or is_geo_field(field_name):
+        if _is_numeric_dtype(kind) or is_geo_field(field_name):
             return "quantitative"
-        if kind in pl.TEMPORAL_DTYPES or is_temporal_field(example_value, self.infer_string_to_date):
+        if _is_temporal_dtype(kind):
+            return "temporal"
+        if len(s) > 0 and is_temporal_field(s[0], self.infer_string_to_date):
             return "temporal"
 
         return "nominal"
@@ -53,10 +68,10 @@ class PolarsDataFrameDataParser(BaseDataFrameDataParser[pl.DataFrame]):
         if is_geo_field(field_name):
             return "dimension"
 
-        if self.infer_number_to_dimension and kind in pl.INTEGER_DTYPES and len(s.unique()) <= 16:
+        if self.infer_number_to_dimension and _is_integer_dtype(kind) and len(s.unique()) <= 16:
             return "dimension"
 
-        if kind in pl.NUMERIC_DTYPES:
+        if _is_numeric_dtype(kind):
             return "measure"
 
         return "dimension"

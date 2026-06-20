@@ -1,4 +1,4 @@
-from typing import Union, Dict, Optional, List, Any, Tuple
+from typing import Union, Dict, Optional, List, Any, Tuple, TYPE_CHECKING
 from packaging.version import Version
 from copy import deepcopy
 import json
@@ -9,19 +9,81 @@ from cachetools import cached, TTLCache
 import arrow
 
 from .pygwalker import PygWalker
-from pygwalker.communications.streamlit_comm import (
-    hack_streamlit_server,
-    BASE_URL_PATH,
-    StreamlitCommunication
-)
+from pygwalker.communications.streamlit_comm import hack_streamlit_server, BASE_URL_PATH, StreamlitCommunication
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
-from pygwalker._typing import DataFrame, IAppearance, ISpecIOMode, IThemeKey
+from pygwalker._typing import DataFrame, IAppearance, IComputation, ISpecIOMode, IThemeKey
 from pygwalker.utils.randoms import rand_str
 from pygwalker.utils.check_walker_params import check_expired_params
-from pygwalker.utils import fallback_value
+from pygwalker.utils.computation import resolve_computation_mode
+from pygwalker.utils.encode import DataFrameEncoder
+from pygwalker.utils.spec import resolve_spec_input
 from pygwalker.services.streamlit_components import pygwalker_component
 from pygwalker.services.data_parsers import get_dataset_hash
+from pygwalker.api._walker_reuse import (
+    collect_walker_construction_conflicts,
+    is_public_walker,
+    reject_walker_construction_params,
+)
+
+if TYPE_CHECKING:
+    from pygwalker.api.walker import Walker
+
+
+def _reject_walker_construction_params(
+    *,
+    gid: Union[int, str],
+    field_specs: Optional[List[FieldSpec]],
+    theme_key: IThemeKey,
+    appearance: IAppearance,
+    spec: str,
+    spec_path: Optional[str],
+    spec_io_mode: ISpecIOMode,
+    computation: Optional[IComputation],
+    kernel_computation: Optional[bool],
+    use_kernel_calc: Optional[bool],
+    show_cloud_tool: Optional[bool],
+    kanaries_api_key: str,
+    default_tab: Literal["data", "vis"],
+    kwargs: Dict[str, Any],
+) -> None:
+    conflicts = collect_walker_construction_conflicts(
+        {
+            "gid": gid,
+            "field_specs": field_specs,
+            "theme_key": theme_key,
+            "appearance": appearance,
+            "spec": spec,
+            "spec_path": spec_path,
+            "spec_io_mode": spec_io_mode,
+            "computation": computation,
+            "kernel_computation": kernel_computation,
+            "use_kernel_calc": use_kernel_calc,
+            "show_cloud_tool": show_cloud_tool,
+            "kanaries_api_key": kanaries_api_key,
+            "default_tab": default_tab,
+        },
+        {
+            "gid": None,
+            "field_specs": None,
+            "theme_key": "g2",
+            "appearance": "media",
+            "spec": "",
+            "spec_path": None,
+            "spec_io_mode": "r",
+            "computation": None,
+            "kernel_computation": None,
+            "use_kernel_calc": None,
+            "show_cloud_tool": None,
+            "kanaries_api_key": "",
+            "default_tab": "vis",
+        },
+        conflict_predicates={
+            "show_cloud_tool": lambda value: value is not None,
+        },
+        extra_kwargs=kwargs,
+    )
+    reject_walker_construction_params("StreamlitRenderer", conflicts)
 
 
 class PreFilter(BaseModel):
@@ -36,6 +98,7 @@ class PreFilter(BaseModel):
         3. use one of: pass in string or number.
         PreFilter(field="category", op="one of", value=["a", "b", "c"])
     """
+
     field: str
     op: Literal["range", "temporal range", "one of"]
     value: List[Union[int, float, str]]
@@ -49,25 +112,28 @@ def init_streamlit_comm():
 # pylint: disable=protected-access
 class StreamlitRenderer:
     """Streamlit Renderer"""
+
     def __init__(
         self,
-        dataset: Union[DataFrame, Connector],
+        dataset: Union[DataFrame, Connector, "Walker"],
         gid: Union[int, str] = None,
         *,
         field_specs: Optional[List[FieldSpec]] = None,
-        theme_key: IThemeKey = 'g2',
-        appearance: IAppearance = 'media',
+        theme_key: IThemeKey = "g2",
+        appearance: IAppearance = "media",
         spec: str = "",
+        spec_path: Optional[str] = None,
         spec_io_mode: ISpecIOMode = "r",
+        computation: Optional[IComputation] = None,
         kernel_computation: Optional[bool] = None,
-        use_kernel_calc: Optional[bool] = True,
+        use_kernel_calc: Optional[bool] = None,
         show_cloud_tool: Optional[bool] = None,
         kanaries_api_key: str = "",
         default_tab: Literal["data", "vis"] = "vis",
-        **kwargs
+        **kwargs,
     ):
         """Get pygwalker html render to streamlit.
-        In Streamlit, pygwalker calculates a somewhat inaccurate gid based on the dataset to 
+        In Streamlit, pygwalker calculates a somewhat inaccurate gid based on the dataset to
         distinguish between datasets and uses it as the key for the Streamlit component to
         avoid redundant rendering.
 
@@ -76,7 +142,7 @@ class StreamlitRenderer:
         user should customize method to generate a gid to differentiate between datasets.
 
         Args:
-            - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+            - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | pygwalker.Walker, optional): dataset or reusable Walker object.
             - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
         Kargs:
@@ -84,7 +150,9 @@ class StreamlitRenderer:
             - theme_key ('vega' | 'g2'): theme type.
             - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
             - spec (str): chart config data. config id, json, remote file url
+            - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
             - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
+            - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
             - kernel_computation(bool): Whether to use kernel compute for datas, Default to True.
             - use_kernel_calc(bool): Deprecated, use kernel_computation instead.
             - kanaries_api_key (str): kanaries api key, Default to "".
@@ -94,24 +162,58 @@ class StreamlitRenderer:
 
         init_streamlit_comm()
 
+        if is_public_walker(dataset):
+            _reject_walker_construction_params(
+                gid=gid,
+                field_specs=field_specs,
+                theme_key=theme_key,
+                appearance=appearance,
+                spec=spec,
+                spec_path=spec_path,
+                spec_io_mode=spec_io_mode,
+                computation=computation,
+                kernel_computation=kernel_computation,
+                use_kernel_calc=use_kernel_calc,
+                show_cloud_tool=show_cloud_tool,
+                kanaries_api_key=kanaries_api_key,
+                default_tab=default_tab,
+                kwargs=kwargs,
+            )
+            self.walker = dataset.core
+            self.walker.use_preview = False
+            self.walker.is_export_dataframe = False
+            comm = StreamlitCommunication(str(self.walker.gid))
+            self.walker._init_callback(comm)
+            self.global_pre_filters = None
+            return
+
+        resolved_spec = resolve_spec_input(spec, spec_path)
+        resolved_kernel_computation, resolved_cloud_computation = resolve_computation_mode(
+            dataset,
+            computation=computation,
+            kernel_computation=kernel_computation,
+            use_kernel_calc=use_kernel_calc,
+            default_kernel_computation=True,
+        )
+
         self.walker = PygWalker(
             gid=gid if gid is not None else get_dataset_hash(dataset),
             dataset=dataset,
             field_specs=field_specs if field_specs is not None else [],
-            spec=spec,
+            spec=resolved_spec,
             source_invoke_code="",
             theme_key=theme_key,
             appearance=appearance,
             show_cloud_tool=show_cloud_tool,
             use_preview=False,
-            kernel_computation=isinstance(dataset, Connector) or fallback_value(kernel_computation, use_kernel_calc),
+            kernel_computation=resolved_kernel_computation,
             use_save_tool="w" in spec_io_mode,
             is_export_dataframe=False,
             kanaries_api_key=kanaries_api_key,
             default_tab=default_tab,
-            cloud_computation=False,
+            cloud_computation=resolved_cloud_computation,
             gw_mode="explore",
-            **kwargs
+            **kwargs,
         )
         comm = StreamlitCommunication(str(self.walker.gid))
         self.walker._init_callback(comm)
@@ -140,48 +242,37 @@ class StreamlitRenderer:
         *,
         mode: Literal["explore", "renderer", "filter_renderer"] = "explore",
         vis_spec: Optional[List[Dict[str, Any]]] = None,
-        **kwargs: Dict[str, Any]
+        **kwargs: Dict[str, Any],
     ) -> str:
         """
         Get the html for streamlit.
         Kwargs will update origin props.
         """
-        params_str = json.dumps(sorted({
-            "mode": mode,
-            "vis_spec": vis_spec,
-            **kwargs
-        }.items()))
+        params_str = json.dumps(sorted({"mode": mode, "vis_spec": vis_spec, **kwargs}.items()))
 
         return self._get_html_with_params_str_cache(params_str)
 
     def _convert_pre_filters_to_gw_config(
-        self,
-        pre_filters: List[PreFilter],
-        spec_obj: Dict[str, Any]
+        self, pre_filters: List[PreFilter], spec_obj: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         field_map = {
-            field["name"]: field
-            for field in spec_obj["encodings"]["dimensions"] + spec_obj["encodings"]["measures"]
+            field["name"]: field for field in spec_obj["encodings"]["dimensions"] + spec_obj["encodings"]["measures"]
         }
 
         gw_filters = []
         for pre_filter in pre_filters:
             if pre_filter.op == "temporal range":
-                values = [
-                    int(arrow.get(value).timestamp() * 1000)
-                    for value in pre_filter.value
-                ]
+                values = [int(arrow.get(value).timestamp() * 1000) for value in pre_filter.value]
             else:
                 values = pre_filter.value
 
-            gw_filters.append({
-                **field_map[pre_filter.field],
-                "dragId": "gw_" + rand_str(4),
-                "rule": {
-                    "type": pre_filter.op,
-                    "value": values
+            gw_filters.append(
+                {
+                    **field_map[pre_filter.field],
+                    "dragId": "gw_" + rand_str(4),
+                    "rule": {"type": pre_filter.op, "value": values},
                 }
-            })
+            )
         return gw_filters
 
     def set_global_pre_filters(self, pre_filters: List[PreFilter]):
@@ -197,12 +288,7 @@ class StreamlitRenderer:
     def render_filter_renderer(self, *args, **kwargs):
         return self.viewer(*args, **kwargs)
 
-    def explorer(
-        self,
-        *,
-        key: str = "explorer",
-        default_tab: Literal["data", "vis"] = "vis"
-    ):
+    def explorer(self, *, key: str = "explorer", default_tab: Literal["data", "vis"] = "vis"):
         """Render explore UI(it can drag and drop fields)"""
         key = f"{self.walker.gid}-{key}"
         return self._component(key=key, mode="explore", defaultTab=default_tab)
@@ -235,9 +321,7 @@ class StreamlitRenderer:
             pre_filters = self.global_pre_filters
 
         if pre_filters is not None:
-            pre_filters_json = self._convert_pre_filters_to_gw_config(
-                pre_filters, cur_spec_obj
-            )
+            pre_filters_json = self._convert_pre_filters_to_gw_config(pre_filters, cur_spec_obj)
             cur_spec_obj["encodings"]["filters"].extend(pre_filters_json)
 
         if size is not None:
@@ -266,9 +350,11 @@ class StreamlitRenderer:
         key: str,
         mode: Literal["explore", "renderer", "filter_renderer", "table"],
         vis_spec: Optional[List[Dict[str, Any]]] = None,
-        **kwargs: Dict[str, Any]
+        **kwargs: Dict[str, Any],
     ):
-        props = self.walker._get_props("streamlit", [])
+        data_source = [] if self.walker.kernel_computation else self.walker.origin_data_source
+        data_source = json.loads(json.dumps(data_source, cls=DataFrameEncoder))
+        props = self.walker._get_props("streamlit", data_source)
         props["gwMode"] = mode
         props["communicationUrl"] = BASE_URL_PATH
         if vis_spec is not None:
@@ -280,13 +366,15 @@ class StreamlitRenderer:
 
 
 def get_streamlit_html(
-    dataset: Union[DataFrame, Connector],
+    dataset: Union[DataFrame, Connector, "Walker"],
     gid: Union[int, str] = None,
     *,
     field_specs: Optional[List[FieldSpec]] = None,
-    theme_key: IThemeKey = 'g2',
-    appearance: IAppearance = 'media',
+    theme_key: IThemeKey = "g2",
+    appearance: IAppearance = "media",
     spec: str = "",
+    spec_path: Optional[str] = None,
+    computation: Optional[IComputation] = None,
     use_kernel_calc: Optional[bool] = None,
     kernel_computation: Optional[bool] = None,
     show_cloud_tool: Optional[bool] = None,
@@ -294,12 +382,12 @@ def get_streamlit_html(
     kanaries_api_key: str = "",
     mode: Literal["explore", "filter_renderer", "table"] = "explore",
     default_tab: Literal["data", "vis"] = "vis",
-    **kwargs
+    **kwargs,
 ) -> str:
     """Get pygwalker html render to streamlit
 
     Args:
-        - dataset (pl.DataFrame | pd.DataFrame | Connector, optional): dataframe.
+        - dataset (pandas.DataFrame | polars.DataFrame | pyarrow.Table | Connector | pygwalker.Walker, optional): dataset or reusable Walker object.
         - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
 
     Kargs:
@@ -307,13 +395,15 @@ def get_streamlit_html(
         - theme_key ('vega' | 'g2'): theme type.
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - spec (str): chart config data. config id, json, remote file url
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - use_kernel_calc(bool): Deprecated, use kernel_computation instead.
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """
-    if field_specs is None:
+    if field_specs is None and not is_public_walker(dataset):
         field_specs = []
 
     renderer = StreamlitRenderer(
@@ -323,13 +413,15 @@ def get_streamlit_html(
         spec=spec,
         theme_key=theme_key,
         appearance=appearance,
+        spec_path=spec_path,
         spec_io_mode=spec_io_mode,
+        computation=computation,
         use_kernel_calc=use_kernel_calc,
         kernel_computation=kernel_computation,
         show_cloud_tool=show_cloud_tool,
         kanaries_api_key=kanaries_api_key,
         default_tab=default_tab,
-        **kwargs
+        **kwargs,
     )
 
     return renderer._get_html(mode=mode)

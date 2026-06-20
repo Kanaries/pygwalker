@@ -20,7 +20,7 @@ from pygwalker.services.global_var import GlobalVarManager
 from .config import get_local_user_id
 
 
-_UPDATE_URL = 'https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates'
+_UPDATE_URL = "https://5agko11g7e.execute-api.us-west-1.amazonaws.com/default/check_updates"
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,7 @@ async def _request_on_pyodide(url: str) -> Dict[str, Any]:
 
     """
     import pyodide
+
     resp = await pyodide.http.pyfetch(url)
     return await resp.json()
 
@@ -90,14 +91,14 @@ def _check_update() -> Dict[str, Any]:
     Dict
 
     """
-    payload = {'pkg': 'pygwalker', 'v': __version__, 'hashcode': get_local_user_id()}
+    payload = {"pkg": "pygwalker", "v": __version__, "hashcode": get_local_user_id()}
     request_func = _request_on_python
 
     if "pyodide" in sys.modules:
-        payload['pkg'] = 'pygwalker-pyodide'
+        payload["pkg"] = "pygwalker-pyodide"
         request_func = _request_on_pyodide
 
-    params = '&'.join([f"{k}={v}" for k, v in payload.items()])
+    params = "&".join([f"{k}={v}" for k, v in payload.items()])
     url = f"{_UPDATE_URL}?{params}"
 
     try:
@@ -105,8 +106,9 @@ def _check_update() -> Dict[str, Any]:
         if isinstance(result, Coroutine):
             result = _sync_get_async_result(result)
         return result
-    finally:
-        pass
+    except Exception as exc:
+        logger.debug("Failed to check for PyGWalker updates: %s", exc)
+        return {}
 
 
 def check_update() -> None:
@@ -119,4 +121,4 @@ def check_update() -> None:
 
     """
     if GlobalVarManager.privacy != "offline":
-        Thread(target=_check_update).start()
+        Thread(target=_check_update, daemon=True).start()

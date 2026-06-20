@@ -1,5 +1,8 @@
 > 如果您是当前语言的母语使用者，欢迎帮助我们维护本文档的翻译。您可以在[这里](https://github.com/Kanaries/pygwalker/pulls)提交PR。
 
+> [!IMPORTANT]
+> This translation is community-maintained and may lag behind the [English README](../README.md). Treat the English README as the source of truth for API reference, installation, and development instructions.
+
 <p align="center"><a href="https://github.com/Kanaries/pygwalker"><img width=100% alt="" src="https://github.com/Kanaries/pygwalker/assets/22167673/bed8b3db-fda8-43e7-8ad2-71f6afb9dddd"></a></p>
 
 <h2 align="center">PyGWalker: 一行代码将数据集转化为交互式可视化分析工具</h2>
@@ -184,25 +187,8 @@ pyg.to_html(df, spec=vis_spec)
 
 示例输出：
 
-```
-Signature: pyg.walk(df: 'pl.DataFrame | pd.DataFrame', gid: Union[int, str] = None, *, env: Literal['Jupyter', 'Streamlit'] = 'Jupyter', **kwargs)
-Docstring:
-Walk through pandas.DataFrame df with Graphic Walker
-
-Args:
-    - df (pl.DataFrame | pd.DataFrame, optional): dataframe.
-    - gid (Union[int, str], optional): GraphicWalker container div's id ('gwalker-{gid}')
-
-Kargs:
-    - env: (Literal['Jupyter' | 'Streamlit'], optional): The enviroment using pygwalker. Default as 'Jupyter'
-    - hide_data_source_config (bool, optional): Hide DataSource import and export button (True) or not (False). Default to True
-    - theme_key ('vega' | 'g2'): theme type.
-    - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
-    - return_html (bool, optional): Directly return a html string. Defaults to False.
-File:      /usr/local/lib/python3.9/dist-packages/pygwalker/gwalker.py
-Type:      function
-
-```
+API 参数会随版本更新；请以[英文 README 的 API Reference](../README.md#api-reference)和
+[`pygwalker-docs` API 文档](https://pygwalker-docs.vercel.app/api-reference/jupyter)为准。
 
 更多参考： [PyGWalker 更新日志](https://docs.kanaries.net/zh/pygwalker/changelog/pygwalker-0-1-6)
 
@@ -266,7 +252,7 @@ usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--rese
 Modify configuration file. (default: /Users/douding/Library/Application Support/pygwalker/config.json) 
 Available configurations:
 
-- privacy  ['offline', 'update-only', 'events'] (default: events).
+- privacy  ['offline', 'update-only', 'events'] (default: update-only).
     "offline": fully offline, no data is send or api is requested
     "update-only": only check whether this is a new version of pygwalker to update
     "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.

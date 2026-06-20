@@ -1,16 +1,46 @@
 from typing import Dict, Any, Optional
 
-import segment.analytics as analytics
-import kanaries_track
-
 from pygwalker.services.global_var import GlobalVarManager
-from pygwalker.services.config import get_local_user_id
+from pygwalker.services.config import get_local_user_id, should_show_privacy_notice
 
-analytics.write_key = 'z58N15R8LShkpUbBSt1ZjdDSdSEF5VpR'
-kanaries_public_key = "tk-6572d7b34a03d7fcf6cf0c86-cOzZyr6xqd"
-kanaries_track.config.auth_token = kanaries_public_key
-kanaries_track.config.proxies = {}
-kanaries_track.config.max_retries = 2
+SEGMENT_WRITE_KEY = "z58N15R8LShkpUbBSt1ZjdDSdSEF5VpR"
+KANARIES_PUBLIC_KEY = "tk-6572d7b34a03d7fcf6cf0c86-cOzZyr6xqd"
+
+_analytics_client = None
+_kanaries_track_client = None
+
+PRIVACY_NOTICE = (
+    "PyGWalker telemetry is enabled. It only sends feature-usage events, not your analyzed data. "
+    "To opt out, run `pygwalker config --set privacy=update-only` or `pygwalker config --set privacy=offline`."
+)
+
+
+def _get_analytics_client():
+    global _analytics_client
+    if _analytics_client is None:
+        import segment.analytics as analytics
+
+        analytics.write_key = SEGMENT_WRITE_KEY
+        analytics.sync_mode = True
+        analytics.timeout = 1
+        analytics.max_retries = 0
+        _analytics_client = analytics
+    return _analytics_client
+
+
+def _get_kanaries_track_client():
+    global _kanaries_track_client
+    if _kanaries_track_client is None:
+        import kanaries_track
+
+        kanaries_track.config.auth_token = KANARIES_PUBLIC_KEY
+        kanaries_track.config.proxies = {}
+        kanaries_track.config.sync_send = True
+        kanaries_track.config.timeout = 1
+        kanaries_track.config.max_retries = 1
+        kanaries_track.config.thread = 0
+        _kanaries_track_client = kanaries_track
+    return _kanaries_track_client
 
 
 # pylint: disable=broad-exception-caught
@@ -25,18 +55,17 @@ def track_event(event: str, properties: Optional[Dict[str, Any]] = None):
     - pygwalker's mode: 'light', 'dark' or 'auto'
     - pygwalker's spec type: 'json', 'file', 'url'. We won't collect the exact value of spec. No DATA YOU ANALYZE OR THEIR METADATA IS COLLECTED.
 
-    - privacy  ['offline', 'update-only', 'events'] (default: events).
+    - privacy  ['offline', 'update-only', 'events'] (default: update-only).
         "offline": fully offline, no data is send or api is requested
         "update-only": only check whether this is a new version of pygwalker to update
         "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYZE IS SENT.
     """
     if GlobalVarManager.privacy == "events":
         try:
-            analytics.track(
-                user_id=get_local_user_id(),
-                event=event,
-                properties=properties
-            )
-            kanaries_track.track({**properties, "user_id": get_local_user_id()})
+            if should_show_privacy_notice():
+                print(PRIVACY_NOTICE, flush=True)
+            properties = properties or {}
+            _get_analytics_client().track(user_id=get_local_user_id(), event=event, properties=properties)
+            _get_kanaries_track_client().track({**properties, "user_id": get_local_user_id()})
         except Exception:
             pass

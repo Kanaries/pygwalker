@@ -10,6 +10,7 @@ from pygwalker.utils.encode import DataFrameEncoder
 
 class AnywidgetCommunication(BaseCommunication):
     """communication class for anywidget"""
+
     def register_widget(self, widget: anywidget.AnyWidget) -> None:
         """register widget"""
         self.widget = widget
@@ -19,24 +20,17 @@ class AnywidgetCommunication(BaseCommunication):
         """send message base on anywidget"""
         if rid is None:
             rid = uuid.uuid1().hex
-        msg = {
-            "gid": self.gid,
-            "rid": rid,
-            "action": action,
-            "data": data
-        }
+        msg = {"gid": self.gid, "rid": rid, "action": action, "data": data}
         self.widget.send({"type": "pyg_response", "data": json.dumps(msg, cls=DataFrameEncoder)})
 
     def _on_mesage(self, _: anywidget.AnyWidget, data: Dict[str, Any], buffers: List[Any]):
         if data.get("type", "") != "pyg_request":
             return
-        
-        msg = data["msg"]
-        action = msg["action"]
-        rid = msg["rid"]
 
-        if action == "finish_request":
+        msg = data.get("msg", {})
+        if isinstance(msg, dict) and msg.get("action") == "finish_request":
             return
 
-        resp = self._receive_msg(action, msg["data"])
+        rid = msg.get("rid") if isinstance(msg, dict) else None
+        resp = self._receive_msg_envelope(msg)
         self.send_msg_async("finish_request", resp, rid)
