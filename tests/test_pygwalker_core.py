@@ -353,6 +353,24 @@ def test_render_manager_chart_preview_uses_chart_indexed_workflow(monkeypatch):
     }
 
 
+def test_render_manager_chart_preview_returns_empty_for_mismatched_workflow_list():
+    class FakeSpecManager:
+        def get_chart_index(self, chart_name):
+            assert chart_name == "Missing workflow"
+            return 1
+
+    walker = SimpleNamespace(
+        workflow_list=["only-workflow"],
+        data_parser=SimpleNamespace(get_datas_by_payload=lambda workflow: [{"value": 1}]),
+        spec_manager=FakeSpecManager(),
+        vis_spec=[{"chart": "only"}, {"chart": "missing-workflow"}],
+        theme_key="g2",
+        appearance="light",
+    )
+
+    assert render_manager_module.RenderManager(walker).get_chart_preview_html("Missing workflow", "Title", "Desc") == ""
+
+
 def test_jupyter_display_manager_convert_html_displays_iframe():
     displayed = []
     walker = SimpleNamespace(

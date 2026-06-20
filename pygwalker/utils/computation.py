@@ -27,12 +27,13 @@ def resolve_computation_mode(
     use_kernel_calc: Optional[bool] = None,
     default_kernel_computation: Optional[bool] = None,
     force_kernel_for_connectors: bool = True,
-) -> Tuple[bool, bool]:
+) -> Tuple[Optional[bool], bool]:
     """Resolve public computation options to internal kernel/cloud flags."""
     if computation is not None and computation not in ("auto", "browser", "kernel", "cloud"):
         raise ValueError("`computation` must be one of 'auto', 'browser', 'kernel', or 'cloud'.")
 
-    if computation is not None and computation != "auto":
+    explicit_auto = computation == "auto"
+    if computation is not None and not explicit_auto:
         enabled_legacy_params = []
         if kernel_computation is True:
             enabled_legacy_params.append("kernel_computation")
@@ -65,4 +66,8 @@ def resolve_computation_mode(
         return False, True
 
     use_kernel = fallback_value(kernel_computation, use_kernel_calc, default_kernel_computation)
-    return bool((force_kernel_for_connectors and _is_connector_dataset(dataset)) or use_kernel), False
+    if force_kernel_for_connectors and _is_connector_dataset(dataset):
+        return True, False
+    if use_kernel is None:
+        return None, False
+    return bool(use_kernel), False

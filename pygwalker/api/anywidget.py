@@ -119,7 +119,7 @@ def walk(
         return create_anywidget_for_walker(
             walker,
             env="anywidget",
-            data_source=[],
+            data_source=[] if walker.kernel_computation else walker.origin_data_source,
             communication_cls=AnywidgetCommunication,
         )
 
@@ -156,6 +156,6 @@ def walk(
     return create_anywidget_for_walker(
         walker,
         env="anywidget",
-        data_source=[],
+        data_source=[] if walker.kernel_computation else walker.origin_data_source,
         communication_cls=AnywidgetCommunication,
     )

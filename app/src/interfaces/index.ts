@@ -36,6 +36,7 @@ export interface IAppProps {
     isExportDataFrame: boolean;
     defaultTab: "data" | "vis";
     useCloudCalc: boolean;
+    __comm?: any;
 }
 
 export interface IDataSourceProps {

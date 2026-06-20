@@ -56,7 +56,7 @@ class RenderManager:
     def get_chart_preview_html(self, chart_name: int, title: str, desc: str) -> str:
         chart_index = self.walker.spec_manager.get_chart_index(chart_name)
 
-        if not self.walker.workflow_list:
+        if chart_index < 0 or chart_index >= len(self.walker.workflow_list) or chart_index >= len(self.walker.vis_spec):
             return ""
         data = self.walker.data_parser.get_datas_by_payload(self.walker.workflow_list[chart_index])
         return render_gw_chart_preview_html(

@@ -6,7 +6,7 @@ from pygwalker.utils.computation import resolve_computation_mode
 @pytest.mark.parametrize(
     ("computation", "expected"),
     [
-        ("auto", (False, False)),
+        ("auto", (None, False)),
         ("browser", (False, False)),
         ("kernel", (True, False)),
         ("cloud", (False, True)),
@@ -14,6 +14,10 @@ from pygwalker.utils.computation import resolve_computation_mode
 )
 def test_resolve_computation_mode_from_new_api(computation, expected):
     assert resolve_computation_mode(object(), computation=computation) == expected
+
+
+def test_resolve_computation_mode_preserves_unspecified_auto_detection():
+    assert resolve_computation_mode(object()) == (None, False)
 
 
 def test_resolve_computation_mode_rejects_invalid_mode():

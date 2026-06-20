@@ -37,7 +37,7 @@ class SpecCommunicationService:
             version=__version__,
         )
 
-        if self.walker.use_preview:
+        if self.walker.use_preview and self.preview_tool is not None:
             self.preview_tool.async_render_gw_review(self.walker._get_gw_preview_html())
 
         self.walker.spec_manager.write_back(self.walker.cloud_service, __version__)

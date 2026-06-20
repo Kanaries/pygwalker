@@ -141,6 +141,25 @@ try:
         assert dataset_parser.to_records(1) == to_records_result
         dataset_parser = get_parser(df)
         assert dataset_parser.to_records(1) == to_records_no_kernel_result
+
+    def test_data_parser_accepts_empty_modin_input():
+        df = mpd.DataFrame({"city": [], "value": []})
+        dataset_parser = get_parser(df)
+
+        assert dataset_parser.data_size == 0
+        assert dataset_parser.to_records() == []
+        assert dataset_parser.raw_fields == [
+            {"fid": "city", "name": "city", "semanticType": "nominal", "analyticType": "dimension"},
+            {"fid": "value", "name": "value", "semanticType": "nominal", "analyticType": "dimension"},
+        ]
+
+    def test_data_parser_infers_modin_series_by_position_not_label():
+        df = mpd.DataFrame({"date": ["2022-01-01"]}, index=[10])
+        dataset_parser = get_parser(df)
+
+        assert dataset_parser.raw_fields == [
+            {"fid": "date", "name": "date", "semanticType": "temporal", "analyticType": "dimension"},
+        ]
 except ImportError:
     pass
 

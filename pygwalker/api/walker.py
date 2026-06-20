@@ -142,6 +142,8 @@ class Walker:
         return self._walker
 
     def __getattr__(self, name: str) -> Any:
+        if name == "_walker":
+            raise AttributeError(name)
         return getattr(self._walker, name)
 
     def show(

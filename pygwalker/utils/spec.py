@@ -9,7 +9,7 @@ def resolve_spec_input(spec: Any, spec_path: Optional[os.PathLike[str] | str]) -
             return os.fspath(spec)
         return spec
 
-    if spec not in ("", None):
+    if spec is not None and not (isinstance(spec, str) and spec == ""):
         raise ValueError("Pass only one of `spec` or `spec_path`; use `spec_path` for local spec files.")
 
     return os.fspath(spec_path)

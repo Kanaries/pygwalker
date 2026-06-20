@@ -83,6 +83,8 @@ class FakeWalker:
         self.init_callback_calls = []
         self.props_calls = []
         self.render_calls = []
+        self.kernel_computation = kwargs["kernel_computation"]
+        self.origin_data_source = [{"city": "London"}]
         FakeWalker.instances.append(self)
 
     def _get_props(self, env="", data_source=None, need_load_datas=False):
@@ -202,7 +204,7 @@ def test_anywidget_api_builds_widget_props_and_registers_comm(monkeypatch):
     assert walker.kwargs["kernel_computation"] is False
     assert walker.kwargs["use_save_tool"] is True
     assert walker.kwargs["is_export_dataframe"] is True
-    assert walker.props_calls == [("anywidget", [], False)]
+    assert walker.props_calls == [("anywidget", [{"city": "London"}], False)]
     assert json.loads(widget.props)["env"] == "anywidget"
     assert comms[0].widgets == [widget]
     assert walker.init_callback_calls == [(comms[0], None)]
@@ -237,6 +239,7 @@ def test_anywidget_api_accepts_public_walker_object(monkeypatch):
 
     assert len(FakeWalker.instances) == 1
     assert public_walker.core.use_preview is False
+    assert public_walker.core.props_calls == [("anywidget", [{"city": "London"}], False)]
     assert json.loads(widget.props)["env"] == "anywidget"
     assert comms[0].widgets == [widget]
     assert public_walker.core.init_callback_calls == [(comms[0], None)]
@@ -427,6 +430,7 @@ def test_marimo_api_accepts_public_walker_object(monkeypatch):
 
     assert len(FakeWalker.instances) == 1
     assert public_walker.core.use_preview is False
+    assert public_walker.core.props_calls == [("marimo", [{"city": "London"}], False)]
     assert json.loads(wrapped_widgets[0].props)["env"] == "marimo"
     assert comms[0].widgets == wrapped_widgets
     assert public_walker.core.init_callback_calls == [(comms[0], None)]

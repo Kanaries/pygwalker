@@ -3,6 +3,7 @@ import type { IRow, IDataQueryPayload } from "@kanaries/graphic-walker/interface
 import commonStore from "../store/common";
 import communicationStore from "../store/communication"
 import { parser_dsl_with_meta } from "@kanaries/gw-dsl-parser";
+import type { ICommunication } from "../utils/communication";
 
 interface MessagePayload extends IDataSourceProps {
     action: "requestData" | "postData" | "finishData";
@@ -84,17 +85,20 @@ interface IBatchGetDatasTask<TQuery> {
     reject: (reason?: any) => void;
 }
 
-function initBatchGetDatas<TQuery>(action: "batch_get_datas_by_sql" | "batch_get_datas_by_payload") {
+function initBatchGetDatas<TQuery>(
+    action: "batch_get_datas_by_sql" | "batch_get_datas_by_payload",
+    comm: ICommunication | null
+) {
     const taskList = [] as IBatchGetDatasTask<TQuery>[];
 
     const batchGetDatas = async(taskList: IBatchGetDatasTask<TQuery>[]) => {
         const result = action === "batch_get_datas_by_sql"
-            ? await communicationStore.comm?.sendMsg(
+            ? await comm?.sendMsg(
                 action,
                 { queryList: taskList.map(task => task.query as string) },
                 60_000
             )
-            : await communicationStore.comm?.sendMsg(
+            : await comm?.sendMsg(
                 action,
                 { queryList: taskList.map(task => task.query as IDataQueryPayload) },
                 60_000
@@ -126,8 +130,6 @@ function initBatchGetDatas<TQuery>(action: "batch_get_datas_by_sql" | "batch_get
     }
 }
 
-const batchGetDatasBySql = initBatchGetDatas<string>("batch_get_datas_by_sql");
-const batchGetDatasByPayload = initBatchGetDatas<IDataQueryPayload>("batch_get_datas_by_payload");
 const DEFAULT_LIMIT = 50_000;
 
 function notifyDataLimit() {
@@ -150,7 +152,8 @@ function notifyDataLimit() {
     }, 60_000);
 }
 
-export function getDatasFromKernelBySql(fieldMetas: any) {
+export function getDatasFromKernelBySql(fieldMetas: any, comm: ICommunication | null) {
+    const batchGetDatasBySql = initBatchGetDatas<string>("batch_get_datas_by_sql", comm);
     return async (payload: IDataQueryPayload) => {
         const sql = parser_dsl_with_meta(
             "pygwalker_mid_table",
@@ -165,10 +168,13 @@ export function getDatasFromKernelBySql(fieldMetas: any) {
     }
 }
 
-export async function getDatasFromKernelByPayload(payload: IDataQueryPayload) {
-    const result = await batchGetDatasByPayload.getDatas({...payload, limit: payload.limit ?? DEFAULT_LIMIT}) ?? [];
-    if (!payload.limit && result.length === DEFAULT_LIMIT) {
-        notifyDataLimit();
+export function getDatasFromKernelByPayload(comm: ICommunication | null) {
+    const batchGetDatasByPayload = initBatchGetDatas<IDataQueryPayload>("batch_get_datas_by_payload", comm);
+    return async (payload: IDataQueryPayload) => {
+        const result = await batchGetDatasByPayload.getDatas({...payload, limit: payload.limit ?? DEFAULT_LIMIT}) ?? [];
+        if (!payload.limit && result.length === DEFAULT_LIMIT) {
+            notifyDataLimit();
+        }
+        return result as IRow[];
     }
-    return result as IRow[];
 }

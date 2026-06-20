@@ -119,11 +119,12 @@ const initChart = async (gwRef: React.MutableRefObject<IGWHandler | null>, total
 }
 
 const getComputationCallback = (props: IAppProps) => {
+    const comm = props.__comm ?? communicationStore.comm;
     if (props.useKernelCalc && props.parseDslType === "client") {
-        return getDatasFromKernelBySql(props.fieldMetas);
+        return getDatasFromKernelBySql(props.fieldMetas, comm);
     }
     if (props.useKernelCalc && props.parseDslType === "server") {
-        return getDatasFromKernelByPayload;
+        return getDatasFromKernelByPayload(comm);
     }
 }
 
@@ -413,6 +414,7 @@ const initOnJupyter = async(props: IAppProps) => {
     const comm = initJupyterCommunication(props.id);
     comm.registerEndpoint("postData", postDataService);
     comm.registerEndpoint("finishData", finishDataService);
+    props.__comm = comm;
     communicationStore.setComm(comm);
     if (props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
@@ -426,6 +428,7 @@ const initOnJupyter = async(props: IAppProps) => {
 
 const initOnHttpCommunication = async(props: IAppProps) => {
     const comm = await initHttpCommunication(props.id, props.communicationUrl);
+    props.__comm = comm;
     communicationStore.setComm(comm);
     if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
@@ -436,6 +439,7 @@ const initOnHttpCommunication = async(props: IAppProps) => {
 
 const initOnAnywidgetCommunication = async(props: IAppProps, model: import("@anywidget/types").AnyModel) => {
     const comm = await initAnywidgetCommunication(props.id, model);
+    props.__comm = comm;
     communicationStore.setComm(comm);
     if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
         const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
@@ -607,10 +611,14 @@ function TableWalkerApp(props: IAppProps) {
 
 
 function SteamlitGWalkerApp(streamlitProps: any) {
-    const props = streamlitProps.args as IAppProps;
+    const propsRef = React.useRef<IAppProps | null>(null);
+    if (!propsRef.current) {
+        propsRef.current = streamlitProps.args as IAppProps;
+        propsRef.current.visSpec = FormatSpec(propsRef.current.visSpec, propsRef.current.rawFields);
+    }
+    const props = propsRef.current;
     const [inited, setInited] = useState(false);
     const container = React.useRef<HTMLDivElement>(null);
-    props.visSpec = FormatSpec(props.visSpec, props.rawFields);
 
     useEffect(() => {
         commonStore.setIsStreamlitComponent(true);
@@ -656,8 +664,12 @@ const StreamlitGWalker = () => {
 function AnywidgetGWalkerApp() {
     const [inited, setInited] = useState(false);
     const model = useModel();
-    const props = JSON.parse(model.get("props")) as IAppProps;
-    props.visSpec = FormatSpec(props.visSpec, props.rawFields);
+    const propsRef = React.useRef<IAppProps | null>(null);
+    if (!propsRef.current) {
+        propsRef.current = JSON.parse(model.get("props")) as IAppProps;
+        propsRef.current.visSpec = FormatSpec(propsRef.current.visSpec, propsRef.current.rawFields);
+    }
+    const props = propsRef.current;
 
     useEffect(() => {
         initOnAnywidgetCommunication(props, model).then(() => {

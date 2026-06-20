@@ -50,6 +50,13 @@ def test_public_package_exports_walker():
     assert pygwalker.Walker is walker_api.Walker
 
 
+def test_walker_getattr_does_not_recurse_before_core_is_assigned():
+    walker = object.__new__(walker_api.Walker)
+
+    with pytest.raises(AttributeError):
+        getattr(walker, "missing")
+
+
 def test_walker_builds_core_with_unified_options(monkeypatch, tmp_path):
     monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
     spec_path = tmp_path / "gw_config.json"
@@ -74,6 +81,14 @@ def test_walker_builds_core_with_unified_options(monkeypatch, tmp_path):
     assert core.kwargs["use_save_tool"] is True
     assert core.kwargs["default_tab"] == "data"
     assert core.kwargs["appearance"] == "light"
+
+
+def test_walker_preserves_auto_kernel_detection_by_default(monkeypatch):
+    monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
+
+    walker_api.Walker(pd.DataFrame([{"city": "London", "value": 1}]))
+
+    assert FakeCoreWalker.instances[0].kwargs["kernel_computation"] is None
 
 
 def test_walker_show_auto_uses_current_notebook_env(monkeypatch):

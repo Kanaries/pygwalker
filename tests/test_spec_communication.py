@@ -74,3 +74,28 @@ def test_spec_communication_updates_runtime_state_writes_back_and_refreshes_prev
     ]
     assert write_backs == [(walker.cloud_service, __version__)]
     assert preview_renders == ["<div>preview</div>"]
+
+
+def test_spec_communication_skips_preview_refresh_without_preview_tool():
+    runtime_updates = []
+    write_backs = []
+    walker = SimpleNamespace(
+        use_preview=True,
+        cloud_service=object(),
+        spec_manager=SimpleNamespace(
+            update_runtime_state=lambda **kwargs: runtime_updates.append(kwargs),
+            write_back=lambda cloud_service, version: write_backs.append((cloud_service, version)),
+        ),
+        _get_gw_preview_html=lambda: "<div>preview</div>",
+    )
+    request = UpdateSpecRequest(
+        visSpec=[{"name": "Chart"}],
+        workflowList=[{"workflow": []}],
+        chartData=_chart_payload("Chart"),
+    )
+
+    response = SpecCommunicationService(walker).update_spec(request)
+
+    assert response == {}
+    assert len(runtime_updates) == 1
+    assert write_backs == [(walker.cloud_service, __version__)]
