@@ -1,6 +1,6 @@
 from typing import Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from datetime import datetime, date
 from datetime import timedelta
 import abc
@@ -142,16 +142,14 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         self.infer_number_to_dimension = infer_number_to_dimension
         self.other_params = other_params
 
-    @property
-    @lru_cache()
+    @cached_property
     def field_metas(self) -> List[Dict[str, str]]:
         duckdb.register("pygwalker_mid_table", self._duckdb_df)
         result = duckdb.query("SELECT * FROM pygwalker_mid_table LIMIT 1")
         data = result.fetchone()
         return get_data_meta_type(dict(zip(result.columns, data))) if data else []
 
-    @property
-    @lru_cache()
+    @cached_property
     def raw_fields(self) -> List[Dict[str, str]]:
         return [self._infer_prop(col, self.field_specs) for _, col in enumerate(self._example_df.columns)]
 
