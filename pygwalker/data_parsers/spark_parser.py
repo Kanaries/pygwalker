@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional
-from threading import Lock
+from functools import cached_property
 import logging
 import io
 
@@ -40,37 +40,22 @@ class SparkDataFrameDataParser(BaseDataParser):
         self.infer_string_to_date = infer_string_to_date
         self.infer_number_to_dimension = infer_number_to_dimension
         self.other_params = other_params
-        self._field_metas_cache = None
-        self._raw_fields_cache = None
-        self._cache_lock = Lock()
 
-    @property
+    @cached_property
     def raw_fields(self) -> List[Dict[str, str]]:
-        cache = self._raw_fields_cache
-        if cache is not None:
-            return cache
-        with self._cache_lock:
-            if self._raw_fields_cache is None:
-                pandas_parser = PandasDataFrameDataParser(
-                    self.example_pandas_df,
-                    self.field_specs,
-                    self.infer_string_to_date,
-                    self.infer_number_to_dimension,
-                    self.other_params,
-                )
-                self._raw_fields_cache = pandas_parser.raw_fields
-            return self._raw_fields_cache
+        pandas_parser = PandasDataFrameDataParser(
+            self.example_pandas_df,
+            self.field_specs,
+            self.infer_string_to_date,
+            self.infer_number_to_dimension,
+            self.other_params,
+        )
+        return pandas_parser.raw_fields
 
-    @property
+    @cached_property
     def field_metas(self) -> List[Dict[str, str]]:
-        cache = self._field_metas_cache
-        if cache is not None:
-            return cache
-        with self._cache_lock:
-            if self._field_metas_cache is None:
-                data = self.get_datas_by_sql("SELECT * FROM pygwalker_mid_table LIMIT 1")
-                self._field_metas_cache = get_data_meta_type(data[0]) if data else []
-            return self._field_metas_cache
+        data = self.get_datas_by_sql("SELECT * FROM pygwalker_mid_table LIMIT 1")
+        return get_data_meta_type(data[0]) if data else []
 
     def to_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         df = self.df.limit(limit) if limit is not None else self.df
