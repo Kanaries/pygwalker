@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional
-from functools import lru_cache
+from functools import cached_property
 import logging
 import io
 
@@ -41,8 +41,7 @@ class SparkDataFrameDataParser(BaseDataParser):
         self.infer_number_to_dimension = infer_number_to_dimension
         self.other_params = other_params
 
-    @property
-    @lru_cache()
+    @cached_property
     def raw_fields(self) -> List[Dict[str, str]]:
         pandas_parser = PandasDataFrameDataParser(
             self.example_pandas_df,
@@ -53,8 +52,7 @@ class SparkDataFrameDataParser(BaseDataParser):
         )
         return pandas_parser.raw_fields
 
-    @property
-    @lru_cache()
+    @cached_property
     def field_metas(self) -> List[Dict[str, str]]:
         data = self.get_datas_by_sql("SELECT * FROM pygwalker_mid_table LIMIT 1")
         return get_data_meta_type(data[0]) if data else []

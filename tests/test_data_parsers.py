@@ -1,6 +1,9 @@
+import gc
 import os.path
+import pickle
 import subprocess
 import sys
+import weakref
 
 from sqlalchemy import create_engine
 import pandas as pd
@@ -11,6 +14,7 @@ import pytest
 from pygwalker.services.data_parsers import get_dataset_hash, get_parser
 from pygwalker.data_parsers.database_parser import Connector, DatabaseDataParser, text
 from pygwalker.data_parsers.database_parser import _check_view_sql
+from pygwalker.data_parsers.pandas_parser import PandasDataFrameDataParser
 from pygwalker.errors import ViewSqlSameColumnError
 
 datas = [
@@ -92,6 +96,29 @@ def test_get_parser_reports_supported_inputs_for_unsupported_dataset():
     assert "pyarrow.Table" in message
     assert "pygwalker.data_parsers.database_parser.Connector" in message
     assert "cloud dataset id string" in message
+
+
+@pytest.mark.parametrize("cached_property_name", ["raw_fields", "field_metas"])
+def test_pandas_parser_cached_properties_do_not_retain_parser_or_dataframe(cached_property_name):
+    def create_refs():
+        df = pd.DataFrame({"city": ["London", "Tokyo"], "value": [1, 2]})
+        parser = PandasDataFrameDataParser(df, [], True, True, {})
+        getattr(parser, cached_property_name)
+        return weakref.ref(parser), weakref.ref(df)
+
+    parser_ref, df_ref = create_refs()
+    gc.collect()
+
+    assert parser_ref() is None
+    assert df_ref() is None
+
+
+def test_pandas_parser_remains_picklable_after_cached_properties_are_loaded():
+    parser = PandasDataFrameDataParser(pd.DataFrame({"city": ["London"], "value": [1]}), [], True, True, {})
+    parser.raw_fields
+    parser.field_metas
+
+    pickle.dumps(parser)
 
 
 @pytest.mark.parametrize(

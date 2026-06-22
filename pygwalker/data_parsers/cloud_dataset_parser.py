@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional
-from functools import lru_cache
+from functools import cached_property
 from decimal import Decimal
 import logging
 import io
@@ -41,14 +41,12 @@ class CloudDatasetParser(BaseDataParser):
                 example_df[column] = example_df[column].astype(float)
         return example_df
 
-    @property
-    @lru_cache()
+    @cached_property
     def field_metas(self) -> List[Dict[str, str]]:
         data = self._get_all_datas(1)
         return get_data_meta_type(data[0]) if data else []
 
-    @property
-    @lru_cache()
+    @cached_property
     def raw_fields(self) -> List[Dict[str, str]]:
         pandas_parser = PandasDataFrameDataParser(
             self.example_pandas_df,

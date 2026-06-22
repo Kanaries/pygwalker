@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional
-from functools import lru_cache
+from functools import cached_property
 from decimal import Decimal
 import logging
 import json
@@ -179,14 +179,12 @@ class DatabaseDataParser(BaseDataParser):
     def placeholder_table_name(self) -> str:
         return "___pygwalker_temp_view_name___"
 
-    @property
-    @lru_cache()
+    @cached_property
     def field_metas(self) -> List[Dict[str, str]]:
         data = self._get_datas_by_sql(f"SELECT * FROM {self.placeholder_table_name} LIMIT 1")
         return get_data_meta_type(data[0]) if data else []
 
-    @property
-    @lru_cache()
+    @cached_property
     def raw_fields(self) -> List[Dict[str, str]]:
         pandas_parser = PandasDataFrameDataParser(
             self.example_pandas_df,
