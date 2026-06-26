@@ -106,30 +106,30 @@ def test_walker_show_accepts_legacy_jupyter_widget_alias(monkeypatch):
     monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
 
     walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
-    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport"):
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport.*0\\.7\\.0"):
         walker.show("JupyterWidget", iframe_width="640px", iframe_height="480px")
 
-    assert FakeCoreWalker.instances[0].display_calls == [("jupyter-widget", "640px", "480px")]
+    assert FakeCoreWalker.instances[0].display_calls == [("jupyter-anywidget",)]
 
 
 def test_walker_show_accepts_legacy_jupyter_env_alias(monkeypatch):
     monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
 
     walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
-    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport"):
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport.*0\\.7\\.0"):
         walker.show("Jupyter")
 
-    assert FakeCoreWalker.instances[0].display_calls == [("jupyter-inline",)]
+    assert FakeCoreWalker.instances[0].display_calls == [("jupyter-anywidget",)]
 
 
 def test_walker_show_warns_for_lowercase_legacy_jupyter_env(monkeypatch):
     monkeypatch.setattr(walker_api, "PygWalker", FakeCoreWalker)
 
     walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
-    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport"):
+    with pytest.warns(DeprecationWarning, match="legacy Jupyter transport.*0\\.7\\.0"):
         walker.show("jupyter-widget", iframe_width="640px", iframe_height="480px")
 
-    assert FakeCoreWalker.instances[0].display_calls == [("jupyter-widget", "640px", "480px")]
+    assert FakeCoreWalker.instances[0].display_calls == [("jupyter-anywidget",)]
 
 
 def test_walker_show_accepts_jupyter_preview_alias(monkeypatch):

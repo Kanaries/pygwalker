@@ -29,6 +29,7 @@ _LEGACY_JUPYTER_ENVS = {
     "Jupyter": "JupyterAnywidget",
     "JupyterWidget": "JupyterAnywidget",
 }
+LEGACY_JUPYTER_TRANSPORT_REMOVAL_VERSION = "0.7.0"
 _DELEGATED_WALKER_SHOW_WARNING_PATTERN = r"`Walker\.show\(env=.*legacy Jupyter transport"
 _CORE_LEGACY_TRANSPORT_WARNING_PATTERN = r"`PygWalker\.display_on_jupyter.*legacy Jupyter transport"
 
@@ -40,7 +41,8 @@ def _warn_legacy_jupyter_env(env: str) -> None:
 
     warnings.warn(
         f"`env='{env}'` uses a legacy Jupyter transport and is deprecated. "
-        f"Use `env='{replacement}'` or omit `env` to use the anywidget transport.",
+        f"It is now treated as `env='{replacement}'` and will be removed in PyGWalker "
+        f"{LEGACY_JUPYTER_TRANSPORT_REMOVAL_VERSION}. Omit `env` to use the anywidget transport.",
         DeprecationWarning,
         stacklevel=3,
     )
@@ -164,6 +166,7 @@ def walk(
         env = "JupyterConvert"
 
     _warn_legacy_jupyter_env(env)
+    display_env = _LEGACY_JUPYTER_ENVS.get(env, env)
 
     if is_public_walker(dataset):
         _reject_walker_construction_params(
@@ -182,7 +185,7 @@ def walk(
             default_tab=default_tab,
             kwargs=kwargs,
         )
-        _show_public_walker(dataset, env)
+        _show_public_walker(dataset, display_env)
         return dataset.core
 
     if field_specs is None:
@@ -198,7 +201,7 @@ def walk(
         cloud_computation=cloud_computation,
         use_kernel_calc=use_kernel_calc,
     )
-    if env == "JupyterConvert":
+    if display_env == "JupyterConvert":
         enabled_live_computation_params = []
         if computation in ("kernel", "cloud"):
             enabled_live_computation_params.append(f"computation='{computation}'")
@@ -239,14 +242,12 @@ def walk(
 
     env_display_map = {
         "JupyterAnywidget": walker.display_on_jupyter_use_anywidget,
-        "JupyterWidget": walker.display_on_jupyter_use_widgets,
-        "Jupyter": walker.display_on_jupyter,
         "JupyterConvert": walker.display_on_convert_html,
         "JupyterPreview": walker.display_preview_on_jupyter,
     }
 
-    display_func = env_display_map.get(env, lambda: None)
-    _call_display_func(env, display_func)
+    display_func = env_display_map.get(display_env, lambda: None)
+    _call_display_func(display_env, display_func)
 
     return walker
 
