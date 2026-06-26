@@ -159,8 +159,9 @@ There are some important parameters you should know when using pygwalker:
 + `spec_path`: local file path for saving/loading chart config.
 + `spec`: chart config object, JSON string, config ID, or remote URL.
 + `computation`: choose where data queries run. Use `"browser"` for frontend-only computation, `"kernel"` for local DuckDB-backed Python computation, `"cloud"` for Kanaries cloud computation, or omit it for the default automatic behavior.
-+ `kernel_computation`: legacy boolean for using DuckDB as computing engine. Prefer `computation="kernel"`.
-+ `use_kernel_calc`: Deprecated, use `computation="kernel"` or `kernel_computation` instead.
++ `kernel_computation`: legacy boolean for using DuckDB as computing engine. Prefer `computation="kernel"` or `computation="browser"`; this legacy flag is scheduled for removal in PyGWalker 0.7.0.
++ `cloud_computation`: legacy boolean for Kanaries cloud computation. Prefer `computation="cloud"`; this legacy flag is scheduled for removal in PyGWalker 0.7.0.
++ `use_kernel_calc`: deprecated alias for kernel computation. Prefer `computation="kernel"` or `computation="browser"`; this legacy flag is scheduled for removal in PyGWalker 0.7.0.
 
 ```python
 df = pd.read_csv('./bike_sharing_dc.csv')
@@ -171,7 +172,7 @@ walker = pyg.walk(
 )
 ```
 
-You can also create a reusable `Walker` object and choose where to render it:
+For new code on the 0.6 line, prefer a reusable `Walker` object and choose where to render it:
 
 ```python
 walker = pyg.Walker(df, spec_path="./chart_meta_0.json", computation="browser")
@@ -271,16 +272,16 @@ renderer.explorer()
 |--------------------|-----------------------------------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------------|
 | dataset            | Union[DataFrame, pyarrow.Table, Connector, str, Walker]   | -               | DataFrame, pyarrow table, database connector, SQL/data source string, or reusable Walker object to explore.                        |
 | gid                | Union[int, str]                                           | None            | ID for the GraphicWalker container div, formatted as `gwalker-{gid}`.                                                              |
-| env                | Literal['JupyterAnywidget', 'Jupyter', 'JupyterWidget']   | 'JupyterAnywidget' | Notebook rendering environment. Use `JupyterAnywidget` or omit `env`; `Jupyter` and `JupyterWidget` are deprecated legacy transports kept for compatibility. |
+| env                | Literal['JupyterAnywidget', 'Jupyter', 'JupyterWidget']   | 'JupyterAnywidget' | Notebook rendering environment. Use `JupyterAnywidget` or omit `env`; `Jupyter` and `JupyterWidget` are deprecated aliases to the anywidget transport and are scheduled for removal in PyGWalker 0.7.0. |
 | field_specs        | Optional[List[FieldSpec]]                                 | None            | Field specifications. They will be inferred from `dataset` if not specified.                                                       |
 | theme_key          | Literal['vega', 'g2', 'streamlit']                        | 'g2'            | Theme type for Graphic Walker.                                                                                                     |
 | appearance         | Literal['media', 'light', 'dark']                         | 'media'         | Theme appearance. `media` follows the operating system preference.                                                                 |
 | spec               | str                                                       | ""              | Chart configuration data. Can be a configuration ID, JSON string, local file path, or remote file URL.                             |
 | spec_path          | Optional[str]                                             | None            | Local chart configuration file path. Prefer this over passing a local file path through `spec`.                                    |
 | computation        | Optional[Literal['auto', 'browser', 'kernel', 'cloud']]   | None            | Computation backend. Omit it for automatic behavior; use `browser`, `kernel`, or `cloud` to choose explicitly.                     |
-| use_kernel_calc    | Optional[bool]                                            | None            | Deprecated. Use `computation="kernel"` or `kernel_computation` instead.                                                           |
-| kernel_computation | Optional[bool]                                            | None            | Legacy boolean for local DuckDB-backed kernel computation. Prefer `computation="kernel"` or `computation="browser"`.              |
-| cloud_computation  | bool                                                      | False           | Legacy boolean for Kanaries cloud computation. Prefer `computation="cloud"`.                                                       |
+| use_kernel_calc    | Optional[bool]                                            | None            | Deprecated; scheduled for removal in PyGWalker 0.7.0. Use `computation="kernel"` or `computation="browser"` instead.              |
+| kernel_computation | Optional[bool]                                            | None            | Legacy boolean for local DuckDB-backed kernel computation; scheduled for removal in PyGWalker 0.7.0. Prefer `computation`.         |
+| cloud_computation  | bool                                                      | False           | Legacy boolean for Kanaries cloud computation; scheduled for removal in PyGWalker 0.7.0. Prefer `computation="cloud"`.             |
 | show_cloud_tool    | bool                                                      | True            | Whether to show the Kanaries cloud tool when available.                                                                            |
 | kanaries_api_key   | str                                                       | ""              | Kanaries API key used by cloud features.                                                                                           |
 | default_tab        | Literal['data', 'vis']                                    | 'vis'           | Default tab to show when the UI opens.                                                                                             |

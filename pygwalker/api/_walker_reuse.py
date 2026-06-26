@@ -1,3 +1,4 @@
+import inspect
 from typing import Any, Callable, Collection, Dict, List, Mapping, Optional
 
 
@@ -5,6 +6,18 @@ def is_public_walker(value: Any) -> bool:
     from pygwalker.api.walker import Walker
 
     return isinstance(value, Walker)
+
+
+def get_callable_defaults(callable_obj: Callable[..., Any], names: Collection[str]) -> Dict[str, Any]:
+    """Return declared defaults for a public adapter entrypoint."""
+    signature = inspect.signature(callable_obj)
+    defaults: Dict[str, Any] = {}
+    for name in names:
+        parameter = signature.parameters[name]
+        if parameter.default is inspect.Parameter.empty:
+            raise ValueError(f"`{name}` has no default in {callable_obj.__name__}")
+        defaults[name] = parameter.default
+    return defaults
 
 
 def collect_walker_construction_conflicts(

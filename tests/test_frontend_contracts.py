@@ -4,6 +4,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from scripts import generate_comm_protocol_ts
 from pygwalker.communications import protocol
 
 
@@ -143,7 +144,7 @@ def _comm_handler_register_calls(repo_root: Path) -> list[ast.Call]:
 
 
 def _typescript_interface_keys(repo_root: Path, interface_name: str) -> set[str]:
-    source = (repo_root / "app/src/interfaces/index.ts").read_text(encoding="utf-8")
+    source = (repo_root / "app/src/interfaces/comm.generated.ts").read_text(encoding="utf-8")
     match = re.search(rf"export interface {interface_name} \{{([\s\S]*?)\n\}}", source)
     if match is None:
         raise AssertionError(f"Could not find {interface_name} interface")
@@ -151,7 +152,7 @@ def _typescript_interface_keys(repo_root: Path, interface_name: str) -> set[str]
 
 
 def _typescript_shape_keys(repo_root: Path, type_name: str) -> set[str]:
-    source = (repo_root / "app/src/interfaces/index.ts").read_text(encoding="utf-8")
+    source = (repo_root / "app/src/interfaces/comm.generated.ts").read_text(encoding="utf-8")
     empty_interface_pattern = rf"export interface {type_name}(?:<[^>]+>)? \{{\}}"
     if re.search(empty_interface_pattern, source) is not None:
         return set()
@@ -168,7 +169,7 @@ def _typescript_shape_keys(repo_root: Path, type_name: str) -> set[str]:
 
 
 def _typescript_map_values(repo_root: Path, interface_name: str) -> dict[str, str]:
-    source = (repo_root / "app/src/interfaces/index.ts").read_text(encoding="utf-8")
+    source = (repo_root / "app/src/interfaces/comm.generated.ts").read_text(encoding="utf-8")
     match = re.search(rf"export interface {interface_name} \{{([\s\S]*?)\n\}}", source)
     if match is None:
         raise AssertionError(f"Could not find {interface_name} interface")
@@ -207,6 +208,8 @@ def test_frontend_comm_maps_cover_python_comm_handler_endpoints():
 
     assert _typescript_interface_keys(repo_root, "ICommRequestMap") == endpoints
     assert _typescript_interface_keys(repo_root, "ICommResponseMap") == endpoints
+    assert set(protocol.COMM_REQUEST_MODELS) == endpoints
+    assert set(protocol.COMM_RESPONSE_MODELS) == endpoints
 
 
 def test_frontend_comm_request_map_uses_types_matching_python_request_models():
@@ -224,6 +227,13 @@ def test_frontend_protocol_interfaces_match_pydantic_aliases():
 
     for model_cls, interface_name in PROTOCOL_MODEL_TS_INTERFACES.items():
         assert _typescript_shape_keys(repo_root, interface_name) == _pydantic_alias_keys(model_cls)
+
+
+def test_generated_frontend_protocol_types_are_fresh():
+    repo_root = Path(__file__).resolve().parents[1]
+    generated_source = (repo_root / "app/src/interfaces/comm.generated.ts").read_text(encoding="utf-8")
+
+    assert generated_source == generate_comm_protocol_ts.render()
 
 
 def test_comm_handler_register_uses_typed_request_models():

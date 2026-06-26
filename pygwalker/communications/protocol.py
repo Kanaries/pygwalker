@@ -159,7 +159,7 @@ class UploadSpecToCloudResponse(CommBaseModel):
 
 
 class CloudCallbackResponse(CommBaseModel):
-    data: Any
+    data: Any = Field(...)
 
 
 class UploadCloudChartResponse(CommBaseModel):
@@ -170,3 +170,44 @@ class UploadCloudChartResponse(CommBaseModel):
 class UploadCloudDashboardResponse(CommBaseModel):
     dashboard_id: str = Field(..., alias="dashboardId")
     dataset_id: str = Field(..., alias="datasetId")
+
+
+COMM_REQUEST_MODELS: Dict[str, Type[BaseModel]] = {
+    "ping": EmptyRequest,
+    "request_data": EmptyRequest,
+    "get_latest_vis_spec": EmptyRequest,
+    "save_chart": SaveChartRequest,
+    "update_spec": UpdateSpecRequest,
+    "upload_spec_to_cloud": UploadSpecToCloudRequest,
+    "get_datas": SqlQueryRequest,
+    "get_datas_by_payload": PayloadQueryRequest,
+    "batch_get_datas_by_sql": BatchSqlQueryRequest,
+    "batch_get_datas_by_payload": BatchPayloadQueryRequest,
+    "get_spec_by_text": AskSpecRequest,
+    "get_chart_by_chats": ChatChartRequest,
+    "export_dataframe_by_payload": PayloadQueryRequest,
+    "export_dataframe_by_sql": SqlQueryRequest,
+    "upload_to_cloud_charts": UploadCloudChartRequest,
+    "upload_to_cloud_dashboard": UploadCloudDashboardRequest,
+    "open_in_desktop": OpenDesktopRequest,
+}
+
+COMM_RESPONSE_MODELS: Dict[str, Type[BaseModel]] = {
+    "ping": EmptyResponse,
+    "request_data": EmptyResponse,
+    "get_latest_vis_spec": LatestVisSpecResponse,
+    "save_chart": EmptyResponse,
+    "update_spec": EmptyResponse,
+    "upload_spec_to_cloud": UploadSpecToCloudResponse,
+    "get_datas": DataRowsResponse,
+    "get_datas_by_payload": DataRowsResponse,
+    "batch_get_datas_by_sql": BatchDataRowsResponse,
+    "batch_get_datas_by_payload": BatchDataRowsResponse,
+    "get_spec_by_text": CloudCallbackResponse,
+    "get_chart_by_chats": CloudCallbackResponse,
+    "export_dataframe_by_payload": EmptyResponse,
+    "export_dataframe_by_sql": EmptyResponse,
+    "upload_to_cloud_charts": UploadCloudChartResponse,
+    "upload_to_cloud_dashboard": UploadCloudDashboardResponse,
+    "open_in_desktop": EmptyResponse,
+}

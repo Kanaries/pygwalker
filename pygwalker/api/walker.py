@@ -37,7 +37,7 @@ _LEGACY_SHOW_ENVS = {
     "jupyter-inline": "jupyter-anywidget",
     "jupyter-widget": "jupyter-anywidget",
 }
-_CORE_LEGACY_TRANSPORT_WARNING_PATTERN = r"`PygWalker\.display_on_jupyter.*legacy Jupyter transport"
+LEGACY_JUPYTER_TRANSPORT_REMOVAL_VERSION = "0.7.0"
 
 
 def _warn_legacy_show_env(env: str) -> None:
@@ -47,20 +47,11 @@ def _warn_legacy_show_env(env: str) -> None:
 
     warnings.warn(
         f"`Walker.show(env='{env}')` uses a legacy Jupyter transport and is deprecated. "
-        f"Use `Walker.show(env='{replacement}')` or omit `env` to use the anywidget transport.",
+        f"It is now treated as `env='{replacement}'` and will be removed in PyGWalker "
+        f"{LEGACY_JUPYTER_TRANSPORT_REMOVAL_VERSION}. Omit `env` to use the anywidget transport.",
         DeprecationWarning,
         stacklevel=3,
     )
-
-
-def _call_core_legacy_display_without_duplicate_warning(display_func) -> None:
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=_CORE_LEGACY_TRANSPORT_WARNING_PATTERN,
-            category=DeprecationWarning,
-        )
-        display_func()
 
 
 class Walker:
@@ -159,21 +150,17 @@ class Walker:
         """Display this walker in the current environment."""
         env_aliases = {
             "JupyterAnywidget": "jupyter-anywidget",
-            "Jupyter": "jupyter-inline",
-            "JupyterWidget": "jupyter-widget",
             "JupyterConvert": "jupyter-convert",
             "JupyterPreview": "jupyter-preview",
         }
         if env != "auto":
             _warn_legacy_show_env(env)
 
-        resolved_env = get_current_env() if env == "auto" else env_aliases.get(env, env)
+        resolved_env = get_current_env() if env == "auto" else env_aliases.get(env, _LEGACY_SHOW_ENVS.get(env, env))
         if resolved_env == "jupyter":
             resolved_env = "jupyter-anywidget"
         elif resolved_env not in (
             "jupyter-anywidget",
-            "jupyter-widget",
-            "jupyter-inline",
             "jupyter-convert",
             "jupyter-preview",
             "webserver",
@@ -182,12 +169,6 @@ class Walker:
 
         if resolved_env == "jupyter-anywidget":
             self._walker.display_on_jupyter_use_anywidget()
-        elif resolved_env == "jupyter-widget":
-            _call_core_legacy_display_without_duplicate_warning(
-                lambda: self._walker.display_on_jupyter_use_widgets(iframe_width, iframe_height)
-            )
-        elif resolved_env == "jupyter-inline":
-            _call_core_legacy_display_without_duplicate_warning(self._walker.display_on_jupyter)
         elif resolved_env == "jupyter-convert":
             self._raise_if_live_computation("JupyterConvert/static HTML output")
             self._walker.display_on_convert_html()

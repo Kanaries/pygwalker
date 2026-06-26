@@ -16,6 +16,7 @@ from pygwalker.utils.computation import resolve_computation_mode
 from pygwalker.utils.spec import resolve_spec_input
 from pygwalker.api._walker_reuse import (
     collect_walker_construction_conflicts,
+    get_callable_defaults,
     is_public_walker,
     reject_walker_construction_params,
 )
@@ -28,6 +29,7 @@ _LEGACY_JUPYTER_ENVS = {
     "Jupyter": "JupyterAnywidget",
     "JupyterWidget": "JupyterAnywidget",
 }
+LEGACY_JUPYTER_TRANSPORT_REMOVAL_VERSION = "0.7.0"
 _DELEGATED_WALKER_SHOW_WARNING_PATTERN = r"`Walker\.show\(env=.*legacy Jupyter transport"
 _CORE_LEGACY_TRANSPORT_WARNING_PATTERN = r"`PygWalker\.display_on_jupyter.*legacy Jupyter transport"
 
@@ -39,7 +41,8 @@ def _warn_legacy_jupyter_env(env: str) -> None:
 
     warnings.warn(
         f"`env='{env}'` uses a legacy Jupyter transport and is deprecated. "
-        f"Use `env='{replacement}'` or omit `env` to use the anywidget transport.",
+        f"It is now treated as `env='{replacement}'` and will be removed in PyGWalker "
+        f"{LEGACY_JUPYTER_TRANSPORT_REMOVAL_VERSION}. Omit `env` to use the anywidget transport.",
         DeprecationWarning,
         stacklevel=3,
     )
@@ -86,39 +89,26 @@ def _reject_walker_construction_params(
     default_tab: Literal["data", "vis"],
     kwargs,
 ) -> None:
+    values = {
+        "gid": gid,
+        "field_specs": field_specs,
+        "theme_key": theme_key,
+        "appearance": appearance,
+        "spec": spec,
+        "spec_path": spec_path,
+        "computation": computation,
+        "use_kernel_calc": use_kernel_calc,
+        "kernel_computation": kernel_computation,
+        "cloud_computation": cloud_computation,
+        "show_cloud_tool": show_cloud_tool,
+        "kanaries_api_key": kanaries_api_key,
+        "default_tab": default_tab,
+    }
     conflicts = collect_walker_construction_conflicts(
-        {
-            "gid": gid,
-            "field_specs": field_specs,
-            "theme_key": theme_key,
-            "appearance": appearance,
-            "spec": spec,
-            "spec_path": spec_path,
-            "computation": computation,
-            "use_kernel_calc": use_kernel_calc,
-            "kernel_computation": kernel_computation,
-            "cloud_computation": cloud_computation,
-            "show_cloud_tool": show_cloud_tool,
-            "kanaries_api_key": kanaries_api_key,
-            "default_tab": default_tab,
-        },
-        {
-            "gid": None,
-            "field_specs": None,
-            "theme_key": "g2",
-            "appearance": "media",
-            "spec": "",
-            "spec_path": None,
-            "computation": None,
-            "use_kernel_calc": None,
-            "kernel_computation": None,
-            "cloud_computation": False,
-            "show_cloud_tool": True,
-            "kanaries_api_key": "",
-            "default_tab": "vis",
-        },
+        values,
+        get_callable_defaults(walk, values),
         conflict_predicates={
-            "cloud_computation": bool,
+            "cloud_computation": lambda value: value not in (False, None),
             "show_cloud_tool": lambda value: value is not True,
         },
         extra_kwargs=kwargs,
@@ -176,6 +166,7 @@ def walk(
         env = "JupyterConvert"
 
     _warn_legacy_jupyter_env(env)
+    display_env = _LEGACY_JUPYTER_ENVS.get(env, env)
 
     if is_public_walker(dataset):
         _reject_walker_construction_params(
@@ -194,7 +185,7 @@ def walk(
             default_tab=default_tab,
             kwargs=kwargs,
         )
-        _show_public_walker(dataset, env)
+        _show_public_walker(dataset, display_env)
         return dataset.core
 
     if field_specs is None:
@@ -210,7 +201,7 @@ def walk(
         cloud_computation=cloud_computation,
         use_kernel_calc=use_kernel_calc,
     )
-    if env == "JupyterConvert":
+    if display_env == "JupyterConvert":
         enabled_live_computation_params = []
         if computation in ("kernel", "cloud"):
             enabled_live_computation_params.append(f"computation='{computation}'")
@@ -251,14 +242,12 @@ def walk(
 
     env_display_map = {
         "JupyterAnywidget": walker.display_on_jupyter_use_anywidget,
-        "JupyterWidget": walker.display_on_jupyter_use_widgets,
-        "Jupyter": walker.display_on_jupyter,
         "JupyterConvert": walker.display_on_convert_html,
         "JupyterPreview": walker.display_preview_on_jupyter,
     }
 
-    display_func = env_display_map.get(env, lambda: None)
-    _call_display_func(env, display_func)
+    display_func = env_display_map.get(display_env, lambda: None)
+    _call_display_func(display_env, display_func)
 
     return walker
 

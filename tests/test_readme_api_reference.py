@@ -145,7 +145,8 @@ def test_readme_walk_api_table_marks_legacy_jupyter_envs_deprecated():
     env_row = next(row for row in _read_walk_api_table_rows() if row["parameter"] == "env")
 
     assert "JupyterAnywidget" in env_row["description"]
-    assert "deprecated legacy transports" in env_row["description"]
+    assert "deprecated aliases to the anywidget transport" in env_row["description"]
+    assert "PyGWalker 0.7.0" in env_row["description"]
 
 
 def test_translated_readmes_defer_api_reference_to_english_readme():

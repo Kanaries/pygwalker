@@ -5,6 +5,8 @@ from pygwalker._typing import IComputation
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils import fallback_value
 
+LEGACY_COMPUTATION_REMOVAL_VERSION = "0.7.0"
+
 
 def _is_connector_dataset(dataset) -> bool:
     return isinstance(dataset, (Connector, str))
@@ -12,7 +14,8 @@ def _is_connector_dataset(dataset) -> bool:
 
 def _warn_legacy_computation_param(name: str, replacement: str) -> None:
     warnings.warn(
-        f"`{name}` is deprecated and will be removed in a future release; use `{replacement}` instead.",
+        f"`{name}` is deprecated and will be removed in PyGWalker {LEGACY_COMPUTATION_REMOVAL_VERSION}; "
+        f"use `{replacement}` instead.",
         DeprecationWarning,
         stacklevel=3,
     )
