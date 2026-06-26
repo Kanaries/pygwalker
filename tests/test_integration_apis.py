@@ -1,4 +1,5 @@
 import importlib
+import inspect
 import json
 import sys
 from types import ModuleType
@@ -572,6 +573,34 @@ def test_streamlit_renderer_rejects_rebuilding_public_walker_object(monkeypatch,
 
     with pytest.raises(ValueError, match="cannot apply construction parameters: spec_path"):
         streamlit.StreamlitRenderer(public_walker, spec_path=str(tmp_path / "other.json"))
+
+
+def test_streamlit_renderer_public_walker_reuse_defaults_follow_signature(monkeypatch):
+    _install_streamlit_stubs(monkeypatch)
+    streamlit = importlib.reload(importlib.import_module("pygwalker.api.streamlit"))
+    walker_api = importlib.import_module("pygwalker.api.walker")
+
+    _reset_fake_walker()
+    monkeypatch.setattr(walker_api, "PygWalker", FakeWalker)
+    monkeypatch.setattr(streamlit, "init_streamlit_comm", lambda: None)
+    monkeypatch.setattr(streamlit, "StreamlitCommunication", lambda gid: {"gid": gid})
+
+    signature = inspect.signature(streamlit.StreamlitRenderer)
+    parameters = [
+        parameter.replace(default="rw") if parameter.name == "spec_io_mode" else parameter
+        for parameter in signature.parameters.values()
+    ]
+    monkeypatch.setattr(
+        streamlit.StreamlitRenderer,
+        "__signature__",
+        signature.replace(parameters=parameters),
+        raising=False,
+    )
+
+    public_walker = walker_api.Walker(pd.DataFrame([{"city": "London"}]), computation="browser")
+    renderer = streamlit.StreamlitRenderer(public_walker, spec_io_mode="rw")
+
+    assert renderer.walker is public_walker.core
 
 
 def test_streamlit_html_accepts_public_walker_object(monkeypatch):

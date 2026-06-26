@@ -14,6 +14,7 @@ from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.utils.spec import resolve_spec_input
 from pygwalker.api._walker_reuse import (
     collect_walker_construction_conflicts,
+    get_callable_defaults,
     is_public_walker,
     reject_walker_construction_params,
 )
@@ -36,27 +37,19 @@ def _to_html_from_walker(
 ) -> str:
     width = kwargs.pop("width", None)
     height = kwargs.pop("height", None)
+    values = {
+        "gid": gid,
+        "spec": spec,
+        "spec_path": spec_path,
+        "field_specs": field_specs,
+        "theme_key": theme_key,
+        "appearance": appearance,
+        "default_tab": default_tab,
+        "computation": computation,
+    }
     conflicts = collect_walker_construction_conflicts(
-        {
-            "gid": gid,
-            "spec": spec,
-            "spec_path": spec_path,
-            "field_specs": field_specs,
-            "theme_key": theme_key,
-            "appearance": appearance,
-            "default_tab": default_tab,
-            "computation": computation,
-        },
-        {
-            "gid": None,
-            "spec": "",
-            "spec_path": None,
-            "field_specs": None,
-            "theme_key": "g2",
-            "appearance": "media",
-            "default_tab": "vis",
-            "computation": None,
-        },
+        values,
+        get_callable_defaults(to_html, values),
         extra_kwargs=kwargs,
         present_extra_conflicts=("kernel_computation", "cloud_computation", "use_kernel_calc"),
     )

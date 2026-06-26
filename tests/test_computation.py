@@ -35,5 +35,5 @@ def test_resolve_computation_mode_preserves_default_kernel_semantics():
 
 
 def test_resolve_computation_mode_warns_for_legacy_kernel_param():
-    with pytest.warns(DeprecationWarning, match="kernel_computation"):
+    with pytest.warns(DeprecationWarning, match="kernel_computation.*0\\.7\\.0"):
         assert resolve_computation_mode(object(), kernel_computation=True) == (True, False)

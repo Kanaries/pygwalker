@@ -22,6 +22,7 @@ from pygwalker.services.streamlit_components import pygwalker_component
 from pygwalker.services.data_parsers import get_dataset_hash
 from pygwalker.api._walker_reuse import (
     collect_walker_construction_conflicts,
+    get_callable_defaults,
     is_public_walker,
     reject_walker_construction_params,
 )
@@ -47,37 +48,24 @@ def _reject_walker_construction_params(
     default_tab: Literal["data", "vis"],
     kwargs: Dict[str, Any],
 ) -> None:
+    values = {
+        "gid": gid,
+        "field_specs": field_specs,
+        "theme_key": theme_key,
+        "appearance": appearance,
+        "spec": spec,
+        "spec_path": spec_path,
+        "spec_io_mode": spec_io_mode,
+        "computation": computation,
+        "kernel_computation": kernel_computation,
+        "use_kernel_calc": use_kernel_calc,
+        "show_cloud_tool": show_cloud_tool,
+        "kanaries_api_key": kanaries_api_key,
+        "default_tab": default_tab,
+    }
     conflicts = collect_walker_construction_conflicts(
-        {
-            "gid": gid,
-            "field_specs": field_specs,
-            "theme_key": theme_key,
-            "appearance": appearance,
-            "spec": spec,
-            "spec_path": spec_path,
-            "spec_io_mode": spec_io_mode,
-            "computation": computation,
-            "kernel_computation": kernel_computation,
-            "use_kernel_calc": use_kernel_calc,
-            "show_cloud_tool": show_cloud_tool,
-            "kanaries_api_key": kanaries_api_key,
-            "default_tab": default_tab,
-        },
-        {
-            "gid": None,
-            "field_specs": None,
-            "theme_key": "g2",
-            "appearance": "media",
-            "spec": "",
-            "spec_path": None,
-            "spec_io_mode": "r",
-            "computation": None,
-            "kernel_computation": None,
-            "use_kernel_calc": None,
-            "show_cloud_tool": None,
-            "kanaries_api_key": "",
-            "default_tab": "vis",
-        },
+        values,
+        get_callable_defaults(StreamlitRenderer, values),
         conflict_predicates={
             "show_cloud_tool": lambda value: value is not None,
         },
