@@ -159,7 +159,7 @@ class UploadSpecToCloudResponse(CommBaseModel):
 
 
 class CloudCallbackResponse(CommBaseModel):
-    data: Any
+    data: Any = Field(...)
 
 
 class UploadCloudChartResponse(CommBaseModel):
