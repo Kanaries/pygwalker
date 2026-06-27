@@ -149,6 +149,30 @@ def test_readme_walk_api_table_marks_legacy_jupyter_envs_deprecated():
     assert "PyGWalker 0.7.0" in env_row["description"]
 
 
+def test_release_0_6_notes_cover_public_compatibility_promises():
+    release_note = (REPO_ROOT / "docs/RELEASE_0_6.md").read_text(encoding="utf-8")
+
+    required_fragments = [
+        'computation="browser"',
+        "reusable `Walker`",
+        "`kernel_computation`, `cloud_computation`, and `use_kernel_calc` are deprecated in 0.6 but remain supported",
+        "PyGWalker 0.7.0",
+        "anywidget path is the preferred and default Jupyter rendering path",
+        "Static HTML export is browser-only",
+        "default privacy mode is `update-only`",
+        "Python 3.10, 3.11, 3.12, and 3.13",
+        "Node.js 22.x",
+    ]
+    for fragment in required_fragments:
+        assert fragment in release_note
+
+
+def test_readme_links_to_0_6_release_notes():
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "[PyGWalker 0.6 Release Notes](./docs/RELEASE_0_6.md)" in readme
+
+
 def test_translated_readmes_defer_api_reference_to_english_readme():
     docs_dir = Path(__file__).resolve().parents[1] / "docs"
 

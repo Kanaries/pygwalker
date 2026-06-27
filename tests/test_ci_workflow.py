@@ -56,6 +56,7 @@ def test_publish_workflow_packages_fresh_frontend_bundle():
     workflow = (REPO_ROOT / ".github/workflows/publish.yml").read_text(encoding="utf-8")
 
     assert "node-version: [22.x]" in workflow
+    assert "workflow_dispatch:" in workflow
     assert "./scripts/compile.sh" in workflow
     assert "name: pygwalker-app" in workflow
     assert "path: ./pygwalker/templates/dist/*" in workflow
@@ -69,3 +70,4 @@ def test_publish_workflow_packages_fresh_frontend_bundle():
     download_dist_start = workflow.index("uses: actions/download-artifact@v4", build_py_start)
     build_package_start = workflow.index("python -m build .", build_py_start)
     assert download_dist_start < build_package_start
+    assert "github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags')" in workflow

@@ -1305,6 +1305,7 @@ def test_pygwalker_open_in_desktop_callback_validates_payload(monkeypatch):
         ({"computation": "browser"}, False),
         ({"computation": "kernel"}, True),
         ({"computation": "cloud"}, False),
+        ({"cloud_computation": True}, False),
         ({"env": "JupyterConvert", "kernel_computation": False}, False),
     ],
 )
@@ -1322,7 +1323,8 @@ def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
     monkeypatch.setattr(PygWalker, "display_on_jupyter_use_widgets", lambda self: None)
     monkeypatch.setattr(PygWalker, "display_on_jupyter", lambda self: None)
     monkeypatch.setattr(PygWalker, "display_on_convert_html", lambda self: None)
-    cloud_uploads = _patch_cloud_computation_parser(monkeypatch) if kwargs.get("computation") == "cloud" else []
+    expects_cloud_computation = kwargs.get("computation") == "cloud" or kwargs.get("cloud_computation") is True
+    cloud_uploads = _patch_cloud_computation_parser(monkeypatch) if expects_cloud_computation else []
 
     with _expected_legacy_computation_warning(kwargs):
         walker = jupyter.walk(
@@ -1332,7 +1334,7 @@ def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
         )
 
     assert walker.kernel_computation is expected_kernel_computation
-    if kwargs.get("computation") == "cloud":
+    if expects_cloud_computation:
         assert walker.cloud_computation is True
         assert walker.dataset_type == "cloud_dataset"
         assert len(cloud_uploads) == 1
