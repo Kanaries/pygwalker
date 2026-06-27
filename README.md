@@ -181,6 +181,8 @@ html = walker.to_html()
 html = pyg.to_html(walker)
 ```
 
+See [PyGWalker 0.6 Release Notes](./docs/RELEASE_0_6.md) for the compatibility policy, deprecation timeline, and tested runtime support.
+
 After exploring in the UI, export the current chart state as reproducible Python code:
 
 ```python

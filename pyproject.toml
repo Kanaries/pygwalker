@@ -92,11 +92,11 @@ version = { path = "pygwalker/__init__.py" }
 
 [tool.hatch.build]
 include = [
-    "pygwalker",
-    "pygwalker_tools",
-    "bin",
-    "pygwalker/templates/**",
-    "pygwalker/templates/**/*",
+    "/pygwalker",
+    "/pygwalker_tools",
+    "/bin",
+    "/pygwalker/templates/**",
+    "/pygwalker/templates/**/*",
 ]
 exclude = [ "/graphic-walker", "/tests" ]
 artifacts = [ "pygwalker/templates/*" ]
@@ -124,14 +124,18 @@ build_cmd = "dev"
 [tool.hatch.build.targets.sdist]
 include = [
     "README.md", "LICENSE",
-    "app",
-    "pygwalker",
-    "pygwalker_tools",
-    "bin",
-    "pygwalker/templates/**",
-    "pygwalker/templates/**/*",
-    "scripts",
+    "/app",
+    "/pygwalker",
+    "/pygwalker_tools",
+    "/bin",
+    "/pygwalker/templates/**",
+    "/pygwalker/templates/**/*",
+    "/scripts",
 ]
+
+[tool.hatch.build.targets.sdist.force-include]
+"app/src/lib" = "app/src/lib"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
