@@ -148,3 +148,6 @@ __pycache__/
 .web
 *.py[cod]
 assets/external/
+
+# Local dev stack logs (scripts/dev.py, PYGWALKER_LOG_FILE)
+logs/

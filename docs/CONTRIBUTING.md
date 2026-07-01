@@ -3,6 +3,11 @@
 This guide covers the local development path used by the Python package and the
 React frontend in `app/`.
 
+> **New here?** Start with [`../AGENTS.md`](../AGENTS.md) (repo map + one-command dev stack)
+> and [`ARCHITECTURE.md`](./ARCHITECTURE.md) (how the two halves are built). For the
+> hot-reload dev workflow, see [`DEVELOPMENT.md`](./DEVELOPMENT.md). The fastest way to run
+> everything locally with live frontend reload and centralized logs is `python scripts/dev.py`.
+
 ## Prerequisites
 
 - Python 3.10 or newer
@@ -83,38 +88,33 @@ yarn build
 If `../graphic-walker/packages/graphic-walker` does not exist, skip this command
 and use the locked npm dependency.
 
-## Frontend Dev Server
+## Dev Server / Hot Reload
 
-Start the Vite dev server from `app/`:
-
-```bash
-yarn dev:server
-```
-
-The dev server listens on port `8769` and serves the app under
-`/pyg_dev_app/`.
-
-For JupyterLab development, run Jupyter with `jupyter-server-proxy`:
+For iterating on the frontend, use the one-command dev stack, which rebuilds the app on every
+change and hot-reloads it into open notebook widgets via anywidget HMR:
 
 ```bash
-jupyter lab --ServerProxy.servers="{'pyg_dev_app': {'command': [], 'absolute_url': True, 'port': 8769, 'timeout': 30}}"
+python scripts/dev.py
 ```
 
-In the notebook, point PyGWalker at the dev frontend before rendering:
+This starts `yarn dev:build` (`vite build --watch`) and JupyterLab with `PYGWALKER_DEV=1` /
+`ANYWIDGET_HMR=1`, teeing all output into `logs/`. See
+[`DEVELOPMENT.md`](./DEVELOPMENT.md) for the full workflow, flags, and log locations.
 
-```python
-from pygwalker.services.global_var import GlobalVarManager
-
-GlobalVarManager.set_component_url("/pyg_dev_app/")
-```
-
-Reset to bundled assets with:
-
-```python
-GlobalVarManager.set_component_url("")
-```
+The older Vite dev-server + `GlobalVarManager.set_component_url("/pyg_dev_app/")` +
+`jupyter-server-proxy` flow only drives the deprecated iframe transport (`env='Jupyter'`) and
+is documented as an appendix in [`DEVELOPMENT.md`](./DEVELOPMENT.md#appendix-vite-dev-server-iframe-transport).
 
 ## Validation
+
+To run the full CI flow locally in one command (frontend build + Playwright smoke test +
+notebook tests + Python lint/tests), use:
+
+```bash
+python scripts/local_ci.py        # add --skip-frontend / --skip-notebooks to narrow scope
+```
+
+Or run the individual steps below.
 
 Run Python formatting, lint, and tests from the repository root:
 
