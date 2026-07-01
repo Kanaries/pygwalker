@@ -7,6 +7,7 @@
   "scripts": {
     "build": "yarn typecheck && vite build && vite build --mode=dsl_to_workflow && vite build --mode=vega_to_dsl",
     "build:app": "vite build",
+    "dev:build": "vite build --watch --mode production",
     "typecheck": "tsc --noEmit --pretty false",
     "dev:preinstall": "(cd ../graphic-walker/packages/graphic-walker; yarn --frozen-lockfile && yarn build)",
     "dev:server": "vite --host",
