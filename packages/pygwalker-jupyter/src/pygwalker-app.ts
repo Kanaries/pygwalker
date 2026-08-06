@@ -1,0 +1,18 @@
+// The Vite-built PyGWalker application is deliberately reused by the companion extension.
+// It is generated before this package is compiled and bundled into the prebuilt extension.
+// @ts-ignore -- generated JavaScript lives outside this TypeScript package.
+import pygwalkerApp from '../../../pygwalker/templates/dist/pygwalker-app.es.js';
+
+export interface IPygWalkerMount {
+  unmount: () => void;
+}
+
+export interface IPygWalkerApp {
+  mountPygWalker: (
+    container: HTMLElement,
+    props: Record<string, unknown>,
+    communication: unknown
+  ) => Promise<IPygWalkerMount>;
+}
+
+export default pygwalkerApp as IPygWalkerApp;

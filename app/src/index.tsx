@@ -21,6 +21,7 @@ import { loadDataSource, postDataService, finishDataService, getDatasFromKernelB
 
 import commonStore from "./store/common";
 import { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback, initAnywidgetCommunication } from "./utils/communication";
+import type { ICommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig } from './utils/userConfig';
 import type { IPreviewProps, IChartPreviewProps } from './components/preview';
@@ -268,7 +269,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const openInDesktopTool = getOpenDesktopTool(props, storeRef);
 
     const tools = [runcellTool, exportTool, openInDesktopTool];
-    if (props.env && ["jupyter_widgets", "streamlit", "gradio", "marimo", "anywidget", "web_server"].indexOf(props.env) !== -1 && props.useSaveTool) {
+    if (props.env && ["jupyter_widgets", "jupyter_extension", "streamlit", "gradio", "marimo", "anywidget", "web_server"].indexOf(props.env) !== -1 && props.useSaveTool) {
         const saveTool = getSaveTool(props, gwRef, storeRef, isChanged, setIsChanged);
         tools.push(saveTool);
     }
@@ -726,5 +727,53 @@ function AnywidgetGWalkerApp() {
     );
 }
 
+export interface IPygWalkerMount {
+    unmount: () => void;
+}
 
-export default { GWalker, PreviewApp, ChartPreviewApp, StreamlitGWalker, render: createRender(AnywidgetGWalkerApp) }
+/**
+ * Mount the existing PyGWalker application with a host-provided communication adapter.
+ *
+ * The JupyterLab companion extension uses this boundary instead of pretending to be an
+ * anywidget.  Round 1 intentionally allows one such mount at a time because the legacy app
+ * stores are module-level singletons.
+ */
+async function mountPygWalker(
+    container: HTMLElement,
+    inputProps: IAppProps,
+    comm: ICommunication,
+): Promise<IPygWalkerMount> {
+    const props = formatAppProps({
+        ...inputProps,
+        env: "jupyter_extension",
+        __comm: comm,
+    });
+
+    communicationStore.setComm(comm);
+    if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
+        const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
+        props.visSpec = visSpecResp.data?.visSpec ?? [];
+    }
+    await initDslParser();
+
+    const root = createRoot(container);
+    root.render(
+        <MainApp darkMode={props.dark}>
+            <GWalkerComponent {...props} />
+        </MainApp>
+    );
+
+    return {
+        unmount: () => root.unmount(),
+    };
+}
+
+
+export default {
+    GWalker,
+    PreviewApp,
+    ChartPreviewApp,
+    StreamlitGWalker,
+    mountPygWalker,
+    render: createRender(AnywidgetGWalkerApp),
+}
