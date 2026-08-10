@@ -2,7 +2,11 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { ICommandPalette, ToolbarButton } from '@jupyterlab/apputils';
+import {
+  ICommandPalette,
+  IThemeManager,
+  ToolbarButton
+} from '@jupyterlab/apputils';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { Kernel, KernelMessage } from '@jupyterlab/services';
 import { vegaIcon } from '@jupyterlab/ui-components';
@@ -25,6 +29,7 @@ const BOOTSTRAP_CODE = [
 ].join('\n');
 
 type JsonObject = Record<string, unknown>;
+type Appearance = 'dark' | 'light';
 
 interface IDataFrameInfo {
   name: string;
@@ -301,6 +306,7 @@ class PyGWalkerSidebar extends Widget {
 }
 
 class PyGWalkerMainView extends Widget {
+  private appearance: Appearance = 'light';
   private mount: IPygWalkerMount | null = null;
   private generation = 0;
 
@@ -338,8 +344,14 @@ class PyGWalkerMainView extends Widget {
     }
 
     this.mount = mount;
+    mount.setAppearance(this.appearance);
     this.title.label = `PyGWalker: ${name}`;
     this.node.replaceChildren(host);
+  }
+
+  setAppearance(appearance: Appearance): void {
+    this.appearance = appearance;
+    this.mount?.setAppearance(appearance);
   }
 
   dispose(): void {
@@ -361,7 +373,8 @@ class PyGWalkerController {
     private readonly app: JupyterFrontEnd,
     private readonly tracker: INotebookTracker,
     private readonly sidebar: PyGWalkerSidebar,
-    private readonly isNotebook7: boolean
+    private readonly isNotebook7: boolean,
+    private readonly themeManager: IThemeManager | null
   ) {
     tracker.currentChanged.connect(() => {
       this.resetConnection();
@@ -370,6 +383,9 @@ class PyGWalkerController {
       if (this.sidebar.isVisible) {
         void this.refresh();
       }
+    });
+    themeManager?.themeChanged.connect(() => {
+      this.mainView?.setAppearance(this.currentAppearance());
     });
   }
 
@@ -413,7 +429,9 @@ class PyGWalkerController {
         );
       }
 
+      const appearance = this.currentAppearance();
       const view = this.ensureMainView();
+      view.setAppearance(appearance);
       if (this.isNotebook7) {
         const shell = this.app.shell as typeof this.app.shell & {
           collapseLeft?: () => void;
@@ -421,7 +439,11 @@ class PyGWalkerController {
         shell.collapseLeft?.();
       }
       this.app.shell.activateById(view.id);
-      await view.open(response.data.name, response.data.props, client);
+      await view.open(
+        response.data.name,
+        { ...response.data.props, dark: appearance },
+        client
+      );
       this.sidebar.setHint(
         `${dataframe.name} is open in the PyGWalker work area. Refresh to choose another DataFrame.`
       );
@@ -530,6 +552,28 @@ class PyGWalkerController {
     return this.mainView;
   }
 
+  private currentAppearance(): Appearance {
+    const theme = this.themeManager?.theme;
+    if (theme && this.themeManager) {
+      try {
+        return this.themeManager.isLight(theme) ? 'light' : 'dark';
+      } catch {
+        // Fall through to the DOM marker while themes are still being registered.
+      }
+    }
+
+    const themeLight = document.body.dataset.jpThemeLight;
+    if (themeLight === 'true') {
+      return 'light';
+    }
+    if (themeLight === 'false') {
+      return 'dark';
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  }
+
   private resetConnection(invalidateRefresh = true): void {
     if (invalidateRefresh) {
       ++this.refreshGeneration;
@@ -549,11 +593,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description: 'Discover pandas DataFrames and open them with PyGWalker.',
   autoStart: true,
   requires: [INotebookTracker],
-  optional: [ICommandPalette],
+  optional: [ICommandPalette, IThemeManager],
   activate: (
     app: JupyterFrontEnd,
     tracker: INotebookTracker,
-    palette: ICommandPalette | null
+    palette: ICommandPalette | null,
+    themeManager: IThemeManager | null
   ): void => {
     const isNotebook7 = app.name === NOTEBOOK_APP_NAME;
     let controller: PyGWalkerController;
@@ -563,7 +608,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
       },
       () => controller.onSidebarShown()
     );
-    controller = new PyGWalkerController(app, tracker, sidebar, isNotebook7);
+    controller = new PyGWalkerController(
+      app,
+      tracker,
+      sidebar,
+      isNotebook7,
+      themeManager
+    );
 
     app.shell.add(sidebar, 'left', { rank: 750 });
     app.commands.addCommand(COMMAND_ID, {

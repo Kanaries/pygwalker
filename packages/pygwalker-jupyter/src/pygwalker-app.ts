@@ -5,6 +5,7 @@ import pygwalkerApp from '../../../pygwalker/templates/dist/pygwalker-app.es.js'
 
 export interface IPygWalkerMount {
   unmount: () => void;
+  setAppearance: (appearance: 'dark' | 'light') => void;
 }
 
 export interface IPygWalkerApp {

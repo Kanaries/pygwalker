@@ -64,11 +64,14 @@ development link; keep only the intended install or reinstall that copy.
 4. Resize the host pane on both sides of `768px`. Confirm that the explorer expands with wider
    panes and preserves its three-column layout at narrower sizes, where the pane becomes
    horizontally scrollable rather than clipping the content.
-5. Open the data table and confirm it contains `A/3`, `B/5`, and `A/8`. This proves that the
+5. With the explorer open, change the active Jupyter theme from light to dark and back. Confirm
+   that PyGWalker inherits the theme used when it first opens, follows both live theme changes,
+   and keeps the active PyGWalker tab and selected DataFrame instead of remounting the app.
+6. Open the data table and confirm it contains `A/3`, `B/5`, and `A/8`. This proves that the
    rendered app can query the selected live kernel object.
-6. Drag `category` to the X/columns channel and `value` to the Y/rows channel. Confirm that a
+7. Drag `category` to the X/columns channel and `value` to the Y/rows channel. Confirm that a
    chart is rendered.
-7. In a notebook cell in each host, also run:
+8. In a notebook cell in each host, also run:
 
    ```python
    import pygwalker as pyg
@@ -78,7 +81,7 @@ development link; keep only the intended install or reinstall that copy.
 
    Confirm that the existing anywidget UI still renders while the companion extension is
    installed.
-8. Disable the companion, restart the current Jupyter host, and repeat step 7 to verify the
+9. Disable the companion, restart the current Jupyter host, and repeat step 8 to verify the
    core-only path. Re-enable it after the test:
 
    ```bash
@@ -109,10 +112,12 @@ hosts found the live `df`, rendered the real PyGWalker UI, and reached the kerne
 JupyterLab host used a main-area split; Notebook 7 used its toolbar entry and native right
 panel. Browser measurements also verified the shared responsive rule: a `399px` Notebook
 panel kept a `768px` content surface and scrolled horizontally, while wider Notebook and
-JupyterLab panes expanded the content to `1079px` and `940px`. The legacy `pyg.walk(df)`
-anywidget path remained separate. A clean-process regression test also verifies that importing
-the core package does not import or activate the extension bridge. Unrelated host/telemetry
-console errors were isolated from these results.
+JupyterLab panes expanded the content to `1079px` and `940px`. On 2026-08-10, both hosts also
+inherited the active dark theme on first mount and synchronized dark/light changes in place;
+the selected Data tab, live DataFrame, and kernel session remained intact. The legacy
+`pyg.walk(df)` anywidget path remained separate. A clean-process regression test also verifies
+that importing the core package does not import or activate the extension bridge. Unrelated
+host/telemetry console errors were isolated from these results.
 
 ## Uninstall
 

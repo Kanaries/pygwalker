@@ -38,7 +38,8 @@ right panel. Neither host inserts a `pyg.walk(df)` cell.
 The Jupyter-owned pane remains freely resizable. The embedded explorer preserves a `768px`
 minimum content width (the `md` breakpoint); above that width it expands with the pane, and
 below it the pane scrolls horizontally instead of compressing or clipping PyGWalker's
-three-column layout.
+three-column layout. The explorer also inherits the active Jupyter light or dark theme when it
+opens and follows later host-theme changes without remounting or losing its current state.
 
 After rebuilding the extension, reinstall its generated prebuilt assets and restart the
 Jupyter server (both frontends cache the federated-extension manifest):

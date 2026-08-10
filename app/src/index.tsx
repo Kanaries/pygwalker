@@ -134,6 +134,10 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
     const [selectedDarkMode, setSelectedDarkMode] = useState(props.darkMode);
     const [darkMode, setDarkMode] = useState(currentMediaTheme(props.darkMode));
 
+    useEffect(() => {
+        setSelectedDarkMode(props.darkMode);
+    }, [props.darkMode]);
+
     const sendAppearanceMessageToParent = useCallback((appearance: IDarkMode) => {
         if (!props.sendMessage) return;
         window.parent.postMessage({
@@ -729,13 +733,15 @@ function AnywidgetGWalkerApp() {
 
 export interface IPygWalkerMount {
     unmount: () => void;
+    setAppearance: (appearance: "dark" | "light") => void;
 }
 
 /**
  * Mount the existing PyGWalker application with a host-provided communication adapter.
  *
  * The JupyterLab companion extension uses this boundary instead of pretending to be an
- * anywidget.  Round 1 intentionally allows one such mount at a time because the legacy app
+ * anywidget. The returned handle can update the host appearance without remounting the
+ * explorer. Round 1 intentionally allows one such mount at a time because the legacy app
  * stores are module-level singletons.
  */
 async function mountPygWalker(
@@ -757,14 +763,25 @@ async function mountPygWalker(
     await initDslParser();
 
     const root = createRoot(container);
-    root.render(
-        <MainApp darkMode={props.dark}>
-            <GWalkerComponent {...props} />
-        </MainApp>
-    );
+    let appearance = currentMediaTheme(props.dark);
+    const render = () => {
+        root.render(
+            <MainApp darkMode={appearance}>
+                <GWalkerComponent {...props} />
+            </MainApp>
+        );
+    };
+    render();
 
     return {
         unmount: () => root.unmount(),
+        setAppearance: nextAppearance => {
+            if (appearance === nextAppearance) {
+                return;
+            }
+            appearance = nextAppearance;
+            render();
+        },
     };
 }
 
