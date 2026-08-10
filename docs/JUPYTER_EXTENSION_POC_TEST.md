@@ -1,4 +1,4 @@
-# JupyterLab 4 Extension — Round 1 POC Test
+# JupyterLab 4 / Notebook 7 Extension — Round 1 POC Test
 
 This is the deterministic acceptance test for the Round 1 “bicycle” in
 [`JUPYTER_EXTENSION_ROADMAP.md`](JUPYTER_EXTENSION_ROADMAP.md). It exercises a real
@@ -7,7 +7,7 @@ JupyterLab frontend, Python kernel, pandas DataFrame, PyGWalker frontend, and ke
 
 ## Prerequisites
 
-- Python 3.10 or newer with JupyterLab `>=4.2,<5`
+- Python 3.10 or newer with JupyterLab `>=4.2,<5` or Notebook `>=7.2,<8`
 - Node.js and Yarn versions listed in [`../AGENTS.md`](../AGENTS.md)
 - A checkout of this repository
 
@@ -22,7 +22,9 @@ yarn --cwd packages/pygwalker-jupyter install --frozen-lockfile
 yarn --cwd packages/pygwalker-jupyter build
 pip install -e packages/pygwalker-jupyter --no-deps
 jupyter labextension list
+# Start the host being tested:
 jupyter lab
+jupyter notebook
 ```
 
 `jupyter labextension list` must report `@kanaries/pygwalker-jupyter` as enabled and OK.
@@ -50,15 +52,23 @@ development link; keep only the intended install or reinstall that copy.
    df = pd.DataFrame({"category": ["A", "B", "A"], "value": [3, 5, 8]})
    ```
 
-2. Open the PyGWalker sidebar. Select **Refresh DataFrames** if the initial refresh has not
-   completed. Confirm that `df` is listed as `3 rows × 2 columns`.
-3. Select `df`. Confirm that a main-area tab titled **PyGWalker: df** opens and shows the
-   `category` and `value` fields.
-4. Open the data table and confirm it contains `A/3`, `B/5`, and `A/8`. This proves that the
+2. Open the DataFrame selector:
+   - In JupyterLab 4, open the PyGWalker sidebar.
+   - In Notebook 7, select **PyGWalker** in the notebook toolbar; confirm that the native left
+     panel opens.
+   Select **Refresh DataFrames** if the initial refresh has not completed. Confirm that `df`
+   is listed as `3 rows × 2 columns`.
+3. Select `df`. In JupyterLab, confirm that a main-area tab titled **PyGWalker: df** opens. In
+   Notebook 7, confirm that the selector collapses and the native resizable right panel opens.
+   In either host, confirm that the explorer shows the `category` and `value` fields.
+4. Resize the host pane on both sides of `768px`. Confirm that the explorer expands with wider
+   panes and preserves its three-column layout at narrower sizes, where the pane becomes
+   horizontally scrollable rather than clipping the content.
+5. Open the data table and confirm it contains `A/3`, `B/5`, and `A/8`. This proves that the
    rendered app can query the selected live kernel object.
-5. Drag `category` to the X/columns channel and `value` to the Y/rows channel. Confirm that a
+6. Drag `category` to the X/columns channel and `value` to the Y/rows channel. Confirm that a
    chart is rendered.
-6. In a notebook cell, also run:
+7. In a notebook cell in each host, also run:
 
    ```python
    import pygwalker as pyg
@@ -68,8 +78,8 @@ development link; keep only the intended install or reinstall that copy.
 
    Confirm that the existing anywidget UI still renders while the companion extension is
    installed.
-7. Disable the companion, restart JupyterLab, and repeat step 6 to verify the core-only path.
-   Re-enable it after the test:
+8. Disable the companion, restart the current Jupyter host, and repeat step 7 to verify the
+   core-only path. Re-enable it after the test:
 
    ```bash
    jupyter labextension disable @kanaries/pygwalker-jupyter
@@ -93,13 +103,16 @@ The log should show the versioned comm opening and successful actions including
 
 ## Recorded Round 1 result
 
-The complete journey passed on 2026-08-02 with JupyterLab 4.2.0 and Python 3.10. The sidebar
-found the live `df`, the extension rendered its real data table, field drags produced a bar
-chart, `batch_get_datas_by_sql` traffic reached the kernel, and the legacy `pyg.walk(df)`
-anywidget rendered alongside it. A clean-process regression test also verifies that importing
-the core package does not import or activate the extension bridge. Unrelated third-party
-extensions in that local Jupyter profile emitted their own browser errors; they were isolated
-from this result.
+The complete JupyterLab journey passed on 2026-08-02 with JupyterLab 4.2.0 and Python 3.10.
+The Notebook host journey passed on 2026-08-09 with Notebook 7.2.0 and Python 3.10.9. Both
+hosts found the live `df`, rendered the real PyGWalker UI, and reached the kernel bridge. The
+JupyterLab host used a main-area split; Notebook 7 used its toolbar entry and native right
+panel. Browser measurements also verified the shared responsive rule: a `399px` Notebook
+panel kept a `768px` content surface and scrolled horizontally, while wider Notebook and
+JupyterLab panes expanded the content to `1079px` and `940px`. The legacy `pyg.walk(df)`
+anywidget path remained separate. A clean-process regression test also verifies that importing
+the core package does not import or activate the extension bridge. Unrelated host/telemetry
+console errors were isolated from these results.
 
 ## Uninstall
 

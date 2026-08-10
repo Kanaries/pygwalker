@@ -88,15 +88,21 @@
 }
 
 .pygwalker-extension-main {
+  --pygwalker-extension-min-content-width: 768px;
+
   background: var(--jp-layout-color1);
+  box-sizing: border-box;
   height: 100%;
+  min-height: 0;
+  min-width: 0;
   overflow: auto;
 }
 
 .pygwalker-extension-main-host {
   box-sizing: border-box;
   min-height: 100%;
-  min-width: 900px;
+  min-width: var(--pygwalker-extension-min-content-width);
+  width: max(100%, var(--pygwalker-extension-min-content-width));
 }
 
 .pygwalker-extension-main-loading {

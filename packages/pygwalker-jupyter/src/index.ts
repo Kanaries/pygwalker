@@ -2,7 +2,7 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { ICommandPalette } from '@jupyterlab/apputils';
+import { ICommandPalette, ToolbarButton } from '@jupyterlab/apputils';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { Kernel, KernelMessage } from '@jupyterlab/services';
 import { vegaIcon } from '@jupyterlab/ui-components';
@@ -17,6 +17,7 @@ const SIDEBAR_ID = 'pygwalker-jupyter-sidebar';
 const MAIN_ID = 'pygwalker-jupyter-main';
 const COMM_TARGET = 'pygwalker.jupyter.v1';
 const PROTOCOL_VERSION = 1;
+const NOTEBOOK_APP_NAME = 'Jupyter Notebook';
 const BOOTSTRAP_CODE = [
   'from pygwalker.jupyter_extension import ensure_registered as _pygwalker_register_extension',
   '_pygwalker_extension_info = _pygwalker_register_extension()',
@@ -359,7 +360,8 @@ class PyGWalkerController {
   constructor(
     private readonly app: JupyterFrontEnd,
     private readonly tracker: INotebookTracker,
-    private readonly sidebar: PyGWalkerSidebar
+    private readonly sidebar: PyGWalkerSidebar,
+    private readonly isNotebook7: boolean
   ) {
     tracker.currentChanged.connect(() => {
       this.resetConnection();
@@ -412,6 +414,12 @@ class PyGWalkerController {
       }
 
       const view = this.ensureMainView();
+      if (this.isNotebook7) {
+        const shell = this.app.shell as typeof this.app.shell & {
+          collapseLeft?: () => void;
+        };
+        shell.collapseLeft?.();
+      }
       this.app.shell.activateById(view.id);
       await view.open(response.data.name, response.data.props, client);
       this.sidebar.setHint(
@@ -510,7 +518,14 @@ class PyGWalkerController {
   private ensureMainView(): PyGWalkerMainView {
     if (!this.mainView || this.mainView.isDisposed) {
       this.mainView = new PyGWalkerMainView();
-      this.app.shell.add(this.mainView, 'main', { mode: 'split-right' });
+      if (this.isNotebook7) {
+        // Notebook 7 has a document-centric shell whose main area accepts only the active
+        // notebook. Its native right panel is still resizable and keeps the kernel-backed
+        // explorer beside the document without replacing or modifying notebook cells.
+        this.app.shell.add(this.mainView, 'right', { rank: 750 });
+      } else {
+        this.app.shell.add(this.mainView, 'main', { mode: 'split-right' });
+      }
     }
     return this.mainView;
   }
@@ -540,6 +555,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     tracker: INotebookTracker,
     palette: ICommandPalette | null
   ): void => {
+    const isNotebook7 = app.name === NOTEBOOK_APP_NAME;
     let controller: PyGWalkerController;
     const sidebar = new PyGWalkerSidebar(
       () => {
@@ -547,7 +563,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       },
       () => controller.onSidebarShown()
     );
-    controller = new PyGWalkerController(app, tracker, sidebar);
+    controller = new PyGWalkerController(app, tracker, sidebar, isNotebook7);
 
     app.shell.add(sidebar, 'left', { rank: 750 });
     app.commands.addCommand(COMMAND_ID, {
@@ -560,6 +576,28 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     });
     palette?.addItem({ command: COMMAND_ID, category: 'PyGWalker' });
+
+    if (isNotebook7) {
+      const addToolbarButton = (panel: INotebookTracker['currentWidget']): void => {
+        if (!panel || Array.from(panel.toolbar.names()).includes('pygwalker')) {
+          return;
+        }
+        const button = new ToolbarButton({
+          className: 'pygwalker-extension-toolbar-button',
+          icon: vegaIcon,
+          label: 'PyGWalker',
+          tooltip: 'Explore a DataFrame with PyGWalker',
+          onClick: () => {
+            void app.commands.execute(COMMAND_ID);
+          }
+        });
+        panel.toolbar.insertItem(10, 'pygwalker', button);
+        panel.disposed.connect(() => button.dispose());
+      };
+
+      tracker.widgetAdded.connect((_, panel) => addToolbarButton(panel));
+      tracker.forEach(panel => addToolbarButton(panel));
+    }
   }
 };
 

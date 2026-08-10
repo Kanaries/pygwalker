@@ -27,7 +27,7 @@ The extension is an additional entry point, not a replacement renderer.
 | Classic Notebook 6 | unchanged | not supported |
 | JupyterLab 3 | unchanged | not supported |
 | JupyterLab 4 | unchanged | supported from Round 1 |
-| Notebook 7 | unchanged | supported from Round 2 |
+| Notebook 7 | unchanged | supported from Round 1 |
 | VS Code / Streamlit / other adapters | unchanged | not applicable |
 
 The intended package boundary is:
@@ -63,7 +63,7 @@ Each round is a usable vertical product, not a collection of disconnected compon
 
 | Round | Product state | Complete user journey | Exit signal |
 |---|---|---|---|
-| 1 | **Bicycle / technical POC** | Active Notebook → sidebar → discover pandas DataFrame → open real PyGWalker | Repeatable locally on JupyterLab 4 with real kernel communication |
+| 1 | **Bicycle / technical POC** | Active Notebook → host-native entry → discover pandas DataFrame → open real PyGWalker | Repeatable locally on JupyterLab 4 and Notebook 7 with real kernel communication |
 | 2 | **Motorcycle / MVP** | The same journey works reliably in JupyterLab 4 and Notebook 7, including normal lifecycle changes | Installable companion wheel, CI matrix green, internal users can use it daily |
 | 3 | **Small car / beta** | Users can enter from notebook variables or supported data files and recover useful sessions | Beta cohort shows reliable activation and return usage |
 | 4 | **Production car / GA** | Secure, observable, performant extension across supported deployment shapes | Release gates, docs, support policy, and rollout/rollback controls are ready |
@@ -72,33 +72,37 @@ Each round is a usable vertical product, not a collection of disconnected compon
 
 ### 4.1 The one journey
 
-A user on JupyterLab 4 opens a Python notebook, creates a pandas DataFrame, opens the
-PyGWalker sidebar, refreshes the list, chooses the DataFrame, and gets a real interactive
-PyGWalker document in the main work area. Dragging fields and issuing data queries uses the
+A user on JupyterLab 4 or Notebook 7 opens a Python notebook and creates a pandas DataFrame.
+In JupyterLab they open the PyGWalker sidebar; in Notebook 7 they use the PyGWalker notebook
+toolbar button. They refresh, choose the DataFrame, and get a real interactive PyGWalker view
+in the host's native resizable work area. Dragging fields and issuing data queries uses the
 same live kernel and PyGWalker services as the notebook.
 
 ```text
 real pandas DataFrame in active kernel
               ↓
-PyGWalker sidebar discovers safe top-level variable names
+PyGWalker selector discovers safe top-level variable names
               ↓
 user chooses one variable
               ↓
 kernel creates a real PygWalker + existing CommHandler
               ↓
-main-area view mounts the real Graphic Walker frontend
+host-native view mounts the real Graphic Walker frontend
               ↓
 interactive data/spec requests return through the kernel comm
 ```
 
 ### 4.2 Fixed scope
 
-- Host: JupyterLab `>=4.2,<5` only for the Round 1 artifact.
+- Host: JupyterLab `>=4.2,<5` and Notebook `>=7.2,<8` for the Round 1 artifact.
 - Session: the currently active `NotebookPanel` and its connected Python kernel.
 - Data: top-level variables whose runtime type is `pandas.DataFrame`.
-- Discovery: explicit refresh plus one initial refresh when the sidebar becomes usable.
-- View: one extension-owned PyGWalker document at a time. Selecting another DataFrame
-  replaces that document's session.
+- Discovery: explicit refresh plus one initial refresh when the host-native selector is shown.
+- View: one extension-owned PyGWalker document at a time. JupyterLab uses a main-area split;
+  Notebook 7 uses its native resizable right panel because its document-centric main area
+  accepts only the active notebook. Both hosts preserve a `768px` minimum explorer content
+  width and scroll horizontally below it. Selecting another DataFrame replaces the view's
+  session.
 - Computation: real kernel computation through the existing `DataBridge` and `CommHandler`.
 - Installation: a development/prebuilt extension artifact in this repository; publishing to
   PyPI is deliberately deferred.
@@ -107,8 +111,8 @@ interactive data/spec requests return through the kernel comm
 
 ### 4.3 Explicit non-goals
 
-Round 1 does not include Notebook 7 certification, JupyterLab 3, Classic Notebook 6,
-CSV/Excel entry points, polars/pyarrow/Spark discovery, non-Python kernels, several open
+Round 1 does not include JupyterLab 3, Classic Notebook 6, CSV/Excel entry points,
+polars/pyarrow/Spark discovery, non-Python kernels, several open
 PyGWalker documents, persistence across restart, automatic variable watching, JupyterHub
 hardening, remote contents, telemetry, marketplace polish, or public package publication.
 
@@ -119,13 +123,15 @@ file-I/O work from hiding whether the core activation loop is valuable.
 
 #### R1.1 — Companion extension shell
 
-- Add a standalone prebuilt JupyterLab extension workspace with a Round 1 host range of
-  `>=4.2 <5`; do not add JupyterLab packages to PyGWalker's runtime Python dependencies.
-- Register a PyGWalker sidebar item and a command that reveals it.
+- Add a standalone prebuilt JupyterLab extension workspace shared by JupyterLab
+  `>=4.2,<5` and Notebook `>=7.2,<8`; do not add JupyterLab or Notebook packages to
+  PyGWalker's runtime Python dependencies.
+- Register a PyGWalker sidebar item and command for JupyterLab, plus a Notebook 7 toolbar
+  entry that reveals the same selector in its native left panel.
 - Resolve the active notebook and show actionable empty states for no notebook/no kernel.
 
-Checkpoint: the icon appears only when the companion extension is installed, and opening it
-does not import or invoke PyGWalker in the kernel.
+Checkpoint: the host-appropriate entry appears only when the companion extension is
+installed, and opening it does not import or invoke PyGWalker in the kernel.
 
 #### R1.2 — Narrow kernel bridge
 
@@ -154,7 +160,8 @@ there is no mock API or copied static HTML.
 
 - Expose a small supported mount/unmount boundary around the existing PyGWalker React app.
 - Inject the extension's communication adapter without changing the anywidget adapter.
-- Mount the app in a JupyterLab main-area widget and resize it with the host shell.
+- Mount the app in a JupyterLab main-area widget or Notebook 7 native right panel and resize
+  it with the host shell.
 - Keep the POC's single-session limitation explicit because current frontend stores are
   process-wide singletons.
 
@@ -167,8 +174,9 @@ or modify a chart.
   replacement.
 - Typecheck/build both the existing frontend and the extension.
 - Run existing Python tests relevant to `pyg.walk()`/anywidget.
-- Add a JupyterLab 4 browser smoke test for the complete journey, or, if browser automation is
-  blocked by the local host, record a deterministic manual test script and the exact blocker.
+- Add JupyterLab 4 and Notebook 7 browser smoke tests for the complete journey, or, if browser
+  automation is blocked by a local host, record a deterministic manual test script and the
+  exact blocker.
 - Document local install, link, launch, and uninstall commands for the POC.
 
 Checkpoint: a new contributor can reproduce the full journey from the documentation, and
@@ -178,10 +186,10 @@ uninstalling/disabling the companion extension leaves `pyg.walk()` behavior unch
 
 Round 1 is complete only when all of the following are true:
 
-- [x] In a real JupyterLab 4 Python notebook, `df = pandas.DataFrame(...)` is discovered from
-      the active kernel.
-- [x] Choosing `df` opens the real PyGWalker UI in the main area without inserting or running
-      a user-visible `pyg.walk(df)` cell.
+- [x] In real JupyterLab 4 and Notebook 7 Python notebooks, `df = pandas.DataFrame(...)` is
+      discovered from the active kernel.
+- [x] Choosing `df` opens the real PyGWalker UI in the host-native resizable work area without
+      inserting or running a user-visible `pyg.walk(df)` cell.
 - [x] At least one interactive chart operation causes real frontend↔kernel protocol traffic
       and succeeds.
 - [x] Refresh, no-notebook, no-kernel, empty-list, stale-variable, and Python-side error states
@@ -215,8 +223,8 @@ Round 2 turns the validated vertical slice into a supportable companion package.
 
 ### Scope
 
-- Certify one extension codebase on JupyterLab 4 and Notebook 7, using optional host tokens
-  where shell capabilities differ.
+- Automate and harden the shared JupyterLab 4 and Notebook 7 codebase, keeping host-specific
+  shell behavior explicit where their document models differ.
 - Handle active-notebook switches, kernel restart/reconnect, notebook close, and comm
   disposal without leaking sessions.
 - Discover pandas, polars, and pyarrow top-level variables with bounded metadata work.

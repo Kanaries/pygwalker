@@ -1,10 +1,11 @@
 {
   "name": "@kanaries/pygwalker-jupyter",
   "version": "0.1.0-poc.0",
-  "description": "PyGWalker companion extension for JupyterLab 4",
+  "description": "PyGWalker companion extension for JupyterLab 4 and Notebook 7",
   "keywords": [
     "jupyter",
     "jupyterlab-extension",
+    "jupyter-notebook",
     "pygwalker",
     "dataframe"
   ],

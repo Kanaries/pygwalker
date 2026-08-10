@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pygwalker-jupyter"
 version = "0.1.0.dev0"
-description = "PyGWalker companion extension for JupyterLab 4"
+description = "PyGWalker companion extension for JupyterLab 4 and Notebook 7"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
@@ -14,6 +14,7 @@ dependencies = ["pygwalker>=0.6.0rc0,<0.7"]
 classifiers = [
     "Framework :: Jupyter",
     "Framework :: Jupyter :: JupyterLab :: 4",
+    "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
 ]

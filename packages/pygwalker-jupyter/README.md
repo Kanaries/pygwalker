@@ -2,8 +2,8 @@
 
 This companion extension is the Round 1 vertical POC described in
 [`docs/JUPYTER_EXTENSION_ROADMAP.md`](../../docs/JUPYTER_EXTENSION_ROADMAP.md). Round 1
-supports JupyterLab `>=4.2,<5` and intentionally does not change the existing
-`pyg.walk()`/anywidget path.
+supports JupyterLab `>=4.2,<5` and Notebook `>=7.2,<8` and intentionally does not change the
+existing `pyg.walk()`/anywidget path.
 
 ## Development install
 
@@ -17,7 +17,9 @@ yarn --cwd packages/pygwalker-jupyter install --frozen-lockfile
 yarn --cwd packages/pygwalker-jupyter build
 pip install -e packages/pygwalker-jupyter --no-deps
 jupyter labextension list
+# Start either supported host:
 jupyter lab
+jupyter notebook
 ```
 
 Open a Python notebook and run:
@@ -28,11 +30,18 @@ import pandas as pd
 df = pd.DataFrame({"category": ["A", "B", "A"], "value": [3, 5, 8]})
 ```
 
-Open the PyGWalker sidebar, refresh, select `df`, and use the resulting PyGWalker document in
-the main work area. No `pyg.walk(df)` cell is inserted.
+In JupyterLab, open the PyGWalker sidebar, refresh, select `df`, and use the resulting
+PyGWalker document in the main work area. In Notebook 7, select **PyGWalker** in the notebook
+toolbar, choose `df` from the native left panel, and use the explorer in the resizable native
+right panel. Neither host inserts a `pyg.walk(df)` cell.
+
+The Jupyter-owned pane remains freely resizable. The embedded explorer preserves a `768px`
+minimum content width (the `md` breakpoint); above that width it expands with the pane, and
+below it the pane scrolls horizontally instead of compressing or clipping PyGWalker's
+three-column layout.
 
 After rebuilding the extension, reinstall its generated prebuilt assets and restart the
-JupyterLab server (the server caches the federated-extension manifest):
+Jupyter server (both frontends cache the federated-extension manifest):
 
 ```bash
 yarn --cwd packages/pygwalker-jupyter build
