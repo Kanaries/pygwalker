@@ -61,6 +61,10 @@ const UploadSpecModal = React.lazy(() => import("./components/uploadSpecModal"))
 const UploadChartModal = React.lazy(() => import("./components/uploadChartModal"));
 const CodeExportModal = React.lazy(() => import("./components/codeExportModal"));
 
+export type IPygWalkerTheme = React.CSSProperties & {
+    [name: `--${string}`]: string | number | undefined;
+};
+
 const ExploreModals = observer((props: {
     exportOpen: boolean;
     setExportOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -129,7 +133,7 @@ const getComputationCallback = (props: IAppProps) => {
     }
 }
 
-const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean, gid?: string, sendMessage?: boolean}) => {
+const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean, gid?: string, sendMessage?: boolean, theme?: IPygWalkerTheme}) => {
     const [portal, setPortal] = useState<HTMLDivElement | null>(null);
     const [selectedDarkMode, setSelectedDarkMode] = useState(props.darkMode);
     const [darkMode, setDarkMode] = useState(currentMediaTheme(props.darkMode));
@@ -168,7 +172,10 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
             portalContainerContext={portal}
             darkModeContext={darkMode}
         >
-            <div className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground`}>
+            <div
+                className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground`}
+                style={props.theme}
+            >
                 <div className="p-2">
                     <style>{style}</style>
                     <div className='overflow-y-auto'>
@@ -734,6 +741,7 @@ function AnywidgetGWalkerApp() {
 export interface IPygWalkerMount {
     unmount: () => void;
     setAppearance: (appearance: "dark" | "light") => void;
+    setTheme: (theme: IPygWalkerTheme) => void;
 }
 
 /**
@@ -764,9 +772,10 @@ async function mountPygWalker(
 
     const root = createRoot(container);
     let appearance = currentMediaTheme(props.dark);
+    let theme: IPygWalkerTheme | undefined;
     const render = () => {
         root.render(
-            <MainApp darkMode={appearance}>
+            <MainApp darkMode={appearance} theme={theme}>
                 <GWalkerComponent {...props} />
             </MainApp>
         );
@@ -780,6 +789,10 @@ async function mountPygWalker(
                 return;
             }
             appearance = nextAppearance;
+            render();
+        },
+        setTheme: nextTheme => {
+            theme = { ...nextTheme };
             render();
         },
     };

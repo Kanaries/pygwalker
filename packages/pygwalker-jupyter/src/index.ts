@@ -13,7 +13,11 @@ import { vegaIcon } from '@jupyterlab/ui-components';
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
 
-import pygwalkerApp, { IPygWalkerMount } from './pygwalker-app';
+import pygwalkerApp, {
+  IPygWalkerMount,
+  IPygWalkerTheme
+} from './pygwalker-app';
+import { readJupyterTheme } from './theme';
 
 
 const COMMAND_ID = 'pygwalker:open-sidebar';
@@ -307,6 +311,7 @@ class PyGWalkerSidebar extends Widget {
 
 class PyGWalkerMainView extends Widget {
   private appearance: Appearance = 'light';
+  private theme: IPygWalkerTheme = {};
   private mount: IPygWalkerMount | null = null;
   private generation = 0;
 
@@ -345,6 +350,7 @@ class PyGWalkerMainView extends Widget {
 
     this.mount = mount;
     mount.setAppearance(this.appearance);
+    mount.setTheme(this.theme);
     this.title.label = `PyGWalker: ${name}`;
     this.node.replaceChildren(host);
   }
@@ -352,6 +358,11 @@ class PyGWalkerMainView extends Widget {
   setAppearance(appearance: Appearance): void {
     this.appearance = appearance;
     this.mount?.setAppearance(appearance);
+  }
+
+  setTheme(theme: IPygWalkerTheme): void {
+    this.theme = theme;
+    this.mount?.setTheme(theme);
   }
 
   dispose(): void {
@@ -385,7 +396,7 @@ class PyGWalkerController {
       }
     });
     themeManager?.themeChanged.connect(() => {
-      this.mainView?.setAppearance(this.currentAppearance());
+      requestAnimationFrame(() => this.syncMainViewTheme());
     });
   }
 
@@ -432,6 +443,7 @@ class PyGWalkerController {
       const appearance = this.currentAppearance();
       const view = this.ensureMainView();
       view.setAppearance(appearance);
+      view.setTheme(readJupyterTheme());
       if (this.isNotebook7) {
         const shell = this.app.shell as typeof this.app.shell & {
           collapseLeft?: () => void;
@@ -572,6 +584,11 @@ class PyGWalkerController {
     return window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light';
+  }
+
+  private syncMainViewTheme(): void {
+    this.mainView?.setAppearance(this.currentAppearance());
+    this.mainView?.setTheme(readJupyterTheme());
   }
 
   private resetConnection(invalidateRefresh = true): void {

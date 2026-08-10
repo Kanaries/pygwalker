@@ -58,7 +58,7 @@
 }
 
 .pygwalker-extension-dataframe {
-  background: var(--jp-layout-color1);
+  background: var(--jp-layout-color0);
   border: 1px solid var(--jp-border-color2);
   border-radius: 3px;
   color: var(--jp-ui-font-color1);
@@ -90,7 +90,7 @@
 .pygwalker-extension-main {
   --pygwalker-extension-min-content-width: 768px;
 
-  background: var(--jp-layout-color1);
+  background: var(--jp-layout-color0);
   box-sizing: border-box;
   height: 100%;
   min-height: 0;
@@ -99,7 +99,10 @@
 }
 
 .pygwalker-extension-main-host {
+  background: var(--jp-layout-color0);
   box-sizing: border-box;
+  color: var(--jp-ui-font-color1);
+  font-family: var(--jp-ui-font-family);
   min-height: 100%;
   min-width: var(--pygwalker-extension-min-content-width);
   width: max(100%, var(--pygwalker-extension-min-content-width));

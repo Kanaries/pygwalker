@@ -67,6 +67,8 @@ development link; keep only the intended install or reinstall that copy.
 5. With the explorer open, change the active Jupyter theme from light to dark and back. Confirm
    that PyGWalker inherits the theme used when it first opens, follows both live theme changes,
    and keeps the active PyGWalker tab and selected DataFrame instead of remounting the app.
+   Confirm that the PyGWalker background and empty host area match, and that its primary,
+   surface, text, border, and focus colors follow the active Jupyter palette.
 6. Open the data table and confirm it contains `A/3`, `B/5`, and `A/8`. This proves that the
    rendered app can query the selected live kernel object.
 7. Drag `category` to the X/columns channel and `value` to the Y/rows channel. Confirm that a
@@ -114,7 +116,11 @@ panel. Browser measurements also verified the shared responsive rule: a `399px` 
 panel kept a `768px` content surface and scrolled horizontally, while wider Notebook and
 JupyterLab panes expanded the content to `1079px` and `940px`. On 2026-08-10, both hosts also
 inherited the active dark theme on first mount and synchronized dark/light changes in place;
-the selected Data tab, live DataFrame, and kernel session remained intact. The legacy
+the selected Data tab, live DataFrame, and kernel session remained intact. A real JupyterLab
+4.2.7 browser run also verified that the host and PyGWalker root both resolved to `#111111`
+in dark mode, while PyGWalker's primary token matched Jupyter's brand color (`#2196f3` dark,
+`#1976d2` light) and its surfaces and borders resolved from the corresponding Jupyter theme
+tokens. The legacy
 `pyg.walk(df)` anywidget path remained separate. A clean-process regression test also verifies
 that importing the core package does not import or activate the extension bridge. Unrelated
 host/telemetry console errors were isolated from these results.

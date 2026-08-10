@@ -39,7 +39,10 @@ The Jupyter-owned pane remains freely resizable. The embedded explorer preserves
 minimum content width (the `md` breakpoint); above that width it expands with the pane, and
 below it the pane scrolls horizontally instead of compressing or clipping PyGWalker's
 three-column layout. The explorer also inherits the active Jupyter light or dark theme when it
-opens and follows later host-theme changes without remounting or losing its current state.
+opens and follows later host-theme changes without remounting or losing its current state. In
+the companion view, PyGWalker's shadcn background, surface, text, primary, border, and focus
+tokens are derived from the active Jupyter theme; other PyGWalker hosts keep their existing
+palette.
 
 After rebuilding the extension, reinstall its generated prebuilt assets and restart the
 Jupyter server (both frontends cache the federated-extension manifest):
