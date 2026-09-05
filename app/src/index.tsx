@@ -1,5 +1,6 @@
 import React, { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { createPortal } from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { reaction } from "mobx"
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
@@ -49,7 +50,7 @@ import { SunIcon, MoonIcon, DesktopIcon, ChevronLeftIcon, ChevronRightIcon } fro
 
 // @ts-ignore
 import style from './index.css?inline'
-import { currentMediaTheme } from './utils/theme';
+import { currentMediaTheme, hostThemeToUITheme } from './utils/theme';
 import { AppContext, darkModeContext } from './store/context';
 import FormatSpec from './utils/formatSpec';
 import { getOpenDesktopTool } from './tools/openDesktop';
@@ -63,6 +64,25 @@ const CodeExportModal = React.lazy(() => import("./components/codeExportModal"))
 
 export type IPygWalkerTheme = React.CSSProperties & {
     [name: `--${string}`]: string | number | undefined;
+};
+
+// Graphic Walker already owns a shadow root. Slot it into our isolated shell from
+// the light DOM: its modal library can only resolve one shadow boundary to document.body.
+const hostContainerContext = React.createContext<HTMLElement | null>(null);
+const HostShadowSlot = ({ children }: { children: React.ReactNode }) => {
+    const container = useContext(hostContainerContext);
+    const name = React.useId();
+    const [target, setTarget] = useState<HTMLDivElement | null>(null);
+    React.useLayoutEffect(() => {
+        if (!container) return;
+        const element = document.createElement('div');
+        element.slot = name;
+        container.append(element);
+        setTarget(element);
+        return () => element.remove();
+    }, [container, name]);
+    if (!container) return <>{children}</>;
+    return <slot name={name}>{target && createPortal(children, target)}</slot>;
 };
 
 const ExploreModals = observer((props: {
@@ -356,22 +376,24 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
             }
             {
                 mode === "walker" ? 
-                <GraphicWalker
-                    {...props.extraConfig}
-                    appearance={useContext(darkModeContext)}
-                    vizThemeConfig={props.themeKey}
-                    fieldkeyGuard={props.fieldkeyGuard}
-                    fields={props.rawFields}
-                    data={props.useKernelCalc ? undefined : props.dataSource}
-                    storeRef={storeRefProxied}
-                    ref={gwRef}
-                    toolbar={toolbarConfig}
-                    computation={computationCallback}
-                    enhanceAPI={enhanceAPI}
-                    chart={visSpec.length === 0 ? undefined : visSpec}
-                    experimentalFeatures={{ computedField: props.useKernelCalc }}
-                    defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
-                /> :
+                <HostShadowSlot>
+                    <GraphicWalker
+                        {...props.extraConfig}
+                        appearance={useContext(darkModeContext)}
+                        vizThemeConfig={props.themeKey}
+                        fieldkeyGuard={props.fieldkeyGuard}
+                        fields={props.rawFields}
+                        data={props.useKernelCalc ? undefined : props.dataSource}
+                        storeRef={storeRefProxied}
+                        ref={gwRef}
+                        toolbar={toolbarConfig}
+                        computation={computationCallback}
+                        enhanceAPI={enhanceAPI}
+                        chart={visSpec.length === 0 ? undefined : visSpec}
+                        experimentalFeatures={{ computedField: props.useKernelCalc }}
+                        defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
+                    />
+                </HostShadowSlot> :
                 <GraphicRendererApp
                     {...props}
                     dataSource={props.dataSource}
@@ -394,44 +416,50 @@ const PureRednererApp: React.FC<IAppProps> = observer((props) => {
                 {
                     !expand && (
                         props.useKernelCalc ?
-                        <PureRenderer
-                            {...props.extraConfig}
-                            appearance={useContext(darkModeContext)}
-                            vizThemeConfig={props.themeKey}
-                            name={spec.name}
-                            visualConfig={spec.config}
-                            visualLayout={spec.layout}
-                            visualState={spec.encodings}
-                            type='remote'
-                            computation={computationCallback!}
-                        /> :
-                        <PureRenderer
-                            {...props.extraConfig}
-                            appearance={useContext(darkModeContext)}
-                            vizThemeConfig={props.themeKey}
-                            name={spec.name}
-                            visualConfig={spec.config}
-                            visualLayout={spec.layout}
-                            visualState={spec.encodings}
-                            rawData={props.dataSource}
-                        />
+                        <HostShadowSlot>
+                            <PureRenderer
+                                {...props.extraConfig}
+                                appearance={useContext(darkModeContext)}
+                                vizThemeConfig={props.themeKey}
+                                name={spec.name}
+                                visualConfig={spec.config}
+                                visualLayout={spec.layout}
+                                visualState={spec.encodings}
+                                type='remote'
+                                computation={computationCallback!}
+                            />
+                        </HostShadowSlot> :
+                        <HostShadowSlot>
+                            <PureRenderer
+                                {...props.extraConfig}
+                                appearance={useContext(darkModeContext)}
+                                vizThemeConfig={props.themeKey}
+                                name={spec.name}
+                                visualConfig={spec.config}
+                                visualLayout={spec.layout}
+                                visualState={spec.encodings}
+                                rawData={props.dataSource}
+                            />
+                        </HostShadowSlot>
                     )
                 }
                 {
                     expand && commonStore.isStreamlitComponent && (
                         <div style={{minWidth: "96%"}}>
-                            <GraphicWalker
-                                {...props.extraConfig}
-                                appearance={useContext(darkModeContext)}
-                                vizThemeConfig={props.themeKey}
-                                fieldkeyGuard={props.fieldkeyGuard}
-                                fields={props.rawFields}
-                                data={props.useKernelCalc ? undefined : props.dataSource}
-                                computation={computationCallback}
-                                chart={props.visSpec}
-                                experimentalFeatures={{ computedField: props.useKernelCalc }}
-                                defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
-                            />
+                            <HostShadowSlot>
+                                <GraphicWalker
+                                    {...props.extraConfig}
+                                    appearance={useContext(darkModeContext)}
+                                    vizThemeConfig={props.themeKey}
+                                    fieldkeyGuard={props.fieldkeyGuard}
+                                    fields={props.rawFields}
+                                    data={props.useKernelCalc ? undefined : props.dataSource}
+                                    computation={computationCallback}
+                                    chart={props.visSpec}
+                                    experimentalFeatures={{ computedField: props.useKernelCalc }}
+                                    defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
+                                />
+                            </HostShadowSlot>
                         </div>
                     )
                 }
@@ -611,16 +639,20 @@ function GraphicRendererApp(props: IAppProps) {
                     return <TabsContent key={index} value={index.toString()}>
                         {
                             props.useKernelCalc ? 
-                            <GraphicRenderer
-                                {...globalProps}
-                                computation={computationCallback!}
-                                chart={[chart]}
-                            /> :
-                            <GraphicRenderer
-                                {...globalProps}
-                                data={props.dataSource!}
-                                chart={[chart]}
-                            />
+                            <HostShadowSlot>
+                                <GraphicRenderer
+                                    {...globalProps}
+                                    computation={computationCallback!}
+                                    chart={[chart]}
+                                />
+                            </HostShadowSlot> :
+                            <HostShadowSlot>
+                                <GraphicRenderer
+                                    {...globalProps}
+                                    data={props.dataSource!}
+                                    chart={[chart]}
+                                />
+                            </HostShadowSlot>
                         }
                     </TabsContent>
                 })}
@@ -641,14 +673,18 @@ function TableWalkerApp(props: IAppProps) {
         <React.StrictMode>
             {
                 props.useKernelCalc ?
-                <TableWalker
-                    {...globalProps}
-                    computation={computationCallback!}
-                /> :
-                <TableWalker
-                    {...globalProps}
-                    data={props.dataSource}
-                />
+                <HostShadowSlot>
+                    <TableWalker
+                        {...globalProps}
+                        computation={computationCallback!}
+                    />
+                </HostShadowSlot> :
+                <HostShadowSlot>
+                    <TableWalker
+                        {...globalProps}
+                        data={props.dataSource}
+                    />
+                </HostShadowSlot>
             }
         </React.StrictMode>
     )
@@ -770,14 +806,23 @@ async function mountPygWalker(
     }
     await initDslParser();
 
-    const root = createRoot(container);
+    // Tailwind's preflight and the app's base styles must stay inside the host pane.
+    const root = createRoot(container.shadowRoot ?? container.attachShadow({ mode: "open" }));
     let appearance = currentMediaTheme(props.dark);
     let theme: IPygWalkerTheme | undefined;
     const render = () => {
         root.render(
-            <MainApp darkMode={appearance} theme={theme}>
-                <GWalkerComponent {...props} />
-            </MainApp>
+            <hostContainerContext.Provider value={container}>
+                <MainApp darkMode={appearance} theme={theme} hideToolBar>
+                    <GWalkerComponent
+                        {...props}
+                        extraConfig={theme ? {
+                            ...props.extraConfig,
+                            uiTheme: hostThemeToUITheme(theme),
+                        } : props.extraConfig}
+                    />
+                </MainApp>
+            </hostContainerContext.Provider>
         );
     };
     render();

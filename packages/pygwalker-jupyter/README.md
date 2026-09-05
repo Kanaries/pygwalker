@@ -12,6 +12,8 @@ and install its companion Python package:
 
 ```bash
 pip install -e ".[dev]"
+# Notebook 7 users also need the notebook host:
+pip install "notebook>=7.2,<8"
 yarn --cwd app install --frozen-lockfile
 yarn --cwd packages/pygwalker-jupyter install --frozen-lockfile
 yarn --cwd packages/pygwalker-jupyter build
@@ -21,6 +23,9 @@ jupyter labextension list
 jupyter lab
 jupyter notebook
 ```
+
+For release artifacts, build in a JupyterLab 4.2 environment, the minimum supported host.
+The builder derives shared-package requirements from the installed JupyterLab version.
 
 Open a Python notebook and run:
 
@@ -42,7 +47,13 @@ three-column layout. The explorer also inherits the active Jupyter light or dark
 opens and follows later host-theme changes without remounting or losing its current state. In
 the companion view, PyGWalker's shadcn background, surface, text, primary, border, and focus
 tokens are derived from the active Jupyter theme; other PyGWalker hosts keep their existing
-palette.
+palette. App CSS is isolated from notebook Markdown and Jupyter toolbars. Graphic Walker
+and its menus receive the same host palette. Appearance follows Jupyter's theme setting.
+
+The POC has no spec-file target, so it does not offer Save. Use Export Code to copy a chart
+specification. Kernel restart/reconnect and notebook switching recovery remain Round 2 work;
+after restarting a kernel, run the DataFrame cell and reload the host page before reopening
+the explorer.
 
 After rebuilding the extension, reinstall its generated prebuilt assets and restart the
 Jupyter server (both frontends cache the federated-extension manifest):

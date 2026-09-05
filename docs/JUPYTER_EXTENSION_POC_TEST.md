@@ -17,6 +17,8 @@ Run from the repository root:
 
 ```bash
 pip install -e ".[dev]"
+# Notebook 7 users also need the notebook host:
+pip install "notebook>=7.2,<8"
 yarn --cwd app install --frozen-lockfile
 yarn --cwd packages/pygwalker-jupyter install --frozen-lockfile
 yarn --cwd packages/pygwalker-jupyter build
@@ -69,6 +71,12 @@ development link; keep only the intended install or reinstall that copy.
    and keeps the active PyGWalker tab and selected DataFrame instead of remounting the app.
    Confirm that the PyGWalker background and empty host area match, and that its primary,
    surface, text, border, and focus colors follow the active Jupyter palette.
+   Check computed colors inside Graphic Walker's shadow root and an open chart menu, not
+   only the outer PyGWalker wrapper. Add a second chart before changing themes and confirm
+   it survives both changes. Verify the Code Export dialog opens, uses the host palette, and
+   closes with Cancel. Save must be absent because this POC has no spec-file target.
+   Compare notebook Markdown margins, heading sizes, and toolbar styles before and after
+   opening the companion, before running any `pyg.walk()` cell. They must remain unchanged.
 6. Open the data table and confirm it contains `A/3`, `B/5`, and `A/8`. This proves that the
    rendered app can query the selected live kernel object.
 7. Drag `category` to the X/columns channel and `value` to the Y/rows channel. Confirm that a
@@ -124,6 +132,23 @@ tokens. The legacy
 `pyg.walk(df)` anywidget path remained separate. A clean-process regression test also verifies
 that importing the core package does not import or activate the extension bridge. Unrelated
 host/telemetry console errors were isolated from these results.
+
+## Pre-merge regression result, 2026-09-05
+
+Re-tested the production companion build with Python 3.10, JupyterLab 4.2.0, and
+Notebook 7.2.0. Both hosts passed DataFrame discovery, real kernel table queries, drag-to-chart,
+live dark/light changes with the Data tab preserved, chart menus, Code Export, and an
+ordinary `pyg.walk(df)` output alongside the companion. Notebook Markdown styles stayed
+unchanged. The editor resolved to `rgb(17, 17, 17)` in dark mode and white in light mode;
+its primary color followed Jupyter's brand token. Save is absent without a spec-file target.
+
+Automated checks passed: 330 Python tests, five notebook tests, two Playwright tests,
+Python lint/format checks, the full frontend build, and the companion production build.
+The mount regression test covers host CSS, both palettes, accessible chart menus, Code Export
+portals, preservation of an added chart, and cleanup. CI also builds the companion against
+JupyterLab 4.2.0. One rapid-theme-switch run exposed JupyterLab 4.2's own splash-screen
+removal race in `jlab_core`; waiting for the host theme transition completed the same flow.
+Notebook 7 completed without page errors.
 
 ## Uninstall
 

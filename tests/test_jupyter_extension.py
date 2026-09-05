@@ -150,6 +150,25 @@ def test_session_rejects_stale_and_unlisted_names_over_the_protocol():
     assert "no longer" in stale["message"]
 
 
+def test_real_extension_session_opens_without_offering_unsupported_save(monkeypatch):
+    from pygwalker.services.global_var import GlobalVarManager
+
+    monkeypatch.setattr(GlobalVarManager, "privacy", "offline")
+    comm = FakeComm()
+    JupyterExtensionSession(comm, {"frame": pd.DataFrame({"x": [1, 2]})})
+    comm.request("list_dataframes")
+    opened = comm.request("open_dataframe", {"name": "frame"})
+
+    assert opened["code"] == 0, opened
+    assert opened["data"]["props"]["useSaveTool"] is False
+    assert opened["data"]["props"]["useKernelCalc"] is True
+    assert comm.request("get_latest_vis_spec")["code"] == 0
+    for action in ("update_spec", "save_chart"):
+        response = comm.request(action)
+        assert response["code"] != 0
+        assert response["message"] == f"Unknown action: {action}"
+
+
 def test_ensure_registered_is_idempotent():
     class FakeManager:
         def __init__(self):

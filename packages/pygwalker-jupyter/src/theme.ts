@@ -24,6 +24,16 @@ const JUPYTER_THEME_TOKEN_MAP: ReadonlyArray<
   ['--ring', '--jp-brand-color1']
 ];
 
+const FOREGROUND_SURFACES: Record<string, string> = {
+  '--card-foreground': '--jp-layout-color1',
+  '--popover-foreground': '--jp-layout-color1',
+  '--primary-foreground': '--jp-brand-color1',
+  '--secondary-foreground': '--jp-layout-color2',
+  '--muted-foreground': '--jp-layout-color1',
+  '--accent-foreground': '--jp-layout-color2',
+  '--destructive-foreground': '--jp-error-color1'
+};
+
 function round(value: number): number {
   return Math.round(value * 10) / 10;
 }
@@ -93,6 +103,12 @@ export function readJupyterTheme(): IPygWalkerTheme {
       probe.style.color = `var(${jupyterToken})`;
       const resolvedColor = getComputedStyle(probe).color;
       context.clearRect(0, 0, 1, 1);
+      // Graphic Walker's color parser drops alpha. Composite translucent host
+      // colors onto their surface first so text keeps the host's contrast.
+      const surface = FOREGROUND_SURFACES[pygwalkerToken] ?? '--jp-layout-color0';
+      probe.style.color = `var(${surface}, white)`;
+      context.fillStyle = getComputedStyle(probe).color;
+      context.fillRect(0, 0, 1, 1);
       context.fillStyle = resolvedColor;
       context.fillRect(0, 0, 1, 1);
       const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1).data;

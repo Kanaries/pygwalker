@@ -148,6 +148,7 @@ class JupyterExtensionSession:
         public_walker = self.walker_factory(
             dataframe,
             computation="kernel",
+            spec_io_mode="r",
             show_cloud_tool=False,
         )
         walker = getattr(public_walker, "core", public_walker)
