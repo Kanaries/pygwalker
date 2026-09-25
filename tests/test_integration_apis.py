@@ -626,6 +626,22 @@ def test_streamlit_html_accepts_public_walker_object(monkeypatch):
     assert rendered_props["gwMode"] == "table"
 
 
+def test_streamlit_comm_imports_without_tornado(monkeypatch):
+    # Streamlit >= 1.57 serves through Starlette and no longer installs Tornado.
+    _install_streamlit_stubs(monkeypatch)
+    monkeypatch.setitem(sys.modules, "tornado", None)
+    monkeypatch.setitem(sys.modules, "tornado.web", None)
+
+    streamlit_comm = importlib.import_module("pygwalker.communications.streamlit_comm")
+    importlib.import_module("pygwalker.api.streamlit")
+
+    assert streamlit_comm.PYGWALKER_API_PATH == "/_stcore/_pygwalker/comm/(.+)"
+    assert streamlit_comm._make_url_path_regex("app", r"/_stcore/_pygwalker/comm/(.+)") == (
+        "/app/_stcore/_pygwalker/comm/(.+)"
+    )
+    assert streamlit_comm._register_tornado_handler() is False
+
+
 def test_webserver_walk_builds_walker_and_starts_server(monkeypatch):
     from pygwalker.api import webserver
 

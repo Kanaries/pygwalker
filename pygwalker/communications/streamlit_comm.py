@@ -2,15 +2,20 @@ import gc
 import json
 import re
 
-from tornado.web import Application
 from streamlit import config
 
 try:
     from streamlit.web.server.server_util import make_url_path_regex as _streamlit_make_url_path_regex
 except ImportError:  # pragma: no cover - depends on the installed Streamlit version.
     _streamlit_make_url_path_regex = None
-import tornado.web
 import streamlit as st
+
+try:
+    import tornado.web
+    from tornado.web import Application
+except ImportError:  # pragma: no cover - Streamlit >= 1.57 no longer depends on Tornado.
+    tornado = None
+    Application = None
 
 try:
     from starlette.applications import Starlette
@@ -48,27 +53,29 @@ def _make_url_path_regex(base_path: str, path: str) -> str:
 PYGWALKER_API_PATH = _make_url_path_regex(_STREAMLIT_PREFIX_URL, r"/_stcore/_pygwalker/comm/(.+)")
 
 
-class PygwalkerHandler(tornado.web.RequestHandler):
-    """
-    Handler for pygwalker communication
-    """
+if tornado is not None:
 
-    def check_xsrf_cookie(self):
-        return True
+    class PygwalkerHandler(tornado.web.RequestHandler):
+        """
+        Handler for pygwalker communication
+        """
 
-    def post(self, gid: str):
-        comm_obj = streamlit_comm_map.get(gid, None)
-        if comm_obj is None:
-            self.write({"success": False, "message": f"Unknown gid: {gid}"})
+        def check_xsrf_cookie(self):
+            return True
+
+        def post(self, gid: str):
+            comm_obj = streamlit_comm_map.get(gid, None)
+            if comm_obj is None:
+                self.write({"success": False, "message": f"Unknown gid: {gid}"})
+                return
+            json_data = json.loads(self.request.body)
+
+            # pylint: disable=protected-access
+            result = comm_obj._receive_msg_envelope(json_data)
+            # pylint: enable=protected-access
+
+            self.write(json.dumps(result, cls=DataFrameEncoder))
             return
-        json_data = json.loads(self.request.body)
-
-        # pylint: disable=protected-access
-        result = comm_obj._receive_msg_envelope(json_data)
-        # pylint: enable=protected-access
-
-        self.write(json.dumps(result, cls=DataFrameEncoder))
-        return
 
 
 async def _pygwalker_router(req):
@@ -87,6 +94,9 @@ async def _pygwalker_router(req):
 
 
 def _register_tornado_handler() -> bool:
+    if Application is None:
+        return False
+
     tornado_obj = None
     for obj in gc.get_objects():
         try:
