@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pygwalker-jupyter"
+version = "0.1.0.dev0"
+description = "PyGWalker companion extension for JupyterLab 4 and Notebook 7"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kanaries", email = "support@kanaries.net" }]
+dependencies = ["pygwalker>=0.6.0rc0,<0.7"]
+classifiers = [
+    "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab :: 4",
+    "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+]
+
+[project.urls]
+Homepage = "https://github.com/Kanaries/pygwalker"
+Repository = "https://github.com/Kanaries/pygwalker"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pygwalker_jupyter"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"pygwalker_jupyter/labextension" = "share/jupyter/labextensions/@kanaries/pygwalker-jupyter"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/style",
+    "/pygwalker_jupyter",
+    "/package.json",
+    "/tsconfig.json",
+    "/yarn.lock",
+    "/README.md",
+]

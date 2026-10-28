@@ -1,5 +1,6 @@
 import React, { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { createPortal } from 'react-dom';
 import { observer } from "mobx-react-lite";
 import { reaction } from "mobx"
 import { GraphicWalker, PureRenderer, GraphicRenderer, TableWalker } from '@kanaries/graphic-walker'
@@ -21,6 +22,7 @@ import { loadDataSource, postDataService, finishDataService, getDatasFromKernelB
 
 import commonStore from "./store/common";
 import { initJupyterCommunication, initHttpCommunication, streamlitComponentCallback, initAnywidgetCommunication } from "./utils/communication";
+import type { ICommunication } from "./utils/communication";
 import communicationStore from "./store/communication"
 import { setConfig } from './utils/userConfig';
 import type { IPreviewProps, IChartPreviewProps } from './components/preview';
@@ -48,7 +50,7 @@ import { SunIcon, MoonIcon, DesktopIcon, ChevronLeftIcon, ChevronRightIcon } fro
 
 // @ts-ignore
 import style from './index.css?inline'
-import { currentMediaTheme } from './utils/theme';
+import { currentMediaTheme, hostThemeToUITheme } from './utils/theme';
 import { AppContext, darkModeContext } from './store/context';
 import FormatSpec from './utils/formatSpec';
 import { getOpenDesktopTool } from './tools/openDesktop';
@@ -59,6 +61,29 @@ const InitModal = React.lazy(() => import("./components/initModal"));
 const UploadSpecModal = React.lazy(() => import("./components/uploadSpecModal"));
 const UploadChartModal = React.lazy(() => import("./components/uploadChartModal"));
 const CodeExportModal = React.lazy(() => import("./components/codeExportModal"));
+
+export type IPygWalkerTheme = React.CSSProperties & {
+    [name: `--${string}`]: string | number | undefined;
+};
+
+// Graphic Walker already owns a shadow root. Slot it into our isolated shell from
+// the light DOM: its modal library can only resolve one shadow boundary to document.body.
+const hostContainerContext = React.createContext<HTMLElement | null>(null);
+const HostShadowSlot = ({ children }: { children: React.ReactNode }) => {
+    const container = useContext(hostContainerContext);
+    const name = React.useId();
+    const [target, setTarget] = useState<HTMLDivElement | null>(null);
+    React.useLayoutEffect(() => {
+        if (!container) return;
+        const element = document.createElement('div');
+        element.slot = name;
+        container.append(element);
+        setTarget(element);
+        return () => element.remove();
+    }, [container, name]);
+    if (!container) return <>{children}</>;
+    return <slot name={name}>{target && createPortal(children, target)}</slot>;
+};
 
 const ExploreModals = observer((props: {
     exportOpen: boolean;
@@ -128,10 +153,14 @@ const getComputationCallback = (props: IAppProps) => {
     }
 }
 
-const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean, gid?: string, sendMessage?: boolean}) => {
+const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | "light" | "media", hideToolBar?: boolean, gid?: string, sendMessage?: boolean, theme?: IPygWalkerTheme}) => {
     const [portal, setPortal] = useState<HTMLDivElement | null>(null);
     const [selectedDarkMode, setSelectedDarkMode] = useState(props.darkMode);
     const [darkMode, setDarkMode] = useState(currentMediaTheme(props.darkMode));
+
+    useEffect(() => {
+        setSelectedDarkMode(props.darkMode);
+    }, [props.darkMode]);
 
     const sendAppearanceMessageToParent = useCallback((appearance: IDarkMode) => {
         if (!props.sendMessage) return;
@@ -163,7 +192,10 @@ const MainApp = observer((props: {children: React.ReactNode, darkMode: "dark" | 
             portalContainerContext={portal}
             darkModeContext={darkMode}
         >
-            <div className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground`}>
+            <div
+                className={`${darkMode === "dark" ? "dark": ""} bg-background text-foreground`}
+                style={props.theme}
+            >
                 <div className="p-2">
                     <style>{style}</style>
                     <div className='overflow-y-auto'>
@@ -268,7 +300,7 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
     const openInDesktopTool = getOpenDesktopTool(props, storeRef);
 
     const tools = [runcellTool, exportTool, openInDesktopTool];
-    if (props.env && ["jupyter_widgets", "streamlit", "gradio", "marimo", "anywidget", "web_server"].indexOf(props.env) !== -1 && props.useSaveTool) {
+    if (props.env && ["jupyter_widgets", "jupyter_extension", "streamlit", "gradio", "marimo", "anywidget", "web_server"].indexOf(props.env) !== -1 && props.useSaveTool) {
         const saveTool = getSaveTool(props, gwRef, storeRef, isChanged, setIsChanged);
         tools.push(saveTool);
     }
@@ -344,22 +376,24 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
             }
             {
                 mode === "walker" ? 
-                <GraphicWalker
-                    {...props.extraConfig}
-                    appearance={useContext(darkModeContext)}
-                    vizThemeConfig={props.themeKey}
-                    fieldkeyGuard={props.fieldkeyGuard}
-                    fields={props.rawFields}
-                    data={props.useKernelCalc ? undefined : props.dataSource}
-                    storeRef={storeRefProxied}
-                    ref={gwRef}
-                    toolbar={toolbarConfig}
-                    computation={computationCallback}
-                    enhanceAPI={enhanceAPI}
-                    chart={visSpec.length === 0 ? undefined : visSpec}
-                    experimentalFeatures={{ computedField: props.useKernelCalc }}
-                    defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
-                /> :
+                <HostShadowSlot>
+                    <GraphicWalker
+                        {...props.extraConfig}
+                        appearance={useContext(darkModeContext)}
+                        vizThemeConfig={props.themeKey}
+                        fieldkeyGuard={props.fieldkeyGuard}
+                        fields={props.rawFields}
+                        data={props.useKernelCalc ? undefined : props.dataSource}
+                        storeRef={storeRefProxied}
+                        ref={gwRef}
+                        toolbar={toolbarConfig}
+                        computation={computationCallback}
+                        enhanceAPI={enhanceAPI}
+                        chart={visSpec.length === 0 ? undefined : visSpec}
+                        experimentalFeatures={{ computedField: props.useKernelCalc }}
+                        defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
+                    />
+                </HostShadowSlot> :
                 <GraphicRendererApp
                     {...props}
                     dataSource={props.dataSource}
@@ -382,44 +416,50 @@ const PureRednererApp: React.FC<IAppProps> = observer((props) => {
                 {
                     !expand && (
                         props.useKernelCalc ?
-                        <PureRenderer
-                            {...props.extraConfig}
-                            appearance={useContext(darkModeContext)}
-                            vizThemeConfig={props.themeKey}
-                            name={spec.name}
-                            visualConfig={spec.config}
-                            visualLayout={spec.layout}
-                            visualState={spec.encodings}
-                            type='remote'
-                            computation={computationCallback!}
-                        /> :
-                        <PureRenderer
-                            {...props.extraConfig}
-                            appearance={useContext(darkModeContext)}
-                            vizThemeConfig={props.themeKey}
-                            name={spec.name}
-                            visualConfig={spec.config}
-                            visualLayout={spec.layout}
-                            visualState={spec.encodings}
-                            rawData={props.dataSource}
-                        />
+                        <HostShadowSlot>
+                            <PureRenderer
+                                {...props.extraConfig}
+                                appearance={useContext(darkModeContext)}
+                                vizThemeConfig={props.themeKey}
+                                name={spec.name}
+                                visualConfig={spec.config}
+                                visualLayout={spec.layout}
+                                visualState={spec.encodings}
+                                type='remote'
+                                computation={computationCallback!}
+                            />
+                        </HostShadowSlot> :
+                        <HostShadowSlot>
+                            <PureRenderer
+                                {...props.extraConfig}
+                                appearance={useContext(darkModeContext)}
+                                vizThemeConfig={props.themeKey}
+                                name={spec.name}
+                                visualConfig={spec.config}
+                                visualLayout={spec.layout}
+                                visualState={spec.encodings}
+                                rawData={props.dataSource}
+                            />
+                        </HostShadowSlot>
                     )
                 }
                 {
                     expand && commonStore.isStreamlitComponent && (
                         <div style={{minWidth: "96%"}}>
-                            <GraphicWalker
-                                {...props.extraConfig}
-                                appearance={useContext(darkModeContext)}
-                                vizThemeConfig={props.themeKey}
-                                fieldkeyGuard={props.fieldkeyGuard}
-                                fields={props.rawFields}
-                                data={props.useKernelCalc ? undefined : props.dataSource}
-                                computation={computationCallback}
-                                chart={props.visSpec}
-                                experimentalFeatures={{ computedField: props.useKernelCalc }}
-                                defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
-                            />
+                            <HostShadowSlot>
+                                <GraphicWalker
+                                    {...props.extraConfig}
+                                    appearance={useContext(darkModeContext)}
+                                    vizThemeConfig={props.themeKey}
+                                    fieldkeyGuard={props.fieldkeyGuard}
+                                    fields={props.rawFields}
+                                    data={props.useKernelCalc ? undefined : props.dataSource}
+                                    computation={computationCallback}
+                                    chart={props.visSpec}
+                                    experimentalFeatures={{ computedField: props.useKernelCalc }}
+                                    defaultConfig={{ config: { timezoneDisplayOffset: 0 } }}
+                                />
+                            </HostShadowSlot>
                         </div>
                     )
                 }
@@ -599,16 +639,20 @@ function GraphicRendererApp(props: IAppProps) {
                     return <TabsContent key={index} value={index.toString()}>
                         {
                             props.useKernelCalc ? 
-                            <GraphicRenderer
-                                {...globalProps}
-                                computation={computationCallback!}
-                                chart={[chart]}
-                            /> :
-                            <GraphicRenderer
-                                {...globalProps}
-                                data={props.dataSource!}
-                                chart={[chart]}
-                            />
+                            <HostShadowSlot>
+                                <GraphicRenderer
+                                    {...globalProps}
+                                    computation={computationCallback!}
+                                    chart={[chart]}
+                                />
+                            </HostShadowSlot> :
+                            <HostShadowSlot>
+                                <GraphicRenderer
+                                    {...globalProps}
+                                    data={props.dataSource!}
+                                    chart={[chart]}
+                                />
+                            </HostShadowSlot>
                         }
                     </TabsContent>
                 })}
@@ -629,14 +673,18 @@ function TableWalkerApp(props: IAppProps) {
         <React.StrictMode>
             {
                 props.useKernelCalc ?
-                <TableWalker
-                    {...globalProps}
-                    computation={computationCallback!}
-                /> :
-                <TableWalker
-                    {...globalProps}
-                    data={props.dataSource}
-                />
+                <HostShadowSlot>
+                    <TableWalker
+                        {...globalProps}
+                        computation={computationCallback!}
+                    />
+                </HostShadowSlot> :
+                <HostShadowSlot>
+                    <TableWalker
+                        {...globalProps}
+                        data={props.dataSource}
+                    />
+                </HostShadowSlot>
             }
         </React.StrictMode>
     )
@@ -726,5 +774,81 @@ function AnywidgetGWalkerApp() {
     );
 }
 
+export interface IPygWalkerMount {
+    unmount: () => void;
+    setAppearance: (appearance: "dark" | "light") => void;
+    setTheme: (theme: IPygWalkerTheme) => void;
+}
 
-export default { GWalker, PreviewApp, ChartPreviewApp, StreamlitGWalker, render: createRender(AnywidgetGWalkerApp) }
+/**
+ * Mount the existing PyGWalker application with a host-provided communication adapter.
+ *
+ * The JupyterLab companion extension uses this boundary instead of pretending to be an
+ * anywidget. The returned handle can update the host appearance without remounting the
+ * explorer. Round 1 intentionally allows one such mount at a time because the legacy app
+ * stores are module-level singletons.
+ */
+async function mountPygWalker(
+    container: HTMLElement,
+    inputProps: IAppProps,
+    comm: ICommunication,
+): Promise<IPygWalkerMount> {
+    const props = formatAppProps({
+        ...inputProps,
+        env: "jupyter_extension",
+        __comm: comm,
+    });
+
+    communicationStore.setComm(comm);
+    if ((props.gwMode === "explore" || props.gwMode === "filter_renderer") && props.needLoadLastSpec) {
+        const visSpecResp = await comm.sendMsg("get_latest_vis_spec", {});
+        props.visSpec = visSpecResp.data?.visSpec ?? [];
+    }
+    await initDslParser();
+
+    // Tailwind's preflight and the app's base styles must stay inside the host pane.
+    const root = createRoot(container.shadowRoot ?? container.attachShadow({ mode: "open" }));
+    let appearance = currentMediaTheme(props.dark);
+    let theme: IPygWalkerTheme | undefined;
+    const render = () => {
+        root.render(
+            <hostContainerContext.Provider value={container}>
+                <MainApp darkMode={appearance} theme={theme} hideToolBar>
+                    <GWalkerComponent
+                        {...props}
+                        extraConfig={theme ? {
+                            ...props.extraConfig,
+                            uiTheme: hostThemeToUITheme(theme),
+                        } : props.extraConfig}
+                    />
+                </MainApp>
+            </hostContainerContext.Provider>
+        );
+    };
+    render();
+
+    return {
+        unmount: () => root.unmount(),
+        setAppearance: nextAppearance => {
+            if (appearance === nextAppearance) {
+                return;
+            }
+            appearance = nextAppearance;
+            render();
+        },
+        setTheme: nextTheme => {
+            theme = { ...nextTheme };
+            render();
+        },
+    };
+}
+
+
+export default {
+    GWalker,
+    PreviewApp,
+    ChartPreviewApp,
+    StreamlitGWalker,
+    mountPygWalker,
+    render: createRender(AnywidgetGWalkerApp),
+}

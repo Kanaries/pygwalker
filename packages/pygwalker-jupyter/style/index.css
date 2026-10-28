@@ -1,0 +1,115 @@
+.pygwalker-extension-sidebar {
+  box-sizing: border-box;
+  color: var(--jp-ui-font-color1);
+  font-family: var(--jp-ui-font-family);
+  height: 100%;
+  overflow: auto;
+  padding: 12px;
+}
+
+.pygwalker-extension-sidebar h2 {
+  font-size: var(--jp-ui-font-size2);
+  margin: 0 0 6px;
+}
+
+.pygwalker-extension-sidebar-intro {
+  color: var(--jp-ui-font-color2);
+  font-size: var(--jp-ui-font-size1);
+  line-height: 1.45;
+  margin: 0 0 12px;
+}
+
+.pygwalker-extension-refresh {
+  background: var(--jp-brand-color1);
+  border: 0;
+  border-radius: 2px;
+  color: var(--jp-ui-inverse-font-color1);
+  cursor: pointer;
+  font: inherit;
+  min-height: 28px;
+  padding: 4px 10px;
+  width: 100%;
+}
+
+.pygwalker-extension-refresh:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.pygwalker-extension-status {
+  color: var(--jp-ui-font-color2);
+  font-size: var(--jp-ui-font-size1);
+  line-height: 1.4;
+  margin: 10px 0;
+  overflow-wrap: anywhere;
+}
+
+.pygwalker-extension-status[data-kind='error'] {
+  color: var(--jp-error-color1);
+}
+
+.pygwalker-extension-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pygwalker-extension-dataframe {
+  background: var(--jp-layout-color0);
+  border: 1px solid var(--jp-border-color2);
+  border-radius: 3px;
+  color: var(--jp-ui-font-color1);
+  cursor: pointer;
+  padding: 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.pygwalker-extension-dataframe:hover,
+.pygwalker-extension-dataframe:focus-visible {
+  background: var(--jp-layout-color2);
+  border-color: var(--jp-brand-color1);
+}
+
+.pygwalker-extension-dataframe-name {
+  display: block;
+  font-family: var(--jp-code-font-family);
+  font-weight: 600;
+}
+
+.pygwalker-extension-dataframe-shape {
+  color: var(--jp-ui-font-color2);
+  display: block;
+  font-size: var(--jp-ui-font-size0);
+  margin-top: 2px;
+}
+
+.pygwalker-extension-main {
+  --pygwalker-extension-min-content-width: 768px;
+
+  background: var(--jp-layout-color0);
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+}
+
+.pygwalker-extension-main-host {
+  background: var(--jp-layout-color0);
+  box-sizing: border-box;
+  color: var(--jp-ui-font-color1);
+  font-family: var(--jp-ui-font-family);
+  min-height: 100%;
+  min-width: var(--pygwalker-extension-min-content-width);
+  width: max(100%, var(--pygwalker-extension-min-content-width));
+}
+
+.pygwalker-extension-main-loading {
+  color: var(--jp-ui-font-color2);
+  font-family: var(--jp-ui-font-family);
+  padding: 16px;
+}

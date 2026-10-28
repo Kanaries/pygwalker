@@ -49,6 +49,13 @@ export default defineConfig((config: ConfigEnv) => {
 
   return {
     base: "/pyg_dev_app/",
+    // The browser bundle only probes Node's `process` global for optional environment
+    // switches. Inline a minimal browser value so downstream bundlers (including the
+    // JupyterLab prebuilt-extension builder) do not inject `process/browser` while reparsing
+    // the generated ESM bundle.
+    define: {
+      process: JSON.stringify({ env: { NODE_ENV: config.mode } }),
+    },
     server: {
       port: 8769,
     },

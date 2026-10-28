@@ -81,6 +81,7 @@ dev = [
     "twine",
     "jupyterlab",
     "jupyter_server_proxy",
+    "watchfiles>=0.18.0",
 ]
 
 [project.scripts]

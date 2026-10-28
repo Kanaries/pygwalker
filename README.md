@@ -291,7 +291,14 @@ renderer.explorer()
 
 ## Development
 
-Refer it: [local-development](https://docs.kanaries.net/pygwalker/installation#local-development)
+Local development is documented in this repository:
+
+- [AGENTS.md](AGENTS.md) — repo map, the one-command dev stack (`python scripts/dev.py`), and log locations (written for both human and AI-agent contributors).
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — hot-reload dev workflow and troubleshooting.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the Python and frontend halves are built and talk to each other.
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — validation commands, CI, and package builds.
+
+See also the hosted guide: [local-development](https://docs.kanaries.net/pygwalker/installation#local-development).
 
 ## Tested Environments
 

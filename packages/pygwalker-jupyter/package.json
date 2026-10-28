@@ -1,0 +1,65 @@
+{
+  "name": "@kanaries/pygwalker-jupyter",
+  "version": "0.1.0-poc.0",
+  "description": "PyGWalker companion extension for JupyterLab 4 and Notebook 7",
+  "keywords": [
+    "jupyter",
+    "jupyterlab-extension",
+    "jupyter-notebook",
+    "pygwalker",
+    "dataframe"
+  ],
+  "homepage": "https://github.com/Kanaries/pygwalker",
+  "bugs": {
+    "url": "https://github.com/Kanaries/pygwalker/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kanaries/pygwalker.git",
+    "directory": "packages/pygwalker-jupyter"
+  },
+  "license": "Apache-2.0",
+  "author": "Kanaries",
+  "files": [
+    "lib/**/*.{d.ts,js,js.map}",
+    "style/**/*.{css,js}"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "style": "style/index.css",
+  "scripts": {
+    "build": "yarn build:pygwalker-app && yarn build:lib && yarn build:labextension:dev",
+    "build:prod": "yarn build:pygwalker-app && yarn build:lib && yarn build:labextension",
+    "build:pygwalker-app": "yarn --cwd ../../app build:app",
+    "build:lib": "tsc",
+    "build:labextension": "jupyter labextension build .",
+    "build:labextension:dev": "jupyter labextension build --development True .",
+    "clean": "rimraf lib pygwalker_jupyter/labextension tsconfig.tsbuildinfo",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^4.2.0",
+    "@jupyterlab/apputils": "^4.3.0",
+    "@jupyterlab/notebook": "^4.2.0",
+    "@jupyterlab/services": "^7.2.0",
+    "@jupyterlab/ui-components": "^4.2.0",
+    "@lumino/messaging": "^2.0.0",
+    "@lumino/widgets": "^2.0.0"
+  },
+  "devDependencies": {
+    "@jupyterlab/builder": "^4.2.0",
+    "rimraf": "^5.0.0",
+    "typescript": "~5.4.0"
+  },
+  "sideEffects": [
+    "style/*.css"
+  ],
+  "jupyterlab": {
+    "extension": true,
+    "outputDir": "pygwalker_jupyter/labextension"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}

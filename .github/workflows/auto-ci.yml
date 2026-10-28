@@ -46,6 +46,30 @@ jobs:
           name: pygwalker-app
           path: ./pygwalker/templates/dist/*
   
+  build-jupyter-extension:
+    needs: build-js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: yarn
+          cache-dependency-path: packages/pygwalker-jupyter/yarn.lock
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pygwalker-app
+          path: pygwalker/templates/dist
+      - name: Build companion against the minimum supported host
+        run: |
+          pip install "jupyterlab==4.2.0"
+          yarn --cwd packages/pygwalker-jupyter install --frozen-lockfile
+          yarn --cwd packages/pygwalker-jupyter build:lib
+          yarn --cwd packages/pygwalker-jupyter build:labextension
+
   build-py:
     needs: build-js
     timeout-minutes: 90
