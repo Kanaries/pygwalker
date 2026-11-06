@@ -266,7 +266,7 @@ def test_frontend_dev_typescript_source_maps_are_enabled():
 def test_frontend_tracker_loads_segment_only_after_events_opt_in():
     repo_root = Path(__file__).resolve().parents[1]
     tracker_source = (repo_root / "app/src/utils/tracker.ts").read_text(encoding="utf-8")
-    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+    app_source = (repo_root / "app/src/app/views.tsx").read_text(encoding="utf-8")
 
     assert "@segment/analytics-next" not in tracker_source
     assert "cdn.segment.com/analytics.js/v1/" in tracker_source
@@ -275,7 +275,7 @@ def test_frontend_tracker_loads_segment_only_after_events_opt_in():
 
 def test_frontend_http_integrations_initialize_communication():
     repo_root = Path(__file__).resolve().parents[1]
-    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+    app_source = (repo_root / "app/src/app/hosts.tsx").read_text(encoding="utf-8")
 
     for env in ("streamlit", "gradio", "web_server"):
         pattern = rf'case "{env}":[\s\S]*?preRender = initOnHttpCommunication;'
@@ -286,7 +286,7 @@ def test_frontend_http_integrations_initialize_communication():
 
 def test_streamlit_entrypoint_refreshes_props_on_reruns():
     repo_root = Path(__file__).resolve().parents[1]
-    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+    app_source = (repo_root / "app/src/app/hosts.tsx").read_text(encoding="utf-8")
     streamlit_app_match = re.search(
         r"function SteamlitGWalkerApp[\s\S]*?const StreamlitGWalker =",
         app_source,
@@ -301,7 +301,7 @@ def test_streamlit_entrypoint_refreshes_props_on_reruns():
 
 def test_frontend_component_state_refreshes_when_props_change():
     repo_root = Path(__file__).resolve().parents[1]
-    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+    app_source = (repo_root / "app/src/app/views.tsx").read_text(encoding="utf-8")
 
     assert "setDataSource(props.dataSource);" in app_source
     assert "setVisSpec(props.visSpec);" in app_source
@@ -309,10 +309,10 @@ def test_frontend_component_state_refreshes_when_props_change():
 
 def test_frontend_pure_renderer_uses_local_data_without_kernel_computation():
     repo_root = Path(__file__).resolve().parents[1]
-    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+    app_source = (repo_root / "app/src/app/views.tsx").read_text(encoding="utf-8")
 
     pure_renderer_match = re.search(
-        r"const PureRednererApp:[\s\S]*?const initOnJupyter",
+        r"const PureRednererApp:[\s\S]*?\n\}\);",
         app_source,
     )
     assert pure_renderer_match is not None
@@ -324,23 +324,22 @@ def test_frontend_pure_renderer_uses_local_data_without_kernel_computation():
     assert "rawData={props.dataSource}" in pure_renderer_source
 
 
-def test_frontend_modals_are_lazy_loaded_from_entrypoint():
+def test_frontend_modals_are_lazy_loaded_from_their_owning_modules():
     repo_root = Path(__file__).resolve().parents[1]
-    app_source = (repo_root / "app/src/index.tsx").read_text(encoding="utf-8")
+    modal_modules = {
+        "shell": ["initModal"],
+        "views": ["uploadSpecModal", "uploadChartModal", "codeExportModal"],
+    }
+    for module, modals in modal_modules.items():
+        app_source = (repo_root / f"app/src/app/{module}.tsx").read_text(encoding="utf-8")
+        for modal in modals:
+            modal_path = f"../components/{modal}"
+            static_import_pattern = rf"import\s+[^;\n]+?\s+from\s+[\"']{re.escape(modal_path)}[\"']"
 
-    modal_paths = [
-        "./components/initModal",
-        "./components/uploadSpecModal",
-        "./components/uploadChartModal",
-        "./components/codeExportModal",
-    ]
-    for modal_path in modal_paths:
-        static_import_pattern = rf"import\s+[^;\n]+?\s+from\s+[\"']{re.escape(modal_path)}[\"']"
-
-        assert re.search(static_import_pattern, app_source) is None
-        assert f'import "{modal_path}"' not in app_source
-        assert f"import '{modal_path}'" not in app_source
-        assert f'import("{modal_path}")' in app_source
+            assert re.search(static_import_pattern, app_source) is None
+            assert f'import "{modal_path}"' not in app_source
+            assert f"import '{modal_path}'" not in app_source
+            assert f'import("{modal_path}")' in app_source
 
 
 def test_frontend_save_payload_strips_graphic_walker_export_fields():

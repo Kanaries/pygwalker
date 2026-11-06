@@ -53,7 +53,10 @@ fetch data, run queries, and save chart specs.
 
 | Path | Responsibility |
 |------|----------------|
-| `src/index.tsx` | Entry point. Exports `GWalker` (iframe/http), `AnywidgetGWalkerApp` (anywidget), Streamlit and preview apps. Selects a transport by `env`. |
+| `src/index.tsx` | Build entry point. Preserves the default app exports and the public mount/theme types. |
+| `src/app/hosts.tsx` | Host initialization and mounting for iframe/HTTP, anywidget, Streamlit, previews, and the Jupyter companion. Selects a transport by `env`. |
+| `src/app/views.tsx` | Explore, renderer, filter-renderer, and table views, including data loading and explorer tools/modals. |
+| `src/app/shell.tsx` | Shared theme, portal, and shadow-slot shell. Hosts and views use the same host-container context. |
 | `src/utils/communication.tsx` | The four client transports: Jupyter widgets, HTTP (Streamlit/Gradio/web), and anywidget. |
 | `src/dataSource/` | Receives chunked data from the kernel and delegates kernel computation. |
 | `src/interfaces/comm.generated.ts` | **Generated** protocol types (request/response envelopes, action map). Do not hand-edit. |

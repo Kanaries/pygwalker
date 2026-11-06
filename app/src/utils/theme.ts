@@ -1,6 +1,6 @@
 import { zincTheme } from '@kanaries/graphic-walker';
 import type { IColorSet, IUIThemeConfig } from '@kanaries/graphic-walker/interfaces';
-import type { IPygWalkerTheme } from '../index';
+import type { IPygWalkerTheme } from '../app/shell';
 
 /** Graphic Walker owns another shadow root and needs its palette through uiTheme. */
 export function hostThemeToUITheme(theme: IPygWalkerTheme): IUIThemeConfig {
