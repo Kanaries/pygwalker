@@ -10,6 +10,7 @@ import time
 from typing_extensions import Literal
 
 from .pygwalker import PygWalker
+from ._display import _build_display_options
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker._typing import DataFrame, IAppearance, IComputation, IThemeKey
@@ -352,22 +353,16 @@ def render(
     )
 
     walker = PygWalker(
-        gid=None,
-        dataset=dataset,
-        field_specs=[],
-        spec=resolved_spec,
-        source_invoke_code="",
-        theme_key=theme_key,
-        appearance=appearance,
-        show_cloud_tool=False,
-        use_preview=False,
-        kernel_computation=resolved_kernel_computation,
-        use_save_tool=False,
-        gw_mode="filter_renderer",
-        is_export_dataframe=True,
-        kanaries_api_key=kanaries_api_key,
-        default_tab="vis",
-        cloud_computation=resolved_cloud_computation,
+        **_build_display_options(
+            dataset=dataset,
+            spec=resolved_spec,
+            theme_key=theme_key,
+            appearance=appearance,
+            kernel_computation=resolved_kernel_computation,
+            cloud_computation=resolved_cloud_computation,
+            kanaries_api_key=kanaries_api_key,
+            gw_mode="filter_renderer",
+        ),
         **kwargs,
     )
     _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
@@ -411,22 +406,16 @@ def table(
         kernel_computation=kernel_computation,
     )
     walker = PygWalker(
-        gid=None,
-        dataset=dataset,
-        field_specs=[],
-        spec=resolved_spec,
-        source_invoke_code="",
-        theme_key=theme_key,
-        appearance=appearance,
-        show_cloud_tool=False,
-        use_preview=False,
-        kernel_computation=resolved_kernel_computation,
-        use_save_tool=False,
-        gw_mode="table",
-        is_export_dataframe=True,
-        kanaries_api_key=kanaries_api_key,
-        default_tab="vis",
-        cloud_computation=resolved_cloud_computation,
+        **_build_display_options(
+            dataset=dataset,
+            spec=resolved_spec,
+            theme_key=theme_key,
+            appearance=appearance,
+            kernel_computation=resolved_kernel_computation,
+            cloud_computation=resolved_cloud_computation,
+            kanaries_api_key=kanaries_api_key,
+            gw_mode="table",
+        ),
         **kwargs,
     )
     _start_server(walker, port, auto_open=auto_open, auto_shutdown=auto_shutdown)
