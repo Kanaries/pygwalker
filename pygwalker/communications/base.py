@@ -1,19 +1,6 @@
 from typing import Any, Callable, Dict
 
 from pygwalker.errors import BaseError, ErrorCode
-from pygwalker.services.track import track_event
-
-
-def _upload_error_info(gid: str, action: str, error: Exception):
-    try:
-        track_event("pygwalker_error", {
-            "gid": gid,
-            "action": action,
-            "error": str(error),
-            "error_type": type(error).__name__
-        })
-    except Exception:
-        pass
 
 
 class BaseCommunication:
@@ -41,10 +28,8 @@ class BaseCommunication:
             data = handler_func(data)
             return {"code": 0, "data": data, "message": "success"}
         except BaseError as e:
-            _upload_error_info(self.gid, action, e)
             return {"code": e.code, "data": data, "message": str(e)}
         except Exception as e:
-            _upload_error_info(self.gid, action, e)
             return {"code": ErrorCode.UNKNOWN_ERROR, "data": data, "message": str(e)}
 
     def register(self, endpoint: str, func: Callable[[Dict[str, Any]], Any]):

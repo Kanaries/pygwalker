@@ -9,7 +9,7 @@ from .config import get_config
 class GlobalVarManager:
     """A class to manage global variables."""
     env = None
-    privacy = get_config("privacy") or "events"
+    privacy = get_config("privacy") or "update-only"
     kanaries_api_key = get_config("kanaries_token") or os.getenv("KANARIES_API_KEY", "")
     kanaries_api_host = "https://api.kanaries.net"
     kanaries_main_host = "https://kanaries.net"

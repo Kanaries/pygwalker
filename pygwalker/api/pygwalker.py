@@ -39,7 +39,6 @@ from pygwalker.services.spec import get_spec_json, fill_new_fields
 from pygwalker.services.data_parsers import get_parser
 from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
-from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.communications.hacker_comm import HackerCommunication, BaseCommunication
 from pygwalker._constants import JUPYTER_BYTE_LIMIT, JUPYTER_WIDGETS_BYTE_LIMIT
@@ -549,18 +548,6 @@ class PygWalker:
             comm.register("export_dataframe_by_payload", _export_dataframe_by_payload)
             comm.register("export_dataframe_by_sql", _export_dataframe_by_sql)
 
-    def _send_props_track(self, props: Dict[str, Any]):
-        needed_fields = {
-            "id", "version", "hashcode", "themeKey",
-            "dark", "env", "specType", "needLoadDatas", "showCloudTool",
-            "useKernelCalc", "useSaveTool", "parseDslType", "gwMode", "datasetType",
-            "defaultTab", "useCloudCalc"
-        }
-        event_info = {key: value for key, value in props.items() if key in needed_fields}
-        event_info["hasKanariesToken"] = bool(self.kanaries_api_key)
-
-        track_event("invoke_props", event_info)
-
     def _get_props(
         self,
         env: str = "",
@@ -569,7 +556,7 @@ class PygWalker:
     ) -> Dict[str, Any]:
         if data_source is None:
             data_source = self.origin_data_source
-        props = {
+        return {
             "id": self.gid,
             "dataSource": data_source,
             "len": len(data_source),
@@ -610,10 +597,6 @@ class PygWalker:
             "defaultTab": self.default_tab,
             "useCloudCalc": self.cloud_computation
         }
-
-        self._send_props_track(props)
-
-        return props
 
     def _get_render_iframe(
         self,

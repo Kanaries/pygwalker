@@ -1,7 +1,7 @@
 import { IUserConfig } from "../interfaces";
 
 let config: IUserConfig = {
-    privacy: 'events',
+    privacy: 'update-only',
 };
 
 export function checkUploadPrivacy() {

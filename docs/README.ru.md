@@ -226,10 +226,10 @@ usage: pygwalker config [-h] [--set [key=value ...]] [--reset [key ...]] [--rese
 Modify configuration file. (default: ~/Library/Application Support/pygwalker/config.json)
 Available configurations:
 
-- privacy  ['offline', 'update-only', 'events'] (default: events).
+- privacy  ['offline', 'update-only', 'events'] (default: update-only).
     "offline": полностью офлайн, без отправки данных.
     "update-only": только проверка обновлений pygwalker.
-    "events": отправка данных о событиях для оптимизации продукта. Никакие пользовательские данные не передаются.
+    "events": прежнее название режима "update-only".
 
 - kanaries_token  ['your kanaries token'] (default: empty string).
     Ваш токен Kanaries для использования сервисов, таких как шаринг графиков и конфигураций.

@@ -29,7 +29,6 @@ import { getExportTool } from './tools/exportTool';
 import { getExportDataframeTool } from './tools/exportDataframe';
 import { getRuncellTool } from './tools/runcellTool';
 import { formatExportedChartDatas } from "./utils/save";
-import { tracker } from "@/utils/tracker";
 import Notification from "./notify"
 import initDslParser from "@kanaries/gw-dsl-parser";
 import {
@@ -191,10 +190,8 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
 
     useEffect(() => {
         commonStore.setShowCloudTool(props.showCloudTool);
-        tracker.setUserId(props.hashcode ?? "");
         if (userConfig) {
             setConfig(userConfig);
-            tracker.setOpen(userConfig.privacy === "events");
         };
     }, []);
 
