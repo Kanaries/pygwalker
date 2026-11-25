@@ -12,7 +12,6 @@ import commonStore from "@/store/common";
 import { darkModeContext } from "@/store/context";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { tracker } from "@/utils/tracker";
 
 import { usePythonCode } from "./usePythonCode";
 
@@ -112,7 +111,6 @@ const CodeExport: React.FC<ICodeExport> = observer((props) => {
                                 <Button
                                     onClick={() => {
                                         copyToCliboard(JSON.stringify(visSpec, null, 2));
-                                        tracker.track("click", {"entity": "copy_code_button"});
                                     }}
                                 >
                                     Copy to Clipboard

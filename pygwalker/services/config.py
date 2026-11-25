@@ -16,7 +16,6 @@ CONFIG_KEYS = list(DEFAULT_CONFIG.keys())
 APP_DIR = user_config_dir("pygwalker")
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
 USER_CONFIG_PATH = os.path.join(APP_DIR, "user_config.json")
-PRIVACY_NOTICE_PATH = os.path.join(APP_DIR, "privacy_notice_shown")
 
 
 class ConfigItem:
@@ -39,7 +38,7 @@ privacy_item = ConfigItem(
     description="""
     "offline": fully offline, no data is send or api is requested
     "update-only": only check whether this is a new version of pygwalker to update
-    "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.
+    "events": legacy alias for "update-only".
     """,
 )
 kanati_token_item = ConfigItem(
@@ -137,19 +136,6 @@ def get_config_dict() -> Dict[str, str]:
 def get_all_config_str() -> str:
     config = _read_and_create_file(CONFIG_PATH, DEFAULT_CONFIG)
     return json.dumps(config, indent=4)
-
-
-def should_show_privacy_notice() -> bool:
-    """Return True once per user config directory for the telemetry opt-out notice."""
-    try:
-        if os.path.exists(PRIVACY_NOTICE_PATH):
-            return False
-        os.makedirs(os.path.dirname(PRIVACY_NOTICE_PATH), exist_ok=True)
-        with open(PRIVACY_NOTICE_PATH, "w", encoding="utf-8") as f:
-            f.write("shown")
-        return True
-    except Exception:
-        return False
 
 
 @lru_cache(maxsize=1)

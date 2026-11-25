@@ -34,7 +34,7 @@ Static HTML export is browser-only. Exporting static HTML from `computation="ker
 
 ## Privacy
 
-The default privacy mode is `update-only`. Event telemetry is sent only when privacy is set to `events`, and the frontend Segment tracker opens only for that `events` setting.
+The default privacy mode is `update-only`. Existing `events` configurations also check for version updates. Set `offline` to skip these checks.
 
 ## Tested Support
 

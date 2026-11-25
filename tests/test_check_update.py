@@ -1,5 +1,10 @@
-from pygwalker.services import check_update
+from pygwalker.services import check_update, config
 from pygwalker.services.global_var import GlobalVarManager
+
+
+def test_default_privacy_is_update_only():
+    assert config.DEFAULT_CONFIG["privacy"] == "update-only"
+    assert config.privacy_item.default == "update-only"
 
 
 def test_check_update_starts_daemon_thread(monkeypatch):

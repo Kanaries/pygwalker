@@ -17,7 +17,6 @@ import { darkModeContext } from '../store/context';
 import { streamlitComponentCallback } from '../utils/communication';
 import { setConfig } from '../utils/userConfig';
 import { formatExportedChartDatas } from '../utils/save';
-import { tracker } from '../utils/tracker';
 import { getSaveTool } from '../tools/saveTool';
 import { getExportTool } from '../tools/exportTool';
 import { getExportDataframeTool } from '../tools/exportDataframe';
@@ -138,12 +137,10 @@ const ExploreApp: React.FC<IAppProps & {initChartFlag: boolean}> = (props) => {
 
     useEffect(() => {
         commonStore.setShowCloudTool(props.showCloudTool);
-        tracker.setUserId(props.hashcode ?? "");
         if (userConfig) {
             setConfig(userConfig);
-            tracker.setOpen(userConfig.privacy === "events");
         };
-    }, [props.showCloudTool, props.hashcode, userConfig]);
+    }, [props.showCloudTool, userConfig]);
 
     useEffect(() => {
         setVisSpec(props.visSpec);
