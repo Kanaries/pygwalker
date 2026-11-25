@@ -255,7 +255,7 @@ Available configurations:
 - privacy  ['offline', 'update-only', 'events'] (default: update-only).
     "offline": fully offline, no data is send or api is requested
     "update-only": only check whether this is a new version of pygwalker to update
-    "events": share which events about which feature is used in pygwalker, it only contains events data about which feature you arrive for product optimization. No DATA YOU ANALYSIS IS SEND.
+    "events": legacy alias for "update-only".
     
 - kanaries_token  ['your kanaries token'] (default: empty string).
     your kanaries token, you can get it from https://kanaries.net.

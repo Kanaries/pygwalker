@@ -23,12 +23,10 @@ from pygwalker.services.comm_handler import CommHandler
 from pygwalker.services.data_bridge import DataBridge
 from pygwalker.services.jupyter_display import JupyterDisplayManager
 from pygwalker.services.props_builder import PropsBuilder
-from pygwalker.services.props_tracker import PropsTracker
 from pygwalker.services.render_manager import RenderManager
 from pygwalker.services.spec_manager import SpecManager
 from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.check_update import check_update
-from pygwalker.services.track import track_event
 from pygwalker.utils.randoms import generate_hash_code
 from pygwalker.communications.hacker_comm import BaseCommunication
 
@@ -99,7 +97,6 @@ class PygWalker:
         self.cloud_computation = cloud_computation
         self.comm = None
         self.props_builder = PropsBuilder(self, lambda: get_local_user_id())
-        self.props_tracker = PropsTracker(self, lambda event, props: track_event(event, props))
         self.render_manager = RenderManager(self)
         self.jupyter_display_manager = JupyterDisplayManager(self, lambda content: display_html(content))
         self.chart_export_manager = ChartExportManager(self, lambda content: display_html(content))
@@ -349,12 +346,6 @@ class PygWalker:
             export_manager = ChartExportManager(self, lambda content: display_html(content))
         return export_manager
 
-    def _get_props_tracker(self) -> PropsTracker:
-        props_tracker = getattr(self, "props_tracker", None)
-        if props_tracker is None:
-            props_tracker = PropsTracker(self, lambda event, props: track_event(event, props))
-        return props_tracker
-
     def _init_callback(self, comm: BaseCommunication, preview_tool: PreviewImageTool = None):
         CommHandler(
             self,
@@ -369,10 +360,7 @@ class PygWalker:
         props_builder = getattr(self, "props_builder", None)
         if props_builder is None:
             props_builder = PropsBuilder(self, lambda: get_local_user_id())
-        props = props_builder.build(env, data_source, need_load_datas)
-        self._get_props_tracker().track_invocation(props)
-
-        return props
+        return props_builder.build(env, data_source, need_load_datas)
 
     def _get_render_iframe(
         self,

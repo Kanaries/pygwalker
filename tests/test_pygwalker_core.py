@@ -21,7 +21,6 @@ from pygwalker.services import chart_export as chart_export_module
 from pygwalker.services import data_bridge as data_bridge_module
 from pygwalker.services import desktop_import as desktop_import_module
 from pygwalker.services import jupyter_display as jupyter_display_module
-from pygwalker.services import props_tracker as props_tracker_module
 from pygwalker.services import render_manager as render_manager_module
 from pygwalker.services.global_var import GlobalVarManager
 
@@ -38,7 +37,6 @@ def _expected_legacy_computation_warning(kwargs):
 
 def _make_walker(monkeypatch, **kwargs):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "test-user")
 
     defaults = {
@@ -167,9 +165,7 @@ def test_pygwalker_props_expose_kernel_data_path(monkeypatch):
 
 
 def test_pygwalker_get_props_falls_back_without_props_builder(monkeypatch):
-    track_calls = []
     monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "fallback-user")
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *args, **kwargs: track_calls.append((args, kwargs)))
     walker = PygWalker.__new__(PygWalker)
     walker.gid = "fallback"
     walker.data_bridge = SimpleNamespace(
@@ -205,63 +201,6 @@ def test_pygwalker_get_props_falls_back_without_props_builder(monkeypatch):
     assert props["hashcode"] == "fallback-user"
     assert props["dataSource"] == [{"city": "London"}]
     assert props["rawFields"] == [{"fid": "city", "offset": 0}]
-    assert track_calls[0][0][0] == "invoke_props"
-
-
-def test_props_tracker_tracks_expected_invocation_fields():
-    track_calls = []
-    tracker = props_tracker_module.PropsTracker(
-        SimpleNamespace(kanaries_api_key="secret-token"),
-        lambda event, props: track_calls.append((event, props)),
-    )
-
-    tracker.track_invocation(
-        {
-            "id": "core",
-            "version": "0.5",
-            "hashcode": "user",
-            "themeKey": "g2",
-            "dark": "light",
-            "env": "jupyter",
-            "specType": "empty",
-            "needLoadDatas": True,
-            "showCloudTool": False,
-            "useKernelCalc": False,
-            "useSaveTool": True,
-            "parseDslType": "client",
-            "gwMode": "explore",
-            "datasetType": "pandas_dataframe",
-            "defaultTab": "vis",
-            "useCloudCalc": False,
-            "dataSource": [{"city": "London"}],
-            "rawFields": [{"fid": "city"}],
-        }
-    )
-
-    assert track_calls == [
-        (
-            "invoke_props",
-            {
-                "id": "core",
-                "version": "0.5",
-                "hashcode": "user",
-                "themeKey": "g2",
-                "dark": "light",
-                "env": "jupyter",
-                "specType": "empty",
-                "needLoadDatas": True,
-                "showCloudTool": False,
-                "useKernelCalc": False,
-                "useSaveTool": True,
-                "parseDslType": "client",
-                "gwMode": "explore",
-                "datasetType": "pandas_dataframe",
-                "defaultTab": "vis",
-                "useCloudCalc": False,
-                "hasKanariesToken": True,
-            },
-        )
-    ]
 
 
 def test_render_manager_preview_handles_parser_exception_and_manual_gid(monkeypatch):
@@ -1315,7 +1254,6 @@ def test_jupyter_walk_sets_pygwalker_kernel_computation_mode(
     expected_kernel_computation,
 ):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
@@ -1366,7 +1304,6 @@ def test_jupyter_walk_rejects_live_computation_for_convert_env(monkeypatch, kwar
 
 def test_jupyter_walk_accepts_explicit_spec_path(monkeypatch, tmp_path):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
@@ -1402,7 +1339,6 @@ def test_jupyter_walk_accepts_public_walker_object(monkeypatch):
     import pygwalker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
@@ -1429,7 +1365,6 @@ def test_public_walker_accepts_empty_dataframe(monkeypatch):
     import pygwalker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
 
     public_walker = pygwalker.Walker(
         pd.DataFrame({"city": pd.Series(dtype="object"), "value": pd.Series(dtype="int64")}),
@@ -1448,7 +1383,6 @@ def test_public_walker_accepts_pyarrow_table(monkeypatch):
     import pygwalker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
 
     public_walker = pygwalker.Walker(
         pa.table({"city": ["London"], "value": [1]}),
@@ -1467,7 +1401,6 @@ def test_jupyter_walk_public_walker_legacy_widget_env_warns_once(monkeypatch):
     from pygwalker.api.walker import Walker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
@@ -1497,7 +1430,6 @@ def test_walker_show_legacy_inline_env_warns_once_with_core_display(monkeypatch)
     from pygwalker.api.walker import Walker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
 
     display_calls = []
     public_walker = Walker(
@@ -1519,7 +1451,6 @@ def test_walker_show_legacy_inline_env_warns_once_with_core_display(monkeypatch)
 
 def test_jupyter_walk_legacy_widget_env_aliases_to_anywidget_transport(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
@@ -1540,7 +1471,6 @@ def test_jupyter_walk_legacy_widget_env_aliases_to_anywidget_transport(monkeypat
 
 def test_jupyter_walk_legacy_inline_env_aliases_to_anywidget_transport(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
@@ -1647,7 +1577,6 @@ def test_jupyter_walk_public_walker_rejects_rebuilding_params(monkeypatch, tmp_p
     from pygwalker.api.walker import Walker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
@@ -1662,7 +1591,6 @@ def test_jupyter_walk_public_walker_uses_convert_guard(monkeypatch):
     from pygwalker.api.walker import Walker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: True)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "")
@@ -1677,7 +1605,6 @@ def test_jupyter_walk_public_walker_uses_preview_env(monkeypatch):
     from pygwalker.api.walker import Walker
 
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(jupyter, "check_kaggle", lambda: False)
     monkeypatch.setattr(jupyter, "check_convert", lambda: False)
     monkeypatch.setattr(jupyter, "get_kaggle_run_type", lambda: "batch")
@@ -1699,7 +1626,6 @@ def test_jupyter_walk_public_walker_uses_preview_env(monkeypatch):
 
 def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "test-user")
 
     rendered = html.to_html(
@@ -1720,7 +1646,6 @@ def test_to_html_returns_iframe_for_pygwalker_static_export(monkeypatch):
 
 def test_to_html_accepts_pyarrow_table(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "test-user")
 
     rendered = html.to_html(
@@ -1755,7 +1680,6 @@ def test_to_html_rejects_invalid_computation_mode():
 
 def test_to_html_allows_disabled_computation_kwargs(monkeypatch):
     monkeypatch.setattr(pygwalker_module, "check_update", lambda: None)
-    monkeypatch.setattr(pygwalker_module, "track_event", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(pygwalker_module, "get_local_user_id", lambda: "test-user")
 
     rendered = html.to_html(

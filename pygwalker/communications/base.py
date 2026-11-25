@@ -1,19 +1,7 @@
 from typing import Any, Callable, Dict
 
 from pygwalker.communications.protocol import CommMessageRequest, CommResponse, dump_comm_response, validate_request
-from pygwalker.errors import BaseError, CommProtocolError, ErrorCode
-from pygwalker.services.track import track_event
-
-
-def _upload_error_info(gid: str, action: str, error: Exception):
-    if isinstance(error, CommProtocolError):
-        return
-    try:
-        track_event(
-            "pygwalker_error", {"gid": gid, "action": action, "error": str(error), "error_type": type(error).__name__}
-        )
-    except Exception:
-        pass
+from pygwalker.errors import BaseError, ErrorCode
 
 
 class BaseCommunication:
@@ -34,21 +22,16 @@ class BaseCommunication:
     def send_msg_async(self, action: str, data: Dict[str, Any]):
         raise NotImplementedError
 
-    def _error_response(self, action: str, data: Any, error: Exception) -> Dict[str, Any]:
+    def _error_response(self, data: Any, error: Exception) -> Dict[str, Any]:
         if isinstance(error, BaseError):
-            _upload_error_info(self.gid, action, error)
             return dump_comm_response(CommResponse(code=error.code, data=data, message=str(error)))
-
-        _upload_error_info(self.gid, action, error)
         return dump_comm_response(CommResponse(code=ErrorCode.UNKNOWN_ERROR, data=data, message=str(error)))
 
     def _receive_msg_envelope(self, message: Any) -> Dict[str, Any]:
         try:
             request = validate_request(CommMessageRequest, message)
-        except BaseError as e:
-            return self._error_response("", None, e)
         except Exception as e:
-            return self._error_response("", None, e)
+            return self._error_response(None, e)
 
         return self._receive_msg(request.action, request.data)
 
@@ -61,10 +44,8 @@ class BaseCommunication:
         try:
             data = handler_func(data)
             return dump_comm_response(CommResponse(code=0, data=data, message="success"))
-        except BaseError as e:
-            return self._error_response(action, data, e)
         except Exception as e:
-            return self._error_response(action, data, e)
+            return self._error_response(data, e)
 
     def register(self, endpoint: str, func: Callable[[Dict[str, Any]], Any]):
         self._endpoint_map[endpoint] = func

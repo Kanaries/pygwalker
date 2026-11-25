@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { tracker } from "@/utils/tracker";
 
 const RUNCELL_LOGO_URL = "https://www.runcell.dev/runcell-logo.svg";
 const RUNCELL_WEBSITE = "https://www.runcell.dev?utm_source=pygwalker";
@@ -39,13 +38,11 @@ export const RuncellBanner: React.FC<RuncellBannerProps> = ({ env }) => {
     }
 
     const  handleClick = () => {
-        tracker.track("click", { entity: "runcell_banner" });
         window.open(RUNCELL_WEBSITE, "_blank");
     };
 
     const handleDismiss = (e: React.MouseEvent) => {
         e.stopPropagation();
-        tracker.track("click", { entity: "runcell_banner_dismiss" });
         setDismissed(true);
     };
 
