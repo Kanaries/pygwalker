@@ -453,6 +453,7 @@ def component(
         - appearance (Literal['media' | 'light' | 'dark']): 'media': auto detect OS theme.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
+        - show_cloud_tool (bool): Whether to show the Kanaries cloud tool when available. Default to False.
         - kanaries_api_key (str): kanaries api key, Default to "".
     """
     resolved_spec = resolve_spec_input(spec, spec_path)

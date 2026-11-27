@@ -25,6 +25,7 @@ def create_cloud_dataset(
     Kargs:
         - name (str): dataset name in kanaries cloud.
         - is_public (bool): whether to make this dataset public.
+        - kanaries_api_key (str): kanaries api key, Default to "".
 
     Returns:
         str: dataset id in kanaries cloud
@@ -57,6 +58,7 @@ def create_cloud_walker(
         - chart_name (str): pygwalker chart name in kanaries cloud.
         - workspace_name (str): kanaries workspace name.
         - field_specs (Dict[str, FieldSpec]): Specifications of some fields. They'll been automatically inferred from `df` if some fields are not specified.
+        - kanaries_api_key (str): kanaries api key, Default to "".
 
     Returns:
         str: pygwalker url in kanaries cloud
@@ -83,6 +85,9 @@ def walk_on_cloud(workspace_name: str, chart_name: str, kanaries_api_key: str = 
     Args:
         - chart_name (str): pygwalker chart name in kanaries cloud.
         - workspace_name (str): kanaries workspace name.
+
+    Kargs:
+        - kanaries_api_key (str): kanaries api key, Default to "".
     """
     cloud_service = CloudService(kanaries_api_key)
     cloud_url = cloud_service.get_cloud_graphic_walker(workspace_name, chart_name)
