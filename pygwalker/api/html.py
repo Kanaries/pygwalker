@@ -212,8 +212,10 @@ def to_table_html(
         - df (pandas.DataFrame | polars.DataFrame | pyarrow.Table, optional): dataframe.
 
     Kargs:
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - theme_key ('vega' | 'g2'): theme type.
         - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
     """
     return _to_html(
         df,
@@ -246,8 +248,10 @@ def to_render_html(
         - spec (str): chart config data. config id, json, remote file url
 
     Kargs:
+        - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - theme_key ('vega' | 'g2'): theme type.
         - appearance ('media' | 'light' | 'dark'): 'media': auto detect OS theme.
+        - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
     """
     return _to_html(
         df,

@@ -388,6 +388,7 @@ def get_streamlit_html(
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None.
         - use_kernel_calc(bool): Deprecated, use kernel_computation instead.
         - spec_io_mode (ISpecIOMode): spec io mode, Default to "r", "r" for read, "rw" for read and write.
+        - show_cloud_tool (Optional[bool]): Whether to show the Kanaries cloud tool when available. Default to None, which shows it only when `kanaries_api_key` is set.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """

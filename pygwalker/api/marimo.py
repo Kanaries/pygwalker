@@ -89,6 +89,7 @@ def walk(
         - spec (str): chart config data. config id, json, remote file url
         - spec_path (str): local chart configuration file path. Prefer this over passing a file path through `spec`.
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "kernel".
+        - show_cloud_tool (bool): Whether to show the Kanaries cloud tool when available. Default to False.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
     """

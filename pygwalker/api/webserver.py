@@ -248,6 +248,7 @@ def walk(
         - computation (Literal["auto", "browser", "kernel", "cloud"]): computation backend. Default to "auto".
         - use_kernel_calc(bool): Deprecated alias for kernel computation. Prefer computation="kernel".
         - kernel_computation(bool): Whether to use kernel compute for datas, Default to None, automatically determine whether to use kernel calculation.
+        - show_cloud_tool (bool): Whether to show the Kanaries cloud tool when available. Default to True.
         - kanaries_api_key (str): kanaries api key, Default to "".
         - default_tab (Literal["data", "vis"]): default tab to show. Default to "vis"
         - cloud_computation(bool): Whether to use cloud compute for datas, it upload your data to kanaries cloud. Default to False.
