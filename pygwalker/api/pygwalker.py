@@ -2,7 +2,9 @@ import base64
 from typing import List, Dict, Any, Optional, Union
 import urllib
 import json
-import os, sys, subprocess
+import os
+import subprocess
+import sys
 import urllib.parse
 import zlib
 
@@ -12,7 +14,7 @@ import ipywidgets
 import pandas as pd
 
 from pygwalker._typing import DataFrame, IAppearance, IThemeKey
-from pygwalker.data_parsers.base import BaseDataParser, FieldSpec
+from pygwalker.data_parsers.base import BaseDataFrameDataParser, BaseDataParser, FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.utils.display import display_html
 from pygwalker.utils.randoms import rand_str
@@ -107,11 +109,8 @@ class PygWalker:
         self.comm = None
         check_update()
         # Temporarily adapt to pandas import module bug
-        if self.kernel_computation:
-            try:
-                self.data_parser.get_datas_by_sql("SELECT 1 FROM pygwalker_mid_table LIMIT 1")
-            except Exception:
-                pass
+        if self.kernel_computation and isinstance(self.data_parser, BaseDataFrameDataParser):
+            self.data_parser.get_datas_by_sql(f"SELECT 1 FROM {self.data_parser.placeholder_table_name} LIMIT 1")
         if GlobalVarManager.privacy == "offline":
             self.show_cloud_tool = False
 
@@ -525,7 +524,8 @@ class PygWalker:
         comm.register("get_latest_vis_spec", get_latest_vis_spec)
         comm.register("request_data", reuqest_data_callback)
         comm.register("ping", lambda _: {})
-        comm.register("open_in_desktop", open_in_desktop)
+        if getattr(comm, "allow_open_in_desktop", True):
+            comm.register("open_in_desktop", open_in_desktop)
 
         if self.use_save_tool:
             comm.register("upload_spec_to_cloud", upload_spec_to_cloud)
@@ -539,14 +539,18 @@ class PygWalker:
             comm.register("get_chart_by_chats", _get_chart_by_chats)
 
         if self.kernel_computation:
-            comm.register("get_datas", _get_datas)
+            if self.parse_dsl_type != "server":
+                comm.register("get_datas", _get_datas)
+                comm.register("batch_get_datas_by_sql", _batch_get_datas_by_sql)
             comm.register("get_datas_by_payload", _get_datas_by_payload)
-            comm.register("batch_get_datas_by_sql", _batch_get_datas_by_sql)
             comm.register("batch_get_datas_by_payload", _batch_get_datas_by_payload)
 
         if self.is_export_dataframe:
             comm.register("export_dataframe_by_payload", _export_dataframe_by_payload)
-            comm.register("export_dataframe_by_sql", _export_dataframe_by_sql)
+            if self.parse_dsl_type != "server":
+                comm.register("export_dataframe_by_sql", _export_dataframe_by_sql)
+
+        comm.set_close_callback(getattr(self.data_parser, "close", None))
 
     def _get_props(
         self,

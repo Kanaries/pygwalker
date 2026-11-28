@@ -1,10 +1,13 @@
 from typing import Generic, Dict, List, Any, Optional
 from typing_extensions import Literal
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from datetime import datetime, date
 from datetime import timedelta
 import abc
 import io
+import threading
+import weakref
+from contextlib import suppress
 
 from pydantic import BaseModel
 import duckdb
@@ -12,8 +15,10 @@ import arrow
 import pytz
 
 from pygwalker._typing import DataFrame
+from pygwalker.errors import SqlSandboxError
 from pygwalker.utils.payload_to_sql import get_sql_from_payload
 from pygwalker.utils.estimate_tools import estimate_average_data_size
+from pygwalker.utils.sql_guard import validate_read_only_sql
 
 
 # pylint: disable=broad-except
@@ -35,8 +40,16 @@ class FieldSpec(BaseModel):
 INFINITY_DATA_SIZE = 1 << 62
 
 
+def _close_duckdb_connection(con: duckdb.DuckDBPyConnection) -> None:
+    with suppress(Exception):
+        con.close()
+
+
 class BaseDataParser(abc.ABC):
     """Base class for data parser"""
+
+    def close(self) -> None:
+        """Release resources owned by this parser."""
 
     @abc.abstractmethod
     def __init__(
@@ -129,20 +142,65 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
         self._example_df = self.df[:1000]
         self.field_specs = field_specs
         self._duckdb_df = self.df
+        self._duckdb_conn = None
+        self._duckdb_lock = threading.Lock()
+        self._duckdb_finalizer = None
         self.infer_string_to_date = infer_string_to_date
         self.infer_number_to_dimension = infer_number_to_dimension
         self.other_params = other_params
 
-    @property
-    @lru_cache()
-    def field_metas(self) -> List[Dict[str, str]]:
-        duckdb.register("pygwalker_mid_table", self._duckdb_df)
-        result = duckdb.query("SELECT * FROM pygwalker_mid_table LIMIT 1")
-        data = result.fetchone()
-        return get_data_meta_type(dict(zip(result.columns, data))) if data else []
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        for key in ("_duckdb_conn", "_duckdb_lock", "_duckdb_finalizer"):
+            state.pop(key, None)
+        return state
 
-    @property
-    @lru_cache()
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self._duckdb_conn = None
+        self._duckdb_lock = threading.Lock()
+        self._duckdb_finalizer = None
+
+    def _get_duckdb_conn(self) -> duckdb.DuckDBPyConnection:
+        """Get the sandbox. Callers hold _duckdb_lock through the final fetch."""
+        if self._duckdb_conn is None:
+            con = None
+            try:
+                con = duckdb.connect(
+                    ":memory:",
+                    config={"autoinstall_known_extensions": False, "autoload_known_extensions": False},
+                )
+                con.execute("SET TimeZone = 'UTC'")
+                con.execute("SET temp_directory = ''")
+                con.register(self.placeholder_table_name, self._duckdb_df)
+                con.execute("SET enable_external_access = false")
+                con.execute("SET lock_configuration = true")
+                self._duckdb_finalizer = weakref.finalize(self, _close_duckdb_connection, con)
+            except Exception as exc:
+                if con is not None:
+                    _close_duckdb_connection(con)
+                raise SqlSandboxError() from exc
+            self._duckdb_conn = con
+        return self._duckdb_conn
+
+    def close(self) -> None:
+        with self._duckdb_lock:
+            if self._duckdb_finalizer is not None:
+                self._duckdb_finalizer.detach()
+                self._duckdb_finalizer = None
+            if self._duckdb_conn is not None:
+                _close_duckdb_connection(self._duckdb_conn)
+                self._duckdb_conn = None
+
+    @cached_property
+    def field_metas(self) -> List[Dict[str, str]]:
+        with self._duckdb_lock:
+            result = self._get_duckdb_conn().execute(f"SELECT * FROM {self.placeholder_table_name} LIMIT 1")
+            columns = [column[0] for column in result.description]
+            data = result.fetchone()
+        return get_data_meta_type(dict(zip(columns, data))) if data else []
+
+    @cached_property
     def raw_fields(self) -> List[Dict[str, str]]:
         return [
             self._infer_prop(col, self.field_specs)
@@ -175,18 +233,12 @@ class BaseDataFrameDataParser(Generic[DataFrame], BaseDataParser):
 
     def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
         """get datas by duckdb"""
-        try:
-            duckdb.query("SET TimeZone = 'UTC'")
-        except Exception:
-            pass
-
-        duckdb.register("pygwalker_mid_table", self._duckdb_df)
-
-        result = duckdb.query(sql)
-        return [
-            dict(zip(result.columns, row))
-            for row in result.fetchall()
-        ]
+        validate_read_only_sql(sql, allowed_tables={self.placeholder_table_name}, dialect="duckdb")
+        with self._duckdb_lock:
+            result = self._get_duckdb_conn().execute(sql)
+            columns = [column[0] for column in result.description]
+            rows = result.fetchall()
+        return [dict(zip(columns, row)) for row in rows]
 
     def _rename_dataframe(self, df: DataFrame) -> DataFrame:
         """rename dataframe"""

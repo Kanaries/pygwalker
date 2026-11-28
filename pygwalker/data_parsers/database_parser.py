@@ -14,9 +14,9 @@ import sqlglot
 from .base import BaseDataParser, get_data_meta_type, INFINITY_DATA_SIZE
 from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.data_parsers.base import FieldSpec
-from pygwalker.utils.custom_sqlglot import DuckdbDialect
+from pygwalker.utils.sql_guard import iter_source_tables, validate_read_only_sql
 from pygwalker.utils.payload_to_sql import get_sql_from_payload
-from pygwalker.errors import ViewSqlSameColumnError
+from pygwalker.errors import UnsafeSqlError, ViewSqlSameColumnError
 
 logger = logging.getLogger(__name__)
 
@@ -168,19 +168,19 @@ class DatabaseDataParser(BaseDataParser):
         return example_df
 
     def _format_sql(self, sql: str) -> str:
-        sqlglot_dialect_name = self.sqlglot_dialect_map.get(self.conn.dialect_name, self.conn.dialect_name)
-
-        sub_query = exp.Subquery(
-            this=sqlglot.parse(self.conn.view_sql, read=sqlglot_dialect_name)[0],
-            alias=exp.TableAlias(this="temp_view_name")
+        ast = validate_read_only_sql(
+            sql, allowed_tables={self.placeholder_table_name}, dialect="duckdb", require_allowed_table=True
         )
-        ast = sqlglot.parse(sql, read=DuckdbDialect)[0]
-        for from_exp in ast.find_all(exp.From):
-            if str(from_exp.this).strip('"') == self.placeholder_table_name:
-                from_exp.this.replace(sub_query)
-
-        sql = ast.sql(sqlglot_dialect_name)
-        return sql
+        sqlglot_dialect_name = self.sqlglot_dialect_map.get(self.conn.dialect_name, self.conn.dialect_name)
+        view = sqlglot.parse_one(self.conn.view_sql, read=sqlglot_dialect_name)
+        # Outer CTEs must not change the meaning of unqualified tables inside the connector view.
+        cte_names = {cte.alias_or_name.casefold() for cte in ast.find_all(exp.CTE)}
+        if cte_names and any(not table.db and table.name.casefold() in cte_names for table in iter_source_tables(view)):
+            raise UnsafeSqlError("CTE name conflicts with a connector view source.")
+        for table in list(iter_source_tables(ast)):
+            alias = table.args.get("alias") or exp.TableAlias(this=table.this)
+            table.replace(exp.Subquery(this=view.copy(), alias=alias))
+        return ast.sql(sqlglot_dialect_name, comments=False)
 
     @property
     def placeholder_table_name(self) -> str:

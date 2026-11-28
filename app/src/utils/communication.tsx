@@ -184,7 +184,8 @@ const getRealApiUrl = async(basePath: string, baseApiUrl: string) => {
                 url,
                 {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", "X-PyGWalker-Request": "1" },
+                    credentials: "same-origin",
                     body: JSON.stringify({ action: "ping", data: {} }),
                 }
             )
@@ -234,7 +235,8 @@ const initHttpCommunication = async(gid: string, baseUrl: string) => {
             url,
             {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "X-PyGWalker-Request": "1" },
+                credentials: "same-origin",
                 body: JSON.stringify({ action, data, rid, gid }),
             }
         )).json();

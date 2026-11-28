@@ -1,4 +1,9 @@
 from typing import Union, List, Optional
+import hmac
+import http.cookies
+import logging
+import secrets
+import sys
 import threading
 import socketserver
 import http.server
@@ -17,12 +22,22 @@ from pygwalker.utils.check_walker_params import check_expired_params
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.utils.free_port import find_free_port
 from pygwalker.communications.base import BaseCommunication
+from pygwalker.communications.http_security import (
+    has_custom_request_header,
+    is_allowed_local_host,
+    is_json_content_type,
+    is_same_origin,
+    parse_content_length,
+)
 
+logger = logging.getLogger(__name__)
+
+AUTH_COOKIE_NAME = "pygwalker_token"
 _MAX_HEALTH_TIMEOUT_SECONDS = 3
 _SEND_HEALTH_JS_SCRIPT = """
 <script>
     setInterval(() => {
-        fetch("/health", { method: "GET" })
+        fetch("/health", { method: "GET", credentials: "same-origin" })
             .then(response => {
                 if (!response.ok) {
                     window.close();
@@ -37,27 +52,112 @@ _SEND_HEALTH_JS_SCRIPT = """
 
 
 class _GlobalState:
-    def __init__(self, auto_shutdown: bool):
+    def __init__(self, auto_shutdown: bool, auth_token: Optional[str] = None):
         # why +60? If page not auto open, user manually open page, we should give user more time to interact with page.
         self.last_health_time = time.time() + 60
         self.auto_shutdown = auto_shutdown
+        # Per-server secret. It is handed out once in the printed URL and then kept in an
+        # HttpOnly cookie, so other local users/processes and web pages cannot drive the server.
+        self.auth_token = auth_token or secrets.token_urlsafe(32)
+        # The server is threaded (so a stalled client cannot block it), but walker / data parser
+        # state is not guaranteed to be thread-safe, so comm dispatch is serialized.
+        self.comm_lock = threading.Lock()
 
 
-class _PygWalkerHandler(http.server.SimpleHTTPRequestHandler):
+class _PygWalkerHandler(http.server.BaseHTTPRequestHandler):
+    """Minimal, authenticated HTTP handler. Never serves files from disk."""
+
+    timeout = 30
     _walker: PygWalker
     _state: _GlobalState
 
+    # ---- helpers -------------------------------------------------------------------------
+
+    def _send_body(self, status: int, body: bytes, content_type: str, extra_headers=None) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        for name, value in extra_headers or ():
+            self.send_header(name, value)
+        self.end_headers()
+        if self.command != "HEAD":
+            self.wfile.write(body)
+
+    def _send_text(self, status: int, message: str, extra_headers=None) -> None:
+        self._send_body(status, message.encode("utf-8"), "text/plain; charset=utf-8", extra_headers)
+
+    def _send_json(self, status: int, payload) -> None:
+        body = json.dumps(payload, cls=DataFrameEncoder).encode("utf-8")
+        self._send_body(status, body, "application/json; charset=utf-8")
+
+    def _is_valid_token(self, token: Optional[str]) -> bool:
+        if not token:
+            return False
+        return hmac.compare_digest(token.encode("utf-8"), self._state.auth_token.encode("utf-8"))
+
+    def _has_valid_cookie(self) -> bool:
+        raw_cookie = self.headers.get("Cookie")
+        if not raw_cookie:
+            return False
+        cookie = http.cookies.SimpleCookie()
+        try:
+            cookie.load(raw_cookie)
+        except http.cookies.CookieError:
+            return False
+        morsel = cookie.get(AUTH_COOKIE_NAME)
+        return morsel is not None and self._is_valid_token(morsel.value)
+
+    def _check_host_and_origin(self) -> bool:
+        """Reject DNS-rebinding (bad Host) and cross-origin (bad Origin) requests."""
+        host = self.headers.get("Host")
+        if not is_allowed_local_host(host):
+            self._send_text(403, "Forbidden: invalid Host header")
+            return False
+        if not is_same_origin(self.headers.get("Origin"), host):
+            self._send_text(403, "Forbidden: cross-origin request")
+            return False
+        return True
+
+    def parse_request(self):
+        # Check every parsed request, including methods handled by the stdlib.
+        return super().parse_request() and self._check_host_and_origin()
+
+    def _is_comm_path(self, path: str) -> bool:
+        return path in ("/comm", f"/comm/{self._walker.gid}")
+
+    # ---- methods -------------------------------------------------------------------------
+
     def do_GET(self):
-        parsed_path = urllib.parse.urlparse(self.path)
+        parsed_path = urllib.parse.urlsplit(self.path)
         path = parsed_path.path
 
-        if path == "/health":
-            self._state.last_health_time = time.time()
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b"OK")
+        if path == "/":
+            tokens = urllib.parse.parse_qs(parsed_path.query).get("token")
+            if tokens and self._is_valid_token(tokens[0]):
+                cookie = f"{AUTH_COOKIE_NAME}={self._state.auth_token}; HttpOnly; SameSite=Strict; Path=/"
+                # Drop the token from the address bar / history as soon as it has been exchanged.
+                self._send_text(302, "Found", [("Location", "/"), ("Set-Cookie", cookie)])
+                return
+            if not self._has_valid_cookie():
+                self._send_text(403, "Forbidden: open the URL (with token) printed in the terminal.")
+                return
+            self._send_index()
             return
 
+        if path == "/health":
+            if not self._has_valid_cookie():
+                self._send_text(403, "Forbidden")
+                return
+            self._state.last_health_time = time.time()
+            self._send_text(200, "OK")
+            return
+
+        self._send_text(404, "Not Found")
+
+    def _send_index(self) -> None:
         props = self._walker._get_props("web_server")
         props["communicationUrl"] = "comm"
 
@@ -65,43 +165,71 @@ class _PygWalkerHandler(http.server.SimpleHTTPRequestHandler):
         if self._state.auto_shutdown:
             html += _SEND_HEALTH_JS_SCRIPT
 
-        self.send_response(200)
-        self.send_header("Content-type", "text/html")
-        self.end_headers()
-        self.wfile.write(html.encode("utf-8"))
-    
-    def do_POST(self):
-        parsed_path = urllib.parse.urlparse(self.path)
-        path = parsed_path.path
+        self._send_body(200, html.encode("utf-8"), "text/html; charset=utf-8")
 
-        if not path.startswith("/comm"):
-            self.send_error(404)
+    def do_POST(self):
+        path = urllib.parse.unquote(urllib.parse.urlsplit(self.path).path)
+
+        if not self._is_comm_path(path):
+            self._send_text(404, "Not Found")
+            return
+        if not self._has_valid_cookie():
+            self._send_json(403, {"success": False, "message": "Forbidden"})
+            return
+        if not has_custom_request_header(self.headers):
+            self._send_json(403, {"success": False, "message": "Missing X-PyGWalker-Request header"})
+            return
+        if not is_json_content_type(self.headers.get("Content-Type")):
+            self._send_json(415, {"success": False, "message": "Content-Type must be application/json"})
+            return
+        content_length, error_status = parse_content_length(self.headers.get("Content-Length"))
+        if error_status is not None:
+            message = "Request body too large" if error_status == 413 else "Invalid Content-Length header"
+            self._send_json(error_status, {"success": False, "message": message})
             return
 
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length).decode('utf-8')
-        payload = json.loads(post_data)
-        result = self._walker.comm._receive_msg(payload["action"], payload["data"])
-        self.send_response(200)
-        self.send_header("Content-type", "application/json")
-        self.end_headers()
-        self.wfile.write(json.dumps(result, cls=DataFrameEncoder).encode("utf-8"))
-    
+        try:
+            payload = json.loads(self.rfile.read(content_length).decode("utf-8"))
+        except (UnicodeDecodeError, ValueError):
+            self._send_json(400, {"success": False, "message": "Invalid JSON in request body"})
+            return
+
+        if not isinstance(payload, dict) or not isinstance(payload.get("action"), str):
+            self._send_json(400, {"success": False, "message": "Expected a JSON object with a string action"})
+            return
+        with self._state.comm_lock:
+            result = self._walker.comm._receive_msg(payload["action"], payload.get("data", {}))
+        self._send_json(200, result)
+
+    def _reject_method(self):
+        self._send_text(405, "Method Not Allowed", [("Allow", "GET, POST")])
+
+    do_HEAD = _reject_method
+    do_PUT = _reject_method
+    do_DELETE = _reject_method
+    do_PATCH = _reject_method
+    do_OPTIONS = _reject_method
+
     def log_message(self, format, *args):
         pass
 
 
-class CustomTCPServer(socketserver.TCPServer):
+class CustomTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    daemon_threads = True
+    # On Windows SO_REUSEADDR lets another process bind the same port and hijack traffic.
+    allow_reuse_address = sys.platform != "win32"
+
     def log_request(self, *args, **kwargs):
         pass
 
 
 def _create_handler_with_walker(walker: PygWalker, state: _GlobalState):
     """Create a custom handler with walker"""
+
     class CustomPygWalkerHandler(_PygWalkerHandler):
         _walker = walker
         _state = state
-    
+
     return CustomPygWalkerHandler
 
 
@@ -113,7 +241,7 @@ def _open_browser(address: str, delay_ms: int = 1000):
         opened = webbrowser.open(address)
     except Exception:
         opened = False
-    
+
     if opened:
         print(f"Run pygwalker at {address}, close page or press Ctrl+C to end.")
     else:
@@ -129,12 +257,6 @@ def _start_server(
 ):
     """Start a server with walker"""
     state = _GlobalState(auto_shutdown=auto_shutdown)
-    walker._init_callback(BaseCommunication(str(walker.gid)))
-
-    handler = _create_handler_with_walker(walker, state)
-    if port is None:
-        port = find_free_port()
-    address = f"http://localhost:{port}"
 
     def _listen_shutdown():
         while 1:
@@ -144,14 +266,35 @@ def _start_server(
                 break
 
     try:
+        walker._init_callback(BaseCommunication(str(walker.gid)))
+
+        handler = _create_handler_with_walker(walker, state)
+        if port is None:
+            port = find_free_port()
+        address = f"http://localhost:{port}/?token={state.auth_token}"
         with CustomTCPServer(("127.0.0.1", port), handler) as httpd:
             if auto_open:
-                threading.Thread(target=_open_browser, args=(address,)).start()
+                threading.Thread(target=_open_browser, args=(address,), daemon=True).start()
+            else:
+                print(f"Run pygwalker at {address}, press Ctrl+C to end.")
             if auto_shutdown:
-                threading.Thread(target=_listen_shutdown).start()
+                threading.Thread(target=_listen_shutdown, daemon=True).start()
             httpd.serve_forever()
     except KeyboardInterrupt:
         pass
+    finally:
+        _close_walker_data_parser(walker)
+
+
+def _close_walker_data_parser(walker: PygWalker) -> None:
+    data_parser = getattr(walker, "data_parser", None)
+    close = getattr(data_parser, "close", None)
+    if not callable(close):
+        return
+    try:
+        close()
+    except Exception:
+        logger.exception("Failed to close PyGWalker data parser")
 
 
 def walk(

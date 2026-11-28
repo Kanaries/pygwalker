@@ -1,9 +1,10 @@
-from typing import Any, Dict, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from functools import lru_cache
 import logging
 import io
 
-from pyspark.sql import DataFrame
 import sqlglot
 
 from .base import BaseDataParser, get_data_meta_type, INFINITY_DATA_SIZE
@@ -11,6 +12,10 @@ from .pandas_parser import PandasDataFrameDataParser
 from pygwalker.services.fname_encodings import rename_columns
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.utils.payload_to_sql import get_sql_from_payload
+from pygwalker.utils.sql_guard import validate_read_only_sql
+
+if TYPE_CHECKING:
+    from pyspark.sql import DataFrame
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +68,11 @@ class SparkDataFrameDataParser(BaseDataParser):
         return [row.asDict() for row in df.collect()]
 
     def get_datas_by_sql(self, sql: str) -> List[Dict[str, Any]]:
-        self.df.createOrReplaceTempView("pygwalker_mid_table")
-        sql = sqlglot.transpile(sql, read="duckdb", write="spark")[0]
+        allowed_tables = {self.placeholder_table_name}
+        ast = validate_read_only_sql(sql, allowed_tables=allowed_tables, dialect="duckdb", require_allowed_table=True)
+        sql = sqlglot.transpile(ast.sql("duckdb", comments=False), read="duckdb", write="spark")[0]
+        validate_read_only_sql(sql, allowed_tables=allowed_tables, dialect="spark", require_allowed_table=True)
+        self.df.createOrReplaceTempView(self.placeholder_table_name)
         result_df = self.spark.sql(sql)
         return [row.asDict() for row in result_df.collect()]
 

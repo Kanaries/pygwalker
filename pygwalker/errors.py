@@ -6,6 +6,7 @@ from enum import Enum
 
 class ErrorCode(int, Enum):
     UNKNOWN_ERROR = -1
+    INVALID_REQUEST = 10001
     TOKEN_ERROR = 20001
     CLOUD_CONFIG_LIMIT = 20002
     CLOUD_CHART_NOT_FOUND = 20003
@@ -41,6 +42,20 @@ class CsvFileTooLargeError(BaseError):
 class ViewSqlSameColumnError(BaseError):
     """Raised when the view sql is invalid."""
     pass
+
+
+class UnsafeSqlError(BaseError):
+    """Raised when a SQL query violates the read-only safety policy."""
+
+    def __init__(self, message: str = "SQL query rejected by security policy.") -> None:
+        super().__init__(message, code=ErrorCode.INVALID_REQUEST)
+
+
+class SqlSandboxError(BaseError):
+    """Raised when the isolated DuckDB query sandbox cannot be initialized safely."""
+
+    def __init__(self, message: str = "Failed to initialize isolated SQL execution sandbox.") -> None:
+        super().__init__(message, code=ErrorCode.UNKNOWN_ERROR)
 
 
 class StreamlitPygwalkerApiError(BaseError):
