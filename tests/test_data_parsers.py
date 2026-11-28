@@ -3,6 +3,7 @@ import os.path
 import pickle
 import subprocess
 import sys
+import urllib.parse
 import weakref
 
 from sqlalchemy import create_engine
@@ -217,7 +218,7 @@ def test_connector():
     assert result[0]["count"] == data_count
     assert connector.dialect_name == "duckdb"
     assert connector.view_sql == view_sql
-    assert connector.url == database_url
+    assert urllib.parse.unquote(connector.url) == database_url
 
     engine = create_engine(database_url)
     connector = Connector.from_sqlalchemy_engine(engine, view_sql)
@@ -225,7 +226,7 @@ def test_connector():
     assert result[0]["count"] == data_count
     assert connector.dialect_name == "duckdb"
     assert connector.view_sql == view_sql
-    assert connector.url == database_url
+    assert urllib.parse.unquote(connector.url) == database_url
 
     engine = create_engine(database_url)
     with engine.connect() as conn:
@@ -235,7 +236,7 @@ def test_connector():
         assert result[0]["count"] == data_count
         assert connector.dialect_name == "duckdb"
         assert connector.view_sql == view_sql
-        assert connector.url == database_url
+        assert urllib.parse.unquote(connector.url) == database_url
 
 
 def test_database_parser_get_datas_by_sql_queries_connector_view():
