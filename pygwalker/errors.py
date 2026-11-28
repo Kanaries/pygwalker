@@ -58,6 +58,20 @@ class CommProtocolError(BaseError):
         super().__init__(*args, code=ErrorCode.INVALID_REQUEST)
 
 
+class UnsafeSqlError(BaseError):
+    """Raised when a SQL query violates the read-only safety policy."""
+
+    def __init__(self, message: str = "SQL query rejected by security policy.") -> None:
+        super().__init__(message, code=ErrorCode.INVALID_REQUEST)
+
+
+class SqlSandboxError(BaseError):
+    """Raised when the isolated DuckDB query sandbox cannot be initialized safely."""
+
+    def __init__(self, message: str = "Failed to initialize isolated SQL execution sandbox.") -> None:
+        super().__init__(message, code=ErrorCode.UNKNOWN_ERROR)
+
+
 class StreamlitPygwalkerApiError(BaseError):
     """Raised when the config is invalid."""
 

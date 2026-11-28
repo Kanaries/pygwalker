@@ -71,7 +71,8 @@ class CommHandler:
         self._register_request("get_latest_vis_spec", EmptyRequest, self.spec_communication.get_latest_vis_spec)
         self._register_request("request_data", EmptyRequest, self.data_upload_communication.request_data)
         self._register_request("ping", EmptyRequest, self._ping)
-        self._register_request("open_in_desktop", OpenDesktopRequest, self.desktop_communication.open_in_desktop)
+        if getattr(self.comm, "allow_open_in_desktop", True):
+            self._register_request("open_in_desktop", OpenDesktopRequest, self.desktop_communication.open_in_desktop)
 
         if self.walker.use_save_tool:
             self._register_request(
@@ -92,14 +93,20 @@ class CommHandler:
             self._register_request("get_spec_by_text", AskSpecRequest, self.cloud_communication.get_spec_by_text)
             self._register_request("get_chart_by_chats", ChatChartRequest, self.cloud_communication.get_chart_by_chats)
 
+        # Raw-SQL endpoints are only exposed when SQL runs against the in-process (client-parsed)
+        # engine. "server" parsers (database connectors) are served through the payload endpoints.
+        allow_raw_sql = getattr(self.walker, "parse_dsl_type", "client") != "server"
+
         if self.walker.kernel_computation:
-            self._register_request("get_datas", SqlQueryRequest, self.data_communication.get_datas)
+            if allow_raw_sql:
+                self._register_request("get_datas", SqlQueryRequest, self.data_communication.get_datas)
             self._register_request(
                 "get_datas_by_payload", PayloadQueryRequest, self.data_communication.get_datas_by_payload
             )
-            self._register_request(
-                "batch_get_datas_by_sql", BatchSqlQueryRequest, self.data_communication.batch_get_datas_by_sql
-            )
+            if allow_raw_sql:
+                self._register_request(
+                    "batch_get_datas_by_sql", BatchSqlQueryRequest, self.data_communication.batch_get_datas_by_sql
+                )
             self._register_request(
                 "batch_get_datas_by_payload",
                 BatchPayloadQueryRequest,
@@ -112,9 +119,21 @@ class CommHandler:
                 PayloadQueryRequest,
                 self.data_communication.export_dataframe_by_payload,
             )
-            self._register_request(
-                "export_dataframe_by_sql", SqlQueryRequest, self.data_communication.export_dataframe_by_sql
-            )
+            if allow_raw_sql:
+                self._register_request(
+                    "export_dataframe_by_sql", SqlQueryRequest, self.data_communication.export_dataframe_by_sql
+                )
+
+        if hasattr(self.comm, "set_close_callback"):
+            walker = self.walker
+
+            def _close_walker_resources() -> None:
+                data_parser = getattr(walker, "data_parser", None)
+                close = getattr(data_parser, "close", None)
+                if callable(close):
+                    close()
+
+            self.comm.set_close_callback(_close_walker_resources)
 
     def _register_request(
         self,

@@ -25,8 +25,15 @@ except ImportError:  # pragma: no cover - depends on the installed Streamlit sta
 from pygwalker.utils.encode import DataFrameEncoder
 from pygwalker.errors import StreamlitPygwalkerApiError
 from .base import BaseCommunication
+from .http_security import (
+    BoundedCommMap,
+    CommRequestError,
+    check_comm_request_headers,
+    parse_json_body,
+    read_starlette_json,
+)
 
-streamlit_comm_map = {}
+streamlit_comm_map = BoundedCommMap()
 
 _STREAMLIT_PREFIX_URL = config.get_option("server.baseUrlPath").strip("/")
 BASE_URL_PATH = "/_stcore/_pygwalker/comm/".strip("/")
@@ -57,11 +64,18 @@ class PygwalkerHandler(tornado.web.RequestHandler):
         return True
 
     def post(self, gid: str):
+        try:
+            check_comm_request_headers(self.request.headers)
+            json_data = parse_json_body(self.request.body or b"")
+        except CommRequestError as e:
+            self.set_status(e.status)
+            self.write(e.to_payload())
+            return
+
         comm_obj = streamlit_comm_map.get(gid, None)
         if comm_obj is None:
             self.write({"success": False, "message": f"Unknown gid: {gid}"})
             return
-        json_data = json.loads(self.request.body)
 
         # pylint: disable=protected-access
         result = comm_obj._receive_msg_envelope(json_data)
@@ -73,10 +87,14 @@ class PygwalkerHandler(tornado.web.RequestHandler):
 
 async def _pygwalker_router(req):
     gid = req.path_params["gid"]
+    try:
+        json_data = await read_starlette_json(req)
+    except CommRequestError as e:
+        return JSONResponse(e.to_payload(), status_code=e.status)
+
     comm_obj = streamlit_comm_map.get(gid, None)
     if comm_obj is None:
         return JSONResponse({"success": False, "message": f"Unknown gid: {gid}"})
-    json_data = await req.json()
 
     # pylint: disable=protected-access
     result = comm_obj._receive_msg_envelope(json_data)
@@ -172,6 +190,8 @@ class StreamlitCommunication(BaseCommunication):
     Hacker streamlit communication class.
     only support receive message.
     """
+
+    allow_open_in_desktop = False
 
     def __init__(self, gid: str) -> None:
         super().__init__(gid)

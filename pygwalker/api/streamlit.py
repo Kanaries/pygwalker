@@ -9,6 +9,7 @@ from cachetools import cached, TTLCache
 import arrow
 
 from .pygwalker import PygWalker
+from pygwalker.communications import streamlit_comm as _streamlit_comm
 from pygwalker.communications.streamlit_comm import hack_streamlit_server, BASE_URL_PATH, StreamlitCommunication
 from pygwalker.data_parsers.base import FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
@@ -97,6 +98,23 @@ def init_streamlit_comm():
     hack_streamlit_server()
 
 
+def _get_reusable_streamlit_comm(walker: Any, gid: str) -> Optional[StreamlitCommunication]:
+    """Return the comm already serving a reused ``Walker`` core, if it is still registered.
+
+    Reusing a cached ``Walker`` across Streamlit reruns must not create a fresh comm for the same
+    gid: the bounded comm registry would close the replaced comm, which releases the data parser
+    that the reused walker still shares.
+    """
+    existing = getattr(walker, "comm", None)
+    if isinstance(existing, _streamlit_comm.StreamlitCommunication) and (
+        _streamlit_comm.streamlit_comm_map.get(gid) is existing
+    ):
+        # Endpoints are re-registered from the walker's current flags.
+        existing._endpoint_map = {}
+        return existing
+    return None
+
+
 # pylint: disable=protected-access
 class StreamlitRenderer:
     """Streamlit Renderer"""
@@ -170,7 +188,14 @@ class StreamlitRenderer:
             self.walker = dataset.core
             self.walker.use_preview = False
             self.walker.is_export_dataframe = False
-            comm = StreamlitCommunication(str(self.walker.gid))
+            # Apply the Streamlit defaults instead of inheriting the notebook-oriented Walker ones
+            # (Walker enables the save tool and the cloud tool by default).
+            self.walker.use_save_tool = "w" in spec_io_mode
+            self.walker.show_cloud_tool = (
+                bool(getattr(self.walker, "kanaries_api_key", "")) if show_cloud_tool is None else show_cloud_tool
+            )
+            gid_str = str(self.walker.gid)
+            comm = _get_reusable_streamlit_comm(self.walker, gid_str) or StreamlitCommunication(gid_str)
             self.walker._init_callback(comm)
             self.global_pre_filters = None
             return

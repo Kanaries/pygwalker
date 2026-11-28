@@ -18,6 +18,7 @@ import pandas as pd
 from pygwalker import __version__
 from pygwalker.api.walker import Walker
 from pygwalker.communications.base import BaseCommunication
+from pygwalker.errors import CommProtocolError
 from pygwalker.utils.encode import DataFrameEncoder
 
 
@@ -143,7 +144,10 @@ class JupyterExtensionSession:
 
     def _open_dataframe(self, data: Dict[str, Any]) -> Dict[str, Any]:
         name = data.get("name")
-        dataframe = resolve_dataframe(self.namespace, name, self._allowed_names)
+        try:
+            dataframe = resolve_dataframe(self.namespace, name, self._allowed_names)
+        except ValueError as exc:
+            raise CommProtocolError(str(exc)) from exc
 
         public_walker = self.walker_factory(
             dataframe,

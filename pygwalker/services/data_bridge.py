@@ -4,7 +4,7 @@ from typing_extensions import Literal
 
 from pygwalker._constants import JUPYTER_BYTE_LIMIT
 from pygwalker._typing import DataFrame
-from pygwalker.data_parsers.base import BaseDataParser, FieldSpec
+from pygwalker.data_parsers.base import BaseDataFrameDataParser, BaseDataParser, FieldSpec
 from pygwalker.data_parsers.database_parser import Connector
 from pygwalker.services.cloud_service import CloudService
 from pygwalker.services.data_parsers import get_parser
@@ -79,7 +79,5 @@ class DataBridge:
         return "client"
 
     def warm_kernel_table(self) -> None:
-        try:
-            self.data_parser.get_datas_by_sql("SELECT 1 FROM pygwalker_mid_table LIMIT 1")
-        except Exception:
-            pass
+        if isinstance(self.data_parser, BaseDataFrameDataParser):
+            self.data_parser.get_datas_by_sql(f"SELECT 1 FROM {self.data_parser.placeholder_table_name} LIMIT 1")

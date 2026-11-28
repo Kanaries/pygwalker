@@ -36,6 +36,13 @@ Static HTML export is browser-only. Exporting static HTML from `computation="ker
 
 The default privacy mode is `update-only`. Existing `events` configurations also check for version updates. Set `offline` to skip these checks.
 
+## Security & Query Execution
+
+- **Isolated in-memory DuckDB execution**: DataFrame kernel queries run on per-parser isolated in-memory DuckDB connections with external file/extension access disabled and `temp_directory` unset. Because temporary disk spilling is disabled, very large aggregations must fit in memory.
+- **Database `Connector` least privilege**: Always connect `Connector` with a read-only, least-privilege database user restricted to the intended tables or views.
+- **Local web server authentication**: Running `pyg.walk()` / `webserver.walk()` outside Jupyter prints a tokenized localhost URL (`http://localhost:<port>/?token=...`) used to establish a browser session cookie.
+- **Shared web apps**: In Streamlit, Gradio, Reflex, and marimo deployments, any visitor with access to an interactive chart should be assumed able to query the underlying dataset bound to that renderer.
+
 ## Tested Support
 
 The 0.6 release line is validated against Python 3.10, 3.11, 3.12, and 3.13. The frontend and publish workflows build with Node.js 22.x, and CI runs the frontend build plus Playwright smoke tests before packaging.

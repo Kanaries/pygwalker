@@ -193,6 +193,13 @@ const initJupyterCommunication = (gid: string) => {
     }
 }
 
+// The custom header + JSON content type force a CORS preflight for any cross-origin caller,
+// which the Python comm endpoints never approve (CSRF protection).
+const HTTP_COMM_HEADERS: Record<string, string> = {
+    "Content-Type": "application/json",
+    "X-PyGWalker-Request": "1",
+};
+
 const getRealApiUrl = async(basePath: string, baseApiUrl: string) => {
     if (basePath === "") {
         return baseApiUrl;
@@ -212,7 +219,8 @@ const getRealApiUrl = async(basePath: string, baseApiUrl: string) => {
                 url,
                 {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: HTTP_COMM_HEADERS,
+                    credentials: "same-origin",
                     body: JSON.stringify(pingMessage),
                 }
             )
@@ -267,7 +275,8 @@ const initHttpCommunication = async(gid: string, baseUrl: string) => {
             url,
             {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: HTTP_COMM_HEADERS,
+                credentials: "same-origin",
                 body: JSON.stringify(message),
             }
         )).json();
